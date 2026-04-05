@@ -76,14 +76,14 @@ function onCancel() {
     </template>
 
     <template #footer>
-      <UButton
+      <LazyUButton
         color="error"
         :icon="confirmIcon"
         :loading="loading"
         @click="onConfirm"
       >
         {{ confirmLabel }}
-      </UButton>
+      </LazyUButton>
       <LazyCancelButton
         :label="cancelLabel"
         :disabled="loading"
