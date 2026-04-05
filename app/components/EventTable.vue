@@ -4,10 +4,7 @@ import type { TableRow, TableColumn } from '@nuxt/ui'
 
 import type { Event } from '#shared/utils/types'
 
-import { formatDate, sortableHeader, defaultTableUi } from './_shared/tableUtils'
-import type { StatusColor } from './_shared/tableUtils'
-
-defineProps<{
+const props = defineProps<{
   events: Event[]
   loading?: boolean
 }>()
@@ -19,6 +16,13 @@ const emit = defineEmits<{
 
 const UBadge = resolveComponent('UBadge')
 const UButton = resolveComponent('UButton')
+
+function formatDate(date: string | null): string {
+  if (!date) return 'N/A'
+  return new Date(date).toLocaleDateString('it-IT')
+}
+
+type StatusColor = 'success' | 'warning' | 'error' | 'neutral' | 'info' | 'primary' | 'secondary'
 
 function getEventStatus(event: Event): { label: string, color: StatusColor, icon: string } {
   if ((event.event_current_round || 0) > (event.event_round_number || 0)) {
@@ -53,6 +57,24 @@ const tableMeta = {
       if (status.label === 'Terminato') return 'bg-error/10'
       return 'bg-info/10'
     }
+  }
+}
+
+function sortableHeader(label: string) {
+  return ({ column }: { column: any }) => {
+    const isSorted = column.getIsSorted()
+    return h(UButton, {
+      color: 'neutral',
+      variant: 'ghost',
+      label,
+      icon: isSorted
+        ? isSorted === 'asc'
+          ? 'i-lucide-arrow-up-narrow-wide'
+          : 'i-lucide-arrow-down-wide-narrow'
+        : 'i-lucide-arrow-up-down',
+      class: '-mx-2.5',
+      onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
+    })
   }
 }
 
@@ -143,7 +165,11 @@ const columns: TableColumn<Event>[] = [
     :loading="loading"
     :sorting="[{ id: 'event_datetime', desc: false }]"
     class="w-full"
-    :ui="defaultTableUi"
+    :ui="{
+      root: 'border border-default',
+      th: 'border-b border-default',
+      td: 'border-b border-default'
+    }"
   >
     <template #loading>
       <div class="flex items-center justify-center py-12">
