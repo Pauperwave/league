@@ -1,7 +1,11 @@
 <script setup lang="ts">
-import { resolveComponent } from 'vue'
+import { h, resolveComponent } from 'vue'
 import type { TableRow, TableColumn } from '@nuxt/ui'
-import type { Event } from '~/types/database'
+
+import type { Event } from '#shared/utils/types'
+
+import { formatDate, sortableHeader, defaultTableUi } from './_shared/tableUtils'
+import type { StatusColor } from './_shared/tableUtils'
 
 defineProps<{
   events: Event[]
@@ -15,17 +19,6 @@ const emit = defineEmits<{
 
 const UBadge = resolveComponent('UBadge')
 const UButton = resolveComponent('UButton')
-
-function formatDate(date: string | null): string {
-  if (!date) return 'N/A'
-  return new Date(date).toLocaleDateString('it-IT')
-}
-
-function formatRound(current: number | null, total: number | null): string {
-  return `${current || 0}/${total || 0}`
-}
-
-type StatusColor = 'success' | 'warning' | 'error' | 'neutral' | 'info' | 'primary' | 'secondary'
 
 function getEventStatus(event: Event): { label: string, color: StatusColor, icon: string } {
   if ((event.event_current_round || 0) > (event.event_round_number || 0)) {
@@ -48,6 +41,10 @@ function getRegistrationStatus(open: boolean | null): {
   return { label: 'Chiusa', color: 'error', icon: 'i-lucide-circle-x' }
 }
 
+function formatRound(current: number | null, total: number | null): string {
+  return `${current || 0}/${total || 0}`
+}
+
 const tableMeta = {
   class: {
     tr: (row: TableRow<Event>) => {
@@ -56,24 +53,6 @@ const tableMeta = {
       if (status.label === 'Terminato') return 'bg-error/10'
       return 'bg-info/10'
     }
-  }
-}
-
-function sortableHeader(label: string) {
-  return ({ column }: { column: unknown }) => {
-    const isSorted = column.getIsSorted()
-    return h(UButton, {
-      color: 'neutral',
-      variant: 'ghost',
-      label,
-      icon: isSorted
-        ? isSorted === 'asc'
-          ? 'i-lucide-arrow-up-narrow-wide'
-          : 'i-lucide-arrow-down-wide-narrow'
-        : 'i-lucide-arrow-up-down',
-      class: '-mx-2.5',
-      onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
-    })
   }
 }
 
@@ -135,8 +114,8 @@ const columns: TableColumn<Event>[] = [
           'color': 'neutral',
           'size': 'sm',
           'aria-label': 'Visualizza',
-          'onClick': () => {
-            // e.stopPropagation();
+          'onClick': (e: MouseEvent) => {
+            e.stopPropagation()
             emit('view', row.original)
           }
         }),
@@ -146,8 +125,8 @@ const columns: TableColumn<Event>[] = [
           'color': 'error',
           'size': 'sm',
           'aria-label': 'Elimina',
-          'onClick': () => {
-            // e.stopPropagation();
+          'onClick': (e: MouseEvent) => {
+            e.stopPropagation()
             emit('delete', row.original)
           }
         })
@@ -164,11 +143,7 @@ const columns: TableColumn<Event>[] = [
     :loading="loading"
     :sorting="[{ id: 'event_datetime', desc: false }]"
     class="w-full"
-    :ui="{
-      root: 'border border-default',
-      th: 'border-b border-default',
-      td: 'border-b border-default'
-    }"
+    :ui="defaultTableUi"
   >
     <template #loading>
       <div class="flex items-center justify-center py-12">
