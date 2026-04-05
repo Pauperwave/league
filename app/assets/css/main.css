@@ -1,0 +1,26 @@
+@import "tailwindcss";
+@import "@nuxt/ui";
+
+/* prevent the default cross-fade */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+/* Customize the text selection highlight to match the theme */
+::selection {
+  background-color: var(--ui-primary); /* red in light & dark */
+  color: var(--ui-bg); /* white in light, dark mauve in dark */
+}
+
+/* Overrides cursor point in UButton */
+button:not(:disabled):not([aria-disabled="true"]) {
+  cursor: pointer !important;
+}
+
+/* General rule for dashed white borders */
+/* * {
+    border-style: dashed !important;
+    border-color: white !important;
+} */
