@@ -77,6 +77,8 @@ export function useRulesets() {
     if (result.success) {
       showFormModal.value = false
       rulesetToEdit.value = null
+      // Refresh the combined data to update UI
+      refreshNuxtData('rulesets-with-leagues')
     }
 
     return result
@@ -93,6 +95,8 @@ export function useRulesets() {
     if (result.success) {
       showFormModal.value = false
       rulesetToEdit.value = null
+      // Refresh the combined data to update UI
+      refreshNuxtData('rulesets-with-leagues')
     }
 
     return result
@@ -111,12 +115,15 @@ export function useRulesets() {
     if (result.success) {
       rulesetToDelete.value = null
       showDeleteConfirm.value = false
+      // Refresh the combined data to update UI
+      refreshNuxtData('rulesets-with-leagues')
     }
 
     return result
   }
 
   return {
+    data: rulesets, // Add data for backward compatibility
     pending,
     loading: pending, // Alias for consistency
     error,
