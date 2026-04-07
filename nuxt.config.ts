@@ -10,6 +10,16 @@ export default defineNuxtConfig({
     '@nuxtjs/robots'
   ],
 
+  vite: {
+    optimizeDeps: {
+      include: [
+        '@vue/devtools-core',
+        '@vue/devtools-kit',
+        '@internationalized/date',
+      ]
+    }
+  },
+
   components: [
     // rimuove il prefisso per tutti i componenti
     { path: '~/components', pathPrefix: false }
