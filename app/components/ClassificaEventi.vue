@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import type { Player } from '~/types/database'
+import type { Player } from '#shared/utils/types'
 
 interface Props {
   leagueId: number
 }
 
 const props = defineProps<Props>()
-
-const eventStore = useEventStore()
 
 // Usa il composable SSR-friendly per eventi
 const { data: eventsData, pending: loading } = useEvents(props.leagueId)
@@ -21,24 +19,18 @@ const allLeagueEvents = computed(() => {
   })
 })
 
-// Fetch standings per ogni evento via store
+// Fetch all standings for all events via composable -> store chain
+const eventIds = computed(() => eventsData.value?.map(e => e.event_id) ?? [])
+const { data: allStandings } = useMultipleEventStandings(eventIds)
+
+// Group standings by event
 const eventStandings = computed(() => {
   if (!eventsData.value) return []
 
   return eventsData.value.map(event => ({
     event,
-    standings: eventStore.standings.filter(s => s.event_id === event.event_id)
+    standings: (allStandings.value ?? []).filter(s => s.event_id === event.event_id)
   }))
-})
-
-// Fetch all standings on mount
-await useAsyncData(`classifica-${props.leagueId}`, async () => {
-  if (!eventsData.value) return []
-
-  for (const event of eventsData.value) {
-    await eventStore.fetchStandings(event.event_id)
-  }
-  return eventStore.standings
 })
 
 const allPlayers = computed(() => {
