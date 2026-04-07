@@ -13,10 +13,11 @@ export const useLeagueStore = defineStore('leagues', () => {
   // Per-action loading flags
   const loadingFetch = ref(false)
   const loadingCreate = ref(false)
+  const loadingUpdate = ref(false)
   const loadingDelete = ref(false)
 
   // Derived convenience
-  const loading = computed(() => loadingFetch.value || loadingCreate.value || loadingDelete.value)
+  const loading = computed(() => loadingFetch.value || loadingCreate.value || loadingUpdate.value || loadingDelete.value)
 
   // Getters
   const getLeagueById = computed(() => (id: number) => {
@@ -84,6 +85,37 @@ export const useLeagueStore = defineStore('leagues', () => {
     }
   }
 
+  async function updateLeague(id: number, updates: Partial<League>): Promise<{ success: boolean; data?: League; error?: string }> {
+    loadingUpdate.value = true
+    error.value = null
+
+    try {
+      const { data, error: supaError } = await supabase
+        .from('leagues')
+        .update(updates)
+        .eq('id', id)
+        .select()
+        .single()
+
+      if (supaError) throw supaError
+      if (!data) throw new Error('Nessun dato restituito dall\'aggiornamento')
+
+      // Update local state
+      const index = leagues.value.findIndex(l => l.id === id)
+      if (index !== -1) {
+        leagues.value[index] = data
+      }
+
+      return { success: true, data }
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Errore nell\'aggiornamento lega'
+      console.error('[useLeagueStore] updateLeague error:', err)
+      return { success: false, error: error.value }
+    } finally {
+      loadingUpdate.value = false
+    }
+  }
+
   async function deleteLeague(id: number): Promise<{ success: boolean; error?: string }> {
     loadingDelete.value = true
     error.value = null
@@ -129,6 +161,7 @@ export const useLeagueStore = defineStore('leagues', () => {
     loading,
     loadingFetch,
     loadingCreate,
+    loadingUpdate,
     loadingDelete,
     // Getters
     getLeagueById,
@@ -136,6 +169,7 @@ export const useLeagueStore = defineStore('leagues', () => {
     // Actions
     fetchLeagues,
     createLeague,
+    updateLeague,
     deleteLeague,
     setCurrentLeague,
     clearError

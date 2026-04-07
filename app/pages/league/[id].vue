@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useRulesets } from '~/composables/supabase/useRulesets'
 import type { Event } from '#shared/utils/types'
 
 interface CreateEventData {
@@ -14,6 +15,9 @@ const leagueId = Number(route.params.id)
 const leagueStore = useLeagueStore()
 const eventsStore = useEventStore()
 
+const { data: rulesetsData, pending: rulesetsLoading } = useRulesets()
+const rulesets = computed(() => rulesetsData.value ?? [])
+
 const { data: events, pending: loading, refresh } = useEvents(leagueId)
 
 const currentLeague = computed(() => leagueStore.getLeagueById(leagueId))
@@ -28,6 +32,7 @@ await useAsyncData(`standings-${leagueId}`, async () => {
 })
 
 const showCreateModal = ref(false)
+const showEditModal = ref(false)
 const showDeleteConfirm = ref(false)
 const eventToDelete = ref<Event | null>(null)
 
@@ -47,6 +52,17 @@ async function createEvent(data: CreateEventData) {
 
   showCreateModal.value = false
   await refresh()
+}
+
+async function updateLeague(data: { name: string; startsAt: string | null; endsAt: string | null; rulesetId: number | null }) {
+  const result = await leagueStore.updateLeague(leagueId, {
+    name: data.name,
+    starts_at: data.startsAt,
+    ends_at: data.endsAt,
+    ruleset_id: data.rulesetId
+  })
+
+  if (!result.success) return console.error(result.error)
 }
 
 function handleDeleteEventClick(event: Event) {
@@ -73,7 +89,7 @@ async function confirmDeleteEvent() {
       <Breadcrumb
         :items="[
           { label: 'Home', to: '/', icon: 'i-lucide-home' },
-          { label: 'Leghe', to: '/' },
+          { label: 'Leghe', to: '/leagues' },
           { label: currentLeague?.name || 'Lega' }
         ]"
       />
@@ -82,18 +98,27 @@ async function confirmDeleteEvent() {
       <!-- Events List -->
       <div class="lg:col-span-2 flex flex-col overflow-hidden">
         <div class="flex items-center justify-between shrink-0 mb-3">
+          <UButton
+            color="neutral"
+            variant="outline"
+            icon="i-lucide-arrow-left"
+            aria-label="Torna indietro"
+            @click="router.push('/leagues')"
+          >
+            Indietro
+          </UButton>
           <div class="flex items-center gap-2">
-            <UButton
-              color="primary"
-              icon="i-lucide-arrow-left"
-              aria-label="Torna indietro"
-              @click="router.push('/')"
-            >
-              Indietro
-            </UButton>
             <h1 class="text-xl font-semibold">
               {{ currentLeague?.name || 'Lega' }}
             </h1>
+            <UButton
+              color="neutral"
+              variant="ghost"
+              icon="i-lucide-pencil"
+              size="sm"
+              aria-label="Modifica nome lega"
+              @click="showEditModal = true"
+            />
           </div>
           <UButton
             color="primary"
@@ -157,6 +182,15 @@ async function confirmDeleteEvent() {
       v-model:open="showCreateModal"
       :league-id="leagueId"
       @create="createEvent"
+    />
+
+    <!-- Edit League Modal -->
+    <EditLeagueModal
+      v-model:open="showEditModal"
+      :league="currentLeague"
+      :rulesets="rulesets"
+      :rulesets-loading="rulesetsLoading"
+      @update="updateLeague"
     />
 
     <!-- Delete Event Confirm Modal -->
