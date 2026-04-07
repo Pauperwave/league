@@ -12,13 +12,15 @@ const {
   rulesetToDelete,
   getLeaguesByRuleset,
   isRulesetInUse,
-  refreshLeagues,
   handleCreateRuleset,
   handleEditClick,
   handleUpdateRuleset,
   handleDeleteClick,
   confirmDeleteRuleset
 } = useRulesets()
+
+// Only show loading on initial fetch, not on background refreshes
+const shouldShowLoading = computed(() => loading.value && rulesets.value.length === 0)
 
 // State for leagues using ruleset modal
 const showLeaguesModal = ref(false)
@@ -81,7 +83,7 @@ function formatScore(score: number | null): string {
     />
 
     <div
-      v-if="loading"
+      v-if="shouldShowLoading"
       class="flex items-center justify-center py-12"
     >
       <UIcon
