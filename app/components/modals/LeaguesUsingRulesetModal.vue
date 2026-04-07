@@ -9,18 +9,13 @@ interface Props {
   rulesetName: string
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 
 const emit = defineEmits<{
   navigate: [leagueId: number]
 }>()
 
 const open = defineModel<boolean>('open', { default: false })
-
-function navigateToLeague(leagueId: number) {
-  emit('navigate', leagueId)
-  open.value = false
-}
 </script>
 
 <template>
