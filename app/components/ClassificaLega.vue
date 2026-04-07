@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { TableColumn, TableRow } from '@nuxt/ui'
-import type { Standing } from '~/types/database'
+import type { StandingWithPlayer } from '#shared/utils/types'
 
 interface Props {
-  standings: Standing[]
+  standings: StandingWithPlayer[]
   loading?: boolean
 }
 
@@ -13,7 +13,7 @@ withDefaults(defineProps<Props>(), {
 
 const TOP_SPOTS = 8
 
-const rowClass = (row: TableRow<Standing>): string => {
+const rowClass = (row: TableRow<StandingWithPlayer>): string => {
   const i = row.index
   const classes: string[] = []
   const isTop = i < TOP_SPOTS
@@ -31,7 +31,7 @@ const tableMeta = {
   class: { tr: rowClass }
 }
 
-const columns: TableColumn<Standing>[] = [
+const columns: TableColumn<StandingWithPlayer>[] = [
   {
     id: 'rank',
     header: '#',
@@ -74,10 +74,10 @@ const columns: TableColumn<Standing>[] = [
         name,
         surname
           ? h(
-              'span',
-              { class: 'font-bold text-primary' },
-              ` ${surname}`
-            )
+            'span',
+            { class: 'font-bold text-primary' },
+            ` ${surname}`
+          )
           : null
       ])
     }
@@ -115,23 +115,14 @@ const columns: TableColumn<Standing>[] = [
 <template>
   <div class="overflow-hidden border border-default rounded-none">
     <UTable
-      :data="standings"
-      :columns="columns"
-      :meta="tableMeta"
-      :loading="loading"
-      class="w-full"
-      :ui="{
-        thead: 'hidden',
-        td: 'border-b border-default px-4 py-3 text-sm whitespace-nowrap',
-        tbody: '[&>tr:last-child>td]:border-0'
-      }"
-    >
+:data="standings" :columns="columns" :meta="tableMeta" :loading="loading" class="w-full" :ui="{
+      thead: 'hidden',
+      td: 'border-b border-default px-4 py-3 text-sm whitespace-nowrap',
+      tbody: '[&>tr:last-child>td]:border-0'
+    }">
       <template #empty>
         <div class="flex flex-col items-center gap-2 py-12 text-muted">
-          <LazyUIcon
-            name="i-lucide-trophy"
-            class="size-10 opacity-30"
-          />
+          <LazyUIcon name="i-lucide-trophy" class="size-10 opacity-30" />
           <p class="text-sm">
             Nessun punteggio disponibile
           </p>
