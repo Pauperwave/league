@@ -4,21 +4,10 @@ export default defineNuxtConfig({
     '@nuxt/eslint',
     '@nuxt/ui',
     '@nuxt/a11y',
-    '@nuxt/hints',
     '@pinia/nuxt',
     '@nuxtjs/supabase',
     '@nuxtjs/robots'
   ],
-
-  vite: {
-    optimizeDeps: {
-      include: [
-        '@vue/devtools-core',
-        '@vue/devtools-kit',
-        '@internationalized/date',
-      ]
-    }
-  },
 
   components: [
     // rimuove il prefisso per tutti i componenti
