@@ -1,4 +1,4 @@
-import type { WaitroomEntry } from '~/types/database'
+import type { WaitroomEntry } from '#shared/utils/types'
 
 /**
  * Composable per fetchare la lista d'attesa.

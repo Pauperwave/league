@@ -1,4 +1,4 @@
-import type { Event } from '~/types/database'
+import type { Event } from '#shared/utils/types'
 
 /**
  * Composable per fetchare eventi.

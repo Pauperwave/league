@@ -1,4 +1,4 @@
-import type { Standing, StandingWithPlayer } from '#shared/utils/types'
+import type { StandingWithPlayer } from '#shared/utils/types'
 
 /**
  * Composable per fetchare le classifiche.

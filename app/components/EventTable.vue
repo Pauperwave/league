@@ -4,7 +4,7 @@ import type { TableRow, TableColumn } from '@nuxt/ui'
 
 import type { Event } from '#shared/utils/types'
 
-const props = defineProps<{
+defineProps<{
   events: Event[]
   loading?: boolean
 }>()

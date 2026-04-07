@@ -1,4 +1,4 @@
-import type { RoundResult } from '~/types/database'
+import type { RoundResult } from '#shared/utils/types'
 
 /**
  * Composable per fetchare i risultati dei round.

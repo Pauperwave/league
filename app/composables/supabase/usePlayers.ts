@@ -1,4 +1,4 @@
-import type { Player } from '~/types/database'
+import type { Player } from '#shared/utils/types'
 
 /**
  * Composable per fetchare i giocatori.

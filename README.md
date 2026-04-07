@@ -4,7 +4,7 @@
 
 If you get the following error:
 ```
-Database types configured at "~/types/database.types.ts" but file not found at "C:/Users/emanuelenardi/Documents/Coding/MagicTheGathering/league/app/types/database.types.ts". Using "Data
+Database types configured at "#shared/utils/types.types.ts" but file not found at "C:/Users/emanuelenardi/Documents/Coding/MagicTheGathering/league/app/types/database.types.ts". Using "Data
 ```
 
 Add this to your nuxt.config.ts:
@@ -15,7 +15,7 @@ supabase: {
 },
 ```
 
-The module expects types at ~/types/database.types.ts which in Nuxt 4 resolves to app/types/. Create that directory and generate:
+The module expects types at #shared/utils/types.types.ts which in Nuxt 4 resolves to app/types/. Create that directory and generate:
 ```powershell [Terminal]
 mkdir -p shared/utils/types && npx supabase gen types typescript --project-id bravmfpjiochvfnegbxr --schema public > app/types/database.types.ts
 ```

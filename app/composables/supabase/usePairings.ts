@@ -1,4 +1,4 @@
-import type { Pairing } from '~/types/database'
+import type { Pairing } from '#shared/utils/types'
 
 /**
  * Composable per fetchare i pairing.
