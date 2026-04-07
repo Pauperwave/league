@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useLeagues } from '~/composables/supabase/useLeagues'
-import type { League } from '~/types/database'
+import type { League } from '#shared/utils/types'
 
 const {
   rulesets,

@@ -1,4 +1,5 @@
-import type { League, NewLeague } from '~/types/database'
+// app\stores\leagues.ts
+import type { League, LeagueInsert } from '#shared/utils/types'
 
 export const useLeagueStore = defineStore('leagues', () => {
   const supabase = useSupabaseClient()
@@ -57,19 +58,14 @@ export const useLeagueStore = defineStore('leagues', () => {
     }
   }
 
-  async function createLeague(league: NewLeague): Promise<{ success: boolean; data?: League; error?: string }> {
+  async function createLeague(league: LeagueInsert): Promise<{ success: boolean; data?: League; error?: string }> {
     loadingCreate.value = true
     error.value = null
 
     try {
       const { data, error: supaError } = await supabase
         .from('leagues')
-        .insert([{
-          name: league.name,
-          starts_at: league.starts_at,
-          status: league.status ?? 'Programmata',
-          ruleset_id: league.ruleset_id
-        }])
+        .insert([league])
         .select()
         .single()
 

@@ -1,4 +1,4 @@
-import type { League } from '~/types/database'
+import type { League } from '#shared/utils/types'
 
 /**
  * Composable per gestire i dati delle leghe.

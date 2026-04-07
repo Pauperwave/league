@@ -1,4 +1,4 @@
-import type { Event, NewEvent, Standing, Pairing, NewRoundResult } from '~/types/database'
+import type { Event, EventInsert, Standing, StandingWithPlayer, Pairing, RoundResultInsert } from '#shared/utils/types'
 import { sanitizePlayer } from './players'
 
 // ─── Utility ────────────────────────────────────────────────────────────────
@@ -13,7 +13,7 @@ export const useEventStore = defineStore('events', () => {
   // ── State ──────────────────────────────────────────────────────────────────
   const events        = ref<Event[]>([])
   const currentEvent  = ref<Event | null>(null)
-  const standings     = ref<Standing[]>([])
+  const standings     = ref<StandingWithPlayer[]>([])
   const pairings      = ref<Pairing[]>([])
   const loadingCount  = ref(0)          // counter instead of boolean
   const error         = ref<string | null>(null)
@@ -72,22 +72,14 @@ export const useEventStore = defineStore('events', () => {
     }
   }
 
-  async function createEvent(event: NewEvent) {
+  async function createEvent(event: EventInsert) {
     beginLoading()
     error.value = null
 
     try {
       const { data, error: supaError } = await supabase
         .from('events')
-        .insert([{
-          event_name:              event.event_name,
-          league_id:               event.league_id,
-          event_datetime:          event.event_datetime,
-          event_round_number:      event.event_round_number,
-          event_current_round:     0,
-          event_registration_open: true,
-          event_playing:           false,
-        }])
+        .insert([event])
         .select()
         .single()
 
@@ -282,6 +274,37 @@ export const useEventStore = defineStore('events', () => {
     }
   }
 
+  async function fetchMultipleEventStandings(eventIds: number[]): Promise<StandingWithPlayer[]> {
+    try {
+      if (!eventIds.length) return []
+
+      const { data: standingsData, error: standingsError } = await supabase
+        .from('standings')
+        .select(`
+          *,
+          players:player_id (player_id, player_name, player_surname)
+        `)
+        .in('event_id', eventIds)
+
+      if (standingsError) throw standingsError
+
+      return (standingsData ?? []).map(s => ({
+        ...s,
+        players: s.players
+          ? sanitizePlayer({
+              player_id:      s.players.player_id,
+              player_name:    s.players.player_name,
+              player_surname: s.players.player_surname,
+            })
+          : undefined,
+      }))
+    }
+    catch (err) {
+      console.error('[useEventStore] fetchMultipleEventStandings error:', err)
+      return []
+    }
+  }
+
   async function fetchLeagueStandings(leagueId: number) {
     try {
       const { data: eventsData, error: eventsError } = await supabase
@@ -308,7 +331,7 @@ export const useEventStore = defineStore('events', () => {
 
       if (standingsError) throw standingsError
 
-      const playerMap = new Map<number, Standing>()
+      const playerMap = new Map<number, StandingWithPlayer>()
 
       for (const s of standingsData ?? []) {
         const existing = playerMap.get(s.player_id)
@@ -480,9 +503,9 @@ export const useEventStore = defineStore('events', () => {
     }
   }
 
-  async function submitRoundResult(result: NewRoundResult) {
+  async function submitRoundResult(result: RoundResultInsert) {
     try {
-      // NewRoundResult already maps 1:1 to the table columns — spread directly
+      // RoundResultInsert already maps 1:1 to the table columns — spread directly
       const { error: supaError } = await supabase
         .from('round_results')
         .insert([{
@@ -505,7 +528,7 @@ export const useEventStore = defineStore('events', () => {
     }
   }
 
-  async function updateRoundResult(pairingId: number, playerId: number, result: NewRoundResult) {
+  async function updateRoundResult(pairingId: number, playerId: number, result: RoundResultInsert) {
     try {
       const { error: supaError } = await supabase
         .from('round_results')
@@ -810,6 +833,7 @@ export const useEventStore = defineStore('events', () => {
 
     // Actions — standings
     fetchStandings,
+    fetchMultipleEventStandings,
     fetchLeagueStandings,
     fetchLeagueResults,
   }
