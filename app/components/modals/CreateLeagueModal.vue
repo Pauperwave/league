@@ -93,7 +93,7 @@ function handleCancel() {
           <label class="block text-sm font-medium mb-1">
             Nome Lega <span class="text-error">*</span>
           </label>
-          <LazyUInput
+          <UInput
             v-model="leagueName"
             placeholder="Es. Commander League 2025"
             required
@@ -101,7 +101,7 @@ function handleCancel() {
           />
         </div>
 
-        <LazyDatePicker
+        <DatePicker
           v-model="selectedDate"
           label="Data Inizio"
           required
@@ -111,7 +111,7 @@ function handleCancel() {
           <label class="block text-sm font-medium mb-1">
             Regolamento <span class="text-error">*</span>
           </label>
-          <LazyUSelect
+          <USelect
             v-model="selectedRulesetId"
             :options="
               rulesets.map((r) => ({
@@ -135,7 +135,7 @@ function handleCancel() {
       >
         Crea Lega
       </UButton>
-      <LazyCancelButton @click="handleCancel" />
+      <CancelButton @click="handleCancel" />
     </template>
   </UModal>
 </template>

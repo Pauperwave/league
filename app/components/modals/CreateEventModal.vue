@@ -74,7 +74,7 @@ function handleCancel() {
         class="space-y-4"
         @submit.prevent="handleSubmit"
       >
-        <LazyDatePicker
+        <DatePicker
           v-model="selectedDate"
           label="Data Evento"
           required
@@ -84,7 +84,7 @@ function handleCancel() {
           <label class="block text-sm font-medium mb-1">
             Nome Evento <span class="text-error">*</span>
           </label>
-          <LazyUInput
+          <UInput
             v-model="eventName"
             placeholder="Es. Commander Night #1"
             required
@@ -96,7 +96,7 @@ function handleCancel() {
           <label class="block text-sm font-medium mb-1">
             Numero di Round <span class="text-error">*</span>
           </label>
-          <LazyUInputNumber
+          <UInputNumber
             v-model="numRound"
             :min="1"
             :max="10"
@@ -116,7 +116,7 @@ function handleCancel() {
       >
         Crea Evento
       </UButton>
-      <LazyCancelButton @click="handleCancel" />
+      <CancelButton @click="handleCancel" />
     </template>
   </UModal>
 </template>
