@@ -38,6 +38,18 @@ export default defineNuxtConfig({
 
   compatibilityDate: '2025-01-15',
 
+  // Vite configuration to suppress sourcemap warnings
+  vite: {
+    build: {
+      // Disable sourcemaps in production to avoid warnings
+      sourcemap: false
+    },
+    css: {
+      // Suppress CSS sourcemap warnings  
+      devSourcemap: false
+    }
+  },
+
   robots: {
     disallow: ['/']
   },
