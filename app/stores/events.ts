@@ -1,4 +1,4 @@
-import type { Event, EventInsert, Standing, StandingWithPlayer, Pairing, RoundResultInsert } from '#shared/utils/types'
+import type { Event, EventInsert, StandingWithPlayer, Player, PairingWithResults, RoundResultInsert } from '#shared/utils/types'
 import { sanitizePlayer } from './players'
 
 // ─── Utility ────────────────────────────────────────────────────────────────
@@ -14,7 +14,7 @@ export const useEventStore = defineStore('events', () => {
   const events        = ref<Event[]>([])
   const currentEvent  = ref<Event | null>(null)
   const standings     = ref<StandingWithPlayer[]>([])
-  const pairings      = ref<Pairing[]>([])
+  const pairings      = ref<PairingWithResults[]>([])
   const loadingCount  = ref(0)          // counter instead of boolean
   const error         = ref<string | null>(null)
   const initialized   = ref<Record<number, boolean>>({})
@@ -265,9 +265,9 @@ export const useEventStore = defineStore('events', () => {
               player_id:      s.players.player_id,
               player_name:    s.players.player_name,
               player_surname: s.players.player_surname,
-            })
+            }) as any
           : undefined,
-      }))
+      })) as any
     }
     catch (err) {
       console.error('[useEventStore] fetchStandings error:', err)
@@ -295,9 +295,9 @@ export const useEventStore = defineStore('events', () => {
               player_id:      s.players.player_id,
               player_name:    s.players.player_name,
               player_surname: s.players.player_surname,
-            })
+            }) as Player
           : undefined,
-      }))
+      })) as StandingWithPlayer[]
     }
     catch (err) {
       console.error('[useEventStore] fetchMultipleEventStandings error:', err)
@@ -356,7 +356,7 @@ export const useEventStore = defineStore('events', () => {
                   player_id:      s.players.player_id,
                   player_name:    s.players.player_name,
                   player_surname: s.players.player_surname,
-                })
+                }) as any
               : undefined,
           })
         }
@@ -474,9 +474,9 @@ export const useEventStore = defineStore('events', () => {
               player_id:      r.players.player_id,
               player_name:    r.players.player_name,
               player_surname: r.players.player_surname,
-            })
+            }) as any
           : undefined,
-      }))
+      })) as any
     }
     catch (err) {
       console.error('[useEventStore] fetchLeagueResults error:', err)

@@ -1,11 +1,11 @@
-import type { Player, NewPlayer } from '~/types/database'
+import type { Player, NewPlayer } from '#shared/utils/types'
 
 /**
  * Sanitizza i nomi dei giocatori sostituendo gli underscore con spazi.
  * Il database usa underscore per nomi composti (es. "Mario_Rossi").
  * Questa funzione trasforma in formato leggibile (es. "Mario Rossi").
  */
-export function sanitizePlayer(player: Player): Player {
+export function sanitizePlayer<T extends Partial<Player>>(player: T): T {
   return {
     ...player,
     player_name: player.player_name?.replace(/_/g, ' ') ?? '',
