@@ -1,5 +1,3 @@
-import { defineEventHandler, readBody, getRouterParam } from 'h3'
-
 /**
  * PUT /api/scores/:id
  * Update an existing score

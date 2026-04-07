@@ -1,5 +1,3 @@
-import { defineEventHandler, readBody } from 'h3'
-
 /**
  * POST /api/scores
  * Calculate and save scores for a round

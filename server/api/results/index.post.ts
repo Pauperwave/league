@@ -1,5 +1,3 @@
-import { defineEventHandler, readBody } from 'h3'
-
 /**
  * POST /api/results
  * Submit round results for a player

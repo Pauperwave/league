@@ -1,5 +1,3 @@
-import { defineEventHandler, getQuery } from 'h3'
-
 /**
  * GET /api/standings/calculate?leagueId=...
  * Calculates league standings with tie-breakers

@@ -1,5 +1,3 @@
-import { defineEventHandler, readBody } from 'h3'
-
 /**
  * POST /api/pairings/generate
  * Generates automatic pairings for a round
