@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useLeagues } from '~/composables/supabase/useLeagues'
-import type { League } from '#shared/utils/types'
 
 
 // Also worth considering: if LeagueTable can receive a loading prop to show skeletons on re-fetches (without destroying/recreating the component), that would be a nicer UX than the full v-if/v-else approach — but that's a bigger refactor.
