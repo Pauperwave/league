@@ -17,84 +17,44 @@ const emit = defineEmits<{
 }>()
 
 const open = ref(false)
-
-const df = new DateFormatter('it-IT', { dateStyle: 'medium' })
+const df = new DateFormatter('it-IT', { dateStyle: 'long' })
 
 function getToday(): CalendarDate {
   const now = new Date()
   return new CalendarDate(now.getFullYear(), now.getMonth() + 1, now.getDate())
 }
 
-function selectToday() {
-  const today = getToday()
-  selectedDate.value = today
-  emit('update:modelValue', today) // always emits, even if already today
-  open.value = false
-}
-
-// Use ref instead of computed to avoid the "already selected today" issue
-const selectedDate = ref<CalendarDate>(props.modelValue ?? getToday())
-
-// Sync with prop when it changes externally
-watch(() => props.modelValue, (newValue) => {
-  selectedDate.value = newValue ?? getToday()
-})
-
-// Emit changes when selectedDate changes
-watch(selectedDate, (newValue) => {
-  emit('update:modelValue', newValue)
+const selectedDate = computed({
+  get: () => props.modelValue ?? getToday(),
+  set: (v: CalendarDate) => emit('update:modelValue', v)
 })
 </script>
 
 <template>
   <div>
     <label class="block text-sm font-medium mb-1">
-      {{ label }} <span
-        v-if="required"
-        class="text-error"
-      >*</span>
+      {{ label }} <span v-if="required" class="text-error">*</span>
     </label>
     <UPopover v-model:open="open">
-      <UButton
-        color="neutral"
-        variant="subtle"
-        icon="i-lucide-calendar"
-        class="w-full justify-between"
-      >
+      <UButton color="neutral" variant="subtle" icon="i-lucide-calendar" class="w-full justify-between">
         <span class="truncate">
-          {{
-            props.modelValue
-              ? df.format(props.modelValue.toDate(getLocalTimeZone()))
-              : "Seleziona una data"
-          }}
+          {{ modelValue ? df.format(modelValue.toDate(getLocalTimeZone())) : "Seleziona una data" }}
         </span>
         <template #trailing>
           <span
-            v-if="props.modelValue"
-            class="ml-2 p-0.5 rounded cursor-pointer hover:bg-neutral-200 dark:hover:bg-neutral-700"
+            v-if="modelValue"
+            class="inline-flex ml-2 p-0.5 rounded cursor-pointer hover:bg-neutral-200 dark:hover:bg-neutral-700"
             @click.stop="emit('update:modelValue', null)"
           >
-            <UIcon
-              name="i-lucide-x"
-              class="size-3"
-            />
+            <UIcon name="i-lucide-circle-x" class="size-4" />
           </span>
         </template>
       </UButton>
       <template #content>
         <div class="p-2 space-y-2">
-          <UCalendar
-            v-model="selectedDate"
-            class="p-2"
-            @update:model-value="open = false"
-          />
+          <UCalendar v-model="selectedDate" prevent-deselect class="p-2" @update:model-value="open = false" />
           <div class="flex justify-center">
-            <UButton
-              color="neutral"
-              variant="ghost"
-              size="sm"
-              @click="selectToday"
-            >
+            <UButton color="neutral" variant="outline" size="sm" @click="() => { selectedDate = getToday(); open = false }">
               Oggi
             </UButton>
           </div>
