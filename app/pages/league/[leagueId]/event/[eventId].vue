@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Player } from '~/types/database'
+import type { Player } from '#shared/utils/types'
 
 const route = useRoute()
 const router = useRouter()
@@ -112,11 +112,8 @@ function hasSubmittedScore(pairingId: number, playerId: number): boolean {
     <div class="flex items-center justify-between p-6 bg-elevated border-b border-default">
       <div class="flex items-center gap-4">
         <UButton
-          color="neutral"
-          variant="ghost"
-          icon="i-lucide-arrow-left"
-          @click="router.push(`/league/${leagueId}`)"
-        />
+color="neutral" variant="ghost" icon="i-lucide-arrow-left"
+          @click="router.push(`/league/${leagueId}`)" />
         <div>
           <h1 class="text-2xl font-bold">
             {{ currentEvent?.event_name || "Evento" }}
@@ -127,10 +124,7 @@ function hasSubmittedScore(pairingId: number, playerId: number): boolean {
         </div>
       </div>
       <div class="flex items-center gap-4">
-        <UBadge
-          :color="isEventEnded ? 'neutral' : isPlaying ? 'success' : 'warning'"
-          size="lg"
-        >
+        <UBadge :color="isEventEnded ? 'neutral' : isPlaying ? 'success' : 'warning'" size="lg">
           Round {{ currentRound }} / {{ totalRounds }}
         </UBadge>
       </div>
@@ -138,23 +132,12 @@ function hasSubmittedScore(pairingId: number, playerId: number): boolean {
 
     <!-- Event Controls -->
     <div class="px-6 pb-4">
-      <div
-        v-if="!isPlaying && isRegistrationOpen"
-        class="space-y-4"
-      >
+      <div v-if="!isPlaying && isRegistrationOpen" class="space-y-4">
         <!-- Start Event Button -->
         <UButton
-          color="primary"
-          size="lg"
-          block
-          :disabled="!canStartEvent"
-          :title="!canStartEvent ? 'Servono almeno 3 giocatori (non 5)' : ''"
-          @click="startEvent"
-        >
-          <UIcon
-            name="i-lucide-play"
-            class="mr-2"
-          />
+color="primary" size="lg" block :disabled="!canStartEvent"
+          :title="!canStartEvent ? 'Servono almeno 3 giocatori (non 5)' : ''" @click="startEvent">
+          <UIcon name="i-lucide-play" class="mr-2" />
           Avvia Evento ({{ waitingPlayers.length }} giocatori)
         </UButton>
 
@@ -166,76 +149,46 @@ function hasSubmittedScore(pairingId: number, playerId: number): boolean {
                 Lista d'Attesa
               </h3>
               <UButton
-                color="primary"
-                variant="soft"
-                size="sm"
-                icon="i-lucide-user-plus"
-                @click="showPlayerSearch = true"
-              >
+color="primary" variant="soft" size="sm" icon="i-lucide-user-plus"
+                @click="showPlayerSearch = true">
                 Aggiungi Giocatore
               </UButton>
             </div>
           </template>
 
           <!-- Waiting Players -->
-          <div
-            v-if="waitingPlayers.length > 0"
-            class="space-y-2"
-          >
+          <div v-if="waitingPlayers.length > 0" class="space-y-2">
             <div
-              v-for="playerId in waitingPlayers"
-              :key="playerId"
-              class="flex items-center justify-between p-2 bg-elevated/50 rounded"
-            >
+v-for="playerId in waitingPlayers" :key="playerId"
+              class="flex items-center justify-between p-2 bg-elevated/50 rounded">
               <span>{{ getPlayerName(playerId) }}</span>
               <UButton
-                color="error"
-                variant="ghost"
-                size="xs"
-                icon="i-lucide-x"
-                @click="removeFromWaitingList(playerId)"
-              />
+color="error" variant="ghost" size="xs" icon="i-lucide-x"
+                @click="removeFromWaitingList(playerId)" />
             </div>
           </div>
-          <p
-            v-else
-            class="text-muted text-center py-4"
-          >
+          <p v-else class="text-muted text-center py-4">
             Nessun giocatore in lista d'attesa
           </p>
         </UCard>
       </div>
 
       <!-- Round Controls -->
-      <div
-        v-else-if="isPlaying && !isEventEnded"
-        class="flex gap-2"
-      >
-        <UButton
-          color="primary"
-          variant="soft"
-          icon="i-lucide-arrow-right"
-          @click="nextRound"
-        >
+      <div v-else-if="isPlaying && !isEventEnded" class="flex gap-2">
+        <UButton color="primary" variant="soft" icon="i-lucide-arrow-right" @click="nextRound">
           Prossimo Round
         </UButton>
       </div>
     </div>
 
     <!-- Tables / Pairings -->
-    <div
-      v-if="isPlaying || isEventEnded"
-      class="px-6 pb-6"
-    >
+    <div v-if="isPlaying || isEventEnded" class="px-6 pb-6">
       <h2 class="text-xl font-semibold mb-4">
         Tavoli
       </h2>
 
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <UCard
-          v-for="(pairing, index) in pairings"
-          :key="pairing.pairing_id"
-        >
+        <UCard v-for="(pairing, index) in pairings" :key="pairing.pairing_id">
           <template #header>
             <div class="flex items-center justify-between">
               <h3 class="font-semibold">
@@ -249,33 +202,25 @@ function hasSubmittedScore(pairingId: number, playerId: number): boolean {
 
           <div class="space-y-2">
             <div
-              v-for="playerId in [
-                pairing.pairing_player1_id,
-                pairing.pairing_player2_id,
-                pairing.pairing_player3_id,
-                pairing.pairing_player4_id
-              ].filter((id): id is number => !!id)"
-              :key="playerId"
-              class="flex items-center justify-between p-2 bg-elevated/50 rounded"
-            >
+v-for="playerId in [
+              pairing.pairing_player1_id,
+              pairing.pairing_player2_id,
+              pairing.pairing_player3_id,
+              pairing.pairing_player4_id
+            ].filter((id): id is number => !!id)" :key="playerId"
+              class="flex items-center justify-between p-2 bg-elevated/50 rounded">
               <div class="flex items-center gap-2">
                 <UIcon
-                  :name="
-                    hasSubmittedScore(pairing.pairing_id, playerId)
-                      ? 'i-lucide-check-circle'
-                      : 'i-lucide-circle'
-                  "
-                  :class="
-                    hasSubmittedScore(pairing.pairing_id, playerId) ? 'text-success' : 'text-muted'
-                  "
-                />
+:name="hasSubmittedScore(pairing.pairing_id, playerId)
+                    ? 'i-lucide-check-circle'
+                    : 'i-lucide-circle'
+                  " :class="hasSubmittedScore(pairing.pairing_id, playerId) ? 'text-success' : 'text-muted'
+                    " />
                 <span>{{ getPlayerName(playerId) }}</span>
               </div>
               <UButton
-                :color="hasSubmittedScore(pairing.pairing_id, playerId) ? 'success' : 'primary'"
-                size="xs"
-                @click="navigateToScore(pairing.pairing_id, playerId, index)"
-              >
+:color="hasSubmittedScore(pairing.pairing_id, playerId) ? 'success' : 'primary'" size="xs"
+                @click="navigateToScore(pairing.pairing_id, playerId, index)">
                 {{ hasSubmittedScore(pairing.pairing_id, playerId) ? "Modifica" : "Inserisci" }}
               </UButton>
             </div>
@@ -284,14 +229,8 @@ function hasSubmittedScore(pairingId: number, playerId: number): boolean {
       </div>
 
       <!-- No Pairings -->
-      <div
-        v-if="pairings.length === 0 && !loading"
-        class="text-center py-12 text-muted"
-      >
-        <UIcon
-          name="i-lucide-users"
-          class="text-6xl mb-4"
-        />
+      <div v-if="pairings.length === 0 && !loading" class="text-center py-12 text-muted">
+        <UIcon name="i-lucide-users" class="text-6xl mb-4" />
         <p>Nessun tavolo disponibile</p>
       </div>
     </div>
@@ -302,15 +241,10 @@ function hasSubmittedScore(pairingId: number, playerId: number): boolean {
         Classifica
       </h2>
 
-      <div
-        v-if="standings.length > 0"
-        class="bg-elevated rounded-lg p-4 border border-default"
-      >
+      <div v-if="standings.length > 0" class="bg-elevated rounded-lg p-4 border border-default">
         <div
-          v-for="(standing, index) in standings"
-          :key="standing.player_id"
-          class="flex items-center justify-between p-3 border-b border-default last:border-0"
-        >
+v-for="(standing, index) in standings" :key="standing.player_id"
+          class="flex items-center justify-between p-3 border-b border-default last:border-0">
           <div class="flex items-center gap-3">
             <span class="text-lg font-bold w-8">{{ index + 1 }}</span>
             <div>
@@ -327,62 +261,34 @@ function hasSubmittedScore(pairingId: number, playerId: number): boolean {
         </div>
       </div>
 
-      <div
-        v-else
-        class="text-center py-8 text-muted"
-      >
-        <UIcon
-          name="i-lucide-trophy"
-          class="text-4xl mb-2"
-        />
+      <div v-else class="text-center py-8 text-muted">
+        <UIcon name="i-lucide-trophy" class="text-4xl mb-2" />
         <p>Nessun punteggio disponibile</p>
       </div>
     </div>
 
     <!-- Player Search Modal -->
-    <UModal
-      v-model:open="showPlayerSearch"
-      title="Aggiungi Giocatore"
-    >
+    <UModal v-model:open="showPlayerSearch" title="Aggiungi Giocatore">
       <template #body>
         <div class="space-y-4">
-          <UInput
-            v-model="playerSearchQuery"
-            placeholder="Cerca per nome..."
-            icon="i-lucide-search"
-          />
+          <UInput v-model="playerSearchQuery" placeholder="Cerca per nome..." icon="i-lucide-search" />
 
           <div class="max-h-64 overflow-y-auto space-y-1">
             <div
-              v-for="player in filteredPlayers"
-              :key="player.player_id"
+v-for="player in filteredPlayers" :key="player.player_id"
               class="flex items-center justify-between p-2 hover:bg-elevated/50 rounded cursor-pointer"
               :class="{ 'opacity-50': isInWaitingList(player.player_id) }"
-              @click="!isInWaitingList(player.player_id) && addToWaitingList(player.player_id)"
-            >
+              @click="!isInWaitingList(player.player_id) && addToWaitingList(player.player_id)">
               <span>{{ player.player_name }} {{ player.player_surname }}</span>
-              <UIcon
-                v-if="isInWaitingList(player.player_id)"
-                name="i-lucide-check"
-                class="text-success"
-              />
-              <UIcon
-                v-else
-                name="i-lucide-plus"
-                class="text-primary"
-              />
+              <UIcon v-if="isInWaitingList(player.player_id)" name="i-lucide-check" class="text-success" />
+              <UIcon v-else name="i-lucide-plus" class="text-primary" />
             </div>
           </div>
         </div>
       </template>
 
       <template #footer>
-        <UButton
-          color="neutral"
-          variant="ghost"
-          block
-          @click="showPlayerSearch = false"
-        >
+        <UButton color="neutral" variant="ghost" block @click="showPlayerSearch = false">
           Chiudi
         </UButton>
       </template>
