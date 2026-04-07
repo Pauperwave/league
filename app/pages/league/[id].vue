@@ -1,36 +1,33 @@
 <script setup lang="ts">
-import type { Event } from '~/types/database'
+import type { Event } from '#shared/utils/types'
+
+interface CreateEventData {
+  eventName: string
+  eventDate: string
+  numRound: number
+}
 
 const route = useRoute()
 const router = useRouter()
-const leagueId = parseInt(route.params.id as string)
+const leagueId = Number(route.params.id)
 
-// Store per dati e azioni
 const leagueStore = useLeagueStore()
 const eventsStore = useEventStore()
 
-// Fetch iniziali via SSR-friendly composables
-useLeagues() // Solo per triggerare il fetch
 const { data: events, pending: loading, refresh } = useEvents(leagueId)
 
-// Computed dal store
 const currentLeague = computed(() => leagueStore.getLeagueById(leagueId))
 const standings = computed(() => eventsStore.standings)
-
 const classificaTitle = computed(() =>
   currentLeague.value?.name ? `Classifica ${currentLeague.value.name}` : 'Classifica'
 )
 
-// Fetch standings SSR-friendly
 await useAsyncData(`standings-${leagueId}`, async () => {
   await eventsStore.fetchLeagueStandings(leagueId)
-  return eventsStore.standings
+  return true
 })
 
 const showCreateModal = ref(false)
-const createError = ref<string | null>(null)
-
-// Delete confirmation modal state
 const showDeleteConfirm = ref(false)
 const eventToDelete = ref<Event | null>(null)
 
@@ -38,9 +35,7 @@ function navigateToEvent(event: Event) {
   router.push(`/league/${leagueId}/event/${event.event_id}`)
 }
 
-async function handleCreateEvent(data: { eventName: string, eventDate: string, numRound: number }) {
-  createError.value = null
-
+async function createEvent(data: CreateEventData) {
   const result = await eventsStore.createEvent({
     event_name: data.eventName,
     league_id: leagueId,
@@ -48,10 +43,7 @@ async function handleCreateEvent(data: { eventName: string, eventDate: string, n
     event_round_number: data.numRound
   })
 
-  if (!result.success) {
-    createError.value = result.error || 'Errore nella creazione'
-    return
-  }
+  if (!result.success) return console.error(result.error)
 
   showCreateModal.value = false
   await refresh()
@@ -67,10 +59,7 @@ async function confirmDeleteEvent() {
 
   const result = await eventsStore.deleteEvent(eventToDelete.value.event_id)
 
-  if (!result.success) {
-    console.error('Failed to delete event:', result.error)
-    return
-  }
+  if (!result.success) return console.error('Failed to delete event:', result.error)
 
   showDeleteConfirm.value = false
   eventToDelete.value = null
@@ -167,7 +156,7 @@ async function confirmDeleteEvent() {
     <CreateEventModal
       v-model:open="showCreateModal"
       :league-id="leagueId"
-      @create="handleCreateEvent"
+      @create="createEvent"
     />
 
     <!-- Delete Event Confirm Modal -->
