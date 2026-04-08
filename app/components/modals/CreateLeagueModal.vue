@@ -63,13 +63,16 @@ function handleSubmit() {
 
 function handleCancel() {
   leagueName.value = ''
+  selectedRulesetId.value = props.rulesets[0]?.ruleset_id
   open.value = false
 }
 </script>
 
 <template>
   <UModal
-v-model:open="open" title="Crea Nuova Lega" description="Compila i campi per creare una nuova lega"
+    v-model:open="open"
+    title="Crea Nuova Lega"
+    description="Compila i campi per creare una nuova lega"
     :ui="{ footer: 'justify-between' }">
     <template #title>
       <div class="flex items-center gap-2">
@@ -87,18 +90,26 @@ v-model:open="open" title="Crea Nuova Lega" description="Compila i campi per cre
           <UInput v-model="leagueName" placeholder="Es. Commander League 2025" required class="w-full" />
         </div>
 
-        <DatePicker v-model="selectedDate" label="Data Inizio" required />
+        <DatePicker
+          v-model="selectedDate"
+          label="Data Inizio"
+          required
+        />
 
         <div>
           <label class="block text-sm font-medium mb-1">
             Regolamento <span class="text-error">*</span>
           </label>
           <USelect
-v-model="selectedRulesetId" :options="rulesets.map((r) => ({
-            label: r.name ?? `Ruleset ${r.ruleset_id}`,
-            value: r.ruleset_id
-          }))
-            " :loading="rulesetsLoading" required />
+            v-model="selectedRulesetId"
+            :items="rulesets.map((r) => ({
+              label: r.name ?? `Ruleset ${r.ruleset_id}`,
+              value: r.ruleset_id
+            }))"
+            :loading="rulesetsLoading"
+            class="w-full"
+            required
+          />
         </div>
       </form>
     </template>
