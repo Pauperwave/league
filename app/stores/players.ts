@@ -19,6 +19,7 @@ export const usePlayerStore = defineStore('players', () => {
   // State
   const players = ref<Player[]>([])
   const waitingPlayers = ref<number[]>([])
+  const waitroomEntries = ref<Map<number, string>>(new Map()) // playerId -> insertedAt
   const loading = ref(false)
   const error = ref<string | null>(null)
   const initialized = ref(false)
@@ -108,11 +109,16 @@ export const usePlayerStore = defineStore('players', () => {
     try {
       const { data, error: supaError } = await supabase
         .from('waitroom')
-        .select('player_id')
+        .select('player_id, inserted_at')
         .eq('event_id', eventId)
+        .order('inserted_at', { ascending: true })
 
       if (supaError) throw supaError
+      
       waitingPlayers.value = data?.map(w => w.player_id) || []
+      waitroomEntries.value = new Map(
+        data?.map(w => [w.player_id, w.inserted_at || '']) || []
+      )
     } catch (err) {
       console.error('[usePlayerStore] fetchWaitingPlayers error:', err)
     }
@@ -120,6 +126,10 @@ export const usePlayerStore = defineStore('players', () => {
 
   async function addToWaitingList(eventId: number, playerId: number) {
     try {
+      if (waitingPlayers.value.includes(playerId)) {
+        return { success: false, error: 'Player already in waiting list' }
+      }
+
       const { error } = await supabase.from('waitroom').insert([{
         event_id: eventId,
         player_id: playerId
@@ -127,6 +137,7 @@ export const usePlayerStore = defineStore('players', () => {
 
       if (error) throw error
       waitingPlayers.value.push(playerId)
+      waitroomEntries.value.set(playerId, new Date().toISOString())
       return { success: true }
     } catch (err) {
       console.error('[usePlayerStore] addToWaitingList error:', err)
@@ -144,6 +155,7 @@ export const usePlayerStore = defineStore('players', () => {
 
       if (error) throw error
       waitingPlayers.value = waitingPlayers.value.filter(id => id !== playerId)
+      waitroomEntries.value.delete(playerId)
       return { success: true }
     } catch (err) {
       console.error('[usePlayerStore] removeFromWaitingList error:', err)
@@ -158,6 +170,7 @@ export const usePlayerStore = defineStore('players', () => {
   return {
     players,
     waitingPlayers,
+    waitroomEntries,
     loading,
     error,
     initialized,

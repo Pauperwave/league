@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { resolveComponent } from 'vue'
-import type { TableRow, TableColumn } from '@nuxt/ui'
+import { h, resolveComponent } from 'vue'
+import type { TableColumn } from '@nuxt/ui'
 import type { League, Ruleset } from '#shared/utils/types'
+import { formatDate } from '~/composables/useTableUtils'
 
 const props = defineProps<{
   leagues: League[]
@@ -11,16 +12,12 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   view: [league: League]
+  edit: [league: League]
   delete: [league: League]
 }>()
 
 const UBadge = resolveComponent('UBadge')
 const UButton = resolveComponent('UButton')
-
-function formatDate(date: string | null): string {
-  if (!date) return 'N/A'
-  return new Date(date).toLocaleDateString('it-IT')
-}
 
 type StatusColor = 'success' | 'warning' | 'error' | 'neutral' | 'info' | 'primary' | 'secondary'
 
@@ -32,18 +29,6 @@ const statusConfig: Record<string, { color: StatusColor, icon: string }> = {
 
 function getStatusConfig(status: string) {
   return statusConfig[status] ?? { color: 'neutral' as StatusColor, icon: 'i-lucide-circle-help' }
-}
-
-const tableMeta = {
-  class: {
-    tr: (row: TableRow<League>) => {
-      const status = row.original.status
-      if (status === 'Attiva') return 'bg-success/10'
-      if (status === 'Programmata') return 'bg-info/10'
-      if (status === 'Terminata') return 'bg-neutral/10'
-      return ''
-    }
-  }
 }
 
 function sortableHeader(label: string) {
@@ -61,6 +46,18 @@ function sortableHeader(label: string) {
       class: '-mx-2.5',
       onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
     })
+  }
+}
+
+const tableMeta = {
+  class: {
+    tr: (row: any) => {
+      const status = row.original.status
+      if (status === 'Attiva') return 'bg-success/10'
+      if (status === 'Programmata') return 'bg-info/10'
+      if (status === 'Terminata') return 'bg-neutral/10'
+      return ''
+    }
   }
 }
 
@@ -111,6 +108,17 @@ const columns: TableColumn<League>[] = [
     meta: { class: { td: 'text-right' } },
     cell: ({ row }) =>
       h('div', { class: 'flex gap-2 justify-end' }, [
+        h(UButton, {
+          'icon': 'i-lucide-pencil',
+          'variant': 'outline',
+          'color': 'neutral',
+          'size': 'sm',
+          'aria-label': 'Modifica',
+          'onClick': (e: Event) => {
+            e.stopPropagation()
+            emit('edit', row.original)
+          }
+        }),
         h(UButton, {
           'icon': 'i-lucide-eye',
           'variant': 'outline',

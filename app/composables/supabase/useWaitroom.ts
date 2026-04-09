@@ -12,11 +12,11 @@ export function useWaitroom(eventId?: number) {
     if (eventId) {
       await store.fetchWaitingPlayers(eventId)
     }
-    // Mappa waitingPlayers (number[]) a WaitroomEntry[]
     return store.waitingPlayers.map((playerId, index) => ({
       wait_id: index,
       event_id: eventId || 0,
-      player_id: playerId
+      player_id: playerId,
+      inserted_at: store.waitroomEntries.get(playerId) || null
     }))
   }, {
     server: true,

@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { h, resolveComponent } from 'vue'
-import type { TableRow, TableColumn } from '@nuxt/ui'
-
+import type { TableColumn } from '@nuxt/ui'
 import type { Event } from '#shared/utils/types'
+import { formatDate } from '~/composables/useTableUtils'
 
 defineProps<{
   events: Event[]
@@ -17,11 +17,6 @@ const emit = defineEmits<{
 
 const UBadge = resolveComponent('UBadge')
 const UButton = resolveComponent('UButton')
-
-function formatDate(date: string | null): string {
-  if (!date) return 'N/A'
-  return new Date(date).toLocaleDateString('it-IT')
-}
 
 type StatusColor = 'success' | 'warning' | 'error' | 'neutral' | 'info' | 'primary' | 'secondary'
 
@@ -50,17 +45,6 @@ function formatRound(current: number | null, total: number | null): string {
   return `${current || 0}/${total || 0}`
 }
 
-const tableMeta = {
-  class: {
-    tr: (row: TableRow<Event>) => {
-      const status = getEventStatus(row.original)
-      if (status.label === 'In Corso') return 'bg-success/10'
-      if (status.label === 'Terminato') return 'bg-error/10'
-      return 'bg-info/10'
-    }
-  }
-}
-
 function sortableHeader(label: string) {
   return ({ column }: { column: any }) => {
     const isSorted = column.getIsSorted()
@@ -76,6 +60,17 @@ function sortableHeader(label: string) {
       class: '-mx-2.5',
       onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
     })
+  }
+}
+
+const tableMeta = {
+  class: {
+    tr: (row: any) => {
+      const status = getEventStatus(row.original)
+      if (status.label === 'In Corso') return 'bg-success/10'
+      if (status.label === 'Terminato') return 'bg-error/10'
+      return 'bg-info/10'
+    }
   }
 }
 
@@ -96,7 +91,7 @@ const columns: TableColumn<Event>[] = [
     cell: ({ row }) => formatDate(row.getValue('event_datetime'))
   },
   {
-    accessorKey: 'round',
+    id: 'round',
     header: sortableHeader('Round'),
     cell: ({ row }) => {
       const current = row.original.event_current_round

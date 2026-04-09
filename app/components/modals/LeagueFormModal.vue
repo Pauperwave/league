@@ -1,11 +1,7 @@
 <script setup lang="ts">
-import { CalendarDate, getLocalTimeZone, parseDate } from '@internationalized/date'
+import type { CalendarDate } from '@internationalized/date'
 import type { Ruleset, League } from '#shared/utils/types'
-
-function getToday(): CalendarDate {
-  const now = new Date()
-  return new CalendarDate(now.getFullYear(), now.getMonth() + 1, now.getDate())
-}
+import { getToday, parseDateString } from '~/composables/useTableUtils'
 
 interface Props {
   league: League | null
@@ -69,16 +65,6 @@ watch(
   },
   { immediate: true }
 )
-
-function parseDateString(dateStr: string | null): CalendarDate | null {
-  if (!dateStr) return null
-  try {
-    const datePart = dateStr.split('T')[0]
-    return datePart ? parseDate(datePart) : null
-  } catch {
-    return null
-  }
-}
 
 watch(open, (isOpen) => {
   if (!isOpen) return

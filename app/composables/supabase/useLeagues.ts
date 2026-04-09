@@ -13,6 +13,7 @@ export function useLeagues() {
 
   const { pending: loading, error } = useAsyncData('leagues-list', async () => {
     await store.fetchLeagues()
+    return store.leagues
   }, {
     server: true
   })

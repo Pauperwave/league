@@ -1,11 +1,7 @@
 <script setup lang="ts">
-import { CalendarDate, getLocalTimeZone, parseDate } from '@internationalized/date'
+import { getLocalTimeZone } from '@internationalized/date'
 import type { Event } from '#shared/utils/types'
-
-function getToday(): CalendarDate {
-  const now = new Date()
-  return new CalendarDate(now.getFullYear(), now.getMonth() + 1, now.getDate())
-}
+import { getToday, parseDateString } from '~/composables/useTableUtils'
 
 interface Props {
   event: Event | null
@@ -40,23 +36,13 @@ const submitLabel = computed(() => isEditing.value ? 'Salva' : 'Crea Evento')
 
 const defaultForm = () => ({
   eventName: '',
-  eventDate: getToday() as CalendarDate | null,
+  eventDate: getToday(),
   numRound: 2,
 })
 
 const form = shallowReactive(defaultForm())
 
 const isValid = computed(() => !!form.eventName.trim())
-
-function parseDateString(dateStr: string | null): CalendarDate | null {
-  if (!dateStr) return null
-  try {
-    const datePart = dateStr.split('T')[0]
-    return datePart ? parseDate(datePart) : null
-  } catch {
-    return null
-  }
-}
 
 watch(open, (isOpen) => {
   if (!isOpen) return

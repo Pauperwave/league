@@ -47,7 +47,8 @@ async function createEvent(data: CreateEventData) {
     event_name: data.eventName,
     league_id: leagueId,
     event_datetime: data.eventDate,
-    event_round_number: data.numRound
+    event_round_number: data.numRound,
+    event_registration_open: true
   })
 
   if (!result.success) return console.error(result.error)

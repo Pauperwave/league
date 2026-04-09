@@ -1,8 +1,6 @@
 <script setup lang="ts">
 import { useLeagues } from '~/composables/supabase/useLeagues'
-
-
-// Also worth considering: if LeagueTable can receive a loading prop to show skeletons on re-fetches (without destroying/recreating the component), that would be a nicer UX than the full v-if/v-else approach — but that's a bigger refactor.
+import type { League } from '#shared/utils/types'
 
 const {
   rulesets,
@@ -18,6 +16,30 @@ const {
   confirmDeleteLeague,
   navigateToLeague
 } = useLeagues()
+
+const showEditModal = ref(false)
+const leagueToEdit = ref<League | null>(null)
+
+function handleEditLeague(league: League) {
+  leagueToEdit.value = league
+  showEditModal.value = true
+}
+
+const leagueStore = useLeagueStore()
+
+async function updateLeague({ id, data }: { id: number; data: { name: string; startsAt: string | null; endsAt: string | null; rulesetId: number | null } }) {
+  const result = await leagueStore.updateLeague(id, {
+    name: data.name,
+    starts_at: data.startsAt,
+    ends_at: data.endsAt,
+    ruleset_id: data.rulesetId
+  })
+
+  if (!result.success) return console.error(result.error)
+
+  showEditModal.value = false
+  leagueToEdit.value = null
+}
 </script>
 
 <template>
@@ -79,10 +101,12 @@ const {
         :leagues="leagues"
         :rulesets="rulesets || []"
         @view="navigateToLeague"
+        @edit="handleEditLeague"
         @delete="handleDeleteLeague"
       />
     </div>
 
+    <!-- Create League Modal -->
     <LeagueFormModal
       v-model:open="showCreateModal"
       :league="null"
@@ -91,6 +115,16 @@ const {
       @create="handleCreateLeague"
     />
 
+    <!-- Edit League Modal -->
+    <LeagueFormModal
+      v-model:open="showEditModal"
+      :league="leagueToEdit"
+      :rulesets="rulesets || []"
+      :rulesets-loading="rulesetsLoading"
+      @update="updateLeague"
+    />
+
+    <!-- Delete Confirm Modal -->
     <ConfirmModal
       v-model:open="showDeleteConfirm"
       title="Conferma Eliminazione"
