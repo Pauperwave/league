@@ -6,7 +6,8 @@ export default defineNuxtConfig({
     '@nuxt/a11y',
     '@pinia/nuxt',
     '@nuxtjs/supabase',
-    '@nuxtjs/robots'
+    '@nuxtjs/robots',
+    '@vueuse/nuxt'
   ],
 
   components: [
