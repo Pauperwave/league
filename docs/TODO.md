@@ -1,4 +1,4 @@
-# TODO
+# Todos
 
 ## Stepper for Event Phases
 - Implement `UStepper` component to track event phases (registration -> playing -> ended)
