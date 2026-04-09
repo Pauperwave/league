@@ -2,7 +2,6 @@
 import { h, resolveComponent } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import type { Event } from '#shared/utils/types'
-import { formatDate } from '~/composables/useTableUtils'
 
 defineProps<{
   events: Event[]

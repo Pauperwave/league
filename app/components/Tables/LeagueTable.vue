@@ -2,7 +2,6 @@
 import { h, resolveComponent } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import type { League, Ruleset } from '#shared/utils/types'
-import { formatDate } from '~/composables/useTableUtils'
 
 const props = defineProps<{
   leagues: League[]

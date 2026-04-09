@@ -1,6 +1,5 @@
-// league\app\composables\useEventPage.ts
+// league\app\composables\event\useEventPage.ts
 import type { Player } from '#shared/utils/types'
-import { useTableCalculator } from './useTableCalculator'
 import { usePlayerStore } from '~/stores/players'
 
 export function useEventPage() {
