@@ -1,11 +1,20 @@
 <script setup lang="ts">
-import { useRulesets } from '~/composables/supabase/useRulesets'
 import type { Event } from '#shared/utils/types'
 
 interface CreateEventData {
   eventName: string
   eventDate: string
   numRound: number
+}
+
+interface UpdateEventData {
+  id: number
+  data: { eventName: string; eventDate: string | null; numRound: number }
+}
+
+interface UpdateLeagueData {
+  id: number
+  data: { name: string; startsAt: string | null; endsAt: string | null; rulesetId: number | null }
 }
 
 const route = useRoute()
@@ -18,7 +27,7 @@ const eventsStore = useEventStore()
 const { data: rulesetsData, pending: rulesetsLoading } = useRulesets()
 const rulesets = computed(() => rulesetsData.value ?? [])
 
-const { data: events, pending: loading, refresh } = useEvents(leagueId)
+const { data: events, pending: eventsLoading, refresh: refreshEvents } = useEvents(leagueId)
 
 const currentLeague = computed(() => leagueStore.getLeagueById(leagueId))
 const standings = computed(() => eventsStore.standings)
@@ -26,54 +35,46 @@ const classificaTitle = computed(() =>
   currentLeague.value?.name ? `Classifica ${currentLeague.value.name}` : 'Classifica'
 )
 
-await useAsyncData(`standings-${leagueId}`, async () => {
-  await eventsStore.fetchLeagueStandings(leagueId)
-  return true
-})
+const breadcrumbItems = computed(() => [
+  { label: 'Home', to: '/', icon: 'i-lucide-home' },
+  { label: 'Leghe', to: '/leagues' },
+  { label: currentLeague.value?.name ?? 'Lega' },
+])
 
+await useAsyncData(`standings-${leagueId}`, () => eventsStore.fetchLeagueStandings(leagueId))
+
+// — Modal state —
 const showCreateModal = ref(false)
 const showLeagueEditModal = ref(false)
+
 const showEventEditModal = ref(false)
 const eventToEdit = ref<Event | null>(null)
+
 const showDeleteConfirm = ref(false)
 const eventToDelete = ref<Event | null>(null)
 
+// — Navigation —
 function navigateToEvent(event: Event) {
   router.push(`/league/${leagueId}/event/${event.event_id}`)
 }
 
+// — Event CRUD —
 async function createEvent(data: CreateEventData) {
   const result = await eventsStore.createEvent({
     event_name: data.eventName,
     league_id: leagueId,
     event_datetime: data.eventDate,
     event_round_number: data.numRound,
-    event_registration_open: true
+    event_registration_open: true,
   })
 
   if (!result.success) return console.error(result.error)
 
   showCreateModal.value = false
-  await refresh()
+  await refreshEvents()
 }
 
-async function updateLeague({ data }: { id: number; data: { name: string; startsAt: string | null; endsAt: string | null; rulesetId: number | null } }) {
-  const result = await leagueStore.updateLeague(leagueId, {
-    name: data.name,
-    starts_at: data.startsAt,
-    ends_at: data.endsAt,
-    ruleset_id: data.rulesetId
-  })
-
-  if (!result.success) return console.error(result.error)
-}
-
-function handleEditEventClick(event: Event) {
-  eventToEdit.value = event
-  showEventEditModal.value = true
-}
-
-async function updateEvent({ id, data }: { id: number; data: { eventName: string; eventDate: string | null; numRound: number } }) {
+async function updateEvent({ id, data }: UpdateEventData) {
   const result = await eventsStore.updateEvent(id, {
     event_name: data.eventName,
     event_datetime: data.eventDate ?? undefined,
@@ -84,10 +85,15 @@ async function updateEvent({ id, data }: { id: number; data: { eventName: string
 
   showEventEditModal.value = false
   eventToEdit.value = null
-  await refresh()
+  await refreshEvents()
 }
 
-function handleDeleteEventClick(event: Event) {
+function openEditEvent(event: Event) {
+  eventToEdit.value = event
+  showEventEditModal.value = true
+}
+
+function openDeleteEvent(event: Event) {
   eventToDelete.value = event
   showDeleteConfirm.value = true
 }
@@ -101,22 +107,30 @@ async function confirmDeleteEvent() {
 
   showDeleteConfirm.value = false
   eventToDelete.value = null
-  await refresh()
+  await refreshEvents()
+}
+
+// — League —
+async function updateLeague({ data }: UpdateLeagueData) {
+  const result = await leagueStore.updateLeague(leagueId, {
+    name: data.name,
+    starts_at: data.startsAt,
+    ends_at: data.endsAt,
+    ruleset_id: data.rulesetId,
+  })
+
+  if (!result.success) return console.error(result.error)
 }
 </script>
 
 <template>
   <div class="h-full overflow-hidden bg-default">
     <div class="p-6 pb-0">
-      <Breadcrumb
-        :items="[
-          { label: 'Home', to: '/', icon: 'i-lucide-home' },
-          { label: 'Leghe', to: '/leagues' },
-          { label: currentLeague?.name || 'Lega' }
-        ]"
-      />
+      <UBreadcrumb :items="breadcrumbItems" />
     </div>
+
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6 items-start">
+
       <!-- Events List -->
       <div class="lg:col-span-2 flex flex-col overflow-hidden">
         <div class="flex items-center justify-between shrink-0 mb-3">
@@ -129,9 +143,10 @@ async function confirmDeleteEvent() {
           >
             Indietro
           </UButton>
+
           <div class="flex items-center gap-2">
             <h1 class="text-xl font-semibold">
-              {{ currentLeague?.name || 'Lega' }}
+              {{ currentLeague?.name ?? 'Lega' }}
             </h1>
             <UButton
               color="neutral"
@@ -142,6 +157,7 @@ async function confirmDeleteEvent() {
               @click="showLeagueEditModal = true"
             />
           </div>
+
           <UButton
             color="primary"
             icon="i-lucide-plus"
@@ -152,47 +168,37 @@ async function confirmDeleteEvent() {
         </div>
 
         <EventTable
-          :events="events || []"
-          :loading="loading"
+          :events="events ?? []"
+          :loading="eventsLoading"
           class="flex-none"
           @view="navigateToEvent"
-          @edit="handleEditEventClick"
-          @delete="handleDeleteEventClick"
+          @edit="openEditEvent"
+          @delete="openDeleteEvent"
         />
 
         <div class="mt-3 flex flex-col flex-1 min-h-0 overflow-hidden">
           <h2 class="text-lg font-semibold mb-2 shrink-0">
             Punteggi per Evento
           </h2>
-          <ClassificaEventi
-            :league-id="leagueId"
-            class="flex-1 min-h-0 overflow-auto"
-          />
+          <ClassificaEventi :league-id="leagueId" class="flex-1 min-h-0 overflow-auto" />
         </div>
       </div>
 
       <!-- League Standings -->
       <div class="lg:col-span-1 h-full">
-        <div
-          class="h-full bg-linear-to-b from-primary/10 to-transparent rounded-xl p-6 border-2 border-primary/30 shadow-lg overflow-hidden flex flex-col"
-        >
+        <div class="h-full bg-linear-to-b from-primary/10 to-transparent rounded-xl p-6 border-2 border-primary/30 shadow-lg overflow-hidden flex flex-col">
           <div class="flex items-center justify-center gap-2 mb-4">
-            <UIcon
-              name="i-lucide-trophy"
-              class="size-6 text-primary"
-            />
+            <UIcon name="i-lucide-trophy" class="size-6 text-primary" />
             <h2 class="text-xl font-bold text-center text-primary">
               {{ classificaTitle }}
             </h2>
           </div>
+
           <ClientOnly>
             <ClassificaLega :standings="standings" class="flex-1 overflow-auto" />
             <template #fallback>
               <div class="flex items-center justify-center py-8">
-                <UIcon
-                  name="i-lucide-loader-2"
-                  class="animate-spin text-2xl text-primary"
-                />
+                <UIcon name="i-lucide-loader-2" class="animate-spin text-2xl text-primary" />
               </div>
             </template>
           </ClientOnly>
@@ -200,7 +206,7 @@ async function confirmDeleteEvent() {
       </div>
     </div>
 
-    <!-- Event Form Modal (Create/Edit) -->
+    <!-- Modals -->
     <EventFormModal
       v-model:open="showCreateModal"
       :event="null"
@@ -215,7 +221,6 @@ async function confirmDeleteEvent() {
       @update="updateEvent"
     />
 
-    <!-- Edit League Modal -->
     <LeagueFormModal
       v-model:open="showLeagueEditModal"
       :league="currentLeague"
@@ -224,7 +229,6 @@ async function confirmDeleteEvent() {
       @update="updateLeague"
     />
 
-    <!-- Delete Event Confirm Modal -->
     <ConfirmModal
       v-model:open="showDeleteConfirm"
       title="Conferma Eliminazione"
