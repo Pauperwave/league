@@ -1,5 +1,5 @@
-import { h } from 'vue'
-import { CalendarDate, parseDate } from '@internationalized/date'
+import { h, resolveComponent } from 'vue'
+import { CalendarDate, parseDate, today, getLocalTimeZone } from '@internationalized/date'
 
 export type StatusColor = 'success' | 'warning' | 'error' | 'neutral' | 'info' | 'primary' | 'secondary'
 
@@ -9,8 +9,7 @@ export function formatDate(date: string | null): string {
 }
 
 export function getToday(): CalendarDate {
-  const now = new Date()
-  return new CalendarDate(now.getFullYear(), now.getMonth() + 1, now.getDate())
+  return today(getLocalTimeZone())
 }
 
 export function parseDateString(dateStr: string | null): CalendarDate | null {
@@ -23,36 +22,39 @@ export function parseDateString(dateStr: string | null): CalendarDate | null {
   }
 }
 
+type SortDirection = 'asc' | 'desc' | false
+
+interface SortableColumn {
+  getIsSorted: () => SortDirection
+  toggleSorting: () => void
+}
+
 export function sortableHeader(label: string) {
-  return ({ column }: { column: any }) => {
+  return ({ column }: { column: SortableColumn }) => {
     const isSorted = column.getIsSorted()
-    return h('button', {
-      type: 'button',
-      class: 'flex items-center gap-1 text-left cursor-pointer hover:text-primary transition-colors',
-      onClick: (e: Event) => {
-        e.preventDefault()
-        column.toggleSorting()
-      }
-    }, [
-      h('span', { class: 'font-medium text-foreground' }, label),
-      h('svg', {
-        xmlns: 'http://www.w3.org/2000/svg',
-        width: '14',
-        height: '14',
-        viewBox: '0 0 24 24',
-        fill: 'none',
-        stroke: 'currentColor',
-        strokeWidth: '2',
-        strokeLinecap: 'round',
-        strokeLinejoin: 'round',
-        class: [
-          'shrink-0 transition-transform',
-          isSorted === 'asc' ? 'rotate-180' : '',
-          !isSorted ? 'text-muted opacity-50' : 'text-primary'
-        ]
-      }, [
-        h('path', { d: 'm6 9 6 6 6-6' })
-      ])
-    ])
+    const UIcon = resolveComponent('UIcon')
+
+    return h(
+      'button',
+      {
+        type: 'button',
+        class: 'flex items-center gap-1 text-left cursor-pointer hover:text-primary transition-colors',
+        onClick: (e: Event) => {
+          e.preventDefault()
+          column.toggleSorting()
+        },
+      },
+      [
+        h('span', { class: 'font-medium text-foreground' }, label),
+        h(UIcon, {
+          name: 'i-lucide-chevron-down',
+          class: [
+            'size-3.5 shrink-0 transition-transform',
+            isSorted === 'asc' ? 'rotate-180' : '',
+            isSorted ? 'text-primary' : 'text-muted opacity-50',
+          ],
+        }),
+      ]
+    )
   }
 }
