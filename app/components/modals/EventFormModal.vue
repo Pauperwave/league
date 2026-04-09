@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { type CalendarDate, getLocalTimeZone } from '@internationalized/date'
 import type { Event } from '#shared/utils/types'
-import { getToday, parseDateString } from '~/composables/useTableUtils'
 
 // — Types —
 

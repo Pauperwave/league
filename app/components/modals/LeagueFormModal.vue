@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { CalendarDate } from '@internationalized/date'
 import type { Ruleset, League } from '#shared/utils/types'
-import { getToday, parseDateString } from '~/composables/useTableUtils'
 
 interface Props {
   league: League | null
