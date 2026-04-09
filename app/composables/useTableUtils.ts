@@ -1,5 +1,6 @@
 import { h, resolveComponent } from 'vue'
-import { CalendarDate, parseDate, today, getLocalTimeZone } from '@internationalized/date'
+import type { CalendarDate} from '@internationalized/date'
+import { parseDate, today, getLocalTimeZone } from '@internationalized/date'
 
 export type StatusColor = 'success' | 'warning' | 'error' | 'neutral' | 'info' | 'primary' | 'secondary'
 

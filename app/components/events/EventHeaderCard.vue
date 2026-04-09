@@ -51,6 +51,11 @@ const statusBadge = computed(() => {
       </div>
     </template>
 
+    <EventStepper
+      :is-playing="isPlaying"
+      :is-event-ended="isEventEnded"
+      class="mb-4"
+    />
     <slot />
   </UCard>
 </template>
