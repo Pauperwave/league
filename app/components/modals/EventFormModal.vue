@@ -1,83 +1,103 @@
 <script setup lang="ts">
-import { getLocalTimeZone } from '@internationalized/date'
+import { type CalendarDate, getLocalTimeZone } from '@internationalized/date'
 import type { Event } from '#shared/utils/types'
 import { getToday, parseDateString } from '~/composables/useTableUtils'
+
+// — Types —
+
+// Internal reactive form state
+interface EventForm {
+  eventName: string
+  eventDate: CalendarDate | null  // CalendarDate for DatePicker binding
+  numRound: number
+  roundDuration: number
+}
+
+// Emitted payload — eventDate serialized to ISO string for callers
+interface EventCreatePayload {
+  eventName: string
+  eventDate: string
+  numRound: number
+  roundDuration: number
+}
+
+interface EventUpdatePayload {
+  id: number
+  data: Omit<EventCreatePayload, 'eventDate'> & { eventDate: string | null }
+}
 
 interface Props {
   event: Event | null
   leagueId: number
 }
 
+// Temporary until Event type is updated
+type EventWithDuration = Event & { event_round_duration?: number }
+
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
-  create: [{
-    eventName: string
-    eventDate: string
-    numRound: number
-  }]
-  update: [{
-    id: number
-    data: {
-      eventName: string
-      eventDate: string | null
-      numRound: number
-    }
-  }]
+  create: [payload: EventCreatePayload]
+  update: [payload: EventUpdatePayload]
 }>()
 
 const open = defineModel<boolean>('open', { default: false })
 
+// — Derived modal state —
 const isEditing = computed(() => !!props.event)
-const title = computed(() => isEditing.value ? 'Modifica Evento' : 'Crea Nuovo Evento')
-const description = computed(() => isEditing.value ? 'Modifica i dati dell\'evento' : 'Compila i campi per creare un nuovo evento')
-const icon = computed(() => isEditing.value ? 'i-lucide-pencil' : 'i-lucide-calendar-plus')
+const modalTitle = computed(() => isEditing.value ? 'Modifica Evento' : 'Crea Nuovo Evento')
+const modalDescription = computed(() => isEditing.value ? "Modifica i dati dell'evento" : 'Compila i campi per creare un nuovo evento')
+const modalIcon = computed(() => isEditing.value ? 'i-lucide-pencil' : 'i-lucide-calendar-plus')
 const submitLabel = computed(() => isEditing.value ? 'Salva' : 'Crea Evento')
 
-const defaultForm = () => ({
+// — Form —
+const defaultForm = (): EventForm => ({
   eventName: '',
   eventDate: getToday(),
   numRound: 2,
+  roundDuration: 50,
 })
 
-const form = shallowReactive(defaultForm())
+const form = shallowReactive<EventForm>(defaultForm())
 
 const isValid = computed(() => !!form.eventName.trim())
 
 watch(open, (isOpen) => {
   if (!isOpen) return
-  const e = props.event
-  if (e) {
-    Object.assign(form, {
-      eventName: e.event_name,
-      eventDate: parseDateString(e.event_datetime),
-      numRound: e.event_round_number ?? 2,
-    })
-  } else {
-    Object.assign(form, defaultForm())
-  }
+
+  const e = props.event as EventWithDuration | null
+  Object.assign(form, e
+    ? {
+        eventName: e.event_name,
+        eventDate: parseDateString(e.event_datetime),
+        numRound: e.event_round_number ?? 2,
+        roundDuration: e.event_round_duration ?? 50,
+      }
+    : defaultForm()
+  )
 })
 
-function handleSubmit() {
-  if (!form.eventName.trim()) return
+function toIsoDate(date: CalendarDate | null): string | null {
+  return date?.toDate(getLocalTimeZone()).toISOString().split('T')[0] ?? null
+}
 
-  const dateStr = form.eventDate?.toDate(getLocalTimeZone())
-  const eventDate = dateStr ? dateStr.toISOString().split('T')[0] : null
+function handleSubmit() {
+  if (!isValid.value) return
+
+  const eventDate = toIsoDate(form.eventDate)
+  const eventName = form.eventName.trim()
 
   if (isEditing.value && props.event) {
     emit('update', {
       id: props.event.event_id,
-      data: {
-        eventName: form.eventName.trim(),
-        eventDate: eventDate ?? null,
-        numRound: form.numRound,
-      }
+      data: { eventName, eventDate, numRound: form.numRound, roundDuration: form.roundDuration },
     })
   } else {
     emit('create', {
-      eventName: form.eventName.trim(),
+      eventName,
       eventDate: eventDate ?? '',
       numRound: form.numRound,
+      roundDuration: form.roundDuration,
     })
     Object.assign(form, defaultForm())
   }
@@ -89,32 +109,31 @@ function handleSubmit() {
 <template>
   <UModal
     v-model:open="open"
-    :description="description"
+    :description="modalDescription"
     :ui="{ footer: 'justify-between' }"
   >
     <template #title>
       <div class="flex items-center gap-2">
-        <UIcon :name="icon" class="text-primary" />
-        <span>{{ title }}</span>
+        <UIcon :name="modalIcon" class="text-primary" />
+        <span>{{ modalTitle }}</span>
       </div>
     </template>
 
     <template #body>
       <form id="event-form" class="space-y-4" @submit.prevent="handleSubmit">
-        <UFormField label="Nome Evento" required>
-          <UInput
-            id="field-name"
-            v-model="form.eventName"
-            placeholder="Es. Commander Night #1"
-            class="w-full"
-          />
-        </UFormField>
+        <div class="grid grid-cols-2 gap-4">
+          <UFormField label="Nome Evento" required>
+            <UInput
+              id="field-name"
+              v-model="form.eventName"
+              placeholder="Es. Commander Night #1"
+              class="w-full"
+            />
+          </UFormField>
+          <DatePicker v-model="form.eventDate" label="Data" />
+        </div>
 
         <div class="grid grid-cols-2 gap-4">
-          <DatePicker
-            v-model="form.eventDate"
-            label="Data Evento"
-          />
           <UFormField label="Numero Round">
             <UInputNumber
               v-model="form.numRound"
@@ -124,12 +143,27 @@ function handleSubmit() {
               class="w-full"
             />
           </UFormField>
+          <UFormField label="Durata Round (min)">
+            <UInputNumber
+              v-model="form.roundDuration"
+              :min="10"
+              :max="120"
+              :step="10"
+              :default-value="50"
+              class="w-full"
+            />
+          </UFormField>
         </div>
       </form>
     </template>
 
     <template #footer>
-      <UButton type="submit" form="event-form" color="primary" :disabled="!isValid">
+      <UButton
+        type="submit"
+        form="event-form"
+        color="primary"
+        :disabled="!isValid"
+      >
         {{ submitLabel }}
       </UButton>
       <CancelButton @click="open = false" />
