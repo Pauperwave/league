@@ -241,3 +241,49 @@ const { pause, resume } = useIntervalFn(() => {
   }
 }, 1000, { immediate: false })
 ```
+
+Should I do this?
+
+ℹ Vite discovered new dependencies at runtime:                               08:22:48
+  @internationalized/date ← ./app/composables/useTableUtils.ts
+
+Pre-bundle them in your nuxt.config.ts to avoid page reloads:
+
+```ts
+export default defineNuxtConfig({
+    vite: {
+      optimizeDeps: {
+        include: [
+          '@internationalized/date',
+        ]
+      }
+    }
+})
+```
+
+Learn more: https://vite.dev/guide/dep-pre-bundling.html
+
+Yes, do it. It's not strictly required but it's good practice — it tells Vite to pre-bundle @internationalized/date at startup instead of discovering it lazily at runtime, which eliminates the full-page reload you're seeing on first load.
+
+```ts
+// nuxt.config.ts
+export default defineNuxtConfig({
+  vite: {
+    optimizeDeps: {
+      include: [
+        '@internationalized/date',
+      ]
+    }
+  }
+})
+```
+
+If you have other packages that trigger the same warning, add them to the same array rather than waiting for Vite to discover them one by one. Common ones in a Nuxt UI project are:
+
+```ts
+include: [
+  '@internationalized/date',
+  '@tanstack/vue-table',
+  '@vueuse/core',
+]
+```
