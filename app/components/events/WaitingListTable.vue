@@ -2,11 +2,6 @@
 import { h, resolveComponent } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 
-// TODO Nuxt auto-imports everything from ~/utils, so it would then be available globally without an explicit import
-export function upperFirst(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1)
-}
-
 const UCheckbox = resolveComponent('UCheckbox')
 const UButton = resolveComponent('UButton')
 
