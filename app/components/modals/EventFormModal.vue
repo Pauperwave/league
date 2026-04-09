@@ -1,6 +1,10 @@
+<!-- app\components\Modals\EventFormModal.vue -->
 <script setup lang="ts">
 import { type CalendarDate, getLocalTimeZone } from '@internationalized/date'
 import type { Event } from '#shared/utils/types'
+
+// — Constants —
+const DEFAULT_ROUND_DURATION = 75 // 1:15 hours
 
 // — Types —
 
@@ -51,7 +55,7 @@ const defaultForm = (): EventForm => ({
   eventName: '',
   eventDate: getToday(),
   numRound: 2,
-  roundDuration: 50,
+  roundDuration: DEFAULT_ROUND_DURATION,
 })
 
 const form = shallowReactive<EventForm>(defaultForm())
@@ -67,7 +71,7 @@ watch(open, (isOpen) => {
         eventName: e.event_name,
         eventDate: parseDateString(e.event_datetime),
         numRound: e.event_round_number ?? 2,
-        roundDuration: e.event_round_duration ?? 50,
+        roundDuration: e.event_round_duration ?? DEFAULT_ROUND_DURATION,
       }
     : defaultForm()
   )
@@ -144,8 +148,8 @@ function handleSubmit() {
               v-model="form.roundDuration"
               :min="10"
               :max="120"
-              :step="10"
-              :default-value="50"
+              :step="5"
+              :default-value="75"
               class="w-full"
             />
           </UFormField>
