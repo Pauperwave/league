@@ -83,8 +83,9 @@ const {
       />
     </div>
 
-    <CreateLeagueModal
+    <LeagueFormModal
       v-model:open="showCreateModal"
+      :league="null"
       :rulesets="rulesets || []"
       :rulesets-loading="rulesetsLoading"
       @create="handleCreateLeague"

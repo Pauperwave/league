@@ -28,14 +28,16 @@ export function useLeagues() {
 
   async function handleCreateLeague(data: {
     name: string
-    startsAt: string
-    rulesetId: number
+    startsAt: string | null
+    endsAt: string | null
+    rulesetId: number | null
   }) {
     const result = await store.createLeague({
       name: data.name,
-      starts_at: data.startsAt,
+      starts_at: data.startsAt ?? undefined,
+      ends_at: data.endsAt ?? undefined,
       status: 'Programmata',
-      ruleset_id: data.rulesetId
+      ruleset_id: data.rulesetId ?? undefined
     })
 
     if (result.success) {

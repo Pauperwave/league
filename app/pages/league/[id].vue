@@ -54,7 +54,7 @@ async function createEvent(data: CreateEventData) {
   await refresh()
 }
 
-async function updateLeague(data: { name: string; startsAt: string | null; endsAt: string | null; rulesetId: number | null }) {
+async function updateLeague({ data }: { id: number; data: { name: string; startsAt: string | null; endsAt: string | null; rulesetId: number | null } }) {
   const result = await leagueStore.updateLeague(leagueId, {
     name: data.name,
     starts_at: data.startsAt,
@@ -185,7 +185,7 @@ async function confirmDeleteEvent() {
     />
 
     <!-- Edit League Modal -->
-    <EditLeagueModal
+    <LeagueFormModal
       v-model:open="showEditModal"
       :league="currentLeague"
       :rulesets="rulesets"
