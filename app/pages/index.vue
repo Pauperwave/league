@@ -1,3 +1,4 @@
+<!-- app\pages\index.vue -->
 <template>
   <div class="min-h-screen bg-default flex flex-col items-center justify-center p-6">
     <div class="text-center">

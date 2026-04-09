@@ -1,3 +1,4 @@
+<!-- app\components\Tables\EventTable.vue -->
 <script setup lang="ts">
 import { h, resolveComponent } from 'vue'
 import type { TableColumn } from '@nuxt/ui'

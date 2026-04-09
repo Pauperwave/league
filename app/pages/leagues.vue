@@ -1,3 +1,4 @@
+<!-- app\pages\leagues.vue -->
 <script setup lang="ts">
 import type { League } from '#shared/utils/types'
 

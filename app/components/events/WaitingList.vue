@@ -1,12 +1,11 @@
+<!-- app\components\Events\WaitingList.vue -->
 <script setup lang="ts">
-interface Props {
+const props = defineProps<{
   waitingPlayers: number[]
   playerNames: Record<number, string>
   waitroomEntries?: Map<number, string>
   tableEstimate?: string
-}
-
-const { waitingPlayers, playerNames, waitroomEntries, tableEstimate } = defineProps<Props>()
+}>()
 
 const emit = defineEmits<{
   remove: [playerId: number]
@@ -14,11 +13,11 @@ const emit = defineEmits<{
 }>()
 
 // — Debounced player count for the stats badge —
-const debouncedCount = ref(waitingPlayers.length)
+const debouncedCount = ref(props.waitingPlayers.length)
 watchDebounced(
-  () => waitingPlayers.length,
+  () => props.waitingPlayers.length,
   count => { debouncedCount.value = count },
-  { debounce: 500, immediate: true }
+  { debounce: 500 }
 )
 
 // — Toggle state using Set for O(1) lookup —
@@ -27,7 +26,11 @@ const companionPlayers = ref(new Set<number>())
 
 function toggle(set: Set<number>, id: number): Set<number> {
   const next = new Set(set)
-  next.has(id) ? next.delete(id) : next.add(id)
+  if (next.has(id)) {
+    next.delete(id)
+  } else {
+    next.add(id)
+  }
   return next
 }
 
@@ -43,11 +46,11 @@ function formatTime(iso: string | undefined): string {
 }
 
 const tableData = computed(() => {
-  const rows = waitingPlayers.map((playerId, index) => ({
+  const rows = props.waitingPlayers.map((playerId, index) => ({
     index: index + 1,
     playerId,
-    name: playerNames[playerId] ?? `Player ${playerId}`,
-    time: formatTime(waitroomEntries?.get(playerId)),
+    name: props.playerNames[playerId] ?? `Player ${playerId}`,
+    time: formatTime(props.waitroomEntries?.get(playerId)),
     paid: paidPlayers.value.has(playerId),
     companion: companionPlayers.value.has(playerId),
   }))
@@ -65,7 +68,7 @@ const tableData = computed(() => {
 const statsLabel = computed(() => {
   const parts: string[] = []
   if (debouncedCount.value > 0) parts.push(`${debouncedCount.value} giocatori`)
-  if (tableEstimate) parts.push(tableEstimate)
+  if (props.tableEstimate) parts.push(props.tableEstimate)
   return parts.join(' · ')
 })
 </script>

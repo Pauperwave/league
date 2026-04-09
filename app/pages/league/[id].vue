@@ -1,3 +1,4 @@
+<!-- app\pages\league\[id].vue -->
 <script setup lang="ts">
 import type { Event } from '#shared/utils/types'
 

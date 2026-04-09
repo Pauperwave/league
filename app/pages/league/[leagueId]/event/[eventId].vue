@@ -1,4 +1,4 @@
-<!-- league\app\pages\league\[leagueId]\event\[eventId].vue -->
+<!-- app\pages\league\[leagueId]\event\[eventId].vue -->
 <script setup lang="ts">
 const {
   leagueId,
@@ -6,6 +6,7 @@ const {
   currentLeague,
   currentEvent,
   currentRound,
+  totalRounds,
   isEventEnded,
   isPlaying,
   isRegistrationOpen,
@@ -79,7 +80,18 @@ const breadcrumbItems = computed(() => [
       <UBreadcrumb :items="breadcrumbItems" />
     </div>
 
-    <div class="flex flex-col gap-6 p-6 items-start">
+    <div class="flex flex-col gap-6 p-6">
+      <!-- Event Control Panel - Centered at top -->
+      <EventControlPanel
+        :current-round="currentRound"
+        :total-rounds="totalRounds"
+        :is-playing="isPlaying"
+        :is-event-ended="isEventEnded"
+        :is-registration-open="isRegistrationOpen"
+        :can-start-event="canStartEvent"
+        @start="startEvent"
+      />
+
       <div class="flex flex-col lg:flex-row gap-6 w-full">
 
         <!-- Header Card -->
@@ -93,10 +105,6 @@ const breadcrumbItems = computed(() => [
         >
           <!-- Registration Phase -->
           <div v-if="!isPlaying && isRegistrationOpen" class="space-y-4">
-            <StartEventButton
-              :disabled="!canStartEvent"
-              @click="startEvent"
-            />
 
             <WaitingList
               :waiting-players="waitingPlayers"
@@ -147,9 +155,6 @@ const breadcrumbItems = computed(() => [
           :has-submitted-score="hasSubmittedScore"
           :on-navigate-to-score="navigateToScore"
         />
-
-        <!-- Empty State -->
-        <EmptyStateCard v-if="!isPlaying && !isEventEnded" class="lg:w-1/3" />
       </div>
     </div>
 

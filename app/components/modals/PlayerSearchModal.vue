@@ -1,3 +1,4 @@
+<!-- app\components\Modals\PlayerSearchModal.vue -->
 <script setup lang="ts">
 import type { Player } from '#shared/utils/types'
 

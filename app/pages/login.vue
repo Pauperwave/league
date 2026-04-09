@@ -1,3 +1,4 @@
+<!-- app\pages\login.vue -->
 <script setup lang="ts">
 const { login } = usePasswordAuth()
 const route = useRoute()

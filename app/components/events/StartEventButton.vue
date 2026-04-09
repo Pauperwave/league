@@ -1,3 +1,4 @@
+<!-- app\components\Events\StartEventButton.vue -->
 <script setup lang="ts">
 interface Props {
   disabled?: boolean
@@ -16,10 +17,9 @@ const emit = defineEmits<{
     color="primary"
     size="lg"
     block
-    :disabled="disabled"
     :loading="loading"
     icon="i-lucide-play"
-    @click="emit('click')"
+    @click="!disabled && emit('click')"
   >
     Avvia Evento
   </UButton>

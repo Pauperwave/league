@@ -1,3 +1,4 @@
+<!-- app\components\Rankings\LeagueRanking.vue -->
 <script setup lang="ts">
 import type { TableColumn, TableRow } from '@nuxt/ui'
 import type { StandingWithPlayer } from '#shared/utils/types'

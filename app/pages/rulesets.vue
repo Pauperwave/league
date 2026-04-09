@@ -1,3 +1,4 @@
+<!-- app\pages\rulesets.vue -->
 <script setup lang="ts">
 const {
   rulesets,

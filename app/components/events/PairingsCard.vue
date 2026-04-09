@@ -1,3 +1,4 @@
+<!-- app\components\Events\PairingsCard.vue -->
 <script setup lang="ts">
 import type { Pairing } from '#shared/utils/types'
 

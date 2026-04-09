@@ -1,3 +1,4 @@
+<!-- app\components\Modals\LeaguesUsingRulesetModal.vue -->
 <script setup lang="ts">
 interface LeagueInfo {
   id: number

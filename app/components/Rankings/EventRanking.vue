@@ -1,3 +1,4 @@
+<!-- app\components\Rankings\EventRanking.vue -->
 <script setup lang="ts">
 import type { Player } from '#shared/utils/types'
 

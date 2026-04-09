@@ -1,3 +1,4 @@
+<!-- app\components\Layout\LogoutButton.vue -->
 <!--
   LogoutButton.vue
 

@@ -1,3 +1,4 @@
+<!-- app\components\Layout\HeaderActions.vue -->
 <!--
   HeaderActions.vue
 

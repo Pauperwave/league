@@ -1,3 +1,4 @@
+<!-- app\components\Ui\CancelButton.vue -->
 <script setup lang="ts">
 interface Props {
   label?: string

@@ -1,3 +1,4 @@
+<!-- app\components\Modals\LeagueFormModal.vue -->
 <script setup lang="ts">
 import type { CalendarDate } from '@internationalized/date'
 import type { Ruleset, League } from '#shared/utils/types'

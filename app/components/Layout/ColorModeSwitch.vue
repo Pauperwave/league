@@ -1,3 +1,4 @@
+<!-- app\components\Layout\ColorModeSwitch.vue -->
 <!--
   ColorModeSwitch.vue
 
