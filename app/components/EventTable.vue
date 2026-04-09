@@ -11,6 +11,7 @@ defineProps<{
 
 const emit = defineEmits<{
   view: [event: Event]
+  edit: [event: Event]
   delete: [event: Event]
 }>()
 
@@ -130,6 +131,17 @@ const columns: TableColumn<Event>[] = [
     meta: { class: { td: 'text-right' } },
     cell: ({ row }) =>
       h('div', { class: 'flex gap-2 justify-end' }, [
+        h(UButton, {
+          'icon': 'i-lucide-pencil',
+          'variant': 'outline',
+          'color': 'neutral',
+          'size': 'sm',
+          'aria-label': 'Modifica',
+          'onClick': (e: MouseEvent) => {
+            e.stopPropagation()
+            emit('edit', row.original)
+          }
+        }),
         h(UButton, {
           'icon': 'i-lucide-eye',
           'variant': 'outline',

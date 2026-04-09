@@ -32,7 +32,9 @@ await useAsyncData(`standings-${leagueId}`, async () => {
 })
 
 const showCreateModal = ref(false)
-const showEditModal = ref(false)
+const showLeagueEditModal = ref(false)
+const showEventEditModal = ref(false)
+const eventToEdit = ref<Event | null>(null)
 const showDeleteConfirm = ref(false)
 const eventToDelete = ref<Event | null>(null)
 
@@ -63,6 +65,25 @@ async function updateLeague({ data }: { id: number; data: { name: string; starts
   })
 
   if (!result.success) return console.error(result.error)
+}
+
+function handleEditEventClick(event: Event) {
+  eventToEdit.value = event
+  showEventEditModal.value = true
+}
+
+async function updateEvent({ id, data }: { id: number; data: { eventName: string; eventDate: string | null; numRound: number } }) {
+  const result = await eventsStore.updateEvent(id, {
+    event_name: data.eventName,
+    event_datetime: data.eventDate ?? undefined,
+    event_round_number: data.numRound,
+  })
+
+  if (!result.success) return console.error(result.error)
+
+  showEventEditModal.value = false
+  eventToEdit.value = null
+  await refresh()
 }
 
 function handleDeleteEventClick(event: Event) {
@@ -117,7 +138,7 @@ async function confirmDeleteEvent() {
               icon="i-lucide-pencil"
               size="sm"
               aria-label="Modifica nome lega"
-              @click="showEditModal = true"
+              @click="showLeagueEditModal = true"
             />
           </div>
           <UButton
@@ -134,6 +155,7 @@ async function confirmDeleteEvent() {
           :loading="loading"
           class="flex-none"
           @view="navigateToEvent"
+          @edit="handleEditEventClick"
           @delete="handleDeleteEventClick"
         />
 
@@ -177,16 +199,24 @@ async function confirmDeleteEvent() {
       </div>
     </div>
 
-    <!-- Create Event Modal -->
-    <CreateEventModal
+    <!-- Event Form Modal (Create/Edit) -->
+    <EventFormModal
       v-model:open="showCreateModal"
+      :event="null"
       :league-id="leagueId"
       @create="createEvent"
     />
 
+    <EventFormModal
+      v-model:open="showEventEditModal"
+      :event="eventToEdit"
+      :league-id="leagueId"
+      @update="updateEvent"
+    />
+
     <!-- Edit League Modal -->
     <LeagueFormModal
-      v-model:open="showEditModal"
+      v-model:open="showLeagueEditModal"
       :league="currentLeague"
       :rulesets="rulesets"
       :rulesets-loading="rulesetsLoading"

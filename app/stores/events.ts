@@ -125,6 +125,38 @@ export const useEventStore = defineStore('events', () => {
       endLoading()
     }
   }
+
+  async function updateEvent(eventId: number, updates: Partial<Event>): Promise<{ success: boolean; data?: Event; error?: string }> {
+    beginLoading()
+    error.value = null
+
+    try {
+      const { data, error: supaError } = await supabase
+        .from('events')
+        .update(updates)
+        .eq('event_id', eventId)
+        .select()
+        .single()
+
+      if (supaError) throw supaError
+      if (!data) return { success: false as const, error: 'No data returned' }
+
+      const index = events.value.findIndex(e => e.event_id === eventId)
+      if (index !== -1) {
+        events.value[index] = data
+      }
+
+      return { success: true as const, data }
+    }
+    catch (err) {
+      error.value = toErrorMessage(err, "Errore nell'aggiornamento evento")
+      console.error('[useEventStore] updateEvent error:', err)
+      return { success: false as const, error: error.value }
+    }
+    finally {
+      endLoading()
+    }
+  }
   async function startEvent(eventId: number) {
     beginLoading()
     error.value = null
@@ -819,6 +851,7 @@ export const useEventStore = defineStore('events', () => {
     // Actions — event lifecycle
     fetchEvents,
     createEvent,
+    updateEvent,
     deleteEvent,
     startEvent,
     nextRound,
