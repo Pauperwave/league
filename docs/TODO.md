@@ -187,3 +187,57 @@ Key decisions worth noting:
 useLocalStorage keyed by round — each round gets its own timer. When nextRound is called, the new round number means a fresh timer with no stale state from the previous round.
 useIntervalFn from VueUse — auto-pauses when the component is unmounted, unlike a raw setInterval.
 Elapsed-based rather than countdown-based — storing the start timestamp instead of decrementing a counter means a page refresh or tab switch can't desync the timer.
+
+## add sound when the alarm turn off
+
+```ts
+// composables/useAlarmSound.ts
+export function useAlarmSound() {
+  const { show, isSupported } = useWebNotification({
+    title: 'Tempo scaduto!',
+    body: 'Il round è terminato.',
+    icon: '/favicon.ico',
+  })
+
+  function play() {
+    // Web Audio beeps (plays when tab is visible)
+    const ctx = new AudioContext()
+    const now = ctx.currentTime
+    const beep = (t: number, freq: number, dur: number) => {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+      osc.frequency.value = freq
+      gain.gain.setValueAtTime(0.4, t)
+      gain.gain.exponentialRampToValueAtTime(0.001, t + dur)
+      osc.start(t)
+      osc.stop(t + dur)
+    }
+    beep(now,       880, 0.3)
+    beep(now + 0.4, 660, 0.3)
+    beep(now + 0.8, 440, 0.6)
+
+    // System notification (plays when tab is in background)
+    if (isSupported.value) show()
+  }
+
+  return { play }
+}
+```
+
+Then in RoundTimer.vue:
+
+```ts
+const { play: playAlarm } = useAlarmSound()
+
+const { pause, resume } = useIntervalFn(() => {
+  if (!startTime.value) return
+  elapsed.value = Math.floor((Date.now() - startTime.value) / 1000)
+  if (isExpired.value) {
+    pause()
+    playAlarm()       // 👈
+    emit('expired')
+  }
+}, 1000, { immediate: false })
+```

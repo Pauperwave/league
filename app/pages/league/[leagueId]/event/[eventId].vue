@@ -116,7 +116,13 @@ const breadcrumbItems = computed(() => [
           </div>
 
           <!-- Playing Phase -->
-          <div v-else-if="isPlaying && !isEventEnded" class="flex gap-2">
+          <div v-else-if="isPlaying && !isEventEnded" class="flex flex-col gap-3">
+            <RoundTimer
+              v-if="currentEvent?.event_round_duration"
+              :duration-minutes="currentEvent.event_round_duration"
+              :round="currentRound"
+              @expired="useToast().add({ title: 'Tempo scaduto!', color: 'warning', icon: 'i-lucide-alarm-clock' })"
+            />
             <UButton
               color="primary"
               variant="soft"

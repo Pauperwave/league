@@ -31,9 +31,6 @@ interface Props {
   leagueId: number
 }
 
-// Temporary until Event type is updated
-type EventWithDuration = Event & { event_round_duration?: number }
-
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
@@ -65,7 +62,7 @@ const isValid = computed(() => !!form.eventName.trim())
 watch(open, (isOpen) => {
   if (!isOpen) return
 
-  const e = props.event as EventWithDuration | null
+  const e = props.event
   Object.assign(form, e
     ? {
         eventName: e.event_name,

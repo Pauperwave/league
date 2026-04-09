@@ -22,6 +22,7 @@ export type Database = {
           event_name: string
           event_playing: boolean | null
           event_registration_open: boolean | null
+          event_round_duration: number | null
           event_round_number: number | null
           league_id: number | null
         }
@@ -32,6 +33,7 @@ export type Database = {
           event_name: string
           event_playing?: boolean | null
           event_registration_open?: boolean | null
+          event_round_duration?: number | null
           event_round_number?: number | null
           league_id?: number | null
         }
@@ -42,6 +44,7 @@ export type Database = {
           event_name?: string
           event_playing?: boolean | null
           event_registration_open?: boolean | null
+          event_round_duration?: number | null
           event_round_number?: number | null
           league_id?: number | null
         }
