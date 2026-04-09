@@ -46,8 +46,13 @@ export default defineNuxtConfig({
       sourcemap: false
     },
     css: {
-      // Suppress CSS sourcemap warnings  
+      // Suppress CSS sourcemap warnings
       devSourcemap: false
+    },
+    optimizeDeps: {
+      include: [
+        '@internationalized/date',
+      ]
     }
   },
 
