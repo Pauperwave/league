@@ -180,7 +180,7 @@ async function updateLeague({ data }: UpdateLeagueData) {
           <h2 class="text-lg font-semibold mb-2 shrink-0">
             Punteggi per Evento
           </h2>
-          <ClassificaEventi :league-id="leagueId" class="flex-1 min-h-0 overflow-auto" />
+          <EventRanking :league-id="leagueId" class="flex-1 min-h-0 overflow-auto" />
         </div>
       </div>
 
@@ -195,7 +195,7 @@ async function updateLeague({ data }: UpdateLeagueData) {
           </div>
 
           <ClientOnly>
-            <ClassificaLega :standings="standings" class="flex-1 overflow-auto" />
+            <LeagueRanking :standings="standings" class="flex-1 overflow-auto" />
             <template #fallback>
               <div class="flex items-center justify-center py-8">
                 <UIcon name="i-lucide-loader-2" class="animate-spin text-2xl text-primary" />
