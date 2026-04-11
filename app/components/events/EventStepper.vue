@@ -1,24 +1,34 @@
-<!-- app\components\Events\EventStepper.vue -->
+<!-- app/components/Events/EventStepper.vue -->
 <script setup lang="ts">
 import type { StepperItem } from '@nuxt/ui'
 
-interface Props {
+const props = defineProps<{
+  /** Current round number (1-based) */
   currentRound: number
+  /** Total number of rounds in the event */
   totalRounds: number
+  /** Whether the event has ended */
   isEventEnded: boolean
-}
-
-const props = defineProps<Props>()
+}>()
 
 const items = computed<StepperItem[]>(() => {
   const steps: StepperItem[] = [
-    { title: 'Registrazione', description: 'Iscrizioni aperte', icon: 'i-lucide-clipboard-list', value: 'registration' },
+    {
+      title: 'Registrazione',
+      description: 'Iscrizioni aperte',
+      icon: 'i-lucide-clipboard-list',
+      value: 'registration',
+    },
   ]
 
   for (let i = 1; i <= props.totalRounds; i++) {
     steps.push({
       title: `Round ${i}`,
-      description: i === props.currentRound ? 'In corso' : i < props.currentRound ? 'Completato' : 'In attesa',
+      description: i < props.currentRound
+        ? 'Completato'
+        : i === props.currentRound
+          ? 'In corso'
+          : 'In attesa',
       icon: 'i-lucide-swords',
       value: `round-${i}`,
     })
