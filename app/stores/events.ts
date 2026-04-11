@@ -345,7 +345,10 @@ export const useEventStore = defineStore('events', () => {
         .eq('league_id', leagueId)
 
       if (eventsError) throw eventsError
-      if (!eventsData?.length) { standings.value = []; return }
+      if (!eventsData?.length) {
+        standings.value = []
+        return standings.value
+      }
 
       const eventIds = eventsData.map(e => e.event_id)
 
@@ -357,7 +360,7 @@ export const useEventStore = defineStore('events', () => {
           victories,
           brew_received,
           play_received,
-          players:player_id (player_id, player_name, player_surname)
+          players:player_id (player_id, player_name, player_surname, formats_played, is_active)
         `)
         .in('event_id', eventIds)
 
@@ -388,7 +391,9 @@ export const useEventStore = defineStore('events', () => {
                   player_id:      s.players.player_id,
                   player_name:    s.players.player_name,
                   player_surname: s.players.player_surname,
-                }) as any
+                  formats_played: s.players.formats_played ?? null,
+                  is_active:      s.players.is_active ?? true,
+                })
               : undefined,
           })
         }
@@ -397,9 +402,12 @@ export const useEventStore = defineStore('events', () => {
       standings.value = Array.from(playerMap.values()).sort(
         (a, b) => (b.standing_player_score ?? 0) - (a.standing_player_score ?? 0)
       )
-    }
-    catch (err) {
+
+      return standings.value
+    } catch (err) {
       console.error('[useEventStore] fetchLeagueStandings error:', err)
+      // never return undefined
+      return null
     }
   }
 
