@@ -77,10 +77,10 @@ const statsLabel = computed(() => {
   <div class="bg-muted/30 rounded-lg p-4 space-y-4">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-2">
-        <h3 class="font-semibold flex items-center gap-2">
+        <h2 class="font-semibold flex items-center gap-2">
           <UIcon name="i-lucide-users" class="size-4 text-muted" />
           Lista d'Attesa
-        </h3>
+        </h2>
         <UBadge v-if="statsLabel" color="warning" variant="subtle">
           {{ statsLabel }}
         </UBadge>
