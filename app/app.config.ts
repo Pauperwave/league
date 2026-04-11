@@ -7,7 +7,7 @@
 export default defineAppConfig({
   ui: {
     // Mappatura dei colori semantic del tema:
-    // - primary: colore principale (viola) - bottoni principali, link
+    // - primary: colore principale (indaco) - bottoni principali, link
     // - secondary: colore secondario (rosa) - accenti secondari
     // - neutral: colore neutro (zinc) - testo, sfondi neutri
     // - success: verde lime - stati positivi/completati
@@ -15,7 +15,7 @@ export default defineAppConfig({
     // - warning: giallo - avvisi
     // - error: rosa/rosso - errori
     colors: {
-      primary: 'violet',
+      primary: 'indigo',
       secondary: 'pink',
       neutral: 'zinc',
       success: 'lime',
