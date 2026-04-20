@@ -105,6 +105,44 @@ export const usePlayerStore = defineStore('players', () => {
     }
   }
 
+  async function updatePlayer(playerId: number, player: NewPlayer) {
+    loading.value = true
+    error.value = null
+
+    try {
+      const { data, error: supaError } = await supabase
+        .from('players')
+        .update({
+          player_name: player.player_name,
+          player_surname: player.player_surname
+        })
+        .eq('player_id', playerId)
+        .select()
+        .single()
+
+      if (supaError) throw supaError
+
+      if (data) {
+        const sanitized = {
+          ...data,
+          player_name: data.player_name?.replace(/_/g, ' ') ?? '',
+          player_surname: data.player_surname?.replace(/_/g, ' ') ?? ''
+        }
+        const index = players.value.findIndex(p => p.player_id === playerId)
+        if (index !== -1) {
+          players.value[index] = sanitized
+        }
+        return { success: true, data: sanitized }
+      }
+    } catch (err) {
+      error.value = err instanceof Error ? err.message : 'Errore nella modifica giocatore'
+      console.error('[usePlayerStore] updatePlayer error:', err)
+      return { success: false, error: error.value }
+    } finally {
+      loading.value = false
+    }
+  }
+
   async function fetchWaitingPlayers(eventId: number) {
     try {
       const { data, error: supaError } = await supabase
@@ -114,7 +152,7 @@ export const usePlayerStore = defineStore('players', () => {
         .order('inserted_at', { ascending: true })
 
       if (supaError) throw supaError
-      
+
       waitingPlayers.value = data?.map(w => w.player_id) || []
       waitroomEntries.value = new Map(
         data?.map(w => [w.player_id, w.inserted_at || '']) || []
@@ -179,6 +217,7 @@ export const usePlayerStore = defineStore('players', () => {
     searchPlayers,
     fetchPlayers,
     createPlayer,
+    updatePlayer,
     fetchWaitingPlayers,
     addToWaitingList,
     removeFromWaitingList,
