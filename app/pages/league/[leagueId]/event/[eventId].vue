@@ -1,5 +1,13 @@
 <!-- app\pages\league\[leagueId]\event\[eventId].vue -->
 <script setup lang="ts">
+import type { Player, NewPlayer } from '#shared/utils/types'
+
+type PlayerStatusUpdate = {
+  playerId: number
+  paid: boolean
+  companion: boolean
+}
+
 const {
   leagueId,
   eventId,
@@ -37,6 +45,8 @@ await Promise.all([
 const showEventEditModal = ref(false)
 const showNextRoundModal = ref(false)
 const showPlayerSearchModal = ref(false)
+const showCreatePlayerModal = ref(false)
+const playerToEdit = ref<Player | null>(null)
 
 async function confirmNextRound() {
   await nextRound()
@@ -46,6 +56,70 @@ async function confirmNextRound() {
 async function handleUpdateEvent(payload: Parameters<typeof updateEvent>[0]) {
   const ok = await updateEvent(payload)
   if (ok) showEventEditModal.value = false
+}
+
+const playerStore = usePlayerStore()
+const toast = useToast()
+
+function handleCreateNewPlayer() {
+  playerToEdit.value = null
+  showCreatePlayerModal.value = true
+}
+
+function handleEditPlayer(playerId: number) {
+  const player = players.value.find(p => p.player_id === playerId)
+  if (player) {
+    playerToEdit.value = player
+    showCreatePlayerModal.value = true
+  }
+}
+
+async function handlePlayerCreate(player: NewPlayer) {
+  const result = await playerStore.createPlayer(player)
+  if (result?.success && result.data) {
+    // Aggiungi automaticamente alla waiting list
+    await addToWaitingList([result.data.player_id])
+    showCreatePlayerModal.value = false
+    toast.add({
+      title: 'Giocatore creato',
+      description: `${result.data.player_name} ${result.data.player_surname} aggiunto alla lista`,
+      color: 'success'
+    })
+  }
+}
+
+async function handlePlayerUpdate(payload: { id: number, data: NewPlayer }) {
+  const result = await playerStore.updatePlayer(payload.id, payload.data)
+  if (result?.success) {
+    showCreatePlayerModal.value = false
+    toast.add({
+      title: 'Giocatore aggiornato',
+      color: 'success'
+    })
+  }
+}
+
+async function handlePlayerSelectFromModal(playerId: number) {
+  // Seleziona giocatore esistente dalla ricerca simili
+  await addToWaitingList([playerId])
+  showCreatePlayerModal.value = false
+  toast.add({
+    title: 'Giocatore aggiunto',
+    description: 'Giocatore esistente aggiunto alla lista d\'attesa',
+    color: 'success'
+  })
+}
+
+function handlePlayerStatusUpdate(payload: PlayerStatusUpdate) {
+  // Qui potresti salvare lo stato nel database se necessario
+  console.log('Player status updated:', payload)
+  // Per ora solo log, ma in futuro potresti voler persistere questi dati
+}
+
+async function handleBatchRemove(playerIds: number[]) {
+  for (const playerId of playerIds) {
+    await removeFromWaitingList(playerId)
+  }
 }
 
 const formattedDate = computed(() => {
@@ -111,7 +185,10 @@ const breadcrumbItems = computed(() => [
               :player-names="playerNames"
               :waitroom-entries="waitroomEntries"
               :table-estimate="tableEstimate"
+              @update="handlePlayerStatusUpdate"
               @remove="removeFromWaitingList"
+              @batch-remove="handleBatchRemove"
+              @edit="handleEditPlayer"
               @add-player="showPlayerSearchModal = true"
             />
 
@@ -120,6 +197,16 @@ const breadcrumbItems = computed(() => [
               :players="players"
               :waiting-players="waitingPlayers"
               @select="addToWaitingList"
+              @create-new="handleCreateNewPlayer"
+            />
+
+            <CreatePlayerModal
+              v-model:open="showCreatePlayerModal"
+              :player="playerToEdit"
+              :existing-players="players"
+              @create="handlePlayerCreate"
+              @update="handlePlayerUpdate"
+              @select="handlePlayerSelectFromModal"
             />
           </div>
 
@@ -129,7 +216,7 @@ const breadcrumbItems = computed(() => [
               v-if="currentEvent?.event_round_duration"
               :duration-minutes="currentEvent.event_round_duration"
               :round="currentRound"
-              @expired="useToast().add({ title: 'Tempo scaduto!', color: 'warning', icon: 'i-lucide-alarm-clock' })"
+              @expired="toast.add({ title: 'Tempo scaduto!', color: 'warning', icon: 'i-lucide-alarm-clock' })"
             />
             <UButton
               color="primary"
