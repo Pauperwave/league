@@ -6,6 +6,11 @@
 */
 export default defineAppConfig({
   ui: {
+    button: {
+      defaultVariants: {
+        variant: 'outline',
+      }
+    },
     // Mappatura dei colori semantic del tema:
     // - primary: colore principale (indaco) - bottoni principali, link
     // - secondary: colore secondario (rosa) - accenti secondari
