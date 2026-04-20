@@ -11,6 +11,7 @@ const props = defineProps<Props>()
 
 const emit = defineEmits<{
   select: [playerIds: number[]]
+  createNew: []
 }>()
 
 const open = defineModel<boolean>('open', { default: false })
@@ -40,6 +41,11 @@ watch(open, (isOpen) => {
 function handleConfirm() {
   emit('select', selectedPlayerIds.value.map(Number))
   selectedPlayerIds.value = []
+  open.value = false
+}
+
+function handleCreateNew() {
+  emit('createNew')
   open.value = false
 }
 </script>
@@ -81,20 +87,29 @@ function handleConfirm() {
       <div class="flex justify-between w-full">
         <UButton
           color="neutral"
-          variant="outline"
           icon="i-lucide-x"
           @click="open = false"
         >
           Chiudi
         </UButton>
-        <UButton
-          color="primary"
-          icon="i-lucide-user-plus"
-          :disabled="!hasSelection"
-          @click="handleConfirm"
-        >
-          Aggiungi ({{ selectedPlayerIds.length }})
-        </UButton>
+        <div class="flex items-center gap-2">
+          <UButton
+            color="neutral"
+            variant="ghost"
+            icon="i-lucide-user-plus"
+            @click="handleCreateNew"
+          >
+            Crea nuovo
+          </UButton>
+          <UButton
+            color="primary"
+            icon="i-lucide-user-check"
+            :disabled="!hasSelection"
+            @click="handleConfirm"
+          >
+            Aggiungi ({{ selectedPlayerIds.length }})
+          </UButton>
+        </div>
       </div>
     </template>
   </UModal>
