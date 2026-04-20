@@ -158,10 +158,15 @@ function handleSubmit() {
     </template>
 
     <template #footer>
-      <UButton type="submit" form="league-form" color="primary" :disabled="!isValid">
+      <CancelButton @click="open = false" />
+      <UButton
+        type="submit"
+        form="league-form"
+        color="primary"
+        :disabled="!isValid"
+      >
         {{ submitLabel }}
       </UButton>
-      <CancelButton @click="open = false" />
     </template>
   </UModal>
 </template>

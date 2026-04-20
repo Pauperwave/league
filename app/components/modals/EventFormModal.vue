@@ -158,6 +158,7 @@ function handleSubmit() {
     </template>
 
     <template #footer>
+      <CancelButton @click="open = false" />
       <UButton
         type="submit"
         form="event-form"
@@ -166,7 +167,6 @@ function handleSubmit() {
       >
         {{ submitLabel }}
       </UButton>
-      <CancelButton @click="open = false" />
     </template>
   </UModal>
 </template>
