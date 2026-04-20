@@ -3,6 +3,7 @@
 import { h, resolveComponent } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import type { Event } from '#shared/utils/types'
+import ActionButtons from '~/components/ui/ActionButtons.vue'
 
 defineProps<{
   events: Event[]
@@ -125,41 +126,16 @@ const columns: TableColumn<Event>[] = [
     enableSorting: false,
     meta: { class: { td: 'text-right' } },
     cell: ({ row }) =>
-      h('div', { class: 'flex gap-2 justify-end' }, [
-        h(UButton, {
-          'icon': 'i-lucide-pencil',
-          'variant': 'outline',
-          'color': 'neutral',
-          'size': 'sm',
-          'aria-label': 'Modifica',
-          'onClick': (e: MouseEvent) => {
-            e.stopPropagation()
-            emit('edit', row.original)
-          }
-        }),
-        h(UButton, {
-          'icon': 'i-lucide-eye',
-          'variant': 'outline',
-          'color': 'neutral',
-          'size': 'sm',
-          'aria-label': 'Visualizza',
-          'onClick': (e: MouseEvent) => {
-            e.stopPropagation()
-            emit('view', row.original)
-          }
-        }),
-        h(UButton, {
-          'icon': 'i-lucide-trash-2',
-          'variant': 'outline',
-          'color': 'error',
-          'size': 'sm',
-          'aria-label': 'Elimina',
-          'onClick': (e: MouseEvent) => {
-            e.stopPropagation()
-            emit('delete', row.original)
-          }
-        })
-      ])
+      h(ActionButtons, {
+        showView: true,
+        showEdit: true,
+        showDelete: true,
+        size: 'sm',
+        variant: 'outline',
+        onEdit: () => emit('edit', row.original),
+        onView: () => emit('view', row.original),
+        onDelete: () => emit('delete', row.original),
+      })
   }
 ]
 </script>

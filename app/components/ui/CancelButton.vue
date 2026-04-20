@@ -22,7 +22,6 @@ const emit = defineEmits<{
 <template>
   <UButton
     color="neutral"
-    variant="outline"
     :trailing-icon="icon"
     :loading="loading"
     :disabled="disabled"
