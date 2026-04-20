@@ -64,7 +64,7 @@ const open = defineModel<boolean>('open', { default: false })
     </template>
 
     <template #footer>
-      <UButton color="neutral" variant="outline" @click="open = false">
+      <UButton color="neutral" @click="open = false">
         Chiudi
       </UButton>
     </template>
