@@ -1,3 +1,25 @@
+# Core requirements
+
+- The end goal is stability, speed and great user experience
+
+## Code quality requirements
+
+- Create and update a `PROGRESS.md` file to track the overall progress of the project and document the architecture decisions made
+- Follow standard TypeScript best practices and conventions
+- Accessibility should always be a first-class consideration and should be part of the initial planning and design
+- Use the Composition API when creating Vue components
+- Add comments only to explain logic or non-obvious implementations
+- Keep functions focused and manageable (generally under 50 lines), and extract them into separate files in the `app/composables` or `app/utils` directories when needed
+- This project uses Nuxt v4 directory structure, meaning that the `app/` is the source folder, and components, pages, etc. live inside it
+- Use error handling patterns consistently throughout the codebase
+- Ensure you write stricly type-safe code, for example by ensuring you always check when accessing an array value by index
+- Write unit tests for core functionality using `vitest`
+- Write end-to-end tests using Playwright and `@nuxt/test-utils`
+- Use `@nuxt/ui` for UI components
+- Use `tailwindcss` v4 for styling
+- Use `eslint` for code quality and consistency
+- Use `valibot` for validation instead of `zod`
+
 ## Database Modifications
 
 - **ALWAYS ask permission before modifying the database**, even if you have MCP access. Never execute DDL operations (CREATE, ALTER, DROP, etc.) without explicit user approval.
