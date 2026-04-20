@@ -68,7 +68,7 @@ const ACTION_ROWS = [
     </div>
 
     <div class="flex items-center justify-between p-6 pt-4">
-      <UButton color="neutral" variant="outline" icon="i-lucide-arrow-left" to="/">
+      <UButton color="neutral" icon="i-lucide-arrow-left" to="/">
         Home
       </UButton>
       <h1 class="text-2xl font-bold">

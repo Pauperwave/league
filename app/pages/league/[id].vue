@@ -137,7 +137,6 @@ async function updateLeague({ data }: UpdateLeagueData) {
         <div class="flex items-center justify-between shrink-0 mb-3">
           <UButton
             color="neutral"
-            variant="outline"
             icon="i-lucide-arrow-left"
             aria-label="Torna indietro"
             @click="router.push('/leagues')"

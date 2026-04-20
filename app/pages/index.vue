@@ -21,7 +21,6 @@
         <UButton
           to="/rulesets"
           color="neutral"
-          variant="outline"
           size="md"
           icon="i-lucide-scale"
         >
