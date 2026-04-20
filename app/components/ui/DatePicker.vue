@@ -55,7 +55,7 @@ const selectedDate = computed({
         <div class="p-2 space-y-2">
           <UCalendar v-model="selectedDate" prevent-deselect class="p-2" @update:model-value="open = false" />
           <div class="flex justify-center">
-            <UButton color="neutral" variant="outline" size="sm" @click="() => { selectedDate = getToday(); open = false }">
+            <UButton color="neutral" size="sm" @click="() => { selectedDate = getToday(); open = false }">
               Oggi
             </UButton>
           </div>
