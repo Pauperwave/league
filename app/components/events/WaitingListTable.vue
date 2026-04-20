@@ -1,48 +1,7 @@
-<!-- app\components\Events\WaitingListTable.vue -->
+<!-- app/components/Events/WaitingListTable.vue -->
 <script setup lang="ts">
-import { h, resolveComponent } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
-
-const UCheckbox = resolveComponent('UCheckbox')
-const UButton = resolveComponent('UButton')
-
-// — Local types replacing @tanstack/vue-table imports —
-
-interface TableRow<T> {
-  original: T
-  getIsSelected: () => boolean
-  toggleSelected: (value: boolean) => void
-}
-
-interface TableInstance {
-  getIsSomePageRowsSelected: () => boolean
-  getIsAllPageRowsSelected: () => boolean
-  toggleAllPageRowsSelected: (value: boolean) => void
-}
-
-interface TableColumn_ {
-  id: string
-  getCanHide: () => boolean
-  getIsVisible: () => boolean
-  toggleVisibility: (visible: boolean) => void
-}
-
-interface UTableApi {
-  getColumn: (id: string) => Pick<TableColumn_, 'toggleVisibility'> | undefined
-  getAllColumns: () => TableColumn_[]
-}
-
-interface UTableExposed {
-  tableApi: UTableApi | undefined
-}
-
-interface WaitingPlayerTableMeta {
-  class: {
-    tr: (row: TableRow<WaitingPlayer>) => string
-  }
-}
-
-// — Component types —
+import ActionButtons from '~/components/ui/ActionButtons.vue'
 
 interface WaitingPlayer {
   index: number
@@ -53,38 +12,96 @@ interface WaitingPlayer {
   companion: boolean
 }
 
-defineProps<{
+const props = defineProps<{
   data: WaitingPlayer[]
 }>()
 
-const searchQuery = defineModel<string>('searchQuery', { default: '' })
-
 const emit = defineEmits<{
-  togglePaid: [playerId: number]
-  toggleCompanion: [playerId: number]
+  update: [{ playerId: number; paid: boolean; companion: boolean }]
+  edit: [playerId: number]
   remove: [playerId: number]
+  batchRemove: [playerIds: number[]]
+  batchMarkPaid: [playerIds: number[]]
+  batchMarkCompanion: [playerIds: number[]]
 }>()
 
+const searchQuery = ref('')
 const rowSelection = ref<Record<string, boolean>>({})
+
+const paidPlayers = ref(new Set(props.data.filter(p => p.paid).map(p => p.playerId)))
+const companionPlayers = ref(new Set(props.data.filter(p => p.companion).map(p => p.playerId)))
+
+function toggleSet<T>(set: Set<T>, item: T): Set<T> {
+  const next = new Set(set)
+  if (next.has(item)) {
+    next.delete(item)
+  } else {
+    next.add(item)
+  }
+  return next
+}
+
+function emitUpdate(playerId: number) {
+  emit('update', {
+    playerId,
+    paid: paidPlayers.value.has(playerId),
+    companion: companionPlayers.value.has(playerId),
+  })
+}
+
+const selectedPlayerIds = computed(() =>
+  Object.entries(rowSelection.value)
+    .filter(([, selected]) => selected)
+    .map(([id]) => Number(id))
+)
+
+const hasSelection = computed(() => selectedPlayerIds.value.length > 0)
+
+function handleBatchMarkPaid() {
+  if (!hasSelection.value) return
+  paidPlayers.value = new Set([...paidPlayers.value, ...selectedPlayerIds.value])
+  selectedPlayerIds.value.forEach(emitUpdate)
+  emit('batchMarkPaid', selectedPlayerIds.value)
+  rowSelection.value = {}
+}
+
+function handleBatchMarkCompanion() {
+  if (!hasSelection.value) return
+  companionPlayers.value = new Set([...companionPlayers.value, ...selectedPlayerIds.value])
+  selectedPlayerIds.value.forEach(emitUpdate)
+  emit('batchMarkCompanion', selectedPlayerIds.value)
+  rowSelection.value = {}
+}
+
+function handleBatchRemove() {
+  if (!hasSelection.value) return
+  emit('batchRemove', selectedPlayerIds.value)
+  rowSelection.value = {}
+}
 
 const columns: TableColumn<WaitingPlayer>[] = [
   {
     id: 'select',
-    header: ({ table }: { table: TableInstance }) =>
+    enableHiding: false,
+    header: ({ table }) =>
       h(UCheckbox, {
-        modelValue: table.getIsSomePageRowsSelected() ? 'indeterminate' : table.getIsAllPageRowsSelected(),
-        'onUpdate:modelValue': (value: boolean | 'indeterminate') => table.toggleAllPageRowsSelected(!!value),
+        modelValue: table.getIsAllPageRowsSelected()
+          ? true
+          : table.getIsSomePageRowsSelected()
+            ? 'indeterminate'
+            : false,
+        'onUpdate:modelValue': (value: boolean) => table.toggleAllPageRowsSelected(!!value),
         'aria-label': 'Select all',
       }),
-    cell: ({ row }: { row: TableRow<WaitingPlayer> }) =>
+    cell: ({ row }) =>
       h(UCheckbox, {
         modelValue: row.getIsSelected(),
-        'onUpdate:modelValue': (value: boolean | 'indeterminate') => row.toggleSelected(!!value),
-        'aria-label': 'Select row',
+        'onUpdate:modelValue': (value: boolean) => row.toggleSelected(!!value),
+        onClick: (e: Event) => e.stopPropagation(),
+        'aria-label': `Seleziona ${row.original.name}`,
       }),
   },
   {
-    id: 'index',
     accessorKey: 'index',
     header: '#',
     meta: { class: { th: 'w-10 text-right', td: 'w-10 text-right' } },
@@ -97,13 +114,11 @@ const columns: TableColumn<WaitingPlayer>[] = [
     meta: { class: { th: 'w-16 text-center', td: 'w-16 text-center font-mono' } },
   },
   {
-    id: 'name',
     accessorKey: 'name',
     header: 'Giocatore',
     meta: { class: { td: 'font-medium' } },
   },
   {
-    id: 'time',
     accessorKey: 'time',
     header: 'Inserito alle',
     meta: { class: { th: 'text-center', td: 'text-center' } },
@@ -113,12 +128,16 @@ const columns: TableColumn<WaitingPlayer>[] = [
     header: 'Companion',
     enableHiding: false,
     meta: { class: { th: 'text-center w-20', td: 'text-center' } },
-    cell: ({ row }: { row: TableRow<WaitingPlayer> }) =>
+    cell: ({ row }) =>
       h(UCheckbox, {
-        modelValue: row.original.companion,
+        modelValue: companionPlayers.value.has(row.original.playerId),
         color: 'warning',
         size: 'sm',
-        'onUpdate:modelValue': () => emit('toggleCompanion', row.original.playerId),
+        'aria-label': `Companion per ${row.original.name}`,
+        'onUpdate:modelValue': () => {
+          companionPlayers.value = toggleSet(companionPlayers.value, row.original.playerId)
+          emitUpdate(row.original.playerId)
+        },
       }),
   },
   {
@@ -126,12 +145,16 @@ const columns: TableColumn<WaitingPlayer>[] = [
     header: 'Pagato',
     enableHiding: false,
     meta: { class: { th: 'text-center w-20', td: 'text-center' } },
-    cell: ({ row }: { row: TableRow<WaitingPlayer> }) =>
+    cell: ({ row }) =>
       h(UCheckbox, {
-        modelValue: row.original.paid,
+        modelValue: paidPlayers.value.has(row.original.playerId),
         color: 'success',
         size: 'sm',
-        'onUpdate:modelValue': () => emit('togglePaid', row.original.playerId),
+        'aria-label': `Pagato per ${row.original.name}`,
+        'onUpdate:modelValue': () => {
+          paidPlayers.value = toggleSet(paidPlayers.value, row.original.playerId)
+          emitUpdate(row.original.playerId)
+        },
       }),
   },
   {
@@ -139,72 +162,143 @@ const columns: TableColumn<WaitingPlayer>[] = [
     header: 'Azioni',
     enableHiding: false,
     meta: { class: { th: 'text-center', td: 'text-center' } },
-    cell: ({ row }: { row: TableRow<WaitingPlayer> }) =>
-      h(UButton, {
-        color: 'error',
-        variant: 'outline',
-        size: 'sm',
-        icon: 'i-lucide-trash-2',
-        'aria-label': 'Rimuovi',
-        onClick: () => emit('remove', row.original.playerId),
+    cell: ({ row }) =>
+      h(ActionButtons, {
+        showView: false,
+        showEdit: true,
+        showDelete: true,
+        onEdit: () => emit('edit', row.original.playerId),
+        onDelete: () => emit('remove', row.original.playerId),
       }),
   },
 ]
 
-const meta: WaitingPlayerTableMeta = {
-  class: {
-    tr: (row: TableRow<WaitingPlayer>) => {
-      const { paid, companion } = row.original
-      if (paid && companion) return 'bg-success/10'
-      if (paid || companion) return 'bg-warning/10'
-      return ''
-    },
-  },
-}
-
-const table = useTemplateRef<UTableExposed>('table')
-
-onMounted(() => {
-  table.value?.tableApi?.getColumn('playerId')?.toggleVisibility(false)
+const filteredData = computed(() => {
+  if (!searchQuery.value) return props.data
+  const query = searchQuery.value.toLowerCase()
+  return props.data.filter(row =>
+    row.name.toLowerCase().includes(query) || row.playerId.toString().includes(query)
+  )
 })
 
-const columnVisibilityItems = computed(() =>
-  table.value?.tableApi
-    ?.getAllColumns()
-    .filter(col => col.getCanHide())
-    .map(col => ({
-      label: upperFirst(col.id),
+const table = useTemplateRef('table')
+
+const columnVisibility = ref({
+  playerId: false
+})
+
+const columnVisibilityItems = computed(() => {
+  const api = table?.value?.tableApi
+  if (!api) return []
+
+  return api.getAllColumns()
+    .filter((column: any) => column.getCanHide())
+    .map((column: any) => ({
+      label: column.id,
       type: 'checkbox' as const,
-      checked: col.getIsVisible(),
-      onUpdateChecked: (checked: boolean) => col.toggleVisibility(checked),
-      onSelect: (e: Event) => e.preventDefault(),
-    })) ?? []
-)
+      checked: column.getIsVisible(),
+      onUpdateChecked(checked: boolean) {
+        api.getColumn(column.id)?.toggleVisibility(!!checked)
+      },
+      onSelect(e: Event) {
+        e.preventDefault()
+      }
+    }))
+})
+
+const meta = computed(() => {
+  const paid = paidPlayers.value
+  const companion = companionPlayers.value
+
+  return {
+    class: {
+      tr: (row: { original: WaitingPlayer }) => {
+        const { playerId } = row.original
+        const isPaid = paid.has(playerId)
+        const isCompanion = companion.has(playerId)
+
+        const classes: string[] = []
+
+        if (isPaid && isCompanion) {
+          classes.push('bg-success/10', 'hover:bg-success/20')
+        } else if (isPaid || isCompanion) {
+          classes.push('bg-warning/10', 'hover:bg-warning/20')
+        } else {
+          classes.push('hover:bg-muted/50')
+        }
+
+        return classes.join(' ')
+      },
+    },
+  }
+})
 </script>
 
 <template>
   <div class="flex flex-col gap-2">
     <div class="flex items-center justify-between gap-2">
-      <UInput
-        v-model="searchQuery"
-        placeholder="Cerca giocatori..."
-        class="max-w-sm"
-      />
-      <UDropdownMenu :items="columnVisibilityItems" :content="{ align: 'end' }">
+      <UInput v-model="searchQuery" placeholder="Cerca giocatori..." class="max-w-sm" />
+      <UDropdownMenu
+        :items="columnVisibilityItems"
+        :content="{ align: 'end' }"
+      >
         <UButton
-          label="Colonne"
+          label="Columns"
           color="neutral"
-          variant="outline"
           trailing-icon="i-lucide-chevron-down"
-          aria-label="Seleziona colonne"
         />
       </UDropdownMenu>
     </div>
 
+    <div class="min-h-12 flex items-center">
+      <div class="flex items-center gap-2 p-2 bg-muted/50 rounded transition-all duration-200">
+        <span class="text-sm text-muted min-w-32">
+          <template v-if="hasSelection">
+            {{ selectedPlayerIds.length }} giocatori selezionati
+          </template>
+          <span v-else class="text-muted/50">
+            Seleziona giocatori per azioni batch
+          </span>
+        </span>
+        <div class="flex items-center gap-1 ml-auto">
+          <UButton
+            size="xs"
+            color="success"
+            variant="soft"
+            icon="i-lucide-dollar-sign"
+            :disabled="!hasSelection"
+            @click="handleBatchMarkPaid"
+          >
+            Marca pagati
+          </UButton>
+          <UButton
+            size="xs"
+            color="warning"
+            variant="soft"
+            icon="i-lucide-users"
+            :disabled="!hasSelection"
+            @click="handleBatchMarkCompanion"
+          >
+            Marca companion
+          </UButton>
+          <UButton
+            size="xs"
+            color="error"
+            variant="soft"
+            icon="i-lucide-trash-2"
+            :disabled="!hasSelection"
+            @click="handleBatchRemove"
+          >
+            Rimuovi selezionati
+          </UButton>
+        </div>
+      </div>
+    </div>
+
     <UTable
-      ref="table"
       v-model:row-selection="rowSelection"
-      :data="data"
+      v-model:column-visibility="columnVisibility"
+      :data="filteredData"
       :columns="columns"
       :meta="meta"
       sticky
@@ -214,17 +308,23 @@ const columnVisibilityItems = computed(() =>
         th: 'border-b border-default py-2',
         td: 'border-b border-default py-1',
       }"
+      :get-row-id="(row) => String(row.playerId)"
     >
       <template #empty>
-        <UEmpty title="Nessun giocatore in lista d'attesa" icon="i-lucide-users" />
-      </template>
-      <template #no-filtered-results>
-        <div class="flex flex-col items-center gap-1 py-4 text-muted">
+        <div
+          v-if="searchQuery"
+          class="flex flex-col items-center gap-1 py-4 text-muted"
+        >
           <UIcon name="i-lucide-search-x" class="text-4xl mb-1" />
           <p>Nessun risultato per "{{ searchQuery }}"</p>
-          <p class="text-sm">Il giocatore potrebbe già essere nella lista d'attesa</p>
         </div>
+        <UEmpty
+          v-else
+          title="Nessun giocatore in lista d'attesa"
+          icon="i-lucide-users"
+        />
       </template>
     </UTable>
   </div>
 </template>
+

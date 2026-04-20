@@ -8,100 +8,70 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
+  update: [{ playerId: number, paid: boolean, companion: boolean }]
+  edit: [playerId: number]
   remove: [playerId: number]
+  batchRemove: [playerIds: number[]]
+  batchMarkPaid: [playerIds: number[]]
+  batchMarkCompanion: [playerIds: number[]]
   addPlayer: []
 }>()
 
-// — Debounced player count for the stats badge —
-const debouncedCount = ref(props.waitingPlayers.length)
-watchDebounced(
-  () => props.waitingPlayers.length,
-  count => { debouncedCount.value = count },
-  { debounce: 500 }
-)
-
-// — Toggle state using Set for O(1) lookup —
-const paidPlayers = ref(new Set<number>())
-const companionPlayers = ref(new Set<number>())
-
-function toggle(set: Set<number>, id: number): Set<number> {
-  const next = new Set(set)
-  if (next.has(id)) {
-    next.delete(id)
-  } else {
-    next.add(id)
-  }
-  return next
-}
-
-function togglePaid(id: number) { paidPlayers.value = toggle(paidPlayers.value, id) }
-function toggleCompanion(id: number) { companionPlayers.value = toggle(companionPlayers.value, id) }
 
 // — Table data —
-const searchQuery = ref('')
-
 function formatTime(iso: string | undefined): string {
   if (!iso) return ''
   return new Date(iso).toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })
 }
 
 const tableData = computed(() => {
-  const rows = props.waitingPlayers.map((playerId, index) => ({
+  return props.waitingPlayers.map((playerId, index) => ({
     index: index + 1,
     playerId,
     name: props.playerNames[playerId] ?? `Player ${playerId}`,
     time: formatTime(props.waitroomEntries?.get(playerId)),
-    paid: paidPlayers.value.has(playerId),
-    companion: companionPlayers.value.has(playerId),
+    paid: false, // Valore iniziale, gestito dalla tabella
+    companion: false, // Valore iniziale, gestito dalla tabella
   }))
-
-  if (!searchQuery.value) return rows
-
-  const query = searchQuery.value.toLowerCase()
-  return rows.filter(row =>
-    row.name.toLowerCase().includes(query) ||
-    row.playerId.toString().includes(query)
-  )
 })
 
-// — Stats badge —
-const statsLabel = computed(() => {
-  const parts: string[] = []
-  if (debouncedCount.value > 0) parts.push(`${debouncedCount.value} giocatori`)
-  if (props.tableEstimate) parts.push(props.tableEstimate)
-  return parts.join(' · ')
-})
 </script>
 
 <template>
   <div class="bg-muted/30 rounded-lg p-4 space-y-4">
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-2">
-        <h2 class="font-semibold flex items-center gap-2">
-          <UIcon name="i-lucide-users" class="size-4 text-muted" />
+        <h2 class="font-semibold text-xl flex items-center gap-2">
+          <UIcon name="i-lucide-users" size="lg" class="text-muted" />
           Lista d'Attesa
         </h2>
-        <UBadge v-if="statsLabel" color="warning" variant="subtle">
-          {{ statsLabel }}
-        </UBadge>
       </div>
 
-      <UButton
-        color="primary"
-        variant="soft"
-        size="sm"
-        icon="i-lucide-user-plus"
-        label="Aggiungi Giocatori"
-        @click="emit('addPlayer')"
-      />
+      <div class="flex items-center gap-3">
+        <WaitingListStats
+          :player-count="waitingPlayers.length"
+          :table-estimate="tableEstimate"
+        />
+        <UButton
+          color="warning"
+          variant="subtle"
+          size="lg"
+          icon="i-lucide-user-plus"
+          label="Aggiungi Giocatori"
+          class="font-semibold"
+          @click="emit('addPlayer')"
+        />
+      </div>
     </div>
 
     <WaitingListTable
-      v-model:search-query="searchQuery"
       :data="tableData"
-      @toggle-paid="togglePaid"
-      @toggle-companion="toggleCompanion"
+      @update="emit('update', $event)"
+      @edit="emit('edit', $event)"
       @remove="emit('remove', $event)"
+      @batch-remove="emit('batchRemove', $event)"
+      @batch-mark-paid="emit('batchMarkPaid', $event)"
+      @batch-mark-companion="emit('batchMarkCompanion', $event)"
     />
   </div>
 </template>
