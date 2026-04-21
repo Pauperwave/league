@@ -12,7 +12,7 @@ export function useEventPage() {
   const leagueStore = useLeagueStore()
   const eventStore = useEventStore()
   const playerStore = usePlayerStore()
-  const { calculateTables, formatTableEstimate } = useTableCalculator()
+  const { calculateTables, buildPreviewTables, formatTableEstimate } = useTableCalculator()
 
   const { data: players } = usePlayers()
   const { data: events, refresh: refreshEvents } = useEvents(leagueId)
@@ -41,6 +41,10 @@ export function useEventPage() {
     return formatTableEstimate(result.tables4, result.tables3)
   })
 
+  const previewTables = computed<number[][]>(() => {
+    return buildPreviewTables([...playerStore.waitingPlayers])
+  })
+
   function getPlayerName(playerId: number): string {
     const player = players.value?.find((p: Player) => p.player_id === playerId)
     return player ? `${player.player_name} ${player.player_surname}` : `Player ${playerId}`
@@ -65,14 +69,58 @@ export function useEventPage() {
     await playerStore.removeFromWaitingList(eventId, playerId)
   }
 
-  async function startEvent() {
-    if (!canStartEvent.value) return
-    await eventStore.startEvent(eventId)
-    await eventStore.fetchPairings(eventId, 1)
+  async function startEvent(playerOrder?: number[]) {
+    if (!canStartEvent.value) return false
+
+    const result = await eventStore.startEvent(eventId, playerOrder)
+    if (!result.success) return false
+
+    await Promise.all([
+      refreshEvents(),
+      eventStore.fetchPairings(eventId, 1),
+      eventStore.fetchStandings(eventId),
+      playerStore.fetchWaitingPlayers(eventId),
+    ])
+
+    return true
   }
 
   async function nextRound() {
-    await eventStore.fetchPairings(eventId, currentRound.value + 1)
+    const result = await eventStore.nextRound(eventId, currentRound.value)
+    if (!result.success) return false
+
+    await Promise.all([
+      refreshEvents(),
+      eventStore.fetchStandings(eventId),
+    ])
+
+    const roundToFetch = Math.min(currentRound.value, totalRounds.value)
+    if (roundToFetch > 0) {
+      await eventStore.fetchPairings(eventId, roundToFetch)
+    }
+
+    return true
+  }
+
+  async function turnBackRound() {
+    const result = await eventStore.turnBackRound(eventId, currentRound.value, leagueId)
+    if (!result.success) return false
+
+    await Promise.all([
+      refreshEvents(),
+      eventStore.fetchStandings(eventId),
+      playerStore.fetchWaitingPlayers(eventId),
+    ])
+
+    if (currentRound.value > 0) {
+      const roundToFetch = Math.min(currentRound.value, totalRounds.value)
+      await eventStore.fetchPairings(eventId, roundToFetch)
+    }
+    else {
+      await eventStore.fetchPairings(eventId, 1)
+    }
+
+    return true
   }
 
   async function updateEvent({ id, data }: { id: number; data: { eventName: string; eventDate: string | null; numRound: number } }) {
@@ -105,6 +153,11 @@ export function useEventPage() {
     return eventStore.standings
   }
 
+  async function refreshPairingHistory() {
+    await eventStore.fetchPairingHistory(eventId)
+    return eventStore.pairingHistory
+  }
+
   const loading = computed(() => eventStore.loading || playerStore.loading)
 
   return {
@@ -121,7 +174,9 @@ export function useEventPage() {
     waitingPlayers: computed(() => playerStore.waitingPlayers),
     waitroomEntries: computed(() => playerStore.waitroomEntries),
     tableEstimate,
+    previewTables,
     pairings: computed(() => eventStore.pairings),
+    pairingHistory: computed(() => eventStore.pairingHistory),
     standings: computed(() => eventStore.standings),
     loading,
     players: computed(() => players.value ?? []),
@@ -132,9 +187,11 @@ export function useEventPage() {
     removeFromWaitingList,
     startEvent,
     nextRound,
+    turnBackRound,
     updateEvent,
     navigateToScore,
     refreshWaiting,
     refreshStandings,
+    refreshPairingHistory,
   }
 }

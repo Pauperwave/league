@@ -1,6 +1,7 @@
 <!-- app\pages\league\[leagueId]\event\[eventId].vue -->
 <script setup lang="ts">
-import type { Player, NewPlayer } from '#shared/utils/types'
+import type { Player, NewPlayer, Seat, TournamentPlayer, TournamentTable } from '#shared/utils/types'
+import type { PairingHistoryEntry, PairingPlayer } from '~/composables/tables/pairingOptimizer'
 
 type PlayerStatusUpdate = {
   playerId: number
@@ -22,6 +23,7 @@ const {
   waitingPlayers,
   waitroomEntries,
   pairings,
+  standings,
   players,
   tableEstimate,
   getPlayerName,
@@ -30,27 +32,99 @@ const {
   removeFromWaitingList,
   startEvent,
   nextRound,
+  turnBackRound,
   updateEvent,
   navigateToScore,
   refreshWaiting,
   refreshStandings,
+  refreshPairingHistory,
+  pairingHistory,
+  loading,
+  previewTables,
 } = useEventPage()
 
 // Run data fetching in parallel instead of sequentially
 await Promise.all([
   useAsyncData(`waiting-${eventId}`, refreshWaiting),
   useAsyncData(`event-standings-${eventId}`, refreshStandings),
+  useAsyncData(`event-pairing-history-${eventId}`, refreshPairingHistory),
 ])
 
 const showEventEditModal = ref(false)
 const showNextRoundModal = ref(false)
+const showStartPreviewModal = ref(false)
 const showPlayerSearchModal = ref(false)
 const showCreatePlayerModal = ref(false)
 const playerToEdit = ref<Player | null>(null)
+const previewModalTables = computed<TournamentTable[]>(() =>
+  previewTables.value.map((table, tableIndex) => {
+    const seats = Array.from({ length: 4 }, (_, seatIndex) => {
+      const playerId = table[seatIndex]
+
+      let player: TournamentPlayer | null = null
+      if (playerId !== undefined) {
+        const playerData = players.value.find(p => p.player_id === playerId)
+        player = {
+          id: playerId,
+          name: getPlayerName(playerId),
+          surname: playerData?.player_surname ?? '',
+        }
+      }
+
+      return {
+        id: `table-${tableIndex + 1}-seat-${seatIndex + 1}`,
+        player,
+      }
+    }) as [Seat, Seat, Seat, Seat]
+
+    return {
+      id: `table-${tableIndex + 1}`,
+      tableNumber: tableIndex + 1,
+      seats,
+    }
+  })
+)
+
+const playersForPreview = computed<TournamentPlayer[]>(() =>
+  players.value.map(player => ({
+    id: player.player_id,
+    name: `${player.player_name} ${player.player_surname}`,
+    surname: player.player_surname,
+  }))
+)
+
+const pairingPlayersForScoring = computed<PairingPlayer[]>(() => {
+  const table3Counter = new Map<number, number>()
+
+  for (const entry of pairingHistory.value) {
+    if (entry.players.length !== 3) continue
+    for (const playerId of entry.players) {
+      table3Counter.set(playerId, (table3Counter.get(playerId) ?? 0) + 1)
+    }
+  }
+
+  return standings.value.map((standing) => ({
+    id: standing.player_id,
+    rank: standing.standing_player_rank ?? 9999,
+    score: standing.standing_player_score ?? 0,
+    table3Count: table3Counter.get(standing.player_id) ?? 0,
+  }))
+})
+
+const pairingHistoryForScoring = computed<PairingHistoryEntry[]>(() => pairingHistory.value)
+
+async function confirmStartEvent(playerOrder: number[]) {
+  const ok = await startEvent(playerOrder)
+  if (ok) showStartPreviewModal.value = false
+}
 
 async function confirmNextRound() {
-  await nextRound()
-  showNextRoundModal.value = false
+  const ok = await nextRound()
+  if (ok) showNextRoundModal.value = false
+}
+
+async function handleTurnBackRound() {
+  await turnBackRound()
 }
 
 async function handleUpdateEvent(payload: Parameters<typeof updateEvent>[0]) {
@@ -163,7 +237,7 @@ const breadcrumbItems = computed(() => [
         :is-event-ended="isEventEnded"
         :is-registration-open="isRegistrationOpen"
         :can-start-event="canStartEvent"
-        @start="startEvent"
+        @start="showStartPreviewModal = true"
       />
 
       <div class="flex flex-col lg:flex-row gap-6 w-full">
@@ -218,15 +292,26 @@ const breadcrumbItems = computed(() => [
               :round="currentRound"
               @expired="toast.add({ title: 'Tempo scaduto!', color: 'warning', icon: 'i-lucide-alarm-clock' })"
             />
-            <UButton
-              color="primary"
-              variant="soft"
-              icon="i-lucide-arrow-right"
-              loading-auto
-              @click="showNextRoundModal = true"
-            >
-              Prossimo Round
-            </UButton>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <UButton
+                color="neutral"
+                variant="outline"
+                icon="i-lucide-arrow-left"
+                loading-auto
+                @click="handleTurnBackRound"
+              >
+                Torna Indietro
+              </UButton>
+              <UButton
+                color="primary"
+                variant="soft"
+                icon="i-lucide-arrow-right"
+                loading-auto
+                @click="showNextRoundModal = true"
+              >
+                Prossimo Round
+              </UButton>
+            </div>
           </div>
 
           <!-- Ended -->
@@ -249,6 +334,18 @@ const breadcrumbItems = computed(() => [
     <NextRoundModal
       v-model:open="showNextRoundModal"
       @confirm="confirmNextRound"
+    />
+
+    <TablePreviewModal
+      v-model:open="showStartPreviewModal"
+      :tables="previewModalTables"
+      :event-id="eventId"
+      :players-for-scoring="pairingPlayersForScoring"
+      :history="pairingHistoryForScoring"
+      :current-round="Math.max(1, currentRound || 1)"
+      :all-players="playersForPreview"
+      :loading="loading"
+      @confirm="confirmStartEvent"
     />
 
     <EventFormModal

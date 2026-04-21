@@ -1,5 +1,11 @@
 import type { Event, EventInsert, StandingWithPlayer, Player, PairingWithResults, RoundResultInsert } from '#shared/utils/types'
 import { sanitizePlayer } from './players'
+import {
+  optimizePairings,
+  type PairingHistoryEntry,
+  type PairingPlayer,
+} from '~/composables/tables/pairingOptimizer'
+import { getPairingPreferences } from '~/composables/tables/pairingPreferences'
 
 // ─── Utility ────────────────────────────────────────────────────────────────
 function toErrorMessage(err: unknown, fallback: string): string {
@@ -15,6 +21,7 @@ export const useEventStore = defineStore('events', () => {
   const currentEvent  = ref<Event | null>(null)
   const standings     = ref<StandingWithPlayer[]>([])
   const pairings      = ref<PairingWithResults[]>([])
+  const pairingHistory = ref<PairingHistoryEntry[]>([])
   const loadingCount  = ref(0)          // counter instead of boolean
   const error         = ref<string | null>(null)
   const initialized   = ref<Record<number, boolean>>({})
@@ -157,7 +164,7 @@ export const useEventStore = defineStore('events', () => {
       endLoading()
     }
   }
-  async function startEvent(eventId: number) {
+  async function startEvent(eventId: number, playerOrder?: number[]) {
     beginLoading()
     error.value = null
 
@@ -166,6 +173,7 @@ export const useEventStore = defineStore('events', () => {
         .from('waitroom')
         .select('player_id')
         .eq('event_id', eventId)
+        .order('inserted_at', { ascending: true })
 
       if (waitingError) throw waitingError
 
@@ -174,12 +182,20 @@ export const useEventStore = defineStore('events', () => {
         throw new Error('Numero giocatori non valido (min 3, non 5)')
       }
 
-      // Shuffle for random initial ranking
-      const shuffled = [...waitingPlayers].sort(() => Math.random() - 0.5)
+      const waitroomIds = (waitingPlayers ?? []).map(player => player.player_id)
+      const selectedOrder = playerOrder?.length ? playerOrder : waitroomIds
 
-      const standingsData = shuffled.map((player, index) => ({
+      const hasSameLength = selectedOrder.length === waitroomIds.length
+      const hasValidIds = selectedOrder.every(id => waitroomIds.includes(id))
+      const hasUniqueIds = new Set(selectedOrder).size === selectedOrder.length
+
+      if (!hasSameLength || !hasValidIds || !hasUniqueIds) {
+        throw new Error('Ordine giocatori non valido per avvio evento')
+      }
+
+      const standingsData = selectedOrder.map((playerId, index) => ({
         event_id:              eventId,
-        player_id:             player.player_id,
+        player_id:             playerId,
         standing_player_score: 0,
         standing_player_rank:  index + 1,
         victories:             0,
@@ -230,14 +246,58 @@ export const useEventStore = defineStore('events', () => {
     try {
       const { data: standingsData, error: standingsError } = await supabase
         .from('standings')
-        .select('player_id')
+        .select('player_id, standing_player_rank, standing_player_score')
         .eq('event_id', eventId)
         .order('standing_player_rank', { ascending: true })
 
       if (standingsError) throw standingsError
       if (!standingsData?.length) return
 
-      const playerIds = standingsData.map(s => s.player_id)
+      const { data: historicalPairings, error: historyError } = await supabase
+        .from('pairings')
+        .select('pairing_round, pairing_player1_id, pairing_player2_id, pairing_player3_id, pairing_player4_id')
+        .eq('event_id', eventId)
+        .lt('pairing_round', round)
+
+      if (historyError) throw historyError
+
+      const history: PairingHistoryEntry[] = (historicalPairings ?? []).map(pairing => ({
+        round: pairing.pairing_round ?? 0,
+        players: [
+          pairing.pairing_player1_id,
+          pairing.pairing_player2_id,
+          pairing.pairing_player3_id,
+          pairing.pairing_player4_id,
+        ].filter((id): id is number => id !== null),
+      }))
+
+      const table3Counter = new Map<number, number>()
+      for (const entry of history) {
+        if (entry.players.length !== 3) continue
+        for (const playerId of entry.players) {
+          table3Counter.set(playerId, (table3Counter.get(playerId) ?? 0) + 1)
+        }
+      }
+
+      const scoringPlayers: PairingPlayer[] = standingsData.map((standing) => ({
+        id: standing.player_id,
+        rank: standing.standing_player_rank ?? 9999,
+        score: standing.standing_player_score ?? 0,
+        table3Count: table3Counter.get(standing.player_id) ?? 0,
+      }))
+
+      const preferences = getPairingPreferences(eventId)
+      const optimized = optimizePairings({
+        players: scoringPlayers,
+        history,
+        forbiddenPairs: preferences.forbiddenPairs,
+        weights: preferences.weights,
+        currentRound: round,
+      })
+
+      if (!optimized.tables.length || !Number.isFinite(optimized.totalScore)) {
+        throw new Error('Impossibile generare pairings validi con i vincoli correnti')
+      }
 
       // Build all rows in memory — single batch insert, no per-table update needed
       type PairingInsert = {
@@ -251,10 +311,8 @@ export const useEventStore = defineStore('events', () => {
       }
 
       const rows: PairingInsert[] = []
-
-      for (let i = 0; i < playerIds.length; i += 4) {
-        const table = playerIds.slice(i, i + 4)
-        if (table.length < 3) break  // skip incomplete tables (shouldn't happen post-validation)
+      for (const table of optimized.tables) {
+        if (table.length < 3) continue
 
         rows.push({
           event_id:           eventId,
@@ -543,6 +601,32 @@ export const useEventStore = defineStore('events', () => {
     }
   }
 
+  async function fetchPairingHistory(eventId: number) {
+    try {
+      const { data, error: supaError } = await supabase
+        .from('pairings')
+        .select('pairing_round, pairing_player1_id, pairing_player2_id, pairing_player3_id, pairing_player4_id')
+        .eq('event_id', eventId)
+        .order('pairing_round', { ascending: true })
+
+      if (supaError) throw supaError
+
+      pairingHistory.value = (data ?? []).map((pairing) => ({
+        round: pairing.pairing_round ?? 0,
+        players: [
+          pairing.pairing_player1_id,
+          pairing.pairing_player2_id,
+          pairing.pairing_player3_id,
+          pairing.pairing_player4_id,
+        ].filter((id): id is number => id !== null),
+      }))
+    }
+    catch (err) {
+      console.error('[useEventStore] fetchPairingHistory error:', err)
+      pairingHistory.value = []
+    }
+  }
+
   async function submitRoundResult(result: RoundResultInsert) {
     try {
       // RoundResultInsert already maps 1:1 to the table columns — spread directly
@@ -828,10 +912,12 @@ export const useEventStore = defineStore('events', () => {
       }
 
       await fetchEvents(leagueId, true)
+      return { success: true as const }
     }
     catch (err) {
       error.value = toErrorMessage(err, 'Errore nel tornare indietro')
       console.error('[useEventStore] turnBackRound error:', err)
+      return { success: false as const, error: error.value }
     }
     finally {
       endLoading()
@@ -849,6 +935,7 @@ export const useEventStore = defineStore('events', () => {
     currentEvent,
     standings,
     pairings,
+    pairingHistory,
     loading,        // now a computed, stays true while ANY action is in flight
     error,
 
@@ -869,6 +956,7 @@ export const useEventStore = defineStore('events', () => {
     // Actions — round data
     createPairings,
     fetchPairings,
+    fetchPairingHistory,
     submitRoundResult,
     updateRoundResult,
 
