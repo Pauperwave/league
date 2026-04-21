@@ -42,3 +42,35 @@ export interface PairingWithResults extends Pairing {
   round_results?: RoundResult[]
 }
 
+export interface TournamentPlayer {
+  id: number
+  name: string
+  surname: string
+  seed?: number
+  avatarUrl?: string
+}
+
+export interface Seat {
+  id: string
+  player: TournamentPlayer | null
+}
+
+export interface TournamentTable {
+  id: string
+  tableNumber: number
+  seats: [Seat, Seat, Seat, Seat]
+}
+
+export interface PairingForbiddenPair {
+  playerA: number
+  playerB: number
+}
+
+export interface PairingWeights {
+  strengthBalance: number
+  novelty: number
+  rematch: number
+  rotateTable3: number
+  tableSize4: number
+  tableSize3: number
+}
