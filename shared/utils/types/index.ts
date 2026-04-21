@@ -58,7 +58,7 @@ export interface Seat {
 export interface TournamentTable {
   id: string
   tableNumber: number
-  seats: [Seat, Seat, Seat, Seat]
+  seats: Seat[]
 }
 
 export interface PairingForbiddenPair {

@@ -1,11 +1,10 @@
 import type { Event, EventInsert, StandingWithPlayer, Player, PairingWithResults, RoundResultInsert } from '#shared/utils/types'
 import { sanitizePlayer } from './players'
-import {
-  optimizePairings,
-  type PairingHistoryEntry,
-  type PairingPlayer,
-} from '~/composables/tables/pairingOptimizer'
-import { getPairingPreferences } from '~/composables/tables/pairingPreferences'
+import type {
+  PairingPlayer,
+  PairingHistoryEntry,
+} from '~/composables/events/pairing/pairingOptimizer'
+import { getPairingPreferences } from '~/composables/events/pairing/pairingPreferences'
 
 // ─── Utility ────────────────────────────────────────────────────────────────
 function toErrorMessage(err: unknown, fallback: string): string {
@@ -335,6 +334,7 @@ export const useEventStore = defineStore('events', () => {
       throw err  // re-throw so callers (startEvent, nextRound) can catch it
     }
   }
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   async function fetchStandings(eventId: number) {
     try {
       const { data, error: supaError } = await supabase
@@ -363,6 +363,7 @@ export const useEventStore = defineStore('events', () => {
       console.error('[useEventStore] fetchStandings error:', err)
     }
   }
+  /* eslint-enable @typescript-eslint/no-explicit-any */
 
   async function fetchMultipleEventStandings(eventIds: number[]): Promise<StandingWithPlayer[]> {
     try {
@@ -558,6 +559,7 @@ export const useEventStore = defineStore('events', () => {
         return Math.random() - 0.5
       })
 
+      /* eslint-disable @typescript-eslint/no-explicit-any */
       standings.value = results.map((r, index) => ({
         standing_id:           0,
         event_id:              null,
@@ -575,6 +577,7 @@ export const useEventStore = defineStore('events', () => {
             }) as any
           : undefined,
       })) as any
+      /* eslint-enable @typescript-eslint/no-explicit-any */
     }
     catch (err) {
       console.error('[useEventStore] fetchLeagueResults error:', err)
@@ -896,7 +899,15 @@ export const useEventStore = defineStore('events', () => {
         ])
       }
       else {
-        // Round 1 → back to registration: reset event + wipe standings + wipe pairings in parallel
+        // Round 1 → back to registration: fetch players from standings before wiping
+        const { data: standingsData } = await supabase
+          .from('standings')
+          .select('player_id')
+          .eq('event_id', eventId)
+
+        const playerIds = standingsData?.map(s => s.player_id) ?? []
+
+        // Reset event + wipe standings + wipe pairings + restore waitroom in parallel
         await Promise.all([
           supabase
             .from('events')
@@ -908,6 +919,10 @@ export const useEventStore = defineStore('events', () => {
             .eq('event_id', eventId),
           supabase.from('standings').delete().eq('event_id', eventId),
           supabase.from('pairings').delete().eq('event_id', eventId),
+          // Restore players to waitroom
+          ...playerIds.map(playerId =>
+            supabase.from('waitroom').insert({ event_id: eventId, player_id: playerId })
+          ),
         ])
       }
 

@@ -11,9 +11,14 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   start: []
+  stepChanged: [step: string]
 }>()
 
 const showStartButton = computed(() => !props.isPlaying && props.isRegistrationOpen)
+
+function handleStepChanged(step: string) {
+  emit('stepChanged', step)
+}
 </script>
 
 <template>
@@ -23,8 +28,14 @@ const showStartButton = computed(() => !props.isPlaying && props.isRegistrationO
         :current-round="currentRound"
         :total-rounds="totalRounds"
         :is-event-ended="isEventEnded"
+        :is-playing="isPlaying"
         class="mb-4"
-      />
+        @step-changed="handleStepChanged"
+      >
+        <template #content="{ item }">
+          <slot name="content" :item="item" />
+        </template>
+      </EventStepper>
       <StartEventButton
         v-if="showStartButton"
         :disabled="!canStartEvent"

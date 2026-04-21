@@ -1,7 +1,7 @@
 <!-- app\pages\league\[leagueId]\event\[eventId].vue -->
 <script setup lang="ts">
 import type { Player, NewPlayer, Seat, TournamentPlayer, TournamentTable } from '#shared/utils/types'
-import type { PairingHistoryEntry, PairingPlayer } from '~/composables/tables/pairingOptimizer'
+import type { PairingHistoryEntry, PairingPlayer } from '~/composables/events/pairing/pairingOptimizer'
 
 type PlayerStatusUpdate = {
   playerId: number
@@ -32,9 +32,7 @@ const {
   removeFromWaitingList,
   startEvent,
   nextRound,
-  turnBackRound,
   updateEvent,
-  navigateToScore,
   refreshWaiting,
   refreshStandings,
   refreshPairingHistory,
@@ -42,6 +40,8 @@ const {
   loading,
   previewTables,
 } = useEventPage()
+
+const { syncUrl, phaseFromQuery, syncScoreModal, scoreModalFromQuery } = useEventUrl()
 
 // Run data fetching in parallel instead of sequentially
 await Promise.all([
@@ -52,10 +52,53 @@ await Promise.all([
 
 const showEventEditModal = ref(false)
 const showNextRoundModal = ref(false)
-const showStartPreviewModal = ref(false)
+const showStartPreviewModal = ref(phaseFromQuery.value === 'preview')
 const showPlayerSearchModal = ref(false)
 const showCreatePlayerModal = ref(false)
 const playerToEdit = ref<Player | null>(null)
+
+// Score modal state
+const showScoreModal = ref(false)
+const selectedPairingId = ref<number | null>(null)
+const selectedTableIndex = ref<number | null>(null)
+
+watch(showStartPreviewModal, (isOpen) => {
+  if (isOpen) {
+    syncUrl('preview', currentRound.value)
+  } else {
+    // Return to actual event phase
+    if (isRegistrationOpen.value) syncUrl('registration', currentRound.value)
+    else if (isPlaying.value) syncUrl('playing', currentRound.value)
+    else if (isEventEnded.value) syncUrl('ended', currentRound.value)
+  }
+})
+
+watch(phaseFromQuery, (phase) => {
+  if (phase === 'preview') {
+    showStartPreviewModal.value = true
+  }
+})
+
+watch(showScoreModal, (isOpen) => {
+  if (isOpen) {
+    syncScoreModal(true, selectedPairingId.value)
+  } else {
+    syncScoreModal(false, null)
+  }
+})
+
+watch(scoreModalFromQuery, (pairingId) => {
+  if (pairingId !== null && !showScoreModal.value) {
+    const pairing = pairings.value.find(p => p.pairing_id === pairingId)
+    if (pairing) {
+      const index = pairings.value.indexOf(pairing)
+      selectedPairingId.value = pairingId
+      selectedTableIndex.value = index
+      showScoreModal.value = true
+    }
+  }
+})
+
 const previewModalTables = computed<TournamentTable[]>(() =>
   previewTables.value.map((table, tableIndex) => {
     const seats = Array.from({ length: 4 }, (_, seatIndex) => {
@@ -123,10 +166,6 @@ async function confirmNextRound() {
   if (ok) showNextRoundModal.value = false
 }
 
-async function handleTurnBackRound() {
-  await turnBackRound()
-}
-
 async function handleUpdateEvent(payload: Parameters<typeof updateEvent>[0]) {
   const ok = await updateEvent(payload)
   if (ok) showEventEditModal.value = false
@@ -190,6 +229,29 @@ function handlePlayerStatusUpdate(payload: PlayerStatusUpdate) {
   // Per ora solo log, ma in futuro potresti voler persistere questi dati
 }
 
+function handleStepChanged(step: string) {
+  if (step === 'registration') {
+    syncUrl('registration', currentRound.value)
+  } else if (step === 'ended') {
+    syncUrl('ended', currentRound.value)
+  } else if (step.startsWith('round-')) {
+    const round = parseInt(step.replace('round-', ''))
+    syncUrl('playing', round)
+  }
+}
+
+function handleOpenScoreModal(pairingId: number, tableIndex: number) {
+  selectedPairingId.value = pairingId
+  selectedTableIndex.value = tableIndex
+  showScoreModal.value = true
+}
+
+function handleScoreSubmit(ranking: number[]) {
+  // TODO: Implement score submission logic based on ranking
+  console.log('Ranking submitted:', ranking)
+  showScoreModal.value = false
+}
+
 async function handleBatchRemove(playerIds: number[]) {
   for (const playerId of playerIds) {
     await removeFromWaitingList(playerId)
@@ -238,96 +300,65 @@ const breadcrumbItems = computed(() => [
         :is-registration-open="isRegistrationOpen"
         :can-start-event="canStartEvent"
         @start="showStartPreviewModal = true"
-      />
+        @step-changed="handleStepChanged"
+      >
+        <template #content>
+          <!-- Registration Phase - Show EventHeaderCard -->
+          <EventHeaderCard
+            v-if="!isPlaying"
+            :event-name="currentEvent?.event_name ?? 'Evento'"
+            :event-date="formattedDate"
+            :is-playing="isPlaying"
+            :is-event-ended="isEventEnded"
+            :is-registration-open="isRegistrationOpen"
+            @edit="showEventEditModal = true"
+          >
+            <div v-if="isRegistrationOpen" class="space-y-4">
+              <WaitingList
+                :waiting-players="waitingPlayers"
+                :player-names="playerNames"
+                :waitroom-entries="waitroomEntries"
+                :table-estimate="tableEstimate"
+                @update="handlePlayerStatusUpdate"
+                @remove="removeFromWaitingList"
+                @batch-remove="handleBatchRemove"
+                @edit="handleEditPlayer"
+                @add-player="showPlayerSearchModal = true"
+              />
 
-      <div class="flex flex-col lg:flex-row gap-6 w-full">
+              <PlayerSearchModal
+                v-model:open="showPlayerSearchModal"
+                :players="players"
+                :waiting-players="waitingPlayers"
+                @select="addToWaitingList"
+                @create-new="handleCreateNewPlayer"
+              />
 
-        <!-- Header Card -->
-        <EventHeaderCard
-          :event-name="currentEvent?.event_name ?? 'Evento'"
-          :event-date="formattedDate"
-          :is-playing="isPlaying"
-          :is-event-ended="isEventEnded"
-          :is-registration-open="isRegistrationOpen"
-          @edit="showEventEditModal = true"
-        >
-          <!-- Registration Phase -->
-          <div v-if="!isPlaying && isRegistrationOpen" class="space-y-4">
-
-            <WaitingList
-              :waiting-players="waitingPlayers"
-              :player-names="playerNames"
-              :waitroom-entries="waitroomEntries"
-              :table-estimate="tableEstimate"
-              @update="handlePlayerStatusUpdate"
-              @remove="removeFromWaitingList"
-              @batch-remove="handleBatchRemove"
-              @edit="handleEditPlayer"
-              @add-player="showPlayerSearchModal = true"
-            />
-
-            <PlayerSearchModal
-              v-model:open="showPlayerSearchModal"
-              :players="players"
-              :waiting-players="waitingPlayers"
-              @select="addToWaitingList"
-              @create-new="handleCreateNewPlayer"
-            />
-
-            <CreatePlayerModal
-              v-model:open="showCreatePlayerModal"
-              :player="playerToEdit"
-              :existing-players="players"
-              @create="handlePlayerCreate"
-              @update="handlePlayerUpdate"
-              @select="handlePlayerSelectFromModal"
-            />
-          </div>
-
-          <!-- Playing Phase -->
-          <div v-else-if="isPlaying && !isEventEnded" class="flex flex-col gap-3">
-            <RoundTimer
-              v-if="currentEvent?.event_round_duration"
-              :duration-minutes="currentEvent.event_round_duration"
-              :round="currentRound"
-              @expired="toast.add({ title: 'Tempo scaduto!', color: 'warning', icon: 'i-lucide-alarm-clock' })"
-            />
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <UButton
-                color="neutral"
-                variant="outline"
-                icon="i-lucide-arrow-left"
-                loading-auto
-                @click="handleTurnBackRound"
-              >
-                Torna Indietro
-              </UButton>
-              <UButton
-                color="primary"
-                variant="soft"
-                icon="i-lucide-arrow-right"
-                loading-auto
-                @click="showNextRoundModal = true"
-              >
-                Prossimo Round
-              </UButton>
+              <CreatePlayerModal
+                v-model:open="showCreatePlayerModal"
+                :player="playerToEdit"
+                :existing-players="players"
+                @create="handlePlayerCreate"
+                @update="handlePlayerUpdate"
+                @select="handlePlayerSelectFromModal"
+              />
             </div>
-          </div>
 
-          <!-- Ended -->
-          <EndedEventBadge v-else-if="isEventEnded" />
-        </EventHeaderCard>
+            <EndedEventBadge v-else-if="isEventEnded" />
+          </EventHeaderCard>
 
-        <!-- Pairings / Tables -->
-        <PairingsCard
-          v-if="isPlaying || isEventEnded"
-          :pairings="pairings"
-          :current-round="currentRound"
-          :get-player-name="getPlayerName"
-          :has-submitted-score="hasSubmittedScore"
-          :on-navigate-to-score="navigateToScore"
-        />
-      </div>
+          <!-- Playing Phase - Show PairingsCard (tables) -->
+          <PairingsCard
+            v-else
+            :pairings="pairings"
+            :current-round="currentRound"
+            :get-player-name="getPlayerName"
+            :has-submitted-score="hasSubmittedScore"
+            @open-score-modal="handleOpenScoreModal"
+          />
+        </template>
+      </EventControlPanel>
+
     </div>
 
     <!-- Modals -->
@@ -347,6 +378,23 @@ const breadcrumbItems = computed(() => [
       :loading="loading"
       @confirm="confirmStartEvent"
     />
+
+    <UModal
+      v-model:open="showScoreModal"
+      title="Inserisci Punteggi"
+      :description="`Tavolo ${selectedTableIndex !== null ? selectedTableIndex + 1 : ''}`"
+      :ui="{ content: 'sm:max-w-3xl' }"
+    >
+      <template #body>
+        <TableScoreGrid
+          :pairing="selectedPairingId ? pairings.find(p => p.pairing_id === selectedPairingId) ?? null : null"
+          :get-player-name="getPlayerName"
+          :all-players="players"
+          @submit="handleScoreSubmit"
+          @cancel="showScoreModal = false"
+        />
+      </template>
+    </UModal>
 
     <EventFormModal
       v-model:open="showEventEditModal"

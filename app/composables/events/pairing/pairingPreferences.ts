@@ -16,13 +16,13 @@ function normalizeForbiddenPairs(pairs: PairingForbiddenPair[]): PairingForbidde
 
   for (const pair of pairs) {
     if (pair.playerA === pair.playerB) continue
-    const playerA = Math.min(pair.playerA, pair.playerB)
-    const playerB = Math.max(pair.playerA, pair.playerB)
-    const key = `${playerA}-${playerB}`
-    if (dedup.has(key)) continue
+    // Keep original order, only remove duplicates
+    const key = `${pair.playerA}-${pair.playerB}`
+    const reverseKey = `${pair.playerB}-${pair.playerA}`
+    if (dedup.has(key) || dedup.has(reverseKey)) continue
 
     dedup.add(key)
-    result.push({ playerA, playerB })
+    result.push({ playerA: pair.playerA, playerB: pair.playerB })
   }
 
   return result

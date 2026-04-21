@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { TournamentPlayer } from '#shared/utils/types'
-import type { PairingPlayerScore } from '~/composables/tables/pairingOptimizer'
+import type { PairingPlayerScore } from '~/composables/events/pairing/pairingOptimizer'
 
 interface Props {
   player: TournamentPlayer

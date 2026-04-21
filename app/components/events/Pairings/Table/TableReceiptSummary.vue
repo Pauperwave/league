@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PairingTableScore } from '~/composables/tables/pairingOptimizer'
+import type { PairingTableScore } from '~/composables/events/pairing/pairingOptimizer'
 
 interface Props {
   score: PairingTableScore

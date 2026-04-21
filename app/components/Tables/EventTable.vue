@@ -47,6 +47,7 @@ function formatRound(current: number | null, total: number | null): string {
 }
 
 function sortableHeader(label: string) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return ({ column }: { column: any }) => {
     const isSorted = column.getIsSorted()
     return h(UButton, {
@@ -66,6 +67,7 @@ function sortableHeader(label: string) {
 
 const tableMeta = {
   class: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tr: (row: any) => {
       const status = getEventStatus(row.original)
       if (status.label === 'In Corso') return 'bg-success/10'

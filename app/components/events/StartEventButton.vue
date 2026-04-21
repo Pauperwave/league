@@ -34,6 +34,7 @@ defineProps<{
 <template>
   <UButton
     color="primary"
+    :variant="disabled ? 'outline' : 'solid'"
     size="lg"
     block
     :disabled

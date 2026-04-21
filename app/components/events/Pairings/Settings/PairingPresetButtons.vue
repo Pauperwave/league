@@ -47,9 +47,9 @@ const presets: Array<{ key: Exclude<PairingPresetKind, 'custom' | 'reset'>; labe
     <UButton
       size="sm"
       icon="i-lucide-sliders-horizontal"
-      color="neutral"
+      :color="selected === 'custom' ? 'primary' : 'neutral'"
       :variant="selected === 'custom' ? 'soft' : 'outline'"
-      disabled
+      class="pointer-events-none select-none"
     >
       Personalizzato
     </UButton>

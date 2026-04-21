@@ -6,15 +6,14 @@ import type {
   Seat,
 } from '#shared/utils/types'
 import {
-  DEFAULT_PAIRING_WEIGHTS,
   getForbiddenPairKey,
   optimizePairings,
   scorePairingTables,
   type PairingPlayer,
   type PairingHistoryEntry,
   type PairingScoreDetails,
-} from './pairingOptimizer'
-import { normalizePairingForbiddenPairs } from './pairingPreferences'
+} from '@/composables/events/pairing/pairingOptimizer'
+import { normalizePairingForbiddenPairs } from '@/composables/events/pairing/pairingPreferences'
 
 function cloneTables(tables: TournamentTable[]): TournamentTable[] {
   return tables.map(table => ({
@@ -35,10 +34,10 @@ function cloneTables(tables: TournamentTable[]): TournamentTable[] {
   }))
 }
 
-function normalizeSeats(tableId: string, seats: Seat[]): [Seat, Seat, Seat, Seat] {
+function normalizeSeats(tableId: string, seats: Seat[]): Seat[] {
   const players = seats
     .filter(seat => seat.player !== null)
-    .slice(0, 4)
+    .slice(0, 5)
     .map((seat, index) => ({
       id: `${tableId}-seat-${index + 1}`,
       player: seat.player,
@@ -46,14 +45,14 @@ function normalizeSeats(tableId: string, seats: Seat[]): [Seat, Seat, Seat, Seat
 
   const normalized: Seat[] = [...players]
 
-  while (normalized.length < 4) {
+  while (normalized.length < 5) {
     normalized.push({
       id: `${tableId}-seat-${normalized.length + 1}`,
       player: null,
     })
   }
 
-  return normalized as [Seat, Seat, Seat, Seat]
+  return normalized
 }
 
 function ensureTableSeatShape(tables: TournamentTable[]): TournamentTable[] {

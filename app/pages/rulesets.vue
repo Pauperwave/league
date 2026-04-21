@@ -43,7 +43,7 @@ function openLeaguesModal(ruleset: { ruleset_id: number; name: string }) {
 
 // — Helpers —
 function formatScore(score: number | null | undefined): string {
-  return score != null ? score.toString() : '-'
+  return score?.toString() ?? '-'
 }
 
 const RANK_STYLES = [

@@ -33,6 +33,7 @@ function getStatusConfig(status: string) {
 }
 
 function sortableHeader(label: string) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return ({ column }: { column: any }) => {
     const isSorted = column.getIsSorted()
     return h(UButton, {
@@ -52,6 +53,7 @@ function sortableHeader(label: string) {
 
 const tableMeta = {
   class: {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tr: (row: any) => {
       const status = row.original.status
       if (status === 'Attiva') return 'bg-success/10'

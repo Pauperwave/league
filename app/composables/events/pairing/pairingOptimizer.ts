@@ -1,6 +1,8 @@
 // Greedy + local-swap pairing optimizer with hard constraints and transparent scoring details.
-import type { PairingForbiddenPair, PairingWeights } from '#shared/utils/types'
-import { useTableCalculator } from './useTableCalculator'
+import type { PairingForbiddenPair, PairingWeights, TournamentPlayer, Seat, TournamentTable } from '#shared/utils/types'
+import { useTableCalculator } from '../../tables/useTableCalculator'
+
+export type { TournamentPlayer, Seat, TournamentTable, PairingForbiddenPair, PairingWeights }
 
 export interface PairingPlayerScore {
   playerId: number

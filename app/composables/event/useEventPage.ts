@@ -1,6 +1,7 @@
 // league\app\composables\event\useEventPage.ts
 import type { Player } from '#shared/utils/types'
 import { usePlayerStore } from '~/stores/players'
+import { useEventUrl } from './useEventUrl'
 
 export function useEventPage() {
   const route = useRoute()
@@ -9,25 +10,52 @@ export function useEventPage() {
   const leagueId = parseInt(route.params.leagueId as string)
   const eventId = parseInt(route.params.eventId as string)
 
+  // URL management
+  const { phaseFromQuery, roundFromQuery, syncUrl } = useEventUrl()
+
   const leagueStore = useLeagueStore()
   const eventStore = useEventStore()
   const playerStore = usePlayerStore()
   const { calculateTables, buildPreviewTables, formatTableEstimate } = useTableCalculator()
 
   const { data: players } = usePlayers()
-  const { data: events, refresh: refreshEvents } = useEvents(leagueId)
 
   const currentLeague = computed(() => leagueStore.getLeagueById(leagueId))
 
-  const currentEvent = computed(() => events.value?.find(e => e.event_id === eventId))
+  // Use eventStore for current event
+  const currentEvent = computed(() => {
+    // Set current event in store if not already set
+    if (!eventStore.currentEvent || eventStore.currentEvent.event_id !== eventId) {
+      const event = eventStore.events.find(e => e.event_id === eventId)
+      if (event) {
+        eventStore.setCurrentEvent(event)
+      }
+    }
+    return eventStore.currentEvent
+  })
   const currentRound = computed(() => currentEvent.value?.event_current_round ?? 0)
   const totalRounds = computed(() => currentEvent.value?.event_round_number ?? 0)
-  const isEventEnded = computed(() => currentRound.value > totalRounds.value)
+  // Use store's isEventEnded to avoid duplication
+  const isEventEnded = computed(() => eventStore.isEventEnded)
   const isPlaying = computed(() => currentEvent.value?.event_playing ?? false)
   const isRegistrationOpen = computed(() => currentEvent.value?.event_registration_open ?? false)
   const canStartEvent = computed(() => {
     const count = playerStore.waitingPlayers.length
     return count >= 3 && count !== 5
+  })
+
+  // Determine current phase from event state
+  const currentPhase = computed<'registration' | 'playing' | 'ended'>(() => {
+    if (isEventEnded.value) return 'ended'
+    if (isPlaying.value) return 'playing'
+    return 'registration'
+  })
+
+  // Sync URL with current phase and round (but not when in preview mode)
+  watch([currentPhase, currentRound], ([newPhase, newRound]) => {
+    // Don't sync if URL is in preview mode
+    if (phaseFromQuery.value === 'preview') return
+    syncUrl(newPhase, newRound)
   })
 
   const tableEstimate = computed(() => {
@@ -76,7 +104,7 @@ export function useEventPage() {
     if (!result.success) return false
 
     await Promise.all([
-      refreshEvents(),
+      eventStore.fetchEvents(leagueId, true),
       eventStore.fetchPairings(eventId, 1),
       eventStore.fetchStandings(eventId),
       playerStore.fetchWaitingPlayers(eventId),
@@ -90,7 +118,7 @@ export function useEventPage() {
     if (!result.success) return false
 
     await Promise.all([
-      refreshEvents(),
+      eventStore.fetchEvents(leagueId, true),
       eventStore.fetchStandings(eventId),
     ])
 
@@ -107,17 +135,15 @@ export function useEventPage() {
     if (!result.success) return false
 
     await Promise.all([
-      refreshEvents(),
+      eventStore.fetchEvents(leagueId, true),
       eventStore.fetchStandings(eventId),
       playerStore.fetchWaitingPlayers(eventId),
     ])
 
-    if (currentRound.value > 0) {
+    // Only fetch pairings if we're still in playing phase (not back to registration)
+    if (isPlaying.value && currentRound.value > 0) {
       const roundToFetch = Math.min(currentRound.value, totalRounds.value)
       await eventStore.fetchPairings(eventId, roundToFetch)
-    }
-    else {
-      await eventStore.fetchPairings(eventId, 1)
     }
 
     return true
@@ -133,7 +159,7 @@ export function useEventPage() {
       console.error(result.error)
       return false
     }
-    await refreshEvents()
+    await eventStore.fetchEvents(leagueId, true)
     return true
   }
 
@@ -171,6 +197,9 @@ export function useEventPage() {
     isPlaying,
     isRegistrationOpen,
     canStartEvent,
+    currentPhase,
+    phaseFromQuery,
+    roundFromQuery,
     waitingPlayers: computed(() => playerStore.waitingPlayers),
     waitroomEntries: computed(() => playerStore.waitroomEntries),
     tableEstimate,

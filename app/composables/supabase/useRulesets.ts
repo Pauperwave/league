@@ -10,6 +10,7 @@ export function useRulesets() {
   const supabase = useSupabaseClient()
 
   // Load both rulesets and leagues data together to prevent SSR mismatch
+  /* eslint-disable @typescript-eslint/no-explicit-any */
   const { data, pending, error } = useAsyncData<{ rulesets: Ruleset[]; leagues: any[] }>('rulesets-with-leagues', async () => {
     // Load rulesets
     await store.fetchRulesets()
@@ -29,6 +30,7 @@ export function useRulesets() {
     server: true,
     default: () => ({ rulesets: [], leagues: [] })
   })
+  /* eslint-enable @typescript-eslint/no-explicit-any */
 
   // New page-level state and methods
   const showFormModal = ref(false)

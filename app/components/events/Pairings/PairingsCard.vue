@@ -12,7 +12,7 @@ interface Props {
 defineProps<Props>()
 
 const emit = defineEmits<{
-  navigateToScore: [pairingId: number, playerId: number, tableIndex: number]
+  openScoreModal: [pairingId: number, tableIndex: number]
 }>()
 
 const pairingPlayerIds = (pairing: Pairing): number[] =>
@@ -47,24 +47,22 @@ const pairingPlayerIds = (pairing: Pairing): number[] =>
           <div
             v-for="playerId in pairingPlayerIds(pairing)"
             :key="playerId"
-            class="flex items-center justify-between p-2 bg-elevated rounded"
+            class="flex items-center gap-2 p-2 bg-elevated rounded"
           >
-            <div class="flex items-center gap-2">
-              <UIcon
-                :name="hasSubmittedScore(pairing.pairing_id, playerId) ? 'i-lucide-check-circle' : 'i-lucide-circle'"
-                :class="hasSubmittedScore(pairing.pairing_id, playerId) ? 'text-success' : 'text-muted'"
-              />
-              <span>{{ getPlayerName(playerId) }}</span>
-            </div>
-            <UButton
-              :color="hasSubmittedScore(pairing.pairing_id, playerId) ? 'success' : 'primary'"
-              size="xs"
-              @click="emit('navigateToScore', pairing.pairing_id, playerId, index)"
-            >
-              {{ hasSubmittedScore(pairing.pairing_id, playerId) ? 'Modifica' : 'Inserisci' }}
-            </UButton>
+            <UIcon name="i-lucide-user" class="size-4 text-muted" />
+            <span>{{ getPlayerName(playerId) }}</span>
           </div>
         </div>
+
+        <UButton
+          color="primary"
+          size="sm"
+          block
+          class="mt-3"
+          @click="emit('openScoreModal', pairing.pairing_id, index)"
+        >
+          Inserisci Punteggi
+        </UButton>
       </div>
     </div>
 
