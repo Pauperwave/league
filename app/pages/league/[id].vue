@@ -56,6 +56,14 @@ const eventToDelete = ref<Event | null>(null)
 
 // — Navigation —
 function navigateToEvent(event: Event) {
+  console.log('[NAVIGATE TO EVENT] Navigating to event', {
+    eventId: event.event_id,
+    eventName: event.event_name,
+    eventPlaying: event.event_playing,
+    eventRegistrationOpen: event.event_registration_open,
+    eventCurrentRound: event.event_current_round,
+    targetUrl: `/league/${leagueId}/event/${event.event_id}`,
+  })
   router.push(`/league/${leagueId}/event/${event.event_id}`)
 }
 
