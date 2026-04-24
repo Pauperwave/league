@@ -1,5 +1,7 @@
 <!-- app\pages\rulesets.vue -->
 <script setup lang="ts">
+import { useButtonLogging } from '~/composables/useButtonLogging'
+
 const {
   rulesets,
   loading,
@@ -18,6 +20,8 @@ const {
   confirmDeleteRuleset,
 } = useRulesets()
 
+const openLeaguesModalLogging = useButtonLogging('Open Leagues Modal')
+
 const breadcrumbItems = [
   { label: 'Home', to: '/', icon: 'i-lucide-home' },
   { label: 'Regolamenti' },
@@ -30,13 +34,8 @@ const shouldShowLoading = computed(() => loading.value && rulesets.value.length 
 const showLeaguesModal = ref(false)
 const selectedRulesetForLeagues = ref<{ id: number; name: string } | null>(null)
 
-const leaguesUsingSelected = computed(() =>
-  selectedRulesetForLeagues.value
-    ? getLeaguesByRuleset(selectedRulesetForLeagues.value.id)
-    : []
-)
-
 function openLeaguesModal(ruleset: { ruleset_id: number; name: string }) {
+  openLeaguesModalLogging.logClick()
   selectedRulesetForLeagues.value = { id: ruleset.ruleset_id, name: ruleset.name }
   showLeaguesModal.value = true
 }
@@ -226,8 +225,9 @@ const ACTION_ROWS = [
 
     <LeaguesUsingRulesetModal
       v-model:open="showLeaguesModal"
-      :leagues="leaguesUsingSelected"
+      :ruleset-id="selectedRulesetForLeagues?.id ?? 0"
       :ruleset-name="selectedRulesetForLeagues?.name ?? ''"
+      :get-leagues-by-ruleset="getLeaguesByRuleset"
     />
   </div>
 </template>
