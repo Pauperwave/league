@@ -86,7 +86,6 @@ onMounted(() => {
       <UButton
         v-if="!isRunning"
         icon="i-lucide-play"
-        size="sm"
         color="primary"
         variant="soft"
         :disabled="isExpired"
@@ -95,14 +94,12 @@ onMounted(() => {
       <UButton
         v-else
         icon="i-lucide-pause"
-        size="sm"
         color="neutral"
         variant="soft"
         @click="stop"
       />
       <UButton
         icon="i-lucide-rotate-ccw"
-        size="sm"
         color="neutral"
         variant="ghost"
         @click="reset"

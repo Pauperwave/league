@@ -24,7 +24,6 @@ const presets: Array<{ key: Exclude<PairingPresetKind, 'custom' | 'reset'>; labe
       <UButton
         v-for="option in presets"
         :key="option.key"
-        size="sm"
         :icon="option.icon"
         :color="selected === option.key ? 'primary' : 'neutral'"
         :variant="selected === option.key ? 'soft' : 'outline'"
@@ -35,7 +34,6 @@ const presets: Array<{ key: Exclude<PairingPresetKind, 'custom' | 'reset'>; labe
     </UFieldGroup>
 
     <UButton
-      size="sm"
       icon="i-lucide-rotate-ccw"
       color="warning"
       variant="soft"
@@ -45,7 +43,6 @@ const presets: Array<{ key: Exclude<PairingPresetKind, 'custom' | 'reset'>; labe
     </UButton>
 
     <UButton
-      size="sm"
       icon="i-lucide-sliders-horizontal"
       :color="selected === 'custom' ? 'primary' : 'neutral'"
       :variant="selected === 'custom' ? 'soft' : 'outline'"
