@@ -1,5 +1,7 @@
 <!-- app\pages\login.vue -->
 <script setup lang="ts">
+import { useButtonLogging } from '~/composables/useButtonLogging'
+
 const { login } = usePasswordAuth()
 const route = useRoute()
 const toast = useToast()
@@ -12,8 +14,12 @@ const redirectPath = computed(() => {
   return redirect || '/'
 })
 
+const submitLogging = useButtonLogging('Login Submit', { redirectPath: () => redirectPath.value })
+const clearPasswordLogging = useButtonLogging('Clear Password')
+const togglePasswordLogging = useButtonLogging('Toggle Password', { showPassword: () => !showPassword.value })
+
 async function handleSubmit() {
-  console.log('Sending password:', inputPassword.value)
+  submitLogging.logClick()
   if (await login(inputPassword.value)) {
     navigateTo(redirectPath.value)
   } else {
@@ -23,6 +29,16 @@ async function handleSubmit() {
       color: 'error'
     })
   }
+}
+
+function handleClearPassword() {
+  clearPasswordLogging.logClick()
+  inputPassword.value = ''
+}
+
+function handleTogglePassword() {
+  togglePasswordLogging.logClick()
+  showPassword.value = !showPassword.value
 }
 </script>
 
@@ -56,7 +72,7 @@ async function handleSubmit() {
                   size="xs"
                   icon="i-lucide-circle-x"
                   aria-label="Cancella password"
-                  @click="inputPassword = ''"
+                  @click="handleClearPassword"
                 />
                 <UButton
                   color="neutral"
@@ -64,7 +80,7 @@ async function handleSubmit() {
                   size="xs"
                   :icon="showPassword ? 'i-lucide-eye-off' : 'i-lucide-eye'"
                   :aria-label="showPassword ? 'Nascondi password' : 'Mostra password'"
-                  @click="showPassword = !showPassword"
+                  @click="handleTogglePassword"
                 />
               </span>
             </template>
