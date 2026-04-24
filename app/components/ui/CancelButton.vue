@@ -1,5 +1,7 @@
 <!-- app\components\Ui\CancelButton.vue -->
 <script setup lang="ts">
+import { useButtonLogging } from '~/composables/useButtonLogging'
+
 interface Props {
   label?: string
   icon?: string
@@ -7,7 +9,7 @@ interface Props {
   disabled?: boolean
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   label: 'Annulla',
   icon: 'i-lucide-undo-2',
   loading: false,
@@ -17,6 +19,13 @@ withDefaults(defineProps<Props>(), {
 const emit = defineEmits<{
   click: []
 }>()
+
+const clickLogging = useButtonLogging('Cancel Button', { label: () => props.label })
+
+function handleClick() {
+  clickLogging.logClick()
+  emit('click')
+}
 </script>
 
 <template>
@@ -25,7 +34,7 @@ const emit = defineEmits<{
     :trailing-icon="icon"
     :loading="loading"
     :disabled="disabled"
-    @click="emit('click')"
+    @click="handleClick"
   >
     {{ label }}
   </UButton>
