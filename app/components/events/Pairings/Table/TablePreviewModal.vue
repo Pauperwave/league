@@ -7,14 +7,12 @@ import type {
   TournamentPlayer,
   TournamentTable,
 } from '#shared/utils/types'
-import {
-  getForbiddenPairKey,
-} from '~/composables/events/pairing/pairingOptimizer'
 import type {
   PairingHistoryEntry,
   PairingPlayer,
 } from '~/composables/events/pairing/pairingOptimizer'
 import { getPairingPreferences, savePairingPreferences } from '~/composables/events/pairing/pairingPreferences'
+import { useButtonLogging } from '~/composables/useButtonLogging'
 
 const open = defineModel<boolean>('open', { default: false })
 
@@ -115,22 +113,7 @@ watch([weights, forbiddenPairs], () => {
   })
 }, { deep: true })
 
-const playerOptions = computed(() =>
-  props.allPlayers.map(player => ({
-    label: player.name,
-    value: String(player.id),
-  }))
-)
 
-const forbiddenPairsDisplay = computed(() => {
-  const playerMap = new Map(props.allPlayers.map(player => [player.id, player.name]))
-  return forbiddenPairs.value.map(pair => ({
-    key: getForbiddenPairKey(pair.playerA, pair.playerB),
-    playerA: pair.playerA,
-    playerB: pair.playerB,
-    label: `${playerMap.get(pair.playerA) ?? `Player ${pair.playerA}`} — ${playerMap.get(pair.playerB) ?? `Player ${pair.playerB}`}`,
-  }))
-})
 
 const scoreItems = computed(() => [
   { key: 'strengthBalance', label: 'Bilanciamento forza', value: weights.value.strengthBalance, min: 0, max: 3, step: 0.1 },
@@ -141,7 +124,16 @@ const scoreItems = computed(() => [
   { key: 'tableSize3', label: 'Peso tavoli da 3', value: weights.value.tableSize3, min: -2, max: 2, step: 0.05 },
 ] as const)
 
+const confirmLogging = useButtonLogging('Conferma tavoli', {
+  eventId: () => props.eventId,
+  currentRound: () => props.currentRound,
+  tableCount: () => localTables.value.length,
+  isValid: () => isValid.value,
+  hasAutoOptimized: () => hasAutoOptimized.value,
+})
+
 function handleConfirm() {
+  confirmLogging.logClick()
   normalizeLocalTables()
   if (!isValid.value) return
   emit('confirm', playerOrder.value)
@@ -242,12 +234,9 @@ const selectedTablePlayerRows = computed(() => {
   }))
 })
 
-const canAddForbiddenPair = computed(() => {
-  if (!pairPlayerA.value || !pairPlayerB.value) return false
-  return pairPlayerA.value !== pairPlayerB.value
+const modalMaxWidth = computed(() => {
+  return localTables.value.length <= 1 ? 'max-w-2xl' : 'max-w-4xl'
 })
-
-const pairingStorageKey = computed(() => `pairing-preferences-event-${props.eventId}`)
 
 function updateTableSeats(tableIndex: number, seats: [Seat, Seat, Seat, Seat]) {
   const targetTable = localTables.value[tableIndex]
@@ -271,7 +260,7 @@ function openTableScoreBreakdown(tableIndex: number) {
     title="Anteprima Tavoli"
     description="Trascina i giocatori per comporre i tavoli prima di avviare l'evento"
     :dismissible="dismissible"
-    :ui="{ content: 'sm:max-w-6xl', footer: 'justify-end gap-1.5' }"
+    :ui="{ content: modalMaxWidth, footer: 'justify-end gap-1.5' }"
   >
     <template #body>
       <div class="space-y-3">
@@ -302,7 +291,6 @@ function openTableScoreBreakdown(tableIndex: number) {
       </UButton>
       <UButton
         color="primary"
-        size="sm"
         :variant="isValid ? 'solid' : 'outline'"
         :disabled="!isValid"
         @click="handleConfirm"
@@ -318,10 +306,9 @@ function openTableScoreBreakdown(tableIndex: number) {
     v-model:pair-player-b="pairPlayerB"
     :selected-preset="selectedPreset"
     :score-items="scoreItems"
-    :player-options="playerOptions"
-    :forbidden-pairs-display="forbiddenPairsDisplay"
-    :can-add-forbidden-pair="canAddForbiddenPair"
-    :pairing-storage-key="pairingStorageKey"
+    :forbidden-pairs="forbiddenPairs"
+    :all-players="allPlayers"
+    :event-id="eventId"
     @select-preset="applyWeightPreset"
     @update-weight="updateWeight"
     @add-pair="addForbiddenPairFromSelectors"
