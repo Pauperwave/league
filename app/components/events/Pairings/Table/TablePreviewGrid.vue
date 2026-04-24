@@ -21,10 +21,16 @@ const emit = defineEmits<{
   dragEnd: []
   openBreakdown: [tableIndex: number]
 }>()
+
+const gridCols = computed(() => {
+  const count = tables.length
+  if (count <= 1) return 'grid-cols-1'
+  return 'grid-cols-1 lg:grid-cols-2'
+})
 </script>
 
 <template>
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+  <div :class="['grid gap-3', gridCols]">
     <TableCard
       v-for="(table, tableIndex) in tables"
       :key="table.id"
