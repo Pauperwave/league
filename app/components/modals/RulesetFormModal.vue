@@ -1,6 +1,7 @@
 <!-- app\components\Modals\RulesetFormModal.vue -->
 <script setup lang="ts">
 import type { Ruleset } from '#shared/utils/types'
+import { useButtonLogging } from '~/composables/useButtonLogging'
 
 interface Props {
   ruleset: Ruleset | null
@@ -14,6 +15,9 @@ const emit = defineEmits<{
 }>()
 
 const open = defineModel<boolean>('open', { default: false })
+
+const submitLogging = useButtonLogging('Submit Ruleset Form', { isEditing: () => isEditing.value, name: () => form.name })
+const cancelLogging = useButtonLogging('Cancel Ruleset Form')
 
 const isEditing = computed(() => !!props.ruleset)
 const title = computed(() => isEditing.value ? 'Modifica Regolamento' : 'Crea Regolamento')
@@ -91,6 +95,8 @@ function handleSubmit() {
     rule_set_valid_events: form.validEvents ?? null,
   }
 
+  submitLogging.logClick()
+
   if (isEditing.value && props.ruleset) {
     emit('update', { id: props.ruleset.ruleset_id, data: scoreData })
   } else {
@@ -98,6 +104,11 @@ function handleSubmit() {
     Object.assign(form, defaultForm())
   }
 
+  open.value = false
+}
+
+function handleCancel() {
+  cancelLogging.logClick()
   open.value = false
 }
 </script>
@@ -199,7 +210,7 @@ function handleSubmit() {
     </template>
 
     <template #footer>
-      <CancelButton @click="open = false" />
+      <CancelButton @click="handleCancel" />
       <UButton
         type="submit"
         form="ruleset-form"

@@ -2,6 +2,7 @@
 <script setup lang="ts">
 import { type CalendarDate, getLocalTimeZone } from '@internationalized/date'
 import type { Event } from '#shared/utils/types'
+import { useButtonLogging } from '~/composables/useButtonLogging'
 
 // — Constants —
 const DEFAULT_ROUND_DURATION = 75 // 1:15 hours
@@ -42,6 +43,9 @@ const emit = defineEmits<{
 }>()
 
 const open = defineModel<boolean>('open', { default: false })
+
+const submitLogging = useButtonLogging('Submit Event Form', { isEditing: () => isEditing.value, eventName: () => form.eventName })
+const cancelLogging = useButtonLogging('Cancel Event Form')
 
 // — Derived modal state —
 const isEditing = computed(() => !!props.event)
@@ -87,6 +91,8 @@ function handleSubmit() {
   const eventDate = toIsoDate(form.eventDate)
   const eventName = form.eventName.trim()
 
+  submitLogging.logClick()
+
   if (isEditing.value && props.event) {
     emit('update', {
       id: props.event.event_id,
@@ -102,6 +108,11 @@ function handleSubmit() {
     Object.assign(form, defaultForm())
   }
 
+  open.value = false
+}
+
+function handleCancel() {
+  cancelLogging.logClick()
   open.value = false
 }
 </script>
@@ -158,7 +169,7 @@ function handleSubmit() {
     </template>
 
     <template #footer>
-      <CancelButton @click="open = false" />
+      <CancelButton @click="handleCancel" />
       <UButton
         type="submit"
         form="event-form"

@@ -1,5 +1,7 @@
 <!-- app\components\Events\WaitingList.vue -->
 <script setup lang="ts">
+import { useButtonLogging } from '~/composables/useButtonLogging'
+
 const props = defineProps<{
   waitingPlayers: number[]
   playerNames: Record<number, string>
@@ -17,6 +19,12 @@ const emit = defineEmits<{
   addPlayer: []
 }>()
 
+const addPlayerLogging = useButtonLogging('Add Player')
+
+function handleAddPlayer() {
+  addPlayerLogging.logClick()
+  emit('addPlayer')
+}
 
 // — Table data —
 function formatTime(iso: string | undefined): string {
@@ -59,7 +67,7 @@ const tableData = computed(() => {
           icon="i-lucide-user-plus"
           label="Aggiungi Giocatori"
           class="font-semibold"
-          @click="emit('addPlayer')"
+          @click="handleAddPlayer"
         />
       </div>
     </div>

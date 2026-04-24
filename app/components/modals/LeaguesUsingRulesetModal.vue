@@ -1,22 +1,43 @@
 <!-- app\components\Modals\LeaguesUsingRulesetModal.vue -->
 <script setup lang="ts">
+import { useButtonLogging } from '~/composables/useButtonLogging'
+
 interface LeagueInfo {
   id: number
   name: string
 }
 
 interface Props {
-  leagues: LeagueInfo[]
+  rulesetId: number
   rulesetName: string
+  getLeaguesByRuleset: (rulesetId: number) => LeagueInfo[]
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const emit = defineEmits<{
   navigate: [leagueId: number]
 }>()
 
 const open = defineModel<boolean>('open', { default: false })
+
+const leagues = computed(() => props.getLeaguesByRuleset(props.rulesetId))
+
+const currentLeagueId = ref<number | null>(null)
+const navigateLogging = useButtonLogging('Navigate to League', { leagueId: () => currentLeagueId.value, rulesetId: () => props.rulesetId })
+const closeLogging = useButtonLogging('Close Leagues Using Ruleset Modal')
+
+function handleNavigate(leagueId: number) {
+  currentLeagueId.value = leagueId
+  navigateLogging.logClick()
+  emit('navigate', leagueId)
+  open.value = false
+}
+
+function handleClose() {
+  closeLogging.logClick()
+  open.value = false
+}
 </script>
 
 <template>
@@ -52,7 +73,7 @@ const open = defineModel<boolean>('open', { default: false })
             :trailing-icon="'i-lucide-arrow-right'"
             :to="`/league/${league.id}`"
             :ui="{ base: 'justify-between', trailingIcon: 'text-muted' }"
-            @click="emit('navigate', league.id); open = false"
+            @click="handleNavigate(league.id)"
           >
             <div class="flex items-center gap-2">
               <UIcon name="i-lucide-shield" class="size-4 text-primary shrink-0" />
@@ -64,7 +85,7 @@ const open = defineModel<boolean>('open', { default: false })
     </template>
 
     <template #footer>
-      <UButton color="neutral" @click="open = false">
+      <UButton color="neutral" @click="handleClose">
         Chiudi
       </UButton>
     </template>

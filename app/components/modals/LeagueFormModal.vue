@@ -2,6 +2,7 @@
 <script setup lang="ts">
 import type { CalendarDate } from '@internationalized/date'
 import type { Ruleset, League } from '#shared/utils/types'
+import { useButtonLogging } from '~/composables/useButtonLogging'
 
 interface Props {
   league: League | null
@@ -30,6 +31,9 @@ const emit = defineEmits<{
 }>()
 
 const open = defineModel<boolean>('open', { default: false })
+
+const submitLogging = useButtonLogging('Submit League Form', { isEditing: () => isEditing.value, data: () => ({ name: form.name, startsAt: form.startsAt?.toString(), endsAt: form.endsAt?.toString(), rulesetId: form.rulesetId }) })
+const cancelLogging = useButtonLogging('Cancel League Form')
 
 const isEditing = computed(() => !!props.league)
 const title = computed(() => isEditing.value ? 'Modifica Lega' : 'Crea Nuova Lega')
@@ -95,6 +99,8 @@ function handleSubmit() {
     rulesetId: form.rulesetId ?? null,
   }
 
+  submitLogging.logClick()
+
   if (isEditing.value && props.league) {
     emit('update', { id: props.league.id, data })
   } else {
@@ -106,6 +112,11 @@ function handleSubmit() {
     }
   }
 
+  open.value = false
+}
+
+function handleCancel() {
+  cancelLogging.logClick()
   open.value = false
 }
 </script>
@@ -158,7 +169,7 @@ function handleSubmit() {
     </template>
 
     <template #footer>
-      <CancelButton @click="open = false" />
+      <CancelButton @click="handleCancel" />
       <UButton
         type="submit"
         form="league-form"

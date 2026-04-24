@@ -4,11 +4,23 @@ import type { Seat } from '#shared/utils/types'
 interface Props {
   seat: Seat
   isDragging: boolean
+  playerId?: number // For commander button
+  hasCommander?: boolean // Whether commander is saved
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
+
+const emit = defineEmits<{
+  openCommanderModal: [playerId: number]
+}>()
 
 const { playerInitial, playerDisplayName } = usePlayerDisplay()
+
+function handleCommanderClick() {
+  if (props.playerId) {
+    emit('openCommanderModal', props.playerId)
+  }
+}
 </script>
 
 <template>
@@ -35,13 +47,12 @@ const { playerInitial, playerDisplayName } = usePlayerDisplay()
       <UAvatar
         :src="seat.player.avatarUrl"
         :alt="seat.player.name"
-        size="sm"
         class="shrink-0"
       >
         {{ playerInitial(seat.player) }}
       </UAvatar>
 
-      <span class="text-base flex-1 whitespace-normal break-words leading-tight text-left">
+      <span class="text-base flex-1 whitespace-normal wrap-break-words leading-tight text-left">
         {{ playerDisplayName(seat.player).name }}
         <span class="font-bold text-highlighted">
           {{ ` ${playerDisplayName(seat.player).surname}` }}
@@ -50,12 +61,21 @@ const { playerInitial, playerDisplayName } = usePlayerDisplay()
 
       <UBadge
         v-if="seat.player.seed !== undefined"
-        size="sm"
         variant="subtle"
         color="warning"
       >
         #{{ seat.player.seed }}
       </UBadge>
+
+      <UButton
+        v-if="playerId"
+        size="xs"
+        variant="ghost"
+        :color="hasCommander ? 'success' : 'warning'"
+        :icon="hasCommander ? 'i-lucide-shield' : 'i-lucide-shield-plus'"
+        aria-label="Imposta comandanti"
+        @click="handleCommanderClick"
+      />
     </div>
 
     <div

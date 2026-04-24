@@ -1,5 +1,7 @@
 <!-- app\components\Ui\ConfirmModal.vue -->
 <script setup lang="ts">
+import { useButtonLogging } from '~/composables/useButtonLogging'
+
 interface Props {
   title: string
   description: string
@@ -14,7 +16,7 @@ interface Props {
   dismissible?: boolean
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   subject: '',
   warning: '',
   confirmIcon: 'i-lucide-check',
@@ -31,11 +33,16 @@ const emit = defineEmits<{
 
 const open = defineModel<boolean>('open', { required: true })
 
+const confirmLogging = useButtonLogging('Confirm Modal', { title: () => props.title, subject: () => props.subject })
+const cancelLogging = useButtonLogging('Cancel Modal', { title: () => props.title })
+
 function onConfirm() {
+  confirmLogging.logClick()
   emit('confirm')
 }
 
 function onCancel() {
+  cancelLogging.logClick()
   open.value = false
   emit('cancel')
 }
