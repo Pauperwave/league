@@ -1,19 +1,24 @@
 <script setup lang="ts">
-interface ForbiddenPairDisplay {
-  key: string
+import { getForbiddenPairKey } from '~/composables/events/pairing/pairingOptimizer'
+import { usePlayerOptions } from '~/composables/supabase/usePlayers'
+
+interface ForbiddenPair {
   playerA: number
   playerB: number
-  label: string
+}
+
+interface Player {
+  id: number
+  name: string
 }
 
 interface Props {
-  playerOptions: Array<{ label: string; value: string }>
-  forbiddenPairsDisplay: ForbiddenPairDisplay[]
-  canAddForbiddenPair: boolean
-  pairingStorageKey: string
+  forbiddenPairs: ForbiddenPair[]
+  allPlayers: Player[]
+  eventId: number
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 
 const emit = defineEmits<{
   addPair: []
@@ -23,6 +28,31 @@ const emit = defineEmits<{
 
 const pairPlayerA = defineModel<string>('pairPlayerA', { default: '' })
 const pairPlayerB = defineModel<string>('pairPlayerB', { default: '' })
+
+const playerOptions = usePlayerOptions(() => props.allPlayers.map(p => ({
+  player_id: p.id,
+  player_name: p.name,
+  formats_played: null,
+  is_active: true,
+  player_surname: '',
+})))
+
+const canAddForbiddenPair = computed(() => {
+  if (!pairPlayerA.value || !pairPlayerB.value) return false
+  return pairPlayerA.value !== pairPlayerB.value
+})
+
+const pairingStorageKey = computed(() => `pairing-preferences-event-${props.eventId}`)
+
+const forbiddenPairsDisplay = computed(() => {
+  const playerMap = new Map(props.allPlayers.map(player => [player.id, player.name]))
+  return props.forbiddenPairs.map(pair => ({
+    key: getForbiddenPairKey(pair.playerA, pair.playerB),
+    playerA: pair.playerA,
+    playerB: pair.playerB,
+    label: `${playerMap.get(pair.playerA) ?? `Player ${pair.playerA}`} — ${playerMap.get(pair.playerB) ?? `Player ${pair.playerB}`}`,
+  }))
+})
 </script>
 
 <template>
@@ -48,7 +78,6 @@ const pairPlayerB = defineModel<string>('pairPlayerB', { default: '' })
 
       <UButton
         ref="addButton"
-        size="sm"
         color="neutral"
         variant="soft"
         icon="i-lucide-plus"
@@ -59,7 +88,6 @@ const pairPlayerB = defineModel<string>('pairPlayerB', { default: '' })
       </UButton>
 
       <UButton
-        size="sm"
         color="warning"
         variant="outline"
         icon="i-lucide-refresh-cw"
