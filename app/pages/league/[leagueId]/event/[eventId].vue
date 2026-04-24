@@ -1,6 +1,6 @@
 <!-- app\pages\league\[leagueId]\event\[eventId].vue -->
 <script setup lang="ts">
-import type { Player, NewPlayer, Seat, TournamentPlayer, TournamentTable } from '#shared/utils/types'
+import type { Player, NewPlayer, Seat, TournamentPlayer, TournamentTable, Kill } from '#shared/utils/types'
 import type { PairingHistoryEntry, PairingPlayer } from '~/composables/events/pairing/pairingOptimizer'
 
 type PlayerStatusUpdate = {
@@ -16,9 +16,7 @@ const {
   currentEvent,
   currentRound,
   totalRounds,
-  isEventEnded,
-  isPlaying,
-  isRegistrationOpen,
+  eventStatus,
   canStartEvent,
   waitingPlayers,
   waitroomEntries,
@@ -41,7 +39,14 @@ const {
   previewTables,
 } = useEventPage()
 
-const { syncUrl, phaseFromQuery, syncScoreModal, scoreModalFromQuery } = useEventUrl()
+const { syncUrl, phaseFromQuery, roundFromQuery, syncScoreModal, scoreModalFromQuery } = useEventUrl()
+
+console.log('[PAGE LOAD] Initial state', {
+  eventStatus: eventStatus.value,
+  currentRound: currentRound.value,
+  phaseFromQuery: phaseFromQuery.value,
+  roundFromQuery: roundFromQuery.value,
+})
 
 // Run data fetching in parallel instead of sequentially
 await Promise.all([
@@ -49,6 +54,36 @@ await Promise.all([
   useAsyncData(`event-standings-${eventId}`, refreshStandings),
   useAsyncData(`event-pairing-history-${eventId}`, refreshPairingHistory),
 ])
+
+console.log('[PAGE LOAD] After data fetch', {
+  eventStatus: eventStatus.value,
+  currentRound: currentRound.value,
+  phaseFromQuery: phaseFromQuery.value,
+  roundFromQuery: roundFromQuery.value,
+})
+
+// Load pairings for current round if event is already in playing phase
+if (eventStatus.value === 'playing' && currentRound.value > 0) {
+  const eventStore = useEventStore()
+  await eventStore.fetchPairings(eventId, currentRound.value)
+  console.log('[PAGE LOAD] Pairings loaded for round', currentRound.value)
+}
+
+// Sync URL with current event state after data is loaded
+// Only sync if URL doesn't have correct parameters (e.g., when navigating from league page)
+// This prevents overwriting correct parameters on page reload
+console.log('[PAGE LOAD] Checking if sync needed', {
+  phaseFromQuery: phaseFromQuery.value,
+  eventStatus: eventStatus.value,
+  shouldSync: phaseFromQuery.value !== 'preview' && phaseFromQuery.value !== eventStatus.value,
+})
+
+if (phaseFromQuery.value !== 'preview' && phaseFromQuery.value !== eventStatus.value) {
+  console.log('[PAGE LOAD] Syncing URL manually', { eventStatus: eventStatus.value, currentRound: currentRound.value })
+  syncUrl(eventStatus.value, currentRound.value)
+} else {
+  console.log('[PAGE LOAD] Skipping manual sync')
+}
 
 const showEventEditModal = ref(false)
 const showNextRoundModal = ref(false)
@@ -62,14 +97,51 @@ const showScoreModal = ref(false)
 const selectedPairingId = ref<number | null>(null)
 const selectedTableIndex = ref<number | null>(null)
 
+// Commander modal state
+const showCommanderModal = ref(false)
+const selectedPlayerId = ref<number | null>(null)
+
+// Scores modal state
+const showScoresModal = ref(false)
+const selectedScoresPairingId = ref<number | null>(null)
+
+// Votes modal state
+const showVotesModal = ref(false)
+const selectedVotesPlayerId = ref<number | null>(null)
+
+// Rankings state: pairingId -> array of playerIds in ranking order
+const rankingsStore = useRankingsStore()
+
+// Commanders state
+const commandersStore = useCommandersStore()
+
+// Kills state
+const killsStore = useKillsStore()
+
+// Votes state
+const votesStore = useVotesStore()
+
+// Get players at the same table as selected player for votes modal
+const tablePlayersForVotes = computed(() => {
+  if (!selectedVotesPlayerId.value) return []
+  const pairing = pairings.value.find(p =>
+    [p.pairing_player1_id, p.pairing_player2_id, p.pairing_player3_id, p.pairing_player4_id]
+      .includes(selectedVotesPlayerId.value!)
+  )
+  if (!pairing) return []
+  const playerIds = [pairing.pairing_player1_id, pairing.pairing_player2_id, pairing.pairing_player3_id, pairing.pairing_player4_id]
+    .filter((id): id is number => !!id)
+  return tournamentPlayers.value.filter(p => playerIds.includes(p.id) && p.id !== selectedVotesPlayerId.value)
+})
+
 watch(showStartPreviewModal, (isOpen) => {
   if (isOpen) {
     syncUrl('preview', currentRound.value)
   } else {
     // Return to actual event phase
-    if (isRegistrationOpen.value) syncUrl('registration', currentRound.value)
-    else if (isPlaying.value) syncUrl('playing', currentRound.value)
-    else if (isEventEnded.value) syncUrl('ended', currentRound.value)
+    if (eventStatus.value === 'registration') syncUrl('registration', currentRound.value)
+    else if (eventStatus.value === 'playing') syncUrl('playing', currentRound.value)
+    else if (eventStatus.value === 'ended') syncUrl('ended', currentRound.value)
   }
 })
 
@@ -83,6 +155,7 @@ watch(showScoreModal, (isOpen) => {
   if (isOpen) {
     syncScoreModal(true, selectedPairingId.value)
   } else {
+    console.log('Score modal closed')
     syncScoreModal(false, null)
   }
 })
@@ -132,6 +205,14 @@ const playersForPreview = computed<TournamentPlayer[]>(() =>
   players.value.map(player => ({
     id: player.player_id,
     name: `${player.player_name} ${player.player_surname}`,
+    surname: player.player_surname,
+  }))
+)
+
+const tournamentPlayers = computed<TournamentPlayer[]>(() =>
+  players.value.map(player => ({
+    id: player.player_id,
+    name: player.player_name,
     surname: player.player_surname,
   }))
 )
@@ -246,10 +327,98 @@ function handleOpenScoreModal(pairingId: number, tableIndex: number) {
   showScoreModal.value = true
 }
 
-function handleScoreSubmit(ranking: number[]) {
+function handleOpenCommanderModal(playerId: number) {
+  selectedPlayerId.value = playerId
+  showCommanderModal.value = true
+}
+
+function handleOpenScoresModal(pairingId: number) {
+  selectedScoresPairingId.value = pairingId
+  showScoresModal.value = true
+}
+
+function handleOpenVotesModal(playerId: number) {
+  selectedVotesPlayerId.value = playerId
+  showVotesModal.value = true
+}
+
+function handleCommanderSubmit(commander1: string | null) {
+  if (selectedPlayerId.value !== null) {
+    commandersStore.setCommanders(selectedPlayerId.value, commander1, null)
+  }
+  showCommanderModal.value = false
+}
+
+function handleVotesSubmit(deckVotePlayerId: number | null, playVotePlayerId: number | null) {
+  if (selectedVotesPlayerId.value !== null) {
+    votesStore.setVotes(selectedVotesPlayerId.value, deckVotePlayerId, playVotePlayerId)
+  }
+  showVotesModal.value = false
+}
+
+function handleResetTable(pairingId: number) {
+  const pairing = pairings.value.find(p => p.pairing_id === pairingId)
+  if (!pairing) return
+
+  const playerIds = [
+    pairing.pairing_player1_id,
+    pairing.pairing_player2_id,
+    pairing.pairing_player3_id,
+    pairing.pairing_player4_id,
+  ].filter((id): id is number => id !== null)
+
+  // Reset classifica
+  rankingsStore.removeRanking(pairingId)
+
+  // Reset uccisioni per questo tavolo
+  const tableKills = killsStore.kills.filter((k) =>
+    playerIds.includes(k.killerId) && playerIds.includes(k.victimId)
+  )
+  tableKills.forEach((kill) => {
+    const index = killsStore.kills.findIndex(
+      (k) => k.killerId === kill.killerId && k.victimId === kill.victimId
+    )
+    if (index !== -1) {
+      killsStore.kills.splice(index, 1)
+    }
+  })
+
+  // Reset comandanti per tutti i giocatori del tavolo
+  playerIds.forEach((playerId) => {
+    commandersStore.removeCommanders(playerId)
+  })
+
+  // Reset voti per tutti i giocatori del tavolo
+  playerIds.forEach((playerId) => {
+    votesStore.removeVotes(playerId)
+  })
+}
+
+function handleScoreSubmit(ranking: number[], rankingWithRanks: { playerId: number; rank: number }[]) {
   // TODO: Implement score submission logic based on ranking
   console.log('Ranking submitted:', ranking)
+  console.log('Ranking with ranks:', rankingWithRanks)
+  if (selectedPairingId.value !== null) {
+    rankingsStore.setRankingWithRanks(selectedPairingId.value, rankingWithRanks)
+  }
   showScoreModal.value = false
+}
+
+function handleKillsSubmit(kills: Kill[]) {
+  // TODO: Implement kills submission logic
+  console.log('Kills submitted:', kills)
+  // Per ora solo log, in futuro chiamerà API endpoint
+}
+
+function handleCancelRound() {
+  // Reset uccisioni
+  const killsStore = useKillsStore()
+  killsStore.reset()
+
+  // Reset classifiche temporanee
+  rankingsStore.reset()
+
+  console.log('Round annullato: dati temporanei resettati')
 }
 
 async function handleBatchRemove(playerIds: number[]) {
@@ -295,25 +464,22 @@ const breadcrumbItems = computed(() => [
       <EventControlPanel
         :current-round="currentRound"
         :total-rounds="totalRounds"
-        :is-playing="isPlaying"
-        :is-event-ended="isEventEnded"
-        :is-registration-open="isRegistrationOpen"
+        :event-status="eventStatus"
         :can-start-event="canStartEvent"
         @start="showStartPreviewModal = true"
         @step-changed="handleStepChanged"
+        @cancel-round="handleCancelRound"
       >
         <template #content>
           <!-- Registration Phase - Show EventHeaderCard -->
           <EventHeaderCard
-            v-if="!isPlaying"
+            v-if="eventStatus !== 'playing'"
             :event-name="currentEvent?.event_name ?? 'Evento'"
             :event-date="formattedDate"
-            :is-playing="isPlaying"
-            :is-event-ended="isEventEnded"
-            :is-registration-open="isRegistrationOpen"
+            :event-status="eventStatus"
             @edit="showEventEditModal = true"
           >
-            <div v-if="isRegistrationOpen" class="space-y-4">
+            <div v-if="eventStatus === 'registration'" class="space-y-4">
               <WaitingList
                 :waiting-players="waitingPlayers"
                 :player-names="playerNames"
@@ -344,7 +510,7 @@ const breadcrumbItems = computed(() => [
               />
             </div>
 
-            <EndedEventBadge v-else-if="isEventEnded" />
+            <EndedEventBadge v-else-if="eventStatus === 'ended'" />
           </EventHeaderCard>
 
           <!-- Playing Phase - Show PairingsCard (tables) -->
@@ -354,7 +520,17 @@ const breadcrumbItems = computed(() => [
             :current-round="currentRound"
             :get-player-name="getPlayerName"
             :has-submitted-score="hasSubmittedScore"
+            :all-players="tournamentPlayers"
+            :rankings="rankingsStore"
+            :commanders-store="commandersStore"
+            :kills-store="killsStore"
+            :votes-store="votesStore"
             @open-score-modal="handleOpenScoreModal"
+            @submit-kills="handleKillsSubmit"
+            @open-commander-modal="handleOpenCommanderModal"
+            @open-scores-modal="handleOpenScoresModal"
+            @open-votes-modal="handleOpenVotesModal"
+            @reset-table="handleResetTable"
           />
         </template>
       </EventControlPanel>
@@ -381,7 +557,7 @@ const breadcrumbItems = computed(() => [
 
     <UModal
       v-model:open="showScoreModal"
-      title="Inserisci Punteggi"
+      title="Inserisci classifica"
       :description="`Tavolo ${selectedTableIndex !== null ? selectedTableIndex + 1 : ''}`"
       :ui="{ content: 'sm:max-w-3xl' }"
     >
@@ -390,8 +566,78 @@ const breadcrumbItems = computed(() => [
           :pairing="selectedPairingId ? pairings.find(p => p.pairing_id === selectedPairingId) ?? null : null"
           :get-player-name="getPlayerName"
           :all-players="players"
+          :saved-ranking-with-ranks="selectedPairingId ? rankingsStore.getRankingWithRanks(selectedPairingId) : undefined"
           @submit="handleScoreSubmit"
           @cancel="showScoreModal = false"
+        />
+      </template>
+    </UModal>
+
+    <UModal
+      v-model:open="showCommanderModal"
+      title="Imposta Comandanti"
+      :description="selectedPlayerId ? getPlayerName(selectedPlayerId) : ''"
+      :scrollable="true"
+      :ui="{
+        content: 'w-[calc(100vw-2rem)] max-w-4xl rounded-lg shadow-lg ring ring-default',
+        body: 'flex-1 p-4 sm:p-6 min-h-[60vh]'
+      }"
+    >
+      <template #body>
+        <CommanderModal
+          v-if="selectedPlayerId"
+          :player-id="selectedPlayerId"
+          :player-name="getPlayerName(selectedPlayerId)"
+          :commander1="commandersStore.getCommander1(selectedPlayerId)"
+          @submit="handleCommanderSubmit"
+          @cancel="showCommanderModal = false"
+        />
+      </template>
+
+      <template #footer>
+        <div class="flex gap-2 justify-end">
+          <UButton color="neutral" variant="outline" @click="showCommanderModal = false">
+            Annulla
+          </UButton>
+          <UButton color="primary" @click="handleCommanderSubmit(selectedPlayerId ? commandersStore.getCommander1(selectedPlayerId) : null)">
+            Salva
+          </UButton>
+        </div>
+      </template>
+    </UModal>
+
+    <UModal
+      v-model:open="showScoresModal"
+      title="Punteggi Tavolo"
+      :ui="{ content: 'sm:max-w-2xl' }"
+    >
+      <template #body>
+        <TableScoresModal
+          :pairing="selectedScoresPairingId ? pairings.find(p => p.pairing_id === selectedScoresPairingId) ?? null : null"
+          :all-players="tournamentPlayers"
+          :rankings="rankingsStore"
+          :kills-store="killsStore"
+          :votes-store="votesStore"
+        />
+      </template>
+    </UModal>
+
+    <UModal
+      v-model:open="showVotesModal"
+      title="Voti Mazzo e Giocata"
+      :description="selectedVotesPlayerId ? getPlayerName(selectedVotesPlayerId) : ''"
+      :ui="{ content: 'sm:max-w-md' }"
+    >
+      <template #body>
+        <DeckPlayVotesModal
+          v-if="selectedVotesPlayerId"
+          :player-id="selectedVotesPlayerId"
+          :player-name="getPlayerName(selectedVotesPlayerId)"
+          :deck-vote-player-id="votesStore.getDeckVote(selectedVotesPlayerId)"
+          :play-vote-player-id="votesStore.getPlayVote(selectedVotesPlayerId)"
+          :other-players="tablePlayersForVotes"
+          @submit="handleVotesSubmit"
+          @cancel="showVotesModal = false"
         />
       </template>
     </UModal>
