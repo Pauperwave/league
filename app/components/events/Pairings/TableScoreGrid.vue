@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Pairing, Seat } from '#shared/utils/types'
 import TableSeatItem from './Table/TableSeatItem.vue'
+import { useButtonLogging } from '~/composables/useButtonLogging'
 
 interface DatabasePlayer {
   player_id: number
@@ -14,12 +15,13 @@ interface Props {
   pairing: Pairing | null
   getPlayerName: (playerId: number) => string
   allPlayers: DatabasePlayer[]
+  savedRankingWithRanks?: { playerId: number; rank: number }[] // Ranking salvato con rank effettivi
 }
 
 const props = defineProps<Props>()
 
 const emit = defineEmits<{
-  submit: [ranking: number[]]
+  submit: [ranking: number[], rankingWithRanks: { playerId: number; rank: number }[]]
   cancel: []
 }>()
 
@@ -38,62 +40,41 @@ const players = computed(() => {
 const gridSize = computed(() => (players.value.length === 3 ? 3 : 4))
 const gridRange = computed(() => Array.from({ length: gridSize.value }, (_, i) => i))
 
-// Valid formations for 4 players: 1-1-1-1 (draw), 1-2-2-2, 1-2-3-3, 1-2-3-4
-// Valid formations for 3 players: 1-1-1 (draw), 1-2-2, 1-2-3
 // Formation represents the ranking positions: e.g., 1-2-3-4 means 1st, 2nd, 3rd, 4th place
+// Rule: ranks used must form a consecutive sequence starting from 1 (no gaps)
 const isValidFormation = computed(() => {
   const size = gridSize.value
 
-  // Count players in each row (each row represents a ranking position)
-  const rowCounts: number[] = []
-  for (let row = 0; row < size; row++) {
-    let count = 0
-    for (let col = 0; col < size; col++) {
-      if (grid.value[row]?.[col]) count++
+  // Per ogni colonna (giocatore), trova in quale riga (rank) si trova
+  const formation: (number | null)[] = Array(size).fill(null)
+  for (let col = 0; col < size; col++) {
+    for (let row = 0; row < size; row++) {
+      if (grid.value[row]?.[col]) {
+        formation[col] = row + 1
+        break
+      }
     }
-    rowCounts.push(count)
   }
 
-  // Remove trailing zeros (empty rows at the bottom)
-  while (rowCounts.length > 0 && rowCounts[rowCounts.length - 1] === 0) {
-    rowCounts.pop()
-  }
+  // Tutti i giocatori devono essere posizionati
+  if (formation.some(r => r === null)) return false
 
-  if (size === 3) {
-    const validFormations = [
-      [1, 1, 1],
-      [1, 1, 2],
-      [1, 2, 2],
-      [1, 2, 3],
-    ]
-    return validFormations.some(formation =>
-      JSON.stringify(rowCounts) === JSON.stringify(formation)
-    )
-  }
+  // I rank usati devono essere consecutivi a partire da 1 (niente buchi)
+  const uniqueRanks = [...new Set(formation as number[])].sort((a, b) => a - b)
+  const isValid = uniqueRanks.every((rank, i) => rank === i + 1)
 
-  if (size === 4) {
-    const validFormations = [
-      [1, 1, 1, 1],
-      [1, 1, 1, 2],
-      [1, 1, 2, 2],
-      [1, 1, 2, 3],
-      [1, 2, 2, 2],
-      [1, 2, 2, 3],
-      [1, 2, 3, 3],
-      [1, 2, 3, 4],
-    ]
-    return validFormations.some(formation =>
-      JSON.stringify(rowCounts) === JSON.stringify(formation)
-    )
-  }
+  console.log('[VALID FORMATION] Formation:', formation)
+  console.log('[VALID FORMATION] Unique ranks:', uniqueRanks)
+  console.log('[VALID FORMATION] Is valid:', isValid)
 
-  return false
+  return isValid
 })
 
 const grid = ref<(Seat | null)[][]>([])
 
 const isDragging = ref(false)
 const draggedFromCell = ref<{ row: number; col: number } | null>(null)
+const draggedFromCol = ref<number | null>(null)
 
 function getPlayerById(playerId: number): DatabasePlayer | undefined {
   return props.allPlayers.find((p) => p.player_id === playerId)
@@ -105,34 +86,64 @@ function initializeGrid() {
     Array<Seat | null>(size).fill(null)
   )
 
-  const firstRow = newGrid[0]
-  if (!firstRow) return
+  if (props.savedRankingWithRanks && props.savedRankingWithRanks.length > 0) {
+    // Usa il ranking salvato con rank effettivi per posizionare i giocatori
+    const savedRanking = props.savedRankingWithRanks
+    players.value.forEach((playerId, colIndex) => {
+      const player = getPlayerById(playerId)
+      if (!player) return
 
-  players.value.forEach((playerId, i) => {
-    if (i >= size) return
-    const player = getPlayerById(playerId)
-    if (!player) return
-    firstRow[i] = {
-      id: `grid-seat-${i}`,
-      player: {
-        id: player.player_id,
-        name: player.player_name,
-        surname: player.player_surname,
-        seed: undefined,
-        avatarUrl: undefined,
-      },
-    }
-  })
+      // Trova il rank di questo giocatore nel ranking salvato
+      const savedEntry = savedRanking.find(entry => entry.playerId === playerId)
+      if (!savedEntry) return
+
+      // Posiziona il giocatore nella riga corrispondente al suo rank (rank 1 → row 0)
+      const row = savedEntry.rank - 1
+      if (row >= 0 && row < size && newGrid[row]) {
+        newGrid[row][colIndex] = {
+          id: `grid-seat-${colIndex}`,
+          player: {
+            id: player.player_id,
+            name: player.player_name,
+            surname: player.player_surname,
+            seed: undefined,
+            avatarUrl: undefined,
+          },
+        }
+      }
+    })
+  } else {
+    // Posiziona tutti nella prima riga (default)
+    const firstRow = newGrid[0]
+    if (!firstRow) return
+
+    players.value.forEach((playerId, i) => {
+      if (i >= size) return
+      const player = getPlayerById(playerId)
+      if (!player) return
+      firstRow[i] = {
+        id: `grid-seat-${i}`,
+        player: {
+          id: player.player_id,
+          name: player.player_name,
+          surname: player.player_surname,
+          seed: undefined,
+          avatarUrl: undefined,
+        },
+      }
+    })
+  }
 
   grid.value = newGrid
 }
 
 watch(() => props.pairing, initializeGrid, { immediate: true })
 
-// ✅ Set the dataTransfer so the browser knows a drag is happening
+// Set the dataTransfer so the browser knows a drag is happening
 function handleDragStart(event: DragEvent, row: number, col: number) {
   isDragging.value = true
   draggedFromCell.value = { row, col }
+  draggedFromCol.value = col
   // Required: without this, Firefox won't fire drop at all
   event.dataTransfer?.setData('text/plain', `${row},${col}`)
 }
@@ -170,35 +181,91 @@ function handleDrop(event: DragEvent, row: number, col: number) {
 function handleDragEnd() {
   isDragging.value = false
   draggedFromCell.value = null
+  draggedFromCol.value = null
 }
 
 function getRanking(): number[] {
-  const ranking: number[] = []
-  for (const row of grid.value) {
-    for (const seat of row) {
-      if (seat?.player) ranking.push(seat.player.id)
+  const size = gridSize.value
+  const result: { playerId: number; rank: number; col: number }[] = []
+
+  for (let col = 0; col < size; col++) {
+    for (let row = 0; row < size; row++) {
+      const seat = grid.value[row]?.[col]
+      if (seat?.player) {
+        result.push({ playerId: seat.player.id, rank: row + 1, col })
+        break
+      }
     }
   }
-  return ranking
+
+  // Sort by rank, then by column to maintain order for same ranks
+  result.sort((a, b) => {
+    if (a.rank !== b.rank) return a.rank - b.rank
+    return a.col - b.col
+  })
+  return result.map(r => r.playerId)
 }
 
+function getRankingWithRanks(): { playerId: number; rank: number }[] {
+  const size = gridSize.value
+  const result: { playerId: number; rank: number; col: number }[] = []
+
+  for (let col = 0; col < size; col++) {
+    for (let row = 0; row < size; row++) {
+      const seat = grid.value[row]?.[col]
+      if (seat?.player) {
+        result.push({ playerId: seat.player.id, rank: row + 1, col })
+        break
+      }
+    }
+  }
+
+  // Sort by rank, then by column to maintain order for same ranks
+  result.sort((a, b) => {
+    if (a.rank !== b.rank) return a.rank - b.rank
+    return a.col - b.col
+  })
+  return result.map(r => ({ playerId: r.playerId, rank: r.rank }))
+}
+
+const confirmRankingLogging = useButtonLogging('Conferma classifica', {
+  isValidFormation: () => isValidFormation.value,
+  playerCount: () => players.value.length,
+  gridSize: () => gridSize.value,
+})
+
 function handleSubmit() {
+  confirmRankingLogging.logClick()
   if (!isValidFormation.value) {
     return
   }
-  emit('submit', getRanking())
+  const ranking = getRanking()
+  const rankingWithRanks = getRankingWithRanks()
+  emit('submit', ranking, rankingWithRanks)
 }
 
 function handleCancel() {
+  console.log('Score modal cancelled (Annulla clicked)')
   emit('cancel')
 }
 
 function getCellClass(row: number, col: number): string {
   const seat = grid.value[row]?.[col] ?? null
-  const base = 'w-24 h-16 rounded-md border transition-all flex items-center justify-center'
-  return seat !== null
-    ? `${base} border-default bg-default hover:ring-2 hover:ring-amber-400 hover:shadow-md`
-    : `${base} border-dashed border-default/70 bg-muted/20`
+  const base = 'min-w-32 h-12 rounded-md border transition-all flex items-center justify-center'
+
+  // During drag, highlight only cells in the same column
+  const isSameColumn = isDragging.value && draggedFromCol.value === col
+
+  if (seat !== null) {
+    return `${base} border-default bg-default hover:ring-2 hover:ring-amber-400 hover:shadow-md`
+  }
+
+  // Empty cell - highlight if same column during drag
+  if (isSameColumn) {
+    return `${base} border-dashed border-amber-400 bg-amber-50`
+  }
+
+  return `${base} border-dashed border-default/70 bg-muted/20`
 }
 </script>
 
