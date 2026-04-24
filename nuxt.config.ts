@@ -7,7 +7,9 @@ export default defineNuxtConfig({
     '@pinia/nuxt',
     '@nuxtjs/supabase',
     '@nuxtjs/robots',
-    '@vueuse/nuxt'
+    '@vueuse/nuxt',
+    '@nuxt/image',
+    'motion-v/nuxt'
   ],
 
   components: [
