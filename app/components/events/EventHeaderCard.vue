@@ -1,11 +1,12 @@
 <!-- app\components\Events\EventHeaderCard.vue -->
 <script setup lang="ts">
+import type { EventStatus } from '#shared/utils/types'
+import { useButtonLogging } from '~/composables/useButtonLogging'
+
 interface Props {
   eventName: string
   eventDate: string
-  isPlaying: boolean
-  isEventEnded: boolean
-  isRegistrationOpen: boolean
+  eventStatus: EventStatus
 }
 
 const props = defineProps<Props>()
@@ -14,9 +15,16 @@ const emit = defineEmits<{
   edit: []
 }>()
 
+const editLogging = useButtonLogging('Edit Event', { eventName: () => props.eventName })
+
+function handleEdit() {
+  editLogging.logClick()
+  emit('edit')
+}
+
 const statusBadge = computed(() => {
-  if (props.isEventEnded) return { color: 'neutral', label: 'Terminato' } as const
-  if (props.isPlaying) return { color: 'success', label: 'In Corso' } as const
+  if (props.eventStatus === 'ended') return { color: 'neutral', label: 'Terminato' } as const
+  if (props.eventStatus === 'playing') return { color: 'success', label: 'In Corso' } as const
   return { color: 'warning', label: 'Programmato' } as const
 })
 </script>
@@ -36,17 +44,17 @@ const statusBadge = computed(() => {
                 icon="i-lucide-pencil"
                 size="xs"
                 aria-label="Modifica evento"
-                @click="emit('edit')"
+                @click="handleEdit"
               />
             </div>
             <p class="text-sm text-muted">{{ eventDate }}</p>
           </div>
         </div>
 
-        <div class="flex flex-col items-end gap-1">
+        <div class="flex flex-row items-end gap-1">
           <UBadge :color="statusBadge.color">{{ statusBadge.label }}</UBadge>
-          <UBadge :color="isRegistrationOpen ? 'success' : 'error'">
-            {{ isRegistrationOpen ? 'Iscrizioni Aperte' : 'Iscrizioni Chiuse' }}
+          <UBadge :color="eventStatus === 'registration' ? 'success' : 'error'">
+            {{ eventStatus === 'registration' ? 'Iscrizioni Aperte' : 'Iscrizioni Chiuse' }}
           </UBadge>
         </div>
       </div>
