@@ -13,13 +13,14 @@ export function useRoundSubmission() {
    * Converte i dati degli store in RoundResultInsert per il database
    */
   function prepareRoundResults(pairingId: number, playerIds: number[]): RoundResultInsert[] {
-    const ranking = rankingsStore.getRanking(pairingId)
+    const rankingWithRanks = rankingsStore.getRankingWithRanks(pairingId)
     const kills = killsStore.kills
 
-    if (!ranking) return []
+    if (!rankingWithRanks) return []
 
     return playerIds.map((playerId) => {
-      const position = ranking.indexOf(playerId) + 1
+      const entry = rankingWithRanks.find(r => r.playerId === playerId)
+      const position = entry?.rank ?? 0
 
       // Calcola il numero di kill per questo giocatore
       const numberOfKills = kills.filter((k) => k.killerId === playerId).length
