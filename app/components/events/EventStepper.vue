@@ -1,20 +1,15 @@
 <!-- app/components/Events/EventStepper.vue -->
 <script setup lang="ts">
 import type { StepperItem } from '@nuxt/ui'
+import type { EventStatus } from '#shared/utils/types'
 
 const props = defineProps<{
   /** Current round number (1-based) */
   currentRound: number
   /** Total number of rounds in the event */
   totalRounds: number
-  /** Whether the event has ended */
-  isEventEnded: boolean
-  /** Whether the event is currently playing */
-  isPlaying: boolean
-}>()
-
-const emit = defineEmits<{
-  stepChanged: [step: string]
+  /** Current event status */
+  eventStatus: EventStatus
 }>()
 
 const stepper = useTemplateRef('stepper')
@@ -58,16 +53,16 @@ const items = computed<StepperItem[]>(() => {
 })
 
 const currentStep = computed(() => {
-  if (props.isEventEnded) return 'ended'
+  if (props.eventStatus === 'ended') return 'ended'
   if (props.currentRound > 0) return `round-${props.currentRound}`
   return 'registration'
 })
 
-function handleStepChange(value: string | number | undefined) {
-  if (typeof value === 'string') {
-    emit('stepChanged', value)
-  }
-}
+defineExpose({
+  stepper,
+  hasPrev: computed(() => stepper.value?.hasPrev ?? false),
+  prev: () => stepper.value?.prev()
+})
 </script>
 
 <template>
@@ -77,30 +72,11 @@ function handleStepChange(value: string | number | undefined) {
       :items="items"
       :model-value="currentStep"
       class="w-full"
-      @update:model-value="handleStepChange"
+      disabled
     >
       <template #content="{ item }">
         <slot name="content" :item="item" />
       </template>
     </UStepper>
-
-    <div v-if="isPlaying" class="flex gap-2 justify-between mt-4">
-      <UButton
-        leading-icon="i-lucide-arrow-left"
-        color="error"
-        variant="outline"
-        :disabled="!stepper?.hasPrev"
-        @click="stepper?.prev()"
-      >
-        Annulla round
-      </UButton>
-
-      <UButton
-        trailing-icon="i-lucide-arrow-right"
-        disabled
-      >
-        Avanti
-      </UButton>
-    </div>
   </div>
 </template>
