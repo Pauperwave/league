@@ -3,13 +3,6 @@ import type { PairingWeights } from '#shared/utils/types'
 import type { PairingPresetKind } from './PairingPresetButtons.vue'
 import ForbiddenPairsSection from './ForbiddenPairsSection.vue'
 
-interface ForbiddenPairDisplay {
-  key: string
-  playerA: number
-  playerB: number
-  label: string
-}
-
 interface WeightItem {
   key: keyof PairingWeights
   label: string
@@ -24,10 +17,9 @@ interface Props {
   scoreItems: ReadonlyArray<WeightItem>
   pairPlayerA: string
   pairPlayerB: string
-  playerOptions: Array<{ label: string; value: string }>
-  forbiddenPairsDisplay: ForbiddenPairDisplay[]
-  canAddForbiddenPair: boolean
-  pairingStorageKey: string
+  forbiddenPairs: Array<{ playerA: number; playerB: number }>
+  allPlayers: Array<{ id: number; name: string }>
+  eventId: number
 }
 
 defineProps<Props>()
@@ -64,10 +56,9 @@ const emit = defineEmits<{
         <ForbiddenPairsSection
           v-model:pair-player-a="pairPlayerAModel"
           v-model:pair-player-b="pairPlayerBModel"
-          :player-options="playerOptions"
-          :forbidden-pairs-display="forbiddenPairsDisplay"
-          :can-add-forbidden-pair="canAddForbiddenPair"
-          :pairing-storage-key="pairingStorageKey"
+          :forbidden-pairs="forbiddenPairs"
+          :all-players="allPlayers"
+          :event-id="eventId"
           @add-pair="emit('addPair')"
           @resolve-conflicts="emit('resolveConflicts')"
           @remove-pair="(playerA, playerB) => emit('removePair', playerA, playerB)"
