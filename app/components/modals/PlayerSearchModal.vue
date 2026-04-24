@@ -1,6 +1,8 @@
 <!-- app\components\Modals\PlayerSearchModal.vue -->
 <script setup lang="ts">
 import type { Player } from '#shared/utils/types'
+import { usePlayerOptions } from '~/composables/supabase/usePlayers'
+import { useButtonLogging } from '~/composables/useButtonLogging'
 
 interface Props {
   players: Player[]
@@ -18,20 +20,21 @@ const open = defineModel<boolean>('open', { default: false })
 
 const selectedPlayerIds = ref<string[]>([])
 
+const confirmLogging = useButtonLogging('Confirm Player Selection', { selectedCount: () => selectedPlayerIds.value.length })
+const createNewLogging = useButtonLogging('Create New Player')
+const closeLogging = useButtonLogging('Close Player Search Modal')
+
 const hasSelection = computed(() => selectedPlayerIds.value.length > 0)
 
 const allPlayersInQueue = computed(() =>
   props.players.every(p => props.waitingPlayers.includes(p.player_id))
 )
 
-const items = computed(() =>
-  props.players
-    .filter(p => !props.waitingPlayers.includes(p.player_id))
-    .map(p => ({
-      label: `${p.player_name} ${p.player_surname}`,
-      value: String(p.player_id),
-    }))
+const availablePlayers = computed(() =>
+  props.players.filter(p => !props.waitingPlayers.includes(p.player_id))
 )
+
+const items = usePlayerOptions(availablePlayers)
 
 // Reset selection whenever the modal opens
 watch(open, (isOpen) => {
@@ -39,13 +42,20 @@ watch(open, (isOpen) => {
 })
 
 function handleConfirm() {
+  confirmLogging.logClick()
   emit('select', selectedPlayerIds.value.map(Number))
   selectedPlayerIds.value = []
   open.value = false
 }
 
 function handleCreateNew() {
+  createNewLogging.logClick()
   emit('createNew')
+  open.value = false
+}
+
+function handleClose() {
+  closeLogging.logClick()
   open.value = false
 }
 </script>
@@ -88,7 +98,7 @@ function handleCreateNew() {
         <UButton
           color="neutral"
           icon="i-lucide-x"
-          @click="open = false"
+          @click="handleClose"
         >
           Chiudi
         </UButton>

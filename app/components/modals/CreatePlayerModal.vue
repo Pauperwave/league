@@ -2,6 +2,7 @@
 <script setup lang="ts">
 import type { Player, NewPlayer } from '#shared/utils/types'
 import { findSimilarPlayers } from '#shared/utils/playerSimilarity'
+import { useButtonLogging } from '~/composables/useButtonLogging'
 
 interface Props {
   player: Player | null
@@ -17,6 +18,10 @@ const emit = defineEmits<{
 }>()
 
 const open = defineModel<boolean>('open', { default: false })
+
+const submitLogging = useButtonLogging('Submit Player Form', { isEditing: () => isEditing.value, data: () => ({ firstName: form.firstName, lastName: form.lastName }) })
+const selectExistingLogging = useButtonLogging('Select Existing Player')
+const cancelLogging = useButtonLogging('Cancel Player Form')
 
 // — Derived modal state —
 const isEditing = computed(() => !!props.player)
@@ -69,6 +74,8 @@ function handleSubmit() {
     player_surname: form.lastName.trim(),
   }
 
+  submitLogging.logClick()
+
   if (isEditing.value && props.player) {
     emit('update', { id: props.player.player_id, data })
   }
@@ -81,8 +88,14 @@ function handleSubmit() {
 }
 
 function handleSelectExisting(playerId: number) {
+  selectExistingLogging.logClick()
   emit('select', playerId)
   Object.assign(form, defaultForm())
+  open.value = false
+}
+
+function handleCancel() {
+  cancelLogging.logClick()
   open.value = false
 }
 </script>
@@ -179,7 +192,7 @@ function handleSelectExisting(playerId: number) {
     </template>
 
     <template #footer>
-      <CancelButton @click="open = false" />
+      <CancelButton @click="handleCancel" />
       <UButton
         type="submit"
         form="player-form"
