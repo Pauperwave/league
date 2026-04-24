@@ -1,5 +1,9 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
+@import "mana-font/css/mana-font.css";
+
+/* Safelist per le classi gradiente generate dinamicamente in CardPreview.vue */
+@source inline("{from,via,to}-{amber-100,amber-200,blue-600,gray-950,red-600,green-600,gray-300}");
 
 /* prevent the default cross-fade */
 ::view-transition-old(root),
@@ -24,3 +28,32 @@ button:not(:disabled):not([aria-disabled="true"]) {
     border-style: dashed !important;
     border-color: white !important;
 } */
+
+/* Vue Flow CSS overrides */
+/* Rimuove il background bianco di default di Vue Flow */
+.vue-flow__container {
+  background: transparent !important;
+}
+
+/* Stile handle durante il drag (linea tratteggiata temporanea) */
+.vue-flow__connection-line {
+  stroke: var(--ui-color-primary-500);
+  stroke-width: 2;
+  stroke-dasharray: 5, 3;
+}
+
+/* Cursore sull'handle source */
+.vue-flow__handle {
+  cursor: crosshair;
+}
+
+/* Highlight handle target quando si passa sopra durante drag */
+.vue-flow__handle-connecting {
+  background: var(--ui-color-error-500) !important;
+  transform: scale(1.4);
+}
+
+/* Handle valido durante connessione */
+.vue-flow__handle-valid {
+  background: var(--ui-color-success-500) !important;
+}
