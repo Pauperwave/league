@@ -35,26 +35,41 @@ export function useEventPage() {
   })
   const currentRound = computed(() => currentEvent.value?.event_current_round ?? 0)
   const totalRounds = computed(() => currentEvent.value?.event_round_number ?? 0)
-  // Use store's isEventEnded to avoid duplication
-  const isEventEnded = computed(() => eventStore.isEventEnded)
-  const isPlaying = computed(() => currentEvent.value?.event_playing ?? false)
-  const isRegistrationOpen = computed(() => currentEvent.value?.event_registration_open ?? false)
+
+  // Single source of truth for event state
+  const eventStatus = computed<'registration' | 'playing' | 'ended'>(() => {
+    if (eventStore.isEventEnded) return 'ended'
+    if (currentEvent.value?.event_playing) return 'playing'
+    return 'registration'
+  })
+
   const canStartEvent = computed(() => {
     const count = playerStore.waitingPlayers.length
     return count >= 3 && count !== 5
   })
 
-  // Determine current phase from event state
-  const currentPhase = computed<'registration' | 'playing' | 'ended'>(() => {
-    if (isEventEnded.value) return 'ended'
-    if (isPlaying.value) return 'playing'
-    return 'registration'
-  })
+  // Determine current phase from event state (alias for eventStatus)
+  const currentPhase = computed(() => eventStatus.value)
 
   // Sync URL with current phase and round (but not when in preview mode)
   watch([currentPhase, currentRound], ([newPhase, newRound]) => {
+    console.log('[WATCHER] Phase/Round changed', {
+      newPhase,
+      newRound,
+      phaseFromQuery: phaseFromQuery.value,
+      roundFromQuery: roundFromQuery.value,
+    })
     // Don't sync if URL is in preview mode
-    if (phaseFromQuery.value === 'preview') return
+    if (phaseFromQuery.value === 'preview') {
+      console.log('[WATCHER] Skipping sync - preview mode')
+      return
+    }
+    // Don't sync if URL already has correct parameters (prevents overwriting on page reload)
+    if (phaseFromQuery.value && phaseFromQuery.value === newPhase && roundFromQuery.value === newRound) {
+      console.log('[WATCHER] Skipping sync - URL already correct')
+      return
+    }
+    console.log('[WATCHER] Syncing URL', { newPhase, newRound })
     syncUrl(newPhase, newRound)
   })
 
@@ -141,7 +156,7 @@ export function useEventPage() {
     ])
 
     // Only fetch pairings if we're still in playing phase (not back to registration)
-    if (isPlaying.value && currentRound.value > 0) {
+    if (eventStatus.value === 'playing' && currentRound.value > 0) {
       const roundToFetch = Math.min(currentRound.value, totalRounds.value)
       await eventStore.fetchPairings(eventId, roundToFetch)
     }
@@ -193,9 +208,7 @@ export function useEventPage() {
     currentEvent,
     currentRound,
     totalRounds,
-    isEventEnded,
-    isPlaying,
-    isRegistrationOpen,
+    eventStatus,
     canStartEvent,
     currentPhase,
     phaseFromQuery,

@@ -22,3 +22,16 @@ export function usePlayers() {
     refresh: () => store.fetchPlayers(true)
   }
 }
+
+/**
+ * Trasforma una lista di giocatori in opzioni per USelectMenu
+ */
+export function usePlayerOptions(players: MaybeRefOrGetter<Player[]>) {
+  return computed(() => {
+    const playersList = toValue(players)
+    return playersList.map(player => ({
+      label: `${player.player_name} ${player.player_surname}`,
+      value: String(player.player_id),
+    }))
+  })
+}

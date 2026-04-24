@@ -18,6 +18,7 @@ export function useEventUrl() {
    * @param currentRound - Current round number
    */
   function syncUrl(currentPhase: 'registration' | 'preview' | 'playing' | 'ended', currentRound: number) {
+    console.log('[SYNC URL] Called', { currentPhase, currentRound, currentQuery: route.query })
     const newQuery: Record<string, string> = {}
 
     // Copy existing valid query params
@@ -35,6 +36,7 @@ export function useEventUrl() {
       newQuery.round = String(currentRound)
     }
 
+    console.log('[SYNC URL] New query', newQuery)
     router.replace({ query: newQuery })
   }
 

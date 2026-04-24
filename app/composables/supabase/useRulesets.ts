@@ -1,4 +1,5 @@
 import type { Ruleset } from '#shared/utils/types'
+import { useButtonLogging } from '~/composables/useButtonLogging'
 
 /**
  * Composable per gestire i dati dei regolamenti.
@@ -8,6 +9,7 @@ import type { Ruleset } from '#shared/utils/types'
 export function useRulesets() {
   const store = useRulesetStore()
   const supabase = useSupabaseClient()
+  const editRulesetLogging = useButtonLogging('Edit Ruleset')
 
   // Load both rulesets and leagues data together to prevent SSR mismatch
   /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -87,6 +89,7 @@ export function useRulesets() {
   }
 
   function handleEditClick(ruleset: Ruleset | null) {
+    editRulesetLogging.logClick()
     rulesetToEdit.value = ruleset
     showFormModal.value = true
   }
