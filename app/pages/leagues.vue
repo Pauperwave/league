@@ -1,11 +1,14 @@
 <!-- app\pages\leagues.vue -->
 <script setup lang="ts">
+import { useButtonLogging } from '~/composables/useButtonLogging'
 import type { League } from '#shared/utils/types'
 
 interface UpdateLeagueData {
   id: number
   data: { name: string; startsAt: string | null; endsAt: string | null; rulesetId: number | null }
 }
+
+const editLeagueLogging = useButtonLogging('Edit League')
 
 const {
   rulesets,
@@ -36,6 +39,7 @@ const showEditModal = ref(false)
 const leagueToEdit = ref<League | null>(null)
 
 function openEditLeague(league: League) {
+  editLeagueLogging.logClick()
   leagueToEdit.value = league
   showEditModal.value = true
 }
