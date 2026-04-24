@@ -74,3 +74,11 @@ export interface PairingWeights {
   tableSize4: number
   tableSize3: number
 }
+
+export interface Kill {
+  killerId: number
+  victimId: number
+}
+
+// Event status - single source of truth for event state
+export type EventStatus = 'registration' | 'playing' | 'ended'
