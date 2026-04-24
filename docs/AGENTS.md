@@ -47,6 +47,7 @@
 - **Vercel**: https://vercel.com/docs/llms-full.txt
 - **UX Patterns**: https://uxpatterns.dev/en/llms.txt (summary) and https://uxpatterns.dev/en/llms-full.txt (complete guidelines)
 - **Vite**: https://vite.dev/llms.txt (summary) and https://vite.dev/llms-full.txt (complete guidelines)
+- **Vue Flow**: https://vueflow.dev/llms.txt (summary) and https://vueflow.dev/llms-full.txt (complete guidelines)
 
 ### Vue API References
 
