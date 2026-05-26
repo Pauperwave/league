@@ -17,10 +17,9 @@ export function buildStandingsSubmissionMap(
     ].filter((id): id is number => id !== null)
 
     const ranking = rankingsByPairing.get(pairing.pairing_id) ?? []
-    const hasRanking = ranking.length > 0
 
     for (const id of ids) {
-      submitted.set(id, hasRanking)
+      submitted.set(id, ranking.includes(id))
     }
   }
 
