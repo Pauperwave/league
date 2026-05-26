@@ -13,11 +13,11 @@ describe('StandingsCard', () => {
           players: { player_name: 'A', player_surname: 'B' },
         }],
         submittedByPlayerId: { 1: true },
-    },
+      },
       global: {
         stubs: {
           ClientOnly: { template: '<div><slot /></div>' },
-          UIcon: true,
+          UIcon: { template: '<span />' },
           UBadge: { template: '<span><slot /></span>' },
         },
       },

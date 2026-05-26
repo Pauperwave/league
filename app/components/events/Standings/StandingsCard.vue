@@ -1,4 +1,4 @@
-<!-- app\components\Events\StandingsCard.vue -->
+<!-- app\components\events\Standings\StandingsCard.vue -->
 <script setup lang="ts">
 interface Standing {
   player_id: number
