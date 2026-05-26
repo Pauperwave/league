@@ -2,6 +2,8 @@
 <script setup lang="ts">
 import type { Player, NewPlayer, Seat, TournamentPlayer, TournamentTable, Kill } from '#shared/utils/types'
 import type { PairingHistoryEntry, PairingPlayer } from '~/composables/events/pairing/pairingOptimizer'
+import { getStandingsTitle, isLastRoundState } from '~/utils/eventFlow'
+import { buildStandingsSubmissionMap } from '~/utils/standingsSubmission'
 
 type PlayerStatusUpdate = {
   playerId: number
@@ -88,6 +90,7 @@ if (phaseFromQuery.value !== 'preview' && phaseFromQuery.value !== eventStatus.v
 const showEventEditModal = ref(false)
 const showNextRoundModal = ref(false)
 const showStartPreviewModal = ref(phaseFromQuery.value === 'preview')
+const showEndEventConfirm = ref(false)
 const showPlayerSearchModal = ref(false)
 const showCreatePlayerModal = ref(false)
 const playerToEdit = ref<Player | null>(null)
@@ -237,6 +240,23 @@ const pairingPlayersForScoring = computed<PairingPlayer[]>(() => {
 
 const pairingHistoryForScoring = computed<PairingHistoryEntry[]>(() => pairingHistory.value)
 
+const rankingsByPairing = computed(() => {
+  const entries = new Map<number, number[]>()
+  for (const [pairingId, rankingWithRanks] of rankingsStore.rankingsWithRanks.entries()) {
+    entries.set(pairingId, rankingWithRanks.map(entry => entry.playerId))
+  }
+  return entries
+})
+
+const submittedByPlayerId = computed<Record<number, boolean>>(() =>
+  Object.fromEntries(
+    buildStandingsSubmissionMap(pairings.value, rankingsByPairing.value).entries()
+  )
+)
+
+const standingsTitle = computed(() => getStandingsTitle(eventStatus.value, currentRound.value))
+const isLastRound = computed(() => isLastRoundState(eventStatus.value, currentRound.value, totalRounds.value))
+
 async function confirmStartEvent(playerOrder: number[]) {
   const ok = await startEvent(playerOrder)
   if (ok) showStartPreviewModal.value = false
@@ -245,6 +265,20 @@ async function confirmStartEvent(playerOrder: number[]) {
 async function confirmNextRound() {
   const ok = await nextRound()
   if (ok) showNextRoundModal.value = false
+}
+
+async function confirmEndEvent() {
+  const ok = await nextRound()
+  if (ok) showEndEventConfirm.value = false
+}
+
+function handleAdvance() {
+  if (isLastRound.value) {
+    showEndEventConfirm.value = true
+    return
+  }
+
+  showStartPreviewModal.value = true
 }
 
 async function handleUpdateEvent(payload: Parameters<typeof updateEvent>[0]) {
@@ -513,25 +547,45 @@ const breadcrumbItems = computed(() => [
             <EndedEventBadge v-else-if="eventStatus === 'ended'" />
           </EventHeaderCard>
 
-          <!-- Playing Phase - Show PairingsCard (tables) -->
-          <PairingsCard
+          <!-- Playing Phase - Pairings + Standings -->
+          <div
             v-else
-            :pairings="pairings"
-            :current-round="currentRound"
-            :get-player-name="getPlayerName"
-            :has-submitted-score="hasSubmittedScore"
-            :all-players="tournamentPlayers"
-            :rankings="rankingsStore"
-            :commanders-store="commandersStore"
-            :kills-store="killsStore"
-            :votes-store="votesStore"
-            @open-score-modal="handleOpenScoreModal"
-            @submit-kills="handleKillsSubmit"
-            @open-commander-modal="handleOpenCommanderModal"
-            @open-scores-modal="handleOpenScoresModal"
-            @open-votes-modal="handleOpenVotesModal"
-            @reset-table="handleResetTable"
-          />
+            class="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]"
+          >
+            <div class="space-y-4">
+              <div class="flex justify-end">
+                <UButton
+                  trailing-icon="i-lucide-arrow-right"
+                  @click="handleAdvance"
+                >
+                  Avanti
+                </UButton>
+              </div>
+              <PairingsCard
+                :pairings="pairings"
+                :current-round="currentRound"
+                :get-player-name="getPlayerName"
+                :has-submitted-score="hasSubmittedScore"
+                :all-players="tournamentPlayers"
+                :rankings="rankingsStore"
+                :commanders-store="commandersStore"
+                :kills-store="killsStore"
+                :votes-store="votesStore"
+                @open-score-modal="handleOpenScoreModal"
+                @submit-kills="handleKillsSubmit"
+                @open-commander-modal="handleOpenCommanderModal"
+                @open-scores-modal="handleOpenScoresModal"
+                @open-votes-modal="handleOpenVotesModal"
+                @reset-table="handleResetTable"
+              />
+            </div>
+            <StandingsCard
+              :standings="standings"
+              :loading="loading"
+              :title="standingsTitle"
+              :submitted-by-player-id="submittedByPlayerId"
+            />
+          </div>
         </template>
       </EventControlPanel>
 
@@ -541,6 +595,18 @@ const breadcrumbItems = computed(() => [
     <NextRoundModal
       v-model:open="showNextRoundModal"
       @confirm="confirmNextRound"
+    />
+
+    <ConfirmModal
+      v-model:open="showEndEventConfirm"
+      title="Termina evento"
+      description="Stai per terminare l'evento"
+      question="Vuoi terminare l'evento"
+      warning="Questa azione non può essere annullata."
+      confirm-label="Termina"
+      cancel-label="Annulla"
+      confirm-icon="i-lucide-flag"
+      @confirm="confirmEndEvent"
     />
 
     <TablePreviewModal
