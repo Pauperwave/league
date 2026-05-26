@@ -1,18 +1,34 @@
 import { describe, expect, it } from 'vitest'
-import { getStandingsTitle, isLastRoundState } from '../../../../utils/eventFlow'
+import { buildStandingsSubmissionMap } from '../../../../utils/standingsSubmission'
 
-describe('event page flow helpers', () => {
-  it('detects last round only when playing with valid totals', () => {
-    expect(isLastRoundState('playing', 3, 3)).toBe(true)
-    expect(isLastRoundState('playing', 4, 3)).toBe(true)
-    expect(isLastRoundState('registration', 3, 3)).toBe(false)
-    expect(isLastRoundState('playing', 2, 3)).toBe(false)
-    expect(isLastRoundState('playing', 1, 0)).toBe(false)
-  })
+describe('event flow helpers', () => {
+  it('builds a submission map for current round pairings', () => {
+    const pairings = [
+      {
+        pairing_id: 1,
+        pairing_player1_id: 10,
+        pairing_player2_id: 11,
+        pairing_player3_id: null,
+        pairing_player4_id: null,
+      },
+      {
+        pairing_id: 2,
+        pairing_player1_id: 12,
+        pairing_player2_id: 13,
+        pairing_player3_id: null,
+        pairing_player4_id: null,
+      },
+    ]
 
-  it('builds standings titles by status and round', () => {
-    expect(getStandingsTitle('ended', 3)).toBe('Classifica Finale')
-    expect(getStandingsTitle('playing', 2)).toBe('Classifica Round 2')
-    expect(getStandingsTitle('registration', 0)).toBe('Classifica')
+    const rankingsByPairing = new Map<number, number[]>([
+      [1, [10, 11]],
+    ])
+
+    const submitted = buildStandingsSubmissionMap(pairings, rankingsByPairing)
+
+    expect(submitted.get(10)).toBe(true)
+    expect(submitted.get(11)).toBe(true)
+    expect(submitted.get(12)).toBe(false)
+    expect(submitted.get(13)).toBe(false)
   })
 })

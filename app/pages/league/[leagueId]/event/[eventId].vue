@@ -1,8 +1,7 @@
 <!-- app\pages\league\[leagueId]\event\[eventId].vue -->
 <script setup lang="ts">
-import type { Player, NewPlayer, Seat, TournamentPlayer, TournamentTable, Kill } from '#shared/utils/types'
+import type { EventStatus, Player, NewPlayer, Seat, TournamentPlayer, TournamentTable, Kill } from '#shared/utils/types'
 import type { PairingHistoryEntry, PairingPlayer } from '~/composables/events/pairing/pairingOptimizer'
-import { getStandingsTitle, isLastRoundState } from '~/utils/eventFlow'
 import { buildStandingsSubmissionMap } from '~/utils/standingsSubmission'
 
 type PlayerStatusUpdate = {
@@ -253,6 +252,15 @@ const submittedByPlayerId = computed<Record<number, boolean>>(() =>
     buildStandingsSubmissionMap(pairings.value, rankingsByPairing.value).entries()
   )
 )
+
+const isLastRoundState = (status: EventStatus, currentRoundValue: number, totalRoundsValue: number): boolean =>
+  status === 'playing' && currentRoundValue >= totalRoundsValue && totalRoundsValue > 0
+
+const getStandingsTitle = (status: EventStatus, currentRoundValue: number): string => {
+  if (status === 'ended') return 'Classifica Finale'
+  if (currentRoundValue > 0) return `Classifica Round ${currentRoundValue}`
+  return 'Classifica'
+}
 
 const standingsTitle = computed(() => getStandingsTitle(eventStatus.value, currentRound.value))
 const isLastRound = computed(() => isLastRoundState(eventStatus.value, currentRound.value, totalRounds.value))
