@@ -1,18 +1,8 @@
-import { fileURLToPath } from 'node:url'
-import vue from '@vitejs/plugin-vue'
 import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
-  plugins: [vue()],
-  resolve: {
-    alias: {
-      '~': fileURLToPath(new URL('./app', import.meta.url)),
-      '#shared': fileURLToPath(new URL('./shared', import.meta.url)),
-      '#imports': fileURLToPath(new URL('./test/nuxt-imports', import.meta.url)),
-    },
-  },
   test: {
-    environment: 'happy-dom',
+    environment: 'node',
     include: ['app/**/*.test.ts'],
     globals: true,
   },
