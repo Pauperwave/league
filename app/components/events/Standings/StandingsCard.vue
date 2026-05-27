@@ -1,4 +1,4 @@
-<!-- app\components\Events\StandingsCard.vue -->
+<!-- app\components\events\Standings\StandingsCard.vue -->
 <script setup lang="ts">
 interface Standing {
   player_id: number
@@ -12,9 +12,16 @@ interface Standing {
   }
 }
 
-defineProps<{
+const {
+  standings,
+  loading = false,
+  title = 'Classifica',
+  submittedByPlayerId = {},
+} = defineProps<{
   standings: Standing[]
   loading?: boolean
+  title?: string
+  submittedByPlayerId?: Record<number, boolean>
 }>()
 </script>
 
@@ -22,7 +29,7 @@ defineProps<{
   <div class="bg-linear-to-b from-primary/10 to-transparent rounded-xl p-6 border-2 border-primary/30 shadow-lg">
     <div class="flex items-center justify-center gap-2 mb-4">
       <UIcon name="i-lucide-trophy" class="size-5 text-primary" />
-      <h4 class="text-lg font-bold text-primary">Classifica</h4>
+      <h4 class="text-lg font-bold text-primary">{{ title }}</h4>
     </div>
 
     <ClientOnly>
@@ -35,19 +42,29 @@ defineProps<{
           :key="standing.player_id"
           class="flex items-center justify-between p-3 bg-elevated rounded-lg"
         >
-          <div class="flex items-center gap-3">
-            <span class="w-6 h-6 flex items-center justify-center rounded-full bg-primary/20 text-primary font-bold text-sm">
-              {{ index + 1 }}
-            </span>
-            <div>
-              <p class="font-medium text-sm">
-                {{ standing.players?.player_name }} {{ standing.players?.player_surname }}
-              </p>
-              <p class="text-xs text-muted">
-                V: {{ standing.victories ?? 0 }} | Brew: {{ standing.brew_received ?? 0 }} | Play: {{ standing.play_received ?? 0 }}
-              </p>
+            <div class="flex items-center gap-3">
+              <span class="w-6 h-6 flex items-center justify-center rounded-full bg-primary/20 text-primary font-bold text-sm">
+                {{ index + 1 }}
+              </span>
+              <div>
+                <p class="font-medium text-sm">
+                  {{ standing.players?.player_name }} {{ standing.players?.player_surname }}
+                </p>
+                <div class="flex items-center gap-2">
+                  <p class="text-xs text-muted">
+                    V: {{ standing.victories ?? 0 }} | Brew: {{ standing.brew_received ?? 0 }} | Play: {{ standing.play_received ?? 0 }}
+                  </p>
+                  <UBadge
+                    v-if="submittedByPlayerId[standing.player_id]"
+                    size="xs"
+                    color="success"
+                    variant="soft"
+                  >
+                    Inserito
+                  </UBadge>
+                </div>
+              </div>
             </div>
-          </div>
           <span class="text-lg font-bold text-primary">{{ standing.standing_player_score }} PT</span>
         </div>
       </div>

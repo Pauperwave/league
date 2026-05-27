@@ -14,7 +14,13 @@ describe('StandingsCard', () => {
         }],
         submittedByPlayerId: { 1: true },
       },
-      global: { stubs: { ClientOnly: true, UIcon: true, UBadge: true } },
+      global: {
+        stubs: {
+          ClientOnly: { template: '<div><slot /></div>' },
+          UIcon: { template: '<span />' },
+          UBadge: { template: '<span><slot /></span>' },
+        },
+      },
     })
 
     expect(wrapper.text()).toContain('Classifica Parziale')

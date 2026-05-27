@@ -8,10 +8,15 @@ import type {
   TournamentPlayer,
   TournamentTable,
 } from '#shared/utils/types'
+import { computed, ref, watch } from 'vue'
 import type {
   PairingHistoryEntry,
   PairingPlayer,
 } from '~/composables/events/pairing/pairingOptimizer'
+import { useToast } from '#imports'
+import { useTableDnd } from '~/composables/tables/useTableDnd'
+import { usePairingPresets } from '~/composables/event/usePairingPresets'
+import { useOptimizationNotifier } from '~/composables/event/useOptimizationNotifier'
 import { getPairingPreferences, savePairingPreferences } from '~/composables/events/pairing/pairingPreferences'
 import { useButtonLogging } from '~/composables/useButtonLogging'
 

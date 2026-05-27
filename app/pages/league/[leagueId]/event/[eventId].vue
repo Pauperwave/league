@@ -1,8 +1,9 @@
 <!-- app\pages\league\[leagueId]\event\[eventId].vue -->
 <script setup lang="ts">
-import type { Player, NewPlayer, Seat, TournamentPlayer, TournamentTable, Kill } from '#shared/utils/types'
+import type { EventStatus, Player, NewPlayer, Seat, TournamentPlayer, TournamentTable, Kill } from '#shared/utils/types'
 import type { PairingHistoryEntry, PairingPlayer } from '~/composables/events/pairing/pairingOptimizer'
 import CommanderModal from '~/components/modals/CommanderModal.vue'
+import { buildStandingsSubmissionMap } from '~/utils/standingsSubmission'
 
 type PlayerStatusUpdate = {
   playerId: number
@@ -98,6 +99,7 @@ if (phaseFromQuery.value !== 'previewTables' && phaseFromQuery.value !== eventSt
 }
 
 const showEventEditModal = ref(false)
+const showNextRoundModal = ref(false)
 const showStartPreviewModal = ref(previewFromQuery.value)
 const showCancelRoundConfirm = ref(false)
 const showEndEventConfirm = ref(false)
@@ -351,9 +353,46 @@ const pairingPlayersForScoring = computed<PairingPlayer[]>(() => {
 
 const pairingHistoryForScoring = computed<PairingHistoryEntry[]>(() => pairingHistory.value)
 
-async function handleAdvance() {
-  syncPreview(true)
-  showStartPreviewModal.value = true
+const rankingsByPairing = computed(() => {
+  const entries = new Map<number, number[]>()
+  for (const [pairingId, rankingWithRanks] of rankingsStore.rankingsWithRanks.entries()) {
+    entries.set(pairingId, rankingWithRanks.map(entry => entry.playerId))
+  }
+  return entries
+})
+
+const submittedByPlayerId = computed<Record<number, boolean>>(() =>
+  Object.fromEntries(
+    buildStandingsSubmissionMap(pairings.value, rankingsByPairing.value).entries()
+  )
+)
+
+const isLastRoundState = (status: EventStatus, currentRoundValue: number, totalRoundsValue: number): boolean =>
+  status === 'playing' && currentRoundValue >= totalRoundsValue && totalRoundsValue > 0
+
+const getStandingsTitle = (status: EventStatus, currentRoundValue: number): string => {
+  if (status === 'ended') return 'Classifica Finale'
+  if (currentRoundValue > 0) return `Classifica Round ${currentRoundValue}`
+  return 'Classifica'
+}
+
+const standingsTitle = computed(() => getStandingsTitle(eventStatus.value, currentRound.value))
+const isLastRound = computed(() => isLastRoundState(eventStatus.value, currentRound.value, totalRounds.value))
+
+async function confirmStartEvent(playerOrder: number[]) {
+  const ok = await startEvent(playerOrder)
+  if (ok) showStartPreviewModal.value = false
+}
+
+async function confirmNextRound() {
+  showNextRoundModal.value = false
+  const ok = await nextRound()
+  if (ok) {
+    killsStore.reset()
+    rankingsStore.reset()
+    commandersStore.reset()
+    votesStore.reset()
+  }
 }
 
 function handleOpenKillModal(pairingId: number) {
@@ -377,6 +416,26 @@ async function handlePreviewConfirm(playerOrder: number[]) {
       showStartPreviewModal.value = false
     }
   }
+}
+
+async function confirmEndEvent() {
+  showEndEventConfirm.value = false
+  const ok = await nextRound()
+  if (ok) {
+    killsStore.reset()
+    rankingsStore.reset()
+    commandersStore.reset()
+    votesStore.reset()
+  }
+}
+
+function handleAdvance() {
+  if (isLastRound.value) {
+    showEndEventConfirm.value = true
+    return
+  }
+
+  showStartPreviewModal.value = true
 }
 
 async function handleUpdateEvent(payload: Parameters<typeof updateEvent>[0]) {
@@ -581,17 +640,6 @@ async function confirmCancelRound() {
   }
 }
 
-async function confirmEndEvent() {
-  showEndEventConfirm.value = false
-  const ok = await nextRound()
-  if (ok) {
-    killsStore.reset()
-    rankingsStore.reset()
-    commandersStore.reset()
-    votesStore.reset()
-  }
-}
-
 async function handleBatchRemove(playerIds: number[]) {
   for (const playerId of playerIds) {
     await removeFromWaitingList(playerId)
@@ -691,9 +739,20 @@ const breadcrumbItems = computed(() => [
             />
           </EventHeaderCard>
 
-          <!-- Playing Phase - Show PairingsCard (tables) + Standings -->
-          <div v-else class="flex flex-col lg:flex-row gap-6">
-            <div class="flex-1 min-w-0">
+          <!-- Playing Phase - Pairings + Standings -->
+          <div
+            v-else
+            class="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]"
+          >
+            <div class="space-y-4">
+              <div class="flex justify-end">
+                <UButton
+                  trailing-icon="i-lucide-arrow-right"
+                  @click="handleAdvance"
+                >
+                  Avanti
+                </UButton>
+              </div>
               <PairingsCard
                 :pairings="pairings"
                 :current-round="currentRound"
@@ -713,12 +772,12 @@ const breadcrumbItems = computed(() => [
                 @reset-table="handleResetTable"
               />
             </div>
-            <div class="w-full lg:w-80 shrink-0">
-              <StandingsCard
-                :standings="liveStandings"
-                :loading="loading"
-              />
-            </div>
+            <StandingsCard
+              :standings="liveStandings"
+              :loading="loading"
+              :title="standingsTitle"
+              :submitted-by-player-id="submittedByPlayerId"
+            />
           </div>
         </template>
       </EventControlPanel>
@@ -726,6 +785,11 @@ const breadcrumbItems = computed(() => [
     </div>
 
     <!-- Modals -->
+    <NextRoundModal
+      v-model:open="showNextRoundModal"
+      @confirm="confirmNextRound"
+    />
+
     <TablePreviewModal
       v-model:open="showStartPreviewModal"
       :tables="previewModalTables"
