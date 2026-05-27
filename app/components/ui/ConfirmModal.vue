@@ -2,7 +2,19 @@
 <script setup lang="ts">
 import { useButtonLogging } from '~/composables/useButtonLogging'
 
-interface Props {
+const {
+  title,
+  description,
+  question,
+  subject = '',
+  warning = '',
+  confirmLabel,
+  cancelLabel,
+  confirmIcon = 'i-lucide-check',
+  cancelIcon = 'i-lucide-undo-2',
+  loading = false,
+  dismissible = true,
+} = defineProps<{
   title: string
   description: string
   question: string
@@ -14,16 +26,7 @@ interface Props {
   cancelIcon?: string
   loading?: boolean
   dismissible?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  subject: '',
-  warning: '',
-  confirmIcon: 'i-lucide-check',
-  cancelIcon: 'i-lucide-undo-2',
-  loading: false,
-  dismissible: true
-})
+}>()
 
 const emit = defineEmits<{
   confirm: []
@@ -33,8 +36,8 @@ const emit = defineEmits<{
 
 const open = defineModel<boolean>('open', { required: true })
 
-const confirmLogging = useButtonLogging('Confirm Modal', { title: () => props.title, subject: () => props.subject })
-const cancelLogging = useButtonLogging('Cancel Modal', { title: () => props.title })
+const confirmLogging = useButtonLogging('Confirm Modal', { title: () => title, subject: () => subject })
+const cancelLogging = useButtonLogging('Cancel Modal', { title: () => title })
 
 function onConfirm() {
   confirmLogging.logClick()
@@ -94,6 +97,7 @@ function onCancel() {
       </UButton>
       <CancelButton
         :label="cancelLabel"
+        :icon="cancelIcon"
         :disabled="loading"
         @click="onCancel"
       />

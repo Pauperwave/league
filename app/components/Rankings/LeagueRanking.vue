@@ -3,14 +3,13 @@
 import type { TableColumn, TableRow } from '@nuxt/ui'
 import type { StandingWithPlayer } from '#shared/utils/types'
 
-interface Props {
+const {
+  standings,
+  loading = false,
+} = defineProps<{
   standings: StandingWithPlayer[]
   loading?: boolean
-}
-
-withDefaults(defineProps<Props>(), {
-  loading: false
-})
+}>()
 
 const TOP_SPOTS = 8
 

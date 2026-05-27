@@ -1,11 +1,9 @@
 <!-- app\components\CommanderSearch.vue -->
 <script setup lang="ts">
-interface Props {
+const props = defineProps<{
   modelValue?: string | null
   whitelist?: string[] | null
-}
-
-const props = defineProps<Props>()
+}>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: string | null]

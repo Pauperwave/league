@@ -1,12 +1,12 @@
+<!-- app\components\events\Pairings\Table\TablePreviewToolbar.vue -->
 <script setup lang="ts">
-interface Props {
+const {
+  totalScore,
+  loading = false,
+} = defineProps<{
   totalScore: number
   loading?: boolean
-}
-
-withDefaults(defineProps<Props>(), {
-  loading: false,
-})
+}>()
 
 const emit = defineEmits<{
   openSettings: []

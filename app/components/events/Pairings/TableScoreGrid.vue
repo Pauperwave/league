@@ -1,3 +1,4 @@
+<!-- app\components\events\Pairings\TableScoreGrid.vue -->
 <script setup lang="ts">
 import type { Pairing, Seat } from '#shared/utils/types'
 import TableSeatItem from './Table/TableSeatItem.vue'
@@ -11,14 +12,12 @@ interface DatabasePlayer {
   is_active: boolean
 }
 
-interface Props {
+const props = defineProps<{
   pairing: Pairing | null
   getPlayerName: (playerId: number) => string
   allPlayers: DatabasePlayer[]
-  savedRankingWithRanks?: { playerId: number; rank: number }[] // Ranking salvato con rank effettivi
-}
-
-const props = defineProps<Props>()
+  savedRankingWithRanks?: { playerId: number; rank: number }[]
+}>()
 
 const emit = defineEmits<{
   submit: [ranking: number[], rankingWithRanks: { playerId: number; rank: number }[]]

@@ -18,8 +18,13 @@ export default defineEventHandler(async (event) => {
   }
 
   const { password } = parsed.output
-  console.log('Server received password:', password)
-  console.log('Expected password:', config.sitePassword)
+
+  if (!config.sitePassword) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: 'Server misconfigured'
+    })
+  }
 
   if (password !== config.sitePassword) {
     throw createError({

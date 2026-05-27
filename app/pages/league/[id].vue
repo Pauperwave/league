@@ -1,4 +1,4 @@
-<!-- app\pages\league\[id].vue -->
+<!-- app\pages\league\[leagueId].vue -->
 <script setup lang="ts">
 import type { Event } from '#shared/utils/types'
 
@@ -20,10 +20,14 @@ interface UpdateLeagueData {
 
 const route = useRoute()
 const router = useRouter()
+const toast = useToast()
+
 const leagueId = Number(route.params.id)
 
 const leagueStore = useLeagueStore()
 const eventsStore = useEventStore()
+
+const { standings } = storeToRefs(eventsStore)
 
 const { data: rulesetsData, pending: rulesetsLoading } = useRulesets()
 const rulesets = computed(() => rulesetsData.value ?? [])
@@ -31,9 +35,8 @@ const rulesets = computed(() => rulesetsData.value ?? [])
 const { data: events, pending: eventsLoading, refresh: refreshEvents } = useEvents(leagueId)
 
 const currentLeague = computed(() => leagueStore.getLeagueById(leagueId))
-const standings = computed(() => eventsStore.standings)
 const classificaTitle = computed(() =>
-  currentLeague.value?.name ? `Classifica ${currentLeague.value.name}` : 'Classifica'
+  `Classifica ${currentLeague.value?.name ?? ''}`.trim()
 )
 
 const breadcrumbItems = computed(() => [
@@ -42,7 +45,17 @@ const breadcrumbItems = computed(() => [
   { label: currentLeague.value?.name ?? 'Lega' },
 ])
 
-await useAsyncData(`standings-${leagueId}`, () => eventsStore.fetchLeagueStandings(leagueId))
+const { error: standingsError } = await useAsyncData(`standings-${leagueId}`, () => eventsStore.fetchLeagueStandings(leagueId))
+
+onMounted(() => {
+  if (standingsError.value) {
+    toast.add({
+      title: 'Errore caricamento classifica',
+      description: standingsError.value.message || 'Impossibile caricare la classifica della lega',
+      color: 'error'
+    })
+  }
+})
 
 // — Modal state —
 const showCreateModal = ref(false)
@@ -77,9 +90,21 @@ async function createEvent(data: CreateEventData) {
     event_registration_open: true,
   })
 
-  if (!result.success) return console.error(result.error)
+  if (!result.success) {
+    toast.add({
+      title: 'Errore creazione evento',
+      description: result.error || 'Impossibile creare l\'evento',
+      color: 'error'
+    })
+    return
+  }
 
   showCreateModal.value = false
+  toast.add({
+    title: 'Evento creato',
+    description: `L'evento "${data.eventName}" è stato creato con successo.`,
+    color: 'success'
+  })
   await refreshEvents()
 }
 
@@ -90,10 +115,22 @@ async function updateEvent({ id, data }: UpdateEventData) {
     event_round_number: data.numRound,
   })
 
-  if (!result.success) return console.error(result.error)
+  if (!result.success) {
+    toast.add({
+      title: 'Errore aggiornamento evento',
+      description: result.error || 'Impossibile aggiornare l\'evento',
+      color: 'error'
+    })
+    return
+  }
 
   showEventEditModal.value = false
   eventToEdit.value = null
+  toast.add({
+    title: 'Evento aggiornato',
+    description: `L'evento "${data.eventName}" è stato aggiornato con successo.`,
+    color: 'success'
+  })
   await refreshEvents()
 }
 
@@ -112,23 +149,49 @@ async function confirmDeleteEvent() {
 
   const result = await eventsStore.deleteEvent(eventToDelete.value.event_id)
 
-  if (!result.success) return console.error('Failed to delete event:', result.error)
+  if (!result.success) {
+    toast.add({
+      title: 'Errore eliminazione evento',
+      description: result.error || 'Impossibile eliminare l\'evento',
+      color: 'error'
+    })
+    return
+  }
 
   showDeleteConfirm.value = false
   eventToDelete.value = null
+  toast.add({
+    title: 'Evento eliminato',
+    description: 'L\'evento è stato eliminato con successo.',
+    color: 'success'
+  })
   await refreshEvents()
 }
 
 // — League —
-async function updateLeague({ data }: UpdateLeagueData) {
-  const result = await leagueStore.updateLeague(leagueId, {
+async function updateLeague({ id, data }: UpdateLeagueData) {
+  const result = await leagueStore.updateLeague(id, {
     name: data.name,
     starts_at: data.startsAt,
     ends_at: data.endsAt,
     ruleset_id: data.rulesetId,
   })
 
-  if (!result.success) return console.error(result.error)
+  if (!result.success) {
+    toast.add({
+      title: 'Errore aggiornamento lega',
+      description: result.error || 'Impossibile aggiornare la lega',
+      color: 'error'
+    })
+    return
+  }
+
+  showLeagueEditModal.value = false
+  toast.add({
+    title: 'Lega aggiornata',
+    description: 'Le informazioni della lega sono state aggiornate con successo.',
+    color: 'success'
+  })
 }
 </script>
 
@@ -141,76 +204,25 @@ async function updateLeague({ data }: UpdateLeagueData) {
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6 items-start">
 
       <!-- Events List -->
-      <div class="lg:col-span-2 flex flex-col overflow-hidden">
-        <div class="flex items-center justify-between shrink-0 mb-3">
-          <UButton
-            color="neutral"
-            icon="i-lucide-arrow-left"
-            aria-label="Torna indietro"
-            @click="router.push('/leagues')"
-          >
-            Indietro
-          </UButton>
-
-          <div class="flex items-center gap-2">
-            <h1 class="text-xl font-semibold">
-              {{ currentLeague?.name ?? 'Lega' }}
-            </h1>
-            <UButton
-              color="neutral"
-              variant="ghost"
-              icon="i-lucide-pencil"
-              size="sm"
-              aria-label="Modifica nome lega"
-              @click="showLeagueEditModal = true"
-            />
-          </div>
-
-          <UButton
-            color="primary"
-            icon="i-lucide-plus"
-            @click="showCreateModal = true"
-          >
-            Nuovo Evento
-          </UButton>
-        </div>
-
-        <EventTable
+      <div class="lg:col-span-2 flex flex-col overflow-hidden h-full">
+        <LeagueEventsPanel
+          :league-id="leagueId"
+          :current-league="currentLeague"
           :events="events ?? []"
-          :loading="eventsLoading"
-          class="flex-none"
-          @view="navigateToEvent"
-          @edit="openEditEvent"
-          @delete="openDeleteEvent"
+          :events-loading="eventsLoading"
+          @edit-league="showLeagueEditModal = true"
+          @create-event="showCreateModal = true"
+          @view-event="navigateToEvent"
+          @edit-event="openEditEvent"
+          @delete-event="openDeleteEvent"
         />
-
-        <div class="mt-3 flex flex-col flex-1 min-h-0 overflow-hidden">
-          <h2 class="text-lg font-semibold mb-2 shrink-0">
-            Punteggi per Evento
-          </h2>
-          <EventRanking :league-id="leagueId" class="flex-1 min-h-0 overflow-auto" />
-        </div>
       </div>
 
       <!-- League Standings -->
       <div class="lg:col-span-1 h-full">
-        <div class="h-full bg-linear-to-b from-primary/10 to-transparent rounded-xl p-6 border-2 border-primary/30 shadow-lg overflow-hidden flex flex-col">
-          <div class="flex items-center justify-center gap-2 mb-4">
-            <UIcon name="i-lucide-trophy" class="size-6 text-primary" />
-            <h2 class="text-xl font-bold text-center text-primary">
-              {{ classificaTitle }}
-            </h2>
-          </div>
-
-          <ClientOnly>
-            <LeagueRanking :standings="standings" class="flex-1 overflow-auto" />
-            <template #fallback>
-              <div class="flex items-center justify-center py-8">
-                <UIcon name="i-lucide-loader-2" class="animate-spin text-2xl text-primary" />
-              </div>
-            </template>
-          </ClientOnly>
-        </div>
+        <LeagueStandingsCard
+          :title="classificaTitle"
+          :standings="standings" />
       </div>
     </div>
 

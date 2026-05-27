@@ -4,12 +4,10 @@ import type { Player } from '#shared/utils/types'
 import { usePlayerOptions } from '~/composables/supabase/usePlayers'
 import { useButtonLogging } from '~/composables/useButtonLogging'
 
-interface Props {
+const props = defineProps<{
   players: Player[]
   waitingPlayers: number[]
-}
-
-const props = defineProps<Props>()
+}>()
 
 const emit = defineEmits<{
   select: [playerIds: number[]]

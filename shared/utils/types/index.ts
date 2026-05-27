@@ -1,3 +1,5 @@
+// Auto-generated database types are in `database.ts` — do not modify that file.
+// This file extends them with project-specific types.
 import type { Tables, TablesInsert, Enums } from '#shared/utils/types/database'
 
 // ─── Table Row Types ────────────────────────────────────────────────────────

@@ -1,11 +1,9 @@
 <!-- app\components\Events\RoundTimer.vue -->
 <script setup lang="ts">
-interface Props {
+const props = defineProps<{
   durationMinutes: number
   round: number
-}
-
-const props = defineProps<Props>()
+}>()
 
 const emit = defineEmits<{
   expired: []

@@ -9,7 +9,8 @@ export default defineNuxtConfig({
     '@nuxtjs/robots',
     '@vueuse/nuxt',
     '@nuxt/image',
-    'motion-v/nuxt'
+    'motion-v/nuxt',
+    'pinia-plugin-persistedstate/nuxt'
   ],
 
   components: [
@@ -32,7 +33,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     // Private (server-only)
-    sitePassword: 'Amicizia'
+    sitePassword: process.env.NUXT_SITE_PASSWORD
   },
 
   routeRules: {
@@ -54,6 +55,12 @@ export default defineNuxtConfig({
     optimizeDeps: {
       include: [
         '@internationalized/date',
+        'fast-levenshtein', // CJS
+        '@vue-flow/core',
+        '@vue-flow/background',
+        '@vue-flow/controls',
+        'vue-draggable-plus',
+        'valibot'
       ]
     }
   },

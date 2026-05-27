@@ -1,3 +1,4 @@
+<!-- app\components\events\Pairings\Kill\KillPlayerNode.vue -->
 <script setup lang="ts">
 import { Handle, Position } from '@vue-flow/core'
 import type { TournamentPlayer } from '#shared/utils/types'

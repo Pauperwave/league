@@ -1,3 +1,4 @@
+<!-- app\components\events\Pairings\TableScoresModal.vue -->
 <script setup lang="ts">
 import { h, resolveComponent } from 'vue'
 import type { TableColumn } from '@nuxt/ui'

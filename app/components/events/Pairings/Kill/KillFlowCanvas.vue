@@ -1,3 +1,4 @@
+<!-- app\components\events\Pairings\Kill\KillFlowCanvas.vue -->
 <script setup lang="ts">
 import { VueFlow, MarkerType, useVueFlow, type Node, type Edge, type Connection, type EdgeMouseEvent } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
@@ -8,7 +9,7 @@ import '@vue-flow/controls/dist/style.css'
 import KillPlayerNode from './KillPlayerNode.vue'
 import type { TournamentPlayer } from '#shared/utils/types'
 
-const { setViewport, fitView } = useVueFlow()
+const { setViewport, fitView, setEdges, onInit } = useVueFlow()
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 const props = defineProps<{
@@ -18,9 +19,6 @@ const props = defineProps<{
 // ─── Store & Toast ────────────────────────────────────────────────────────────
 const killsStore = useKillsStore()
 const toast = useToast()
-
-// ─── Key for force re-render when kills change ───────────────────────────────
-const flowKey = computed(() => killsStore.kills.length)
 
 // ─── Registrazione nodi custom ────────────────────────────────────────────────
 // IMPORTANTE: definire fuori dal template, altrimenti Vue Flow
@@ -47,8 +45,8 @@ const nodes = computed<Node[]>(() =>
   })),
 )
 
-// ─── Edges (uccisioni) — sincronizzati con lo store ───────────────────────────
-const edges = computed<Edge[]>(() => {
+// ─── Helper: mappa kills dello store in edge di Vue Flow ──────────────────────
+function mapKillsToEdges(): Edge[] {
   const validPlayerIds = new Set(props.players.map((p) => String(p.id)))
   return killsStore.kills
     .filter((kill) => validPlayerIds.has(String(kill.killerId)) && validPlayerIds.has(String(kill.victimId)))
@@ -60,8 +58,8 @@ const edges = computed<Edge[]>(() => {
         target: String(kill.victimId),
         sourceHandle: 'source',
         targetHandle: 'target',
-          type: isSuicide ? 'smoothstep' : 'default',
-          animated: isSuicide, // Loop animato per suicidi
+        type: isSuicide ? 'smoothstep' : 'default',
+        animated: isSuicide,
         deletable: true,
         style: { stroke: 'var(--ui-color-error-500)', strokeWidth: 2.5 },
         markerEnd: {
@@ -69,10 +67,19 @@ const edges = computed<Edge[]>(() => {
           color: 'var(--ui-color-error-500)',
           width: 15,
           height: 15,
-        }
+        },
       }
     })
+}
+
+// ─── Sincronizza edges Vue Flow con lo store kills ────────────────────────────
+onInit(() => {
+  setEdges(mapKillsToEdges())
 })
+
+watch(killsStore.kills, () => {
+  setEdges(mapKillsToEdges())
+}, { deep: true })
 
 // ─── Opzioni default per nuovi edge durante il drag ───────────────────────────
 const defaultEdgeOptions = {
@@ -141,16 +148,14 @@ function toggleDarkMode() {
 }
 
 function logToObject() {
-  console.log('Vue Flow data:', { nodes: nodes.value, edges: edges.value })
+  console.log('Vue Flow data:', { nodes: nodes.value, edges: mapKillsToEdges() })
 }
 </script>
 
 <template>
   <div class="w-full rounded-lg overflow-hidden border border-default" style="height: 420px">
     <VueFlow
-      :key="flowKey"
       :nodes="nodes"
-      :edges="edges"
       :node-types="nodeTypes"
       :class="{ dark }"
       :connect-on-click="false"

@@ -1,3 +1,4 @@
+<!-- app\components\events\Pairings\Table\TablePreviewGrid.vue -->
 <script setup lang="ts">
 import type { Seat, TournamentTable } from '#shared/utils/types'
 
@@ -6,15 +7,13 @@ interface TableStatus {
   label: string
 }
 
-interface Props {
+const { tables, isDragging, getTableCardClass, getTableStatus, getTableScore } = defineProps<{
   tables: TournamentTable[]
   isDragging: boolean
   getTableCardClass: (table: TournamentTable) => string
   getTableStatus: (table: TournamentTable) => TableStatus
   getTableScore: (tableIndex: number) => number
-}
-
-const { tables, isDragging, getTableCardClass, getTableStatus, getTableScore } = defineProps<Props>()
+}>()
 const emit = defineEmits<{
   updateSeats: [tableIndex: number, seats: [Seat, Seat, Seat, Seat]]
   dragStart: []

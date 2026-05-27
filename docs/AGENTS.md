@@ -31,6 +31,23 @@
 - **Add path comment at the beginning of every Vue file**: `<!-- app\components\ComponentName.vue -->` or `<!-- app\pages\page.vue -->`
 - Use single backslash `\` in path comments (not `\\`)
 - **Prefer inline type in `defineProps`** instead of a separate interface: `defineProps<{ prop: string }>()` rather than `interface Props { prop: string }`
+- **Props with defaults (Vue 3.4+):** use reactive destructuring on `defineProps`, not `withDefaults` (legacy):
+
+```vue
+<script setup lang="ts">
+const {
+  totalScore,
+  loading = false,
+} = defineProps<{
+  totalScore: number
+  loading?: boolean
+}>()
+</script>
+```
+
+  - Defaults live next to each prop in the destructuring pattern
+  - Destructured props stay reactive in Vue 3.4+
+  - Avoid `const props = withDefaults(defineProps<...>(), { ... })` in new or refactored code
 
 ### After File Modifications
 

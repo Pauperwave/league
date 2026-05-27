@@ -1,13 +1,12 @@
+<!-- app\components\events\Pairings\TableScoreModal.vue -->
 <script setup lang="ts">
 import type { Pairing } from '#shared/utils/types'
 
-interface Props {
+const props = defineProps<{
   pairing: Pairing | null
   tableIndex: number | null
   getPlayerName: (playerId: number) => string
-}
-
-const props = defineProps<Props>()
+}>()
 
 const open = defineModel<boolean>('open', { default: false })
 

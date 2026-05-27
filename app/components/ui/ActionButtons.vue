@@ -1,5 +1,14 @@
+<!-- app\components\ui\ActionButtons.vue -->
 <script setup lang="ts">
-const props = withDefaults(defineProps<{
+const {
+  showEdit = true,
+  showView = false,
+  showDelete = true,
+  size = 'xs',
+  variant = 'outline',
+  disabled = false,
+  loading = false,
+} = defineProps<{
   showEdit?: boolean
   showView?: boolean
   showDelete?: boolean
@@ -7,15 +16,7 @@ const props = withDefaults(defineProps<{
   variant?: 'solid' | 'outline' | 'ghost' | 'link' | 'soft' | 'subtle'
   disabled?: boolean
   loading?: boolean
-}>(), {
-  showEdit: true,
-  showView: false,
-  showDelete: true,
-  size: 'xs',
-  variant: 'outline',
-  disabled: false,
-  loading: false,
-})
+}>()
 
 const emit = defineEmits<{
   edit: []
@@ -27,30 +28,30 @@ const emit = defineEmits<{
 <template>
   <div class="flex items-center justify-center gap-1" @click.stop>
     <BaseButton
-      v-if="props.showEdit"
+      v-if="showEdit"
       action="edit"
-      :size="props.size"
-      :variant="props.variant"
-      :disabled="props.disabled"
-      :loading="props.loading"
+      :size="size"
+      :variant="variant"
+      :disabled="disabled"
+      :loading="loading"
       @click="emit('edit')"
     />
     <BaseButton
-      v-if="props.showView"
+      v-if="showView"
       action="view"
-      :size="props.size"
-      :variant="props.variant"
-      :disabled="props.disabled"
-      :loading="props.loading"
+      :size="size"
+      :variant="variant"
+      :disabled="disabled"
+      :loading="loading"
       @click="emit('view')"
     />
     <BaseButton
-      v-if="props.showDelete"
+      v-if="showDelete"
       action="remove"
-      :size="props.size"
-      :variant="props.variant"
-      :disabled="props.disabled"
-      :loading="props.loading"
+      :size="size"
+      :variant="variant"
+      :disabled="disabled"
+      :loading="loading"
       @click="emit('delete')"
     />
   </div>

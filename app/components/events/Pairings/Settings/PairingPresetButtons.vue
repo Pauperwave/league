@@ -1,11 +1,10 @@
+<!-- app\components\events\Pairings\Settings\PairingPresetButtons.vue -->
 <script setup lang="ts">
 export type PairingPresetKind = 'balanced' | 'social' | 'competitive' | 'reset' | 'custom'
 
-interface Props {
+defineProps<{
   selected: PairingPresetKind
-}
-
-defineProps<Props>()
+}>()
 
 const emit = defineEmits<{
   select: [preset: Exclude<PairingPresetKind, 'custom'>]

@@ -1,15 +1,14 @@
+<!-- app\components\modals\DeckPlayVotesModal.vue -->
 <script setup lang="ts">
 import type { TournamentPlayer } from '#shared/utils/types'
 
-interface Props {
+const props = defineProps<{
   playerId: number
   playerName: string
   deckVotePlayerId: number | null
   playVotePlayerId: number | null
   otherPlayers: TournamentPlayer[]
-}
-
-const props = defineProps<Props>()
+}>()
 
 const emit = defineEmits<{
   submit: [deckVotePlayerId: number | null, playVotePlayerId: number | null]

@@ -51,25 +51,12 @@ export function useEventPage() {
   // Determine current phase from event state (alias for eventStatus)
   const currentPhase = computed(() => eventStatus.value)
 
-  // Sync URL with current phase and round (but not when in preview mode)
+  // Sync URL with current phase and round
   watch([currentPhase, currentRound], ([newPhase, newRound]) => {
-    console.log('[WATCHER] Phase/Round changed', {
-      newPhase,
-      newRound,
-      phaseFromQuery: phaseFromQuery.value,
-      roundFromQuery: roundFromQuery.value,
-    })
-    // Don't sync if URL is in preview mode
-    if (phaseFromQuery.value === 'preview') {
-      console.log('[WATCHER] Skipping sync - preview mode')
-      return
-    }
     // Don't sync if URL already has correct parameters (prevents overwriting on page reload)
     if (phaseFromQuery.value && phaseFromQuery.value === newPhase && roundFromQuery.value === newRound) {
-      console.log('[WATCHER] Skipping sync - URL already correct')
       return
     }
-    console.log('[WATCHER] Syncing URL', { newPhase, newRound })
     syncUrl(newPhase, newRound)
   })
 
@@ -85,7 +72,11 @@ export function useEventPage() {
   })
 
   const previewTables = computed<number[][]>(() => {
-    return buildPreviewTables([...playerStore.waitingPlayers])
+    if (eventStatus.value === 'registration') {
+      return buildPreviewTables([...playerStore.waitingPlayers])
+    }
+    const activePlayers = eventStore.standings.map(s => s.player_id)
+    return buildPreviewTables(activePlayers)
   })
 
   function getPlayerName(playerId: number): string {
@@ -128,8 +119,8 @@ export function useEventPage() {
     return true
   }
 
-  async function nextRound() {
-    const result = await eventStore.nextRound(eventId, currentRound.value)
+  async function nextRound(playerOrder?: number[]) {
+    const result = await eventStore.nextRound(eventId, currentRound.value, playerOrder)
     if (!result.success) return false
 
     await Promise.all([
@@ -199,6 +190,11 @@ export function useEventPage() {
     return eventStore.pairingHistory
   }
 
+  async function refreshEvents() {
+    await eventStore.fetchEvents(leagueId)
+    return eventStore.events
+  }
+
   const loading = computed(() => eventStore.loading || playerStore.loading)
 
   return {
@@ -235,5 +231,6 @@ export function useEventPage() {
     refreshWaiting,
     refreshStandings,
     refreshPairingHistory,
+    refreshEvents,
   }
 }

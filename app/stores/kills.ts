@@ -1,53 +1,58 @@
 import type { Kill } from '#shared/utils/types'
 
-interface KillsState {
-  kills: Kill[]
-}
+export const useKillsStore = defineStore('kills', () => {
+  const kills = ref<Kill[]>([])
 
-export const useKillsStore = defineStore('kills', {
-  state: (): KillsState => ({
-    kills: [],
-  }),
+  const isKillPresent = computed(() => (killerId: number, victimId: number) =>
+    kills.value.some(k => k.killerId === killerId && k.victimId === victimId))
 
-  getters: {
-    isKillPresent: (state) => (killerId: number, victimId: number) =>
-      state.kills.some((k) => k.killerId === killerId && k.victimId === victimId),
+  const isReverseKillPresent = computed(() => (killerId: number, victimId: number) =>
+    kills.value.some(k => k.killerId === victimId && k.victimId === killerId))
 
-    isReverseKillPresent: (state) => (killerId: number, victimId: number) =>
-      state.kills.some((k) => k.killerId === victimId && k.victimId === killerId),
+  const hasSuicided = computed(() => (playerId: number) =>
+    kills.value.some(k => k.killerId === playerId && k.victimId === playerId))
 
-    hasSuicided: (state) => (playerId: number) =>
-      state.kills.some((k) => k.killerId === playerId && k.victimId === playerId),
+  const killsByKiller = computed(() => (killerId: number) =>
+    kills.value.filter(k => k.killerId === killerId).map(k => k.victimId))
 
-    killsByKiller: (state) => (killerId: number) =>
-      state.kills.filter((k) => k.killerId === killerId).map((k) => k.victimId),
+  const deathsByVictim = computed(() => (victimId: number) =>
+    kills.value.filter(k => k.victimId === victimId).length)
 
-    deathsByVictim: (state) => (victimId: number) =>
-      state.kills.filter((k) => k.victimId === victimId).length,
-  },
+  function addKill(killerId: number, victimId: number): { success: boolean; error?: string } {
+    if (isKillPresent.value(killerId, victimId))
+      return { success: false, error: 'Uccisione già registrata' }
 
-  actions: {
-    addKill(killerId: number, victimId: number): { success: boolean; error?: string } {
+    if (isReverseKillPresent.value(killerId, victimId))
+      return { success: false, error: 'La vittima ha già ucciso questo giocatore' }
 
-      if (this.isKillPresent(killerId, victimId))
-        return { success: false, error: 'Uccisione già registrata' }
+    kills.value.push({ killerId, victimId })
 
-      if (this.isReverseKillPresent(killerId, victimId))
-        return { success: false, error: 'La vittima ha già ucciso questo giocatore' }
+    return { success: true }
+  }
 
-      this.kills.push({ killerId, victimId })
+  function removeKill(killerId: number, victimId: number) {
+    kills.value = kills.value.filter(
+      k => !(k.killerId === killerId && k.victimId === victimId),
+    )
+  }
 
-      return { success: true }
-    },
+  function reset() {
+    kills.value = []
+  }
 
-    removeKill(killerId: number, victimId: number) {
-      this.kills = this.kills.filter(
-        (k) => !(k.killerId === killerId && k.victimId === victimId),
-      )
-    },
-
-    reset() {
-      this.kills = []
-    },
+  return {
+    kills,
+    isKillPresent,
+    isReverseKillPresent,
+    hasSuicided,
+    killsByKiller,
+    deathsByVictim,
+    addKill,
+    removeKill,
+    reset,
+  }
+}, {
+  persist: {
+    storage: piniaPluginPersistedstate.localStorage(),
   },
 })

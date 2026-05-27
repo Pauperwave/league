@@ -3,13 +3,11 @@
 import type { EventStatus } from '#shared/utils/types'
 import { useButtonLogging } from '~/composables/useButtonLogging'
 
-interface Props {
+const props = defineProps<{
   eventName: string
   eventDate: string
   eventStatus: EventStatus
-}
-
-const props = defineProps<Props>()
+}>()
 
 const emit = defineEmits<{
   edit: []
@@ -52,9 +50,8 @@ const statusBadge = computed(() => {
         </div>
 
         <div class="flex flex-row items-end gap-1">
-          <UBadge :color="statusBadge.color">{{ statusBadge.label }}</UBadge>
-          <UBadge :color="eventStatus === 'registration' ? 'success' : 'error'">
-            {{ eventStatus === 'registration' ? 'Iscrizioni Aperte' : 'Iscrizioni Chiuse' }}
+          <UBadge :color="statusBadge.color" :icon="eventStatus === 'ended' ? 'i-lucide-flag' : undefined">
+            {{ statusBadge.label }}
           </UBadge>
         </div>
       </div>

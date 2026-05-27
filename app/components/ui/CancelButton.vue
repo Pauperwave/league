@@ -2,25 +2,23 @@
 <script setup lang="ts">
 import { useButtonLogging } from '~/composables/useButtonLogging'
 
-interface Props {
+const {
+  label = 'Annulla',
+  icon = 'i-lucide-undo-2',
+  loading = false,
+  disabled = false,
+} = defineProps<{
   label?: string
   icon?: string
   loading?: boolean
   disabled?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  label: 'Annulla',
-  icon: 'i-lucide-undo-2',
-  loading: false,
-  disabled: false
-})
+}>()
 
 const emit = defineEmits<{
   click: []
 }>()
 
-const clickLogging = useButtonLogging('Cancel Button', { label: () => props.label })
+const clickLogging = useButtonLogging('Cancel Button', { label: () => label })
 
 function handleClick() {
   clickLogging.logClick()

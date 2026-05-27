@@ -1,59 +1,71 @@
 interface VoteEntry {
   playerId: number
-  deckVotePlayerId: number | null // player ID for deck preference
-  playVotePlayerId: number | null // player ID for play quality
+  deckVotePlayerId: number | null
+  playVotePlayerId: number | null
 }
 
-interface VotesState {
-  votes: Map<number, VoteEntry> // playerId -> { deckVotePlayerId, playVotePlayerId }
-}
+export const useVotesStore = defineStore('votes', () => {
+  const votes = ref<Map<number, VoteEntry>>(new Map())
 
-export const useVotesStore = defineStore('votes', {
-  state: (): VotesState => ({
-    votes: new Map(),
-  }),
+  const getVotes = computed(() => (playerId: number) => votes.value.get(playerId))
 
-  getters: {
-    getVotes: (state) => (playerId: number) => state.votes.get(playerId),
-    getDeckVote: (state) => (playerId: number) => state.votes.get(playerId)?.deckVotePlayerId || null,
-    getPlayVote: (state) => (playerId: number) => state.votes.get(playerId)?.playVotePlayerId || null,
-    hasVotes: (state) => (playerId: number) => {
-      const entry = state.votes.get(playerId)
-      return !!entry && (entry.deckVotePlayerId !== null || entry.playVotePlayerId !== null)
-    },
-  },
+  const getDeckVote = computed(() => (playerId: number) =>
+    votes.value.get(playerId)?.deckVotePlayerId ?? null)
 
-  actions: {
-    setVotes(playerId: number, deckVotePlayerId: number | null, playVotePlayerId: number | null) {
-      this.votes.set(playerId, { playerId, deckVotePlayerId, playVotePlayerId })
-    },
+  const getPlayVote = computed(() => (playerId: number) =>
+    votes.value.get(playerId)?.playVotePlayerId ?? null)
 
-    setDeckVote(playerId: number, deckVotePlayerId: number | null) {
-      const existing = this.votes.get(playerId)
-      if (existing) {
-        this.votes.set(playerId, { ...existing, deckVotePlayerId })
-      }
-      else {
-        this.votes.set(playerId, { playerId, deckVotePlayerId, playVotePlayerId: null })
-      }
-    },
+  const hasVotes = computed(() => (playerId: number) => {
+    const entry = votes.value.get(playerId)
+    return !!entry && (entry.deckVotePlayerId !== null || entry.playVotePlayerId !== null)
+  })
 
-    setPlayVote(playerId: number, playVotePlayerId: number | null) {
-      const existing = this.votes.get(playerId)
-      if (existing) {
-        this.votes.set(playerId, { ...existing, playVotePlayerId })
-      }
-      else {
-        this.votes.set(playerId, { playerId, deckVotePlayerId: null, playVotePlayerId })
-      }
-    },
+  function setVotes(playerId: number, deckVotePlayerId: number | null, playVotePlayerId: number | null) {
+    votes.value.set(playerId, { playerId, deckVotePlayerId, playVotePlayerId })
+  }
 
-    removeVotes(playerId: number) {
-      this.votes.delete(playerId)
-    },
+  function setDeckVote(playerId: number, deckVotePlayerId: number | null) {
+    const existing = votes.value.get(playerId)
+    if (existing) {
+      votes.value.set(playerId, { ...existing, deckVotePlayerId })
+    }
+    else {
+      votes.value.set(playerId, { playerId, deckVotePlayerId, playVotePlayerId: null })
+    }
+  }
 
-    reset() {
-      this.votes.clear()
-    },
+  function setPlayVote(playerId: number, playVotePlayerId: number | null) {
+    const existing = votes.value.get(playerId)
+    if (existing) {
+      votes.value.set(playerId, { ...existing, playVotePlayerId })
+    }
+    else {
+      votes.value.set(playerId, { playerId, deckVotePlayerId: null, playVotePlayerId })
+    }
+  }
+
+  function removeVotes(playerId: number) {
+    votes.value.delete(playerId)
+  }
+
+  function reset() {
+    votes.value.clear()
+  }
+
+  return {
+    votes,
+    getVotes,
+    getDeckVote,
+    getPlayVote,
+    hasVotes,
+    setVotes,
+    setDeckVote,
+    setPlayVote,
+    removeVotes,
+    reset,
+  }
+}, {
+  persist: {
+    storage: piniaPluginPersistedstate.localStorage(),
   },
 })

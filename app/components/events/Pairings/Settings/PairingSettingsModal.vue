@@ -1,3 +1,4 @@
+<!-- app\components\events\Pairings\Settings\PairingSettingsModal.vue -->
 <script setup lang="ts">
 import type { PairingWeights } from '#shared/utils/types'
 import type { PairingPresetKind } from './PairingPresetButtons.vue'
@@ -12,7 +13,7 @@ interface WeightItem {
   step: number
 }
 
-interface Props {
+defineProps<{
   selectedPreset: PairingPresetKind
   scoreItems: ReadonlyArray<WeightItem>
   pairPlayerA: string
@@ -20,9 +21,7 @@ interface Props {
   forbiddenPairs: Array<{ playerA: number; playerB: number }>
   allPlayers: Array<{ id: number; name: string }>
   eventId: number
-}
-
-defineProps<Props>()
+}>()
 
 const open = defineModel<boolean>('open', { default: false })
 const pairPlayerAModel = defineModel<string>('pairPlayerA', { default: '' })

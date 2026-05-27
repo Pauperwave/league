@@ -2,11 +2,9 @@
 <script setup lang="ts">
 import type { Player } from '#shared/utils/types'
 
-interface Props {
+const props = defineProps<{
   leagueId: number
-}
-
-const props = defineProps<Props>()
+}>()
 
 // Usa il composable SSR-friendly per eventi
 const { data: eventsData, pending: loading } = useEvents(props.leagueId)

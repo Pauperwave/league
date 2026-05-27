@@ -1,11 +1,10 @@
+<!-- app\components\events\Pairings\Table\TableReceiptSummary.vue -->
 <script setup lang="ts">
 import type { PairingTableScore } from '~/composables/events/pairing/pairingOptimizer'
 
-interface Props {
+defineProps<{
   score: PairingTableScore
-}
-
-defineProps<Props>()
+}>()
 
 function formatScore(value: number): string {
   return value.toFixed(2)

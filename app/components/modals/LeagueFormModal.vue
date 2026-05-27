@@ -2,15 +2,21 @@
 <script setup lang="ts">
 import type { CalendarDate } from '@internationalized/date'
 import type { Ruleset, League } from '#shared/utils/types'
+import * as v from 'valibot'
 import { useButtonLogging } from '~/composables/useButtonLogging'
 
-interface Props {
+const LeagueFormSchema = v.object({
+  name: v.pipe(v.string(), v.trim(), v.minLength(1, 'Nome lega richiesto')),
+  startsAt: v.nullable(v.string()),
+  endsAt: v.nullable(v.string()),
+  rulesetId: v.nullable(v.number()),
+})
+
+const props = defineProps<{
   league: League | null
   rulesets: Ruleset[]
   rulesetsLoading?: boolean
-}
-
-const props = defineProps<Props>()
+}>()
 
 const emit = defineEmits<{
   create: [{
@@ -90,8 +96,6 @@ watch(open, (isOpen) => {
 })
 
 function handleSubmit() {
-  if (!form.name.trim()) return
-
   const data = {
     name: form.name.trim(),
     startsAt: form.startsAt?.toString() ?? null,
@@ -99,12 +103,18 @@ function handleSubmit() {
     rulesetId: form.rulesetId ?? null,
   }
 
+  const parsed = v.safeParse(LeagueFormSchema, data)
+  if (!parsed.success) {
+    logError('LeagueFormModal', 'Validazione form lega fallita', parsed.issues)
+    return
+  }
+
   submitLogging.logClick()
 
   if (isEditing.value && props.league) {
-    emit('update', { id: props.league.id, data })
+    emit('update', { id: props.league.id, data: parsed.output })
   } else {
-    emit('create', data)
+    emit('create', parsed.output)
     Object.assign(form, defaultForm())
     const firstRuleset = props.rulesets[0]
     if (firstRuleset) {

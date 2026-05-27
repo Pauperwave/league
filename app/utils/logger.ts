@@ -16,3 +16,10 @@ export function logWarn(component: string, message: string, ...args: any[]) {
   // eslint-disable-next-line no-console
   console.warn(`[${component}] ${message}`, ...args)
 }
+
+export function logDebug(component: string, message: string, ...args: any[]) {
+  if (import.meta.dev) {
+    // eslint-disable-next-line no-console
+    console.log(`[${component}] ${message}`, ...args)
+  }
+}

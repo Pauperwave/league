@@ -1,3 +1,4 @@
+<!-- app\components\events\Pairings\Table\TableCard.vue -->
 <script setup lang="ts">
 import type { Seat, TournamentTable } from '#shared/utils/types'
 import { VueDraggable } from 'vue-draggable-plus'
@@ -7,16 +8,14 @@ interface TableStatus {
   label: string
 }
 
-interface Props {
+const props = defineProps<{
   table: TournamentTable
   tableIndex: number
   isDragging: boolean
   tableCardClass: string
   tableStatus: TableStatus
   tableScore: number
-}
-
-const props = defineProps<Props>()
+}>()
 
 const emit = defineEmits<{
   updateSeats: [tableIndex: number, seats: [Seat, Seat, Seat, Seat]]

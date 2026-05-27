@@ -2,10 +2,19 @@
 <script setup lang="ts">
 import { type CalendarDate, getLocalTimeZone } from '@internationalized/date'
 import type { Event } from '#shared/utils/types'
+import * as v from 'valibot'
 import { useButtonLogging } from '~/composables/useButtonLogging'
 
 // — Constants —
 const DEFAULT_ROUND_DURATION = 75 // 1:15 hours
+
+// — Valibot Schema —
+const EventFormSchema = v.object({
+  eventName: v.pipe(v.string(), v.trim(), v.minLength(1)),
+  eventDate: v.nullable(v.string()),
+  numRound: v.pipe(v.number(), v.minValue(1), v.maxValue(10)),
+  roundDuration: v.pipe(v.number(), v.minValue(10), v.maxValue(120)),
+})
 
 // — Types —
 
@@ -30,12 +39,10 @@ interface EventUpdatePayload {
   data: Omit<EventCreatePayload, 'eventDate'> & { eventDate: string | null }
 }
 
-interface Props {
+const props = defineProps<{
   event: Event | null
   leagueId: number
-}
-
-const props = defineProps<Props>()
+}>()
 
 const emit = defineEmits<{
   create: [payload: EventCreatePayload]
@@ -86,24 +93,38 @@ function toIsoDate(date: CalendarDate | null): string | null {
 }
 
 function handleSubmit() {
-  if (!isValid.value) return
-
   const eventDate = toIsoDate(form.eventDate)
   const eventName = form.eventName.trim()
+
+  const data = {
+    eventName,
+    eventDate,
+    numRound: form.numRound,
+    roundDuration: form.roundDuration,
+  }
+
+  const parsed = v.safeParse(EventFormSchema, data)
+  if (!parsed.success) {
+    logError('EventFormModal', 'Validazione form evento fallita', parsed.issues)
+    return
+  }
+
+  if (!isEditing.value && !parsed.output.eventDate) {
+    logError('EventFormModal', 'Data evento richiesta per creazione')
+    return
+  }
 
   submitLogging.logClick()
 
   if (isEditing.value && props.event) {
     emit('update', {
       id: props.event.event_id,
-      data: { eventName, eventDate, numRound: form.numRound, roundDuration: form.roundDuration },
+      data: parsed.output,
     })
   } else {
     emit('create', {
-      eventName,
-      eventDate: eventDate ?? '',
-      numRound: form.numRound,
-      roundDuration: form.roundDuration,
+      ...parsed.output,
+      eventDate: parsed.output.eventDate ?? '',
     })
     Object.assign(form, defaultForm())
   }

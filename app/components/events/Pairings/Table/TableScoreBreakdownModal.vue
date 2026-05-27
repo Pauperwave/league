@@ -1,3 +1,4 @@
+<!-- app\components\events\Pairings\Table\TableScoreBreakdownModal.vue -->
 <script setup lang="ts">
 import type { TournamentPlayer } from '#shared/utils/types'
 import type { PairingPlayerScore, PairingTableScore } from '~/composables/events/pairing/pairingOptimizer'
@@ -7,12 +8,10 @@ interface PlayerRow {
   detail?: PairingPlayerScore
 }
 
-interface Props {
+defineProps<{
   selectedTableScore: PairingTableScore | null
   selectedTablePlayerRows: PlayerRow[]
-}
-
-defineProps<Props>()
+}>()
 
 const open = defineModel<boolean>('open', { default: false })
 </script>

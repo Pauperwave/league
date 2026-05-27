@@ -2,14 +2,13 @@
 <script setup lang="ts">
 import type { Player, NewPlayer } from '#shared/utils/types'
 import { findSimilarPlayers } from '#shared/utils/playerSimilarity'
+import * as v from 'valibot'
 import { useButtonLogging } from '~/composables/useButtonLogging'
 
-interface Props {
+const props = defineProps<{
   player: Player | null
   existingPlayers: Player[]
-}
-
-const props = defineProps<Props>()
+}>()
 
 const emit = defineEmits<{
   create: [player: NewPlayer]
@@ -22,6 +21,11 @@ const open = defineModel<boolean>('open', { default: false })
 const submitLogging = useButtonLogging('Submit Player Form', { isEditing: () => isEditing.value, data: () => ({ firstName: form.firstName, lastName: form.lastName }) })
 const selectExistingLogging = useButtonLogging('Select Existing Player')
 const cancelLogging = useButtonLogging('Cancel Player Form')
+
+const PlayerFormSchema = v.object({
+  player_name: v.pipe(v.string(), v.trim(), v.minLength(1)),
+  player_surname: v.pipe(v.string(), v.trim(), v.minLength(1)),
+})
 
 // — Derived modal state —
 const isEditing = computed(() => !!props.player)
@@ -67,20 +71,24 @@ watch(open, (isOpen) => {
 })
 
 function handleSubmit() {
-  if (!isValid.value) return
-
   const data: NewPlayer = {
     player_name: form.firstName.trim(),
     player_surname: form.lastName.trim(),
   }
 
+  const parsed = v.safeParse(PlayerFormSchema, data)
+  if (!parsed.success) {
+    logError('CreatePlayerModal', 'Validazione form player fallita', parsed.issues)
+    return
+  }
+
   submitLogging.logClick()
 
   if (isEditing.value && props.player) {
-    emit('update', { id: props.player.player_id, data })
+    emit('update', { id: props.player.player_id, data: parsed.output })
   }
   else {
-    emit('create', data)
+    emit('create', parsed.output)
     Object.assign(form, defaultForm())
   }
 

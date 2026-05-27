@@ -1,12 +1,16 @@
+<!-- app\components\modals\CommanderModal.vue -->
 <script setup lang="ts">
 
-interface Props {
+const props = defineProps<{
   playerId: number
   playerName: string
   commander1?: string | null
-}
+}>()
 
-const props = defineProps<Props>()
+const emit = defineEmits<{
+  submit: [commander1: string | null]
+  cancel: []
+}>()
 
 const commander1 = ref(props.commander1 || '')
 
@@ -28,6 +32,12 @@ const commanderWhitelist = computed(() => [...whitelists.value.commander])
 watch(() => whitelists.value.commander, (newVal) => {
   console.log('[CommanderModal] 📋 Commander whitelist updated:', newVal.length, 'items')
 })
+
+function submit() {
+  emit('submit', commander1.value || null)
+}
+
+defineExpose({ submit })
 </script>
 
 <template>
@@ -44,3 +54,4 @@ watch(() => whitelists.value.commander, (newVal) => {
     </div>
   </div>
 </template>
+

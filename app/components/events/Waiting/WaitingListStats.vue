@@ -1,11 +1,9 @@
 <!-- app\components\Events\WaitingListStats.vue -->
 <script setup lang="ts">
-interface Props {
+const props = defineProps<{
   playerCount: number
   tableEstimate?: string
-}
-
-const props = defineProps<Props>()
+}>()
 
 // — Debounced values for smooth UI updates —
 const debouncedCount = ref(props.playerCount)

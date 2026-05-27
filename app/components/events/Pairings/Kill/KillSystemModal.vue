@@ -1,23 +1,24 @@
+<!-- app\components\events\Pairings\Kill\KillSystemModal.vue -->
 <script setup lang="ts">
 import type { TournamentPlayer, Kill } from '#shared/utils/types'
 
 const props = defineProps<{
   players: TournamentPlayer[]
-  tableId: number
+  pairingId: number | null
 }>()
+
+const open = defineModel<boolean>('open', { default: false })
 
 const emit = defineEmits<{
   submit: [kills: Kill[]]
 }>()
 
 const killsStore = useKillsStore()
-const isOpen = ref(false)
 
-// Reset store ad ogni apertura della modale e rimuovi kills non valide
-watch(isOpen, (val) => {
-  if (val) {
+// Filter kills to only valid players for this pairing when modal opens
+watch(open, (val) => {
+  if (val && props.players.length > 0) {
     const validPlayerIds = new Set(props.players.map((p) => p.id))
-    // Rimuovi solo le kills che non appartengono al tavolo corrente
     killsStore.kills = killsStore.kills.filter(
       (kill) => validPlayerIds.has(kill.killerId) && validPlayerIds.has(kill.victimId)
     )
@@ -30,30 +31,20 @@ function getPlayerName(id: number): string {
 }
 
 function handleSubmit() {
-  console.log('Conferma Sistema Uccisioni - Table ID:', props.tableId)
+  console.log('Conferma Sistema Uccisioni - Table ID:', props.pairingId)
   console.log('Uccisioni da confermare:', [...killsStore.kills])
   emit('submit', [...killsStore.kills])
-  isOpen.value = false
+  open.value = false
 }
 </script>
 
 <template>
   <UModal
-    v-model:open="isOpen"
+    v-model:open="open"
     title="Sistema Uccisioni"
     description="Trascina dall'handle inferiore di un giocatore verso quello superiore della vittima. Clicca una freccia per rimuoverla."
     :ui="{ content: 'max-w-4xl' }"
   >
-    <!-- Trigger: bottone che apre la modale -->
-    <UButton
-      label="Uccisioni"
-      icon="i-lucide-skull"
-      :color="killsStore.kills.length > 0 ? 'success' : 'warning'"
-      variant="outline"
-      size="lg"
-      class="flex-1"
-    />
-
     <template #body>
       <div class="flex flex-col gap-4">
         <!-- Canvas Vue Flow — solo client side per evitare errori SSR -->
@@ -105,7 +96,7 @@ function handleSubmit() {
             label="Annulla"
             color="neutral"
             variant="outline"
-            @click="isOpen = false"
+            @click="open = false"
           />
           <UButton
             label="Conferma"

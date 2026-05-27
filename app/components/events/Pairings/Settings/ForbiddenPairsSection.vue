@@ -1,3 +1,4 @@
+<!-- app\components\events\Pairings\Settings\ForbiddenPairsSection.vue -->
 <script setup lang="ts">
 import { getForbiddenPairKey } from '~/composables/events/pairing/pairingOptimizer'
 import { usePlayerOptions } from '~/composables/supabase/usePlayers'
@@ -12,13 +13,11 @@ interface Player {
   name: string
 }
 
-interface Props {
+const props = defineProps<{
   forbiddenPairs: ForbiddenPair[]
   allPlayers: Player[]
   eventId: number
-}
-
-const props = defineProps<Props>()
+}>()
 
 const emit = defineEmits<{
   addPair: []

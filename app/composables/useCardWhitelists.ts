@@ -1,5 +1,10 @@
 const ONE_WEEK = 7 * 24 * 60 * 60 * 1000
 
+interface ScryfallListResponse {
+  data?: Array<{ name: string }>
+  next_page?: string | null
+}
+
 /**
  * Recupera dati dalla cache localStorage se non scaduti
  */
@@ -59,8 +64,9 @@ async function fetchAllNames(initialUrl: string): Promise<string[]> {
     while (url) {
       pageCount++
       console.log(`[useCardWhitelists] 📄 Fetching page ${pageCount}...`)
-      const page = await fetch(url).then(r => r.json())
-      const names = (page.data || []).map((card: { name: string }) => card.name)
+      const response = await fetch(url)
+      const page = (await response.json()) as ScryfallListResponse
+      const names = (page.data ?? []).map(card => card.name)
       console.log(`[useCardWhitelists] 📄 Page ${pageCount}: ${names.length} cards`)
       allNames.push(...names)
       url = page.next_page || null

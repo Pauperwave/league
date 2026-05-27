@@ -1,3 +1,4 @@
+<!-- app\components\events\Pairings\Table\TablePreviewModal.vue -->
 <script setup lang="ts">
 // Table preview modal with drag-and-drop editing, pairing constraints,
 // optimizer controls, and transparent score breakdown.
@@ -16,7 +17,16 @@ import { useButtonLogging } from '~/composables/useButtonLogging'
 
 const open = defineModel<boolean>('open', { default: false })
 
-interface Props {
+const {
+  tables,
+  eventId,
+  playersForScoring,
+  history,
+  currentRound,
+  allPlayers,
+  loading = false,
+  dismissible = true,
+} = defineProps<{
   tables: TournamentTable[]
   eventId: number
   playersForScoring: PairingPlayer[]
@@ -25,12 +35,7 @@ interface Props {
   allPlayers: TournamentPlayer[]
   loading?: boolean
   dismissible?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  loading: false,
-  dismissible: true,
-})
+}>()
 
 const emit = defineEmits<{
   confirm: [playerOrder: number[]]
@@ -45,7 +50,7 @@ const pairPlayerB = ref<string>('')
 const dragSnapshot = ref<TournamentTable[] | null>(null)
 const hasAutoOptimized = ref(false)
 
-const initialPreferences = computed(() => getPairingPreferences(props.eventId))
+const initialPreferences = computed(() => getPairingPreferences(eventId))
 const toast = useToast()
 
 const {
@@ -70,16 +75,16 @@ const {
   setWeights,
   setForbiddenPairs,
   conflictingTables,
-} = useTableDnd(props.tables, {
-  playersForScoring: props.playersForScoring,
-  history: props.history,
-  currentRound: props.currentRound,
+} = useTableDnd(tables, {
+  playersForScoring: playersForScoring,
+  history: history,
+  currentRound: currentRound,
   initialWeights: initialPreferences.value.weights,
   initialForbiddenPairs: initialPreferences.value.forbiddenPairs,
 })
 
 watch(
-  () => props.tables,
+  () => tables,
   (tables) => {
     syncFromSource(tables)
   },
@@ -90,14 +95,14 @@ watch(open, (value) => {
   if (value) {
     hasAutoOptimized.value = false
     reset()
-    const prefs = getPairingPreferences(props.eventId)
+    const prefs = getPairingPreferences(eventId)
     setWeights(prefs.weights)
     setForbiddenPairs(prefs.forbiddenPairs)
   }
 })
 
 watch(
-  () => [open.value, props.loading, props.playersForScoring.length] as const,
+  () => [open.value, loading, playersForScoring.length] as const,
   ([isOpen, isLoading, playersCount]) => {
     if (!isOpen || isLoading || hasAutoOptimized.value) return
     if (!playersCount && !localTables.value.length) return
@@ -107,7 +112,7 @@ watch(
 )
 
 watch([weights, forbiddenPairs], () => {
-  savePairingPreferences(props.eventId, {
+  savePairingPreferences(eventId, {
     weights: weights.value,
     forbiddenPairs: forbiddenPairs.value,
   })
@@ -125,8 +130,8 @@ const scoreItems = computed(() => [
 ] as const)
 
 const confirmLogging = useButtonLogging('Conferma tavoli', {
-  eventId: () => props.eventId,
-  currentRound: () => props.currentRound,
+  eventId: () => eventId,
+  currentRound: () => currentRound,
   tableCount: () => localTables.value.length,
   isValid: () => isValid.value,
   hasAutoOptimized: () => hasAutoOptimized.value,
@@ -182,7 +187,7 @@ const { optimizeNow: optimizePreviewTables, autoResolveConflicts } = useOptimiza
 })
 
 function optimizeNow() {
-  if (props.loading) return
+  if (loading) return
   optimizePreviewTables()
 }
 

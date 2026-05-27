@@ -1,3 +1,4 @@
+<!-- app\components\events\Pairings\Settings\PairingWeightsSection.vue -->
 <script setup lang="ts">
 import type { PairingWeights } from '#shared/utils/types'
 import type { PairingPresetKind } from './PairingPresetButtons.vue'
@@ -11,12 +12,10 @@ interface WeightItem {
   step: number
 }
 
-interface Props {
+defineProps<{
   selectedPreset: PairingPresetKind
   scoreItems: ReadonlyArray<WeightItem>
-}
-
-defineProps<Props>()
+}>()
 
 const emit = defineEmits<{
   selectPreset: [preset: Exclude<PairingPresetKind, 'custom'>]

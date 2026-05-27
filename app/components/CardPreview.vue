@@ -1,3 +1,4 @@
+<!-- app\components\CardPreview.vue -->
 <script setup lang="ts">
 import { computed } from 'vue'
 
@@ -21,11 +22,9 @@ interface ScryfallCard {
   }
 }
 
-interface Props {
+const props = defineProps<{
   card: ScryfallCard | null
-}
-
-const props = defineProps<Props>()
+}>()
 
 /**
  * Estrae i colori dal costo di mana

@@ -1,13 +1,12 @@
 <!-- app\components\Modals\RulesetFormModal.vue -->
 <script setup lang="ts">
 import type { Ruleset } from '#shared/utils/types'
+import * as v from 'valibot'
 import { useButtonLogging } from '~/composables/useButtonLogging'
 
-interface Props {
+const props = defineProps<{
   ruleset: Ruleset | null
-}
-
-const props = defineProps<Props>()
+}>()
 
 const emit = defineEmits<{
   create: [Omit<Ruleset, 'ruleset_id'>]
@@ -18,6 +17,32 @@ const open = defineModel<boolean>('open', { default: false })
 
 const submitLogging = useButtonLogging('Submit Ruleset Form', { isEditing: () => isEditing.value, name: () => form.name })
 const cancelLogging = useButtonLogging('Cancel Ruleset Form')
+
+const RulesetCreateSchema = v.object({
+  name: v.pipe(v.string(), v.trim(), v.minLength(1)),
+  rule_set_partecipation: v.number(),
+  rule_set_kill: v.number(),
+  rule_set_brew: v.number(),
+  rule_set_play: v.number(),
+  rule_set_rank1: v.number(),
+  rule_set_rank2: v.number(),
+  rule_set_rank3: v.number(),
+  rule_set_rank4: v.number(),
+  rule_set_valid_events: v.number(),
+})
+
+const RulesetUpdateSchema = v.object({
+  name: v.pipe(v.string(), v.trim(), v.minLength(1)),
+  rule_set_partecipation: v.nullable(v.number()),
+  rule_set_kill: v.nullable(v.number()),
+  rule_set_brew: v.nullable(v.number()),
+  rule_set_play: v.nullable(v.number()),
+  rule_set_rank1: v.nullable(v.number()),
+  rule_set_rank2: v.nullable(v.number()),
+  rule_set_rank3: v.nullable(v.number()),
+  rule_set_rank4: v.nullable(v.number()),
+  rule_set_valid_events: v.nullable(v.number()),
+})
 
 const isEditing = computed(() => !!props.ruleset)
 const title = computed(() => isEditing.value ? 'Modifica Regolamento' : 'Crea Regolamento')
@@ -80,8 +105,6 @@ const gameActionFields = [
 const rankFields = ['rank1', 'rank2', 'rank3', 'rank4'] as const
 
 function handleSubmit() {
-  if (!form.name.trim()) return
-
   const scoreData = {
     name: form.name.trim(),
     rule_set_partecipation: form.partecipation ?? null,
@@ -95,12 +118,19 @@ function handleSubmit() {
     rule_set_valid_events: form.validEvents ?? null,
   }
 
+  const schema = isEditing.value ? RulesetUpdateSchema : RulesetCreateSchema
+  const parsed = v.safeParse(schema, scoreData)
+  if (!parsed.success) {
+    logError('RulesetFormModal', 'Validazione form ruleset fallita', parsed.issues)
+    return
+  }
+
   submitLogging.logClick()
 
   if (isEditing.value && props.ruleset) {
-    emit('update', { id: props.ruleset.ruleset_id, data: scoreData })
+    emit('update', { id: props.ruleset.ruleset_id, data: parsed.output })
   } else {
-    emit('create', scoreData)
+    emit('create', parsed.output)
     Object.assign(form, defaultForm())
   }
 

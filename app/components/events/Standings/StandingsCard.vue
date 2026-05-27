@@ -12,12 +12,10 @@ interface Standing {
   }
 }
 
-interface Props {
+defineProps<{
   standings: Standing[]
   loading?: boolean
-}
-
-defineProps<Props>()
+}>()
 </script>
 
 <template>

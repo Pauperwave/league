@@ -7,13 +7,11 @@ interface LeagueInfo {
   name: string
 }
 
-interface Props {
+const props = defineProps<{
   rulesetId: number
   rulesetName: string
   getLeaguesByRuleset: (rulesetId: number) => LeagueInfo[]
-}
-
-const props = defineProps<Props>()
+}>()
 
 const emit = defineEmits<{
   navigate: [leagueId: number]

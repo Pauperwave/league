@@ -1,13 +1,12 @@
+<!-- app\components\events\Pairings\Table\TablePlayerReceiptCard.vue -->
 <script setup lang="ts">
 import type { TournamentPlayer } from '#shared/utils/types'
 import type { PairingPlayerScore } from '~/composables/events/pairing/pairingOptimizer'
 
-interface Props {
+defineProps<{
   player: TournamentPlayer
   detail?: PairingPlayerScore
-}
-
-defineProps<Props>()
+}>()
 
 function formatScore(value: number): string {
   return value.toFixed(2)

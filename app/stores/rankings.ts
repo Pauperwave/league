@@ -3,31 +3,37 @@ interface RankingEntry {
   rank: number
 }
 
-interface RankingsState {
-  rankingsWithRanks: Map<number, RankingEntry[]> // Ranking salvato con rank effettivi
-}
+export const useRankingsStore = defineStore('rankings', () => {
+  const rankingsWithRanks = ref<Map<number, RankingEntry[]>>(new Map())
 
-export const useRankingsStore = defineStore('rankings', {
-  state: (): RankingsState => ({
-    rankingsWithRanks: new Map(),
-  }),
+  const getRankingWithRanks = computed(() => (pairingId: number) =>
+    rankingsWithRanks.value.get(pairingId))
 
-  getters: {
-    getRankingWithRanks: (state) => (pairingId: number) => state.rankingsWithRanks.get(pairingId),
-    hasRanking: (state) => (pairingId: number) => state.rankingsWithRanks.has(pairingId),
-  },
+  const hasRanking = computed(() => (pairingId: number) =>
+    rankingsWithRanks.value.has(pairingId))
 
-  actions: {
-    setRankingWithRanks(pairingId: number, ranking: RankingEntry[]) {
-      this.rankingsWithRanks.set(pairingId, ranking)
-    },
+  function setRankingWithRanks(pairingId: number, ranking: RankingEntry[]) {
+    rankingsWithRanks.value.set(pairingId, ranking)
+  }
 
-    removeRanking(pairingId: number) {
-      this.rankingsWithRanks.delete(pairingId)
-    },
+  function removeRanking(pairingId: number) {
+    rankingsWithRanks.value.delete(pairingId)
+  }
 
-    reset() {
-      this.rankingsWithRanks.clear()
-    },
+  function reset() {
+    rankingsWithRanks.value.clear()
+  }
+
+  return {
+    rankingsWithRanks,
+    getRankingWithRanks,
+    hasRanking,
+    setRankingWithRanks,
+    removeRanking,
+    reset,
+  }
+}, {
+  persist: {
+    storage: piniaPluginPersistedstate.localStorage(),
   },
 })

@@ -2,16 +2,15 @@
 <script setup lang="ts">
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
 
-interface Props {
+const {
+  modelValue,
+  label = 'Data',
+  required = false,
+} = defineProps<{
   modelValue: CalendarDate | null
   label?: string
   required?: boolean
-}
-
-const props = withDefaults(defineProps<Props>(), {
-  label: 'Data',
-  required: false
-})
+}>()
 
 const emit = defineEmits<{
   'update:modelValue': [value: CalendarDate | null]
@@ -26,7 +25,7 @@ function getToday(): CalendarDate {
 }
 
 const selectedDate = computed({
-  get: () => props.modelValue ?? getToday(),
+  get: () => modelValue ?? getToday(),
   set: (v: CalendarDate) => emit('update:modelValue', v)
 })
 </script>

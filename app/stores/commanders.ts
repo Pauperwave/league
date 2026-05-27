@@ -4,52 +4,58 @@ interface CommanderEntry {
   commander2: string | null
 }
 
-interface CommandersState {
-  commanders: Map<number, CommanderEntry> // playerId -> { commander1, commander2 }
-}
+export const useCommandersStore = defineStore('commanders', () => {
+  const commanders = ref<Map<number, CommanderEntry>>(new Map())
 
-export const useCommandersStore = defineStore('commanders', {
-  state: (): CommandersState => ({
-    commanders: new Map(),
-  }),
+  const getCommanders = computed(() => (playerId: number) => commanders.value.get(playerId))
 
-  getters: {
-    getCommanders: (state) => (playerId: number) => state.commanders.get(playerId),
-    getCommander1: (state) => (playerId: number) => state.commanders.get(playerId)?.commander1 || null,
-    getCommander2: (state) => (playerId: number) => state.commanders.get(playerId)?.commander2 || null,
-  },
+  const getCommander1 = computed(() => (playerId: number) =>
+    commanders.value.get(playerId)?.commander1 ?? null)
 
-  actions: {
-    setCommanders(playerId: number, commander1: string | null, commander2: string | null) {
-      this.commanders.set(playerId, { playerId, commander1, commander2 })
-    },
+  const getCommander2 = computed(() => (playerId: number) =>
+    commanders.value.get(playerId)?.commander2 ?? null)
 
-    setCommander1(playerId: number, commander1: string | null) {
-      const existing = this.commanders.get(playerId)
-      if (existing) {
-        this.commanders.set(playerId, { ...existing, commander1 })
-      }
-      else {
-        this.commanders.set(playerId, { playerId, commander1, commander2: null })
-      }
-    },
+  function setCommanders(playerId: number, commander1: string | null, commander2: string | null) {
+    commanders.value.set(playerId, { playerId, commander1, commander2 })
+  }
 
-    setCommander2(playerId: number, commander2: string | null) {
-      const existing = this.commanders.get(playerId)
-      if (existing) {
-        this.commanders.set(playerId, { ...existing, commander2 })
-      }
-      else {
-        this.commanders.set(playerId, { playerId, commander1: null, commander2 })
-      }
-    },
+  function setCommander1(playerId: number, commander1: string | null) {
+    const existing = commanders.value.get(playerId)
+    if (existing) {
+      commanders.value.set(playerId, { ...existing, commander1 })
+    }
+    else {
+      commanders.value.set(playerId, { playerId, commander1, commander2: null })
+    }
+  }
 
-    removeCommanders(playerId: number) {
-      this.commanders.delete(playerId)
-    },
+  function setCommander2(playerId: number, commander2: string | null) {
+    const existing = commanders.value.get(playerId)
+    if (existing) {
+      commanders.value.set(playerId, { ...existing, commander2 })
+    }
+    else {
+      commanders.value.set(playerId, { playerId, commander1: null, commander2 })
+    }
+  }
 
-    reset() {
-      this.commanders.clear()
-    },
-  },
+  function removeCommanders(playerId: number) {
+    commanders.value.delete(playerId)
+  }
+
+  function reset() {
+    commanders.value.clear()
+  }
+
+  return {
+    commanders,
+    getCommanders,
+    getCommander1,
+    getCommander2,
+    setCommanders,
+    setCommander1,
+    setCommander2,
+    removeCommanders,
+    reset,
+  }
 })

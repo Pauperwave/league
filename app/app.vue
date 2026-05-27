@@ -25,7 +25,7 @@ useSeoMeta({
 
 <template>
   <UApp class="h-screen flex flex-col">
-    <UHeader class="shrink-0">
+    <!-- <UHeader class="shrink-0">
       <template #left>
         <NuxtLink to="/">
           <AppLogo class="w-auto h-6 shrink-0" />
@@ -35,7 +35,7 @@ useSeoMeta({
       <template #right>
         <HeaderActions />
       </template>
-    </UHeader>
+    </UHeader> -->
 
     <UMain class="flex-1 overflow-hidden">
       <NuxtPage />

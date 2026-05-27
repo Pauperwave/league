@@ -1,14 +1,13 @@
+<!-- app\components\events\Pairings\Table\TableSeatItem.vue -->
 <script setup lang="ts">
 import type { Seat } from '#shared/utils/types'
 
-interface Props {
+const props = defineProps<{
   seat: Seat
   isDragging: boolean
-  playerId?: number // For commander button
-  hasCommander?: boolean // Whether commander is saved
-}
-
-const props = defineProps<Props>()
+  playerId?: number
+  hasCommander?: boolean
+}>()
 
 const emit = defineEmits<{
   openCommanderModal: [playerId: number]
