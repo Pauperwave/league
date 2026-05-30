@@ -250,7 +250,7 @@ onMounted(() => {
             >
               <td class="py-2 px-3">
                 <NuxtLink
-                  :to="`/league/any/event/${match.event_id}`"
+                  :to="`/league/${match.league_id}/event/${match.event_id}`"
                   class="text-primary hover:underline"
                 >
                   {{ match.event_name }}

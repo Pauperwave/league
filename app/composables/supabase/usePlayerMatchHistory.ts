@@ -2,6 +2,7 @@
 
 export interface PlayerMatchHistory {
   event_id: number
+  league_id: number
   event_name: string
   pairing_id: number
   pairing_round: number
@@ -36,7 +37,8 @@ export async function fetchPlayerMatchHistory(
         pairing_datetime,
         event_id,
         events:event_id (
-          event_name
+          event_name,
+          league_id
         )
       )
     `)
@@ -67,6 +69,7 @@ export async function fetchPlayerMatchHistory(
 
     results.push({
       event_id: eventId,
+      league_id: (pairings.events?.league_id as number) ?? 0,
       event_name: pairings.events?.event_name ?? 'Evento sconosciuto',
       pairing_id: row.pairing_id as number,
       pairing_round: pairings.pairing_round as number,
