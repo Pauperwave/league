@@ -93,14 +93,13 @@ export function usePlayerMatchHistory(playerId: Ref<number | undefined>) {
   const supabase = useSupabaseClient()
 
   return useAsyncData<PlayerMatchHistory[]>(
-    'player-match-history',
+    () => `player-match-history-${playerId.value ?? 'none'}`,
     () => {
       if (!playerId.value) return Promise.resolve([])
       return fetchPlayerMatchHistory(supabase, playerId.value)
     },
     {
       immediate: true,
-      watch: [playerId],
       default: () => [],
     },
   )
