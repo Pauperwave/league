@@ -1,5 +1,6 @@
 <!-- app\components\ui\BaseButton.vue -->
 <script setup lang="ts">
+import { computed } from 'vue'
 import { ACTION_MAP, type ActionType } from '~/utils/actionButton'
 
 const {
