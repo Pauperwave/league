@@ -24,12 +24,22 @@
 
 - **ALWAYS ask permission before modifying the database**, even if you have MCP access. Never execute DDL operations (CREATE, ALTER, DROP, etc.) without explicit user approval.
 
+See `docs/database.md` for full database documentation including RLS policies, denormalized stats tables, and migration conventions.
+
+See `docs/async-data-keys.md` for the `useAsyncData` key naming convention and full key inventory.
+
 ## Code Style & Conventions
+
+### Path Comments
+
+Add a path comment at the beginning of **every source file** so AI agents always know which file they are reading:
+
+- **Vue files**: `<!-- app\components\ComponentName.vue -->`
+- **TypeScript/JavaScript files**: `// app\stores\storeName.ts`
+- Use single backslash `\` in path comments (not `\\`)
 
 ### Vue Components
 
-- **Add path comment at the beginning of every Vue file**: `<!-- app\components\ComponentName.vue -->` or `<!-- app\pages\page.vue -->`
-- Use single backslash `\` in path comments (not `\\`)
 - **Prefer inline type in `defineProps`** instead of a separate interface: `defineProps<{ prop: string }>()` rather than `interface Props { prop: string }`
 - **Props with defaults (Vue 3.4+):** use reactive destructuring on `defineProps`, not `withDefaults` (legacy):
 
@@ -52,6 +62,117 @@ const {
 ### After File Modifications
 
 - **Always run `pnpm lint` after modifying files** to ensure code quality and catch issues early
+- If pre-existing lint errors exist in the codebase, fix only errors in files you modified. Aim to reduce warning count over time.
+
+### Pinia Stores
+
+- Use **Setup API** (`defineStore('id', () => { ... })`) exclusively
+- Document state, getters, and actions with JSDoc comments
+- Return an explicit public API from `defineStore`
+- **Session stores** (ephemeral UI state) must implement `reset()` to clear state between rounds
+
+### State Management Categories
+
+| Category | Stores | Persistence | Patterns |
+|----------|--------|-------------|----------|
+| **Supabase stores** | `useLeagueStore`, `useRulesetStore`, `usePlayerStore`, `useEventStore` | Persistent | `initialized` flags, optimistic updates, `{ success, error?, data? }` returns |
+| **Session stores** | `useRankingsStore`, `useKillsStore`, `useVotesStore`, `useCommandersStore` | Ephemeral | `Map<number, ...>` or `Set<number>`, `reset()` between rounds |
+
+### Error Handling
+
+- Store actions return `{ success: boolean, error?: string, data?: T }`
+- Log errors with store/action prefix: `console.error('[useXxxStore] actionName error:', err)`
+- Destructure Supabase `error` with an alias (`error: supaError`) to avoid shadowing
+
+### Composables
+
+- Extract focused logic into `app/composables/` or `app/utils/`
+- SSR-friendly composables wrap store calls in `useAsyncData` and return `{ data, pending, error, refresh }`
+
+#### General Rule for composables returning refs used in templates
+
+**Always destructure at the `<script setup>` top level:**
+
+```vue
+<!-- ✅ Correct pattern -->
+<script setup lang="ts">
+const { showNextRoundModal, showScoreModal, selectedPairingId, ... } = useEventModals(...)
+const { confirmNextRound, handleAdvance, ... } = useEventLifecycle(...)
+const { handlePlayerCreate, playerToEdit, ... } = useEventPlayers(...)
+</script>
+
+<!-- ❌ Avoid — nested refs won't auto-unwrap in template -->
+<script setup lang="ts">
+const modals = useEventModals(...)
+const lifecycle = useEventLifecycle(...)
+</script>
+```
+
+If you have many refs and don't want to list them all, you can use `toRefs()` inside the composable on the returned object, but explicit destructuring is more readable and idiomatic in Nuxt/Vue 3.
+
+### Language
+
+- **UI-facing strings**: Italian (e.g., `'Errore nel caricamento leghe'`)
+- **Code comments, logs, and internal errors**: English
+
+### Testing
+
+- **Unit tests**: `vitest` for composables, utilities, and store logic
+- **E2E tests**: Playwright + `@nuxt/test-utils` for critical user flows (event creation, round progression, score submission)
+
+## Common Agent Workflow
+
+After generating or editing code:
+
+1. **Run the audit**: `pnpm audit` (`fallow audit --format json`)
+2. **Inspect findings** — check complexity hotspots, duplication, and dead code
+3. **Decide on each finding** using the decision tree below
+4. **Apply safe fixes** — extract shared code, split large functions, remove dead code
+5. **Use narrow exceptions** for intentional patterns (documented with a real reason)
+6. **Hand to human reviewer** with `fallow` evidence (scores, hotspots, targets) alongside the PR
+
+### Compliance Goal
+
+- `pnpm health` shows **`Above threshold: 0`** for the thresholds chosen for this repo
+- Duplication, architecture violations, and cleanup findings are either resolved or narrowly documented
+- Every exclusion has a real reason (public API, framework convention, generated code, migration debt)
+
+### Decision Tree for Findings
+
+For each `fallow` finding, choose one of:
+
+1. **Fix it now** — delete unused code, extract/simplify complex functions, consolidate duplicates
+2. **Keep it intentionally** — add the narrowest possible exception with a documented reason
+3. **Change the policy** — adjust thresholds only if that reflects an intentional repo-wide standard
+
+Prefer narrow exceptions over broad ignores:
+- Inline suppression for one line or one file
+- `ignoreExports` for a specific export
+- `ignoreDependencies` for a specific dependency
+- `overrides` for a specific directory or pattern
+
+### Staged Adoption
+
+If the repo cannot be fully cleaned in one pass, save per-analysis baselines and use `fallow audit` as a gate on new issues while cleanup continues. Baselines are a temporary migration aid, not the desired steady state.
+
+```bash
+fallow dead-code --save-baseline fallow-baselines/dead-code.json
+fallow health    --save-baseline fallow-baselines/health.json
+fallow dupes     --save-baseline fallow-baselines/dupes.json
+
+fallow audit \
+  --dead-code-baseline fallow-baselines/dead-code.json \
+  --health-baseline    fallow-baselines/health.json \
+  --dupes-baseline     fallow-baselines/dupes.json
+```
+
+### Available Scripts
+
+| Script | Purpose |
+|--------|---------|
+| `pnpm dead-code` | Check for unused exports and dead files |
+| `pnpm audit` | Full audit as JSON (complexity, duplication, maintainability) |
+| `pnpm health` | Health report with scores, hotspots, and targets |
 
 ## Reference Documentation
 

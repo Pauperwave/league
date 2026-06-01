@@ -17,7 +17,7 @@ Enable real-time, multi-device data entry and viewing for Magic: The Gathering l
 
 ## 2. Current State
 
-- Per-round data (rankings, kills, votes, commanders) is stored in **Pinia stores with `persist: true`** (localStorage via `pinia-plugin-persistedstate`).
+- Per-round data (rankings, kills, votes, commanders) is stored in **Pinia stores** (in-memory only, no localStorage persistence).
 - Data is only written to the database (`round_results` table) when the admin clicks "Avanti" (advance round) or "Termina evento".
 - Live standings are calculated from the **in-memory Pinia stores**, not from the database.
 - The system works perfectly for a single admin on a single device, but breaks for multiple devices because localStorage is device-local.
