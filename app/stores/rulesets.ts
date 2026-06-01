@@ -1,20 +1,33 @@
+// app\stores\rulesets.ts
 import type { Ruleset } from '#shared/utils/types'
+import { toErrorMessage } from '~/utils/error'
 
+/**
+ * Store for tournament ruleset management.
+ * Handles CRUD operations for rulesets with usage validation on delete.
+ */
 export const useRulesetStore = defineStore('rulesets', () => {
   const supabase = useSupabaseClient()
 
-  // State
+  /** All rulesets fetched from Supabase */
   const rulesets = ref<Ruleset[]>([])
+  /** Global loading state */
   const loading = ref(false)
+  /** Last error message */
   const error = ref<string | null>(null)
+  /** Whether initial fetch has completed */
   const initialized = ref(false)
 
-  // Getters
+  // ── Getters ────────────────────────────────────────────────────────────────
+
+  /** Find a ruleset by its ruleset_id */
   const getRulesetById = computed(() => (id: number) => {
     return rulesets.value.find(r => r.ruleset_id === id) || null
   })
 
-  // Actions
+  // ── Actions ────────────────────────────────────────────────────────────────
+
+  /** Fetch all rulesets from Supabase */
   async function fetchRulesets(force = false) {
     if (initialized.value && !force) return
 
@@ -31,13 +44,14 @@ export const useRulesetStore = defineStore('rulesets', () => {
       rulesets.value = data || []
       initialized.value = true
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Errore nel caricamento regolamenti'
+      error.value = toErrorMessage(err, 'Errore nel caricamento regolamenti')
       console.error('[useRulesetStore] fetchRulesets error:', err)
     } finally {
       loading.value = false
     }
   }
 
+  /** Create a new ruleset */
   async function createRuleset(ruleset: Omit<Ruleset, 'ruleset_id'>): Promise<{ success: boolean; data?: Ruleset; error?: string }> {
     loading.value = true
     error.value = null
@@ -55,7 +69,7 @@ export const useRulesetStore = defineStore('rulesets', () => {
       rulesets.value.push(data)
       return { success: true, data }
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Errore nella creazione regolamento'
+      error.value = toErrorMessage(err, 'Errore nella creazione regolamento')
       console.error('[useRulesetStore] createRuleset error:', err)
       return { success: false, error: error.value }
     } finally {
@@ -63,6 +77,7 @@ export const useRulesetStore = defineStore('rulesets', () => {
     }
   }
 
+  /** Update an existing ruleset */
   async function updateRuleset(id: number, updates: Partial<Ruleset>): Promise<{ success: boolean; data?: Ruleset; error?: string }> {
     loading.value = true
     error.value = null
@@ -85,7 +100,7 @@ export const useRulesetStore = defineStore('rulesets', () => {
 
       return { success: true, data }
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Errore nell\'aggiornamento regolamento'
+      error.value = toErrorMessage(err, 'Errore nell\'aggiornamento regolamento')
       console.error('[useRulesetStore] updateRuleset error:', err)
       return { success: false, error: error.value }
     } finally {
@@ -93,6 +108,10 @@ export const useRulesetStore = defineStore('rulesets', () => {
     }
   }
 
+  /**
+   * Delete a ruleset after checking it's not used by any league.
+   * @returns Error if the ruleset is in use.
+   */
   async function deleteRuleset(id: number): Promise<{ success: boolean; error?: string }> {
     loading.value = true
     error.value = null
@@ -122,7 +141,7 @@ export const useRulesetStore = defineStore('rulesets', () => {
 
       return { success: true }
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Errore nell\'eliminazione regolamento'
+      error.value = toErrorMessage(err, 'Errore nell\'eliminazione regolamento')
       console.error('[useRulesetStore] deleteRuleset error:', err)
       return { success: false, error: error.value }
     } finally {
@@ -130,6 +149,7 @@ export const useRulesetStore = defineStore('rulesets', () => {
     }
   }
 
+  /** Clear the error state */
   function clearError() {
     error.value = null
   }
