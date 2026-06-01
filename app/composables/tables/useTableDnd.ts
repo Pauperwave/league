@@ -45,7 +45,7 @@ function normalizeSeats(tableId: string, seats: Seat[]): Seat[] {
 
   const normalized: Seat[] = [...players]
 
-  while (normalized.length < 5) {
+  while (normalized.length < 4) {
     normalized.push({
       id: `${tableId}-seat-${normalized.length + 1}`,
       player: null,

@@ -1,5 +1,6 @@
 import type { Ref } from 'vue'
 import type { TournamentTable } from '#shared/utils/types'
+import { isCloseTo } from '~/utils/math'
 import type { PairingScoreDetails } from '~/composables/events/pairing/pairingOptimizer'
 
 interface ToastApi {
@@ -28,7 +29,7 @@ function changedTableNumbers(beforeTableTotals: number[], afterTableTotals: numb
       return acc
     }
 
-    if (Math.abs(nextTableTotal - previous) > 0.001) {
+    if (!isCloseTo(nextTableTotal, previous)) {
       acc.push(index + 1)
     }
 

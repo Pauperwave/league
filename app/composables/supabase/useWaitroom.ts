@@ -6,7 +6,7 @@ import type { WaitroomEntry } from '#shared/utils/types'
  */
 export function useWaitroom(eventId?: number) {
   const store = usePlayerStore()
-  const key = eventId ? `waitroom-${eventId}` : 'waitroom-all'
+  const key = eventId ? `waitroom-by-event-${eventId}` : 'waitroom-all'
 
   const { data, pending, error } = useAsyncData<WaitroomEntry[]>(key, async () => {
     if (eventId) {

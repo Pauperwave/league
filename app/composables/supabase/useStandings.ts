@@ -6,7 +6,7 @@ import type { StandingWithPlayer } from '#shared/utils/types'
  */
 export function useStandings(eventId?: number) {
   const store = useEventStore()
-  const key = eventId ? `standings-${eventId}` : 'standings-all'
+  const key = eventId ? `standings-by-event-${eventId}` : 'standings-all'
 
   const { data, pending, error } = useAsyncData<StandingWithPlayer[]>(key, async () => {
     if (eventId) {
@@ -36,7 +36,7 @@ export function useStandings(eventId?: number) {
 export function useMultipleEventStandings(eventIds: MaybeRef<number[]>) {
   const store = useEventStore()
   const eventIdsRef = toRef(eventIds)
-  const key = computed(() => `standings-multi-${eventIdsRef.value.join('-')}`)
+  const key = computed(() => `standings-multi-event-${eventIdsRef.value.join('-')}`)
 
   const { data, pending, error, refresh } = useAsyncData<StandingWithPlayer[]>(
     key,

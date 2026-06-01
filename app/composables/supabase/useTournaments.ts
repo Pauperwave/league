@@ -7,7 +7,7 @@ export interface Tournament {
 }
 
 export function useTournaments(eventId?: number) {
-  const key = eventId ? `tournaments-${eventId}` : 'tournaments-all'
+  const key = eventId ? `tournaments-by-event-${eventId}` : 'tournaments-all'
 
   // @ts-expect-error - tournaments table not in database yet
   return useAsyncData<Tournament[]>(key, async () => {

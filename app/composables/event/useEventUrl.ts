@@ -1,151 +1,118 @@
-// league\app\composables\event\useEventUrl.ts
+// app\composables\event\useEventUrl.ts
+
+/**
+ * Composable for bidirectional sync between URL query params and event page state.
+ *
+ * All sync functions use `router.replace` (not `push`) to avoid polluting history.
+ * Unknown params are preserved during sync.
+ */
 export function useEventUrl() {
   const route = useRoute()
   const router = useRouter()
 
-  // Read phase from query parameter
+  // ─── Query Readers ────────────────────────────────────────────────────────────
+
   const phaseFromQuery = computed(() => route.query.phase as string | undefined)
 
-  // Read round from query parameter
   const roundFromQuery = computed(() => {
     const round = route.query.round
     return round ? parseInt(round as string) || null : null
   })
 
+  const previewFromQuery = computed(() => route.query.preview === '1')
+
+  const scoreModalFromQuery = computed(() => {
+    const id = route.query.scoreModal
+    return id ? Number(id) : null
+  })
+
+  const killModalFromQuery = computed(() => {
+    const id = route.query.killModal
+    return id ? Number(id) : null
+  })
+
+  const votesModalFromQuery = computed(() => {
+    const id = route.query.votesModal
+    return id ? Number(id) : null
+  })
+
+  const commanderModalFromQuery = computed(() => {
+    const id = route.query.commanderModal
+    return id ? Number(id) : null
+  })
+
+  // ─── Generic Query Param Helper ───────────────────────────────────────────────
+
   /**
-   * Sync URL with current phase and round
-   * @param currentPhase - Current event phase ('registration' | 'playing' | 'ended')
+   * Set or remove a single query param while preserving all others.
    */
-  function syncUrl(currentPhase: 'registration' | 'playing' | 'ended', currentRound: number) {
-    console.log('[SYNC URL] Called', { currentPhase, currentRound, currentQuery: route.query })
+  function setQueryParam(key: string, value: string | null) {
     const newQuery: Record<string, string> = {}
 
-    // Copy existing valid query params
+    // Copy existing params except the one being set
+    Object.entries(route.query).forEach(([k, v]) => {
+      if (typeof v === 'string' && k !== key) {
+        newQuery[k] = v
+      }
+    })
+
+    if (value !== null) {
+      newQuery[key] = value
+    }
+
+    router.replace({ query: newQuery })
+  }
+
+  // ─── Sync Functions ───────────────────────────────────────────────────────────
+
+  /**
+   * Sync URL with current phase and round.
+   * Strips modal params so switching phase closes any open modal.
+   */
+  function syncUrl(currentPhase: 'registration' | 'playing' | 'ended', currentRound: number) {
+    const newQuery: Record<string, string> = {}
+
+    // Preserve non-conflicting params
     Object.entries(route.query).forEach(([key, value]) => {
-      if (typeof value === 'string' && key !== 'phase' && key !== 'round' && key !== 'scoreModal' && key !== 'killModal' && key !== 'votesModal' && key !== 'commanderModal') {
+      if (typeof value === 'string'
+        && key !== 'phase'
+        && key !== 'round'
+        && key !== 'scoreModal'
+        && key !== 'killModal'
+        && key !== 'votesModal'
+        && key !== 'commanderModal') {
         newQuery[key] = value
       }
     })
 
-    // Update phase
     newQuery.phase = currentPhase
 
-    // Update round if in playing phase
     if (currentPhase === 'playing' && currentRound > 0) {
       newQuery.round = String(currentRound)
     }
 
-    console.log('[SYNC URL] New query', newQuery)
     router.replace({ query: newQuery })
   }
 
-  /**
-   * Sync URL with preview overlay state
-   */
   function syncPreview(isOpen: boolean) {
-    const newQuery: Record<string, string> = {}
-    Object.entries(route.query).forEach(([key, value]) => {
-      if (typeof value === 'string' && key !== 'preview') {
-        newQuery[key] = value
-      }
-    })
-    if (isOpen) {
-      newQuery.preview = '1'
-    }
-    router.replace({ query: newQuery })
+    setQueryParam('preview', isOpen ? '1' : null)
   }
 
-  const previewFromQuery = computed(() => route.query.preview === '1')
-
-  /**
-   * Sync URL with score modal state
-   * @param isOpen - Whether the score modal is open
-   * @param pairingId - The pairing ID for the score modal
-   */
   function syncScoreModal(isOpen: boolean, pairingId: number | null) {
-    const newQuery: Record<string, string> = {}
-
-    // Copy existing valid query params
-    Object.entries(route.query).forEach(([key, value]) => {
-      if (typeof value === 'string' && key !== 'scoreModal') {
-        newQuery[key] = value
-      }
-    })
-
-    if (isOpen && pairingId !== null) {
-      newQuery.scoreModal = String(pairingId)
-    }
-
-    router.replace({ query: newQuery })
+    setQueryParam('scoreModal', isOpen && pairingId !== null ? String(pairingId) : null)
   }
-
-  const scoreModalFromQuery = computed(() => {
-    const pairingId = route.query.scoreModal
-    return pairingId ? Number(pairingId) : null
-  })
 
   function syncKillModal(isOpen: boolean, tableId: number | null) {
-    const newQuery: Record<string, string> = {}
-
-    Object.entries(route.query).forEach(([key, value]) => {
-      if (typeof value === 'string' && key !== 'killModal') {
-        newQuery[key] = value
-      }
-    })
-
-    if (isOpen && tableId !== null) {
-      newQuery.killModal = String(tableId)
-    }
-
-    router.replace({ query: newQuery })
+    setQueryParam('killModal', isOpen && tableId !== null ? String(tableId) : null)
   }
-
-  const killModalFromQuery = computed(() => {
-    const tableId = route.query.killModal
-    return tableId ? Number(tableId) : null
-  })
 
   function syncVotesModal(isOpen: boolean, playerId: number | null) {
-    const newQuery: Record<string, string> = {}
-
-    Object.entries(route.query).forEach(([key, value]) => {
-      if (typeof value === 'string' && key !== 'votesModal') {
-        newQuery[key] = value
-      }
-    })
-
-    if (isOpen && playerId !== null) {
-      newQuery.votesModal = String(playerId)
-    }
-
-    router.replace({ query: newQuery })
+    setQueryParam('votesModal', isOpen && playerId !== null ? String(playerId) : null)
   }
-
-  const votesModalFromQuery = computed(() => {
-    const playerId = route.query.votesModal
-    return playerId ? Number(playerId) : null
-  })
 
   function syncCommanderModal(isOpen: boolean, playerId: number | null) {
-    const newQuery: Record<string, string> = {}
-
-    Object.entries(route.query).forEach(([key, value]) => {
-      if (typeof value === 'string' && key !== 'commanderModal') {
-        newQuery[key] = value
-      }
-    })
-
-    if (isOpen && playerId !== null) {
-      newQuery.commanderModal = String(playerId)
-    }
-
-    router.replace({ query: newQuery })
+    setQueryParam('commanderModal', isOpen && playerId !== null ? String(playerId) : null)
   }
-
-  const commanderModalFromQuery = computed(() => {
-    const playerId = route.query.commanderModal
-    return playerId ? Number(playerId) : null
-  })
 
   return {
     phaseFromQuery,

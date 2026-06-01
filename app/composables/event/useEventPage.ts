@@ -1,11 +1,11 @@
 // league\app\composables\event\useEventPage.ts
-import type { Player } from '#shared/utils/types'
+import type { Player, PairingWithResults } from '#shared/utils/types'
 import { usePlayerStore } from '~/stores/players'
 import { useEventUrl } from './useEventUrl'
 
 export function useEventPage() {
+  const supabase = useSupabaseClient()
   const route = useRoute()
-  const router = useRouter()
 
   const leagueId = parseInt(route.params.leagueId as string)
   const eventId = parseInt(route.params.eventId as string)
@@ -21,6 +21,17 @@ export function useEventPage() {
   const { data: players } = usePlayers()
 
   const currentLeague = computed(() => leagueStore.getLeagueById(leagueId))
+
+  // Fetch league data if not already in store (e.g., on direct page reload)
+  watch(
+    () => currentLeague.value,
+    async (league) => {
+      if (!league && !leagueStore.loadingFetch) {
+        await leagueStore.fetchLeagues()
+      }
+    },
+    { immediate: true },
+  )
 
   // Use eventStore for current event
   const currentEvent = computed(() => {
@@ -169,10 +180,15 @@ export function useEventPage() {
     return true
   }
 
-  function navigateToScore(pairingId: number, playerId: number, tableId: number) {
-    router.push(
-      `/league/${leagueId}/event/${eventId}/round/${currentRound.value}/score?pairingId=${pairingId}&playerId=${playerId}&tableId=${tableId}`
-    )
+  async function navigateToScore(pairingId: number, playerId: number, tableId: number) {
+    await navigateTo({
+      path: `/league/${leagueId}/event/${eventId}/round/${currentRound.value}/score`,
+      query: {
+        pairingId: String(pairingId),
+        playerId: String(playerId),
+        tableId: String(tableId),
+      },
+    })
   }
 
   async function refreshWaiting() {
@@ -195,6 +211,39 @@ export function useEventPage() {
     return eventStore.events
   }
 
+  // ── Viewed round state (for viewing past round results without changing event state) ──
+  const viewedRound = ref<number | null>(null)
+  const viewedPairings = ref<PairingWithResults[]>([])
+
+  const isViewingPastRound = computed(() => viewedRound.value !== null && viewedRound.value < currentRound.value)
+
+  async function viewRound(round: number) {
+    if (round === currentRound.value) {
+      clearViewedRound()
+      return
+    }
+    try {
+      const data = await fetchPairingsWithResults(supabase, eventId, round)
+      viewedRound.value = round
+      viewedPairings.value = data
+    }
+    catch (err) {
+      console.error('[useEventPage] viewRound error:', err)
+    }
+  }
+
+  function clearViewedRound() {
+    viewedRound.value = null
+    viewedPairings.value = []
+  }
+
+  const effectivePairings = computed(() => {
+    if (isViewingPastRound.value) {
+      return viewedPairings.value
+    }
+    return eventStore.pairings
+  })
+
   const loading = computed(() => eventStore.loading || playerStore.loading)
 
   return {
@@ -214,6 +263,11 @@ export function useEventPage() {
     tableEstimate,
     previewTables,
     pairings: computed(() => eventStore.pairings),
+    displayedPairings: effectivePairings,
+    viewedRound: computed(() => viewedRound.value),
+    isViewingPastRound,
+    viewRound,
+    clearViewedRound,
     pairingHistory: computed(() => eventStore.pairingHistory),
     standings: computed(() => eventStore.standings),
     loading,

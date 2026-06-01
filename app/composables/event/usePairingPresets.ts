@@ -1,7 +1,8 @@
 import type { PairingWeights } from '#shared/utils/types'
 import type { Ref } from 'vue'
+import { isCloseTo } from '~/utils/math'
 import { DEFAULT_PAIRING_WEIGHTS } from '~/composables/events/pairing/pairingOptimizer'
-import type { PairingPresetKind } from '~/components/events/Pairings/Settings/PairingPresetButtons.vue'
+import type { PairingPresetKind } from '~/components/event/pairing/settings/PairingPresetButtons.vue'
 
 const SOCIAL_PRESET: PairingWeights = {
   strengthBalance: 0.8,
@@ -21,17 +22,13 @@ const COMPETITIVE_PRESET: PairingWeights = {
   tableSize3: -0.1,
 }
 
-function closeTo(a: number, b: number) {
-  return Math.abs(a - b) < 0.001
-}
-
 function sameWeights(left: PairingWeights, right: PairingWeights): boolean {
-  return closeTo(left.strengthBalance, right.strengthBalance)
-    && closeTo(left.novelty, right.novelty)
-    && closeTo(left.rematch, right.rematch)
-    && closeTo(left.rotateTable3, right.rotateTable3)
-    && closeTo(left.tableSize4, right.tableSize4)
-    && closeTo(left.tableSize3, right.tableSize3)
+  return isCloseTo(left.strengthBalance, right.strengthBalance)
+    && isCloseTo(left.novelty, right.novelty)
+    && isCloseTo(left.rematch, right.rematch)
+    && isCloseTo(left.rotateTable3, right.rotateTable3)
+    && isCloseTo(left.tableSize4, right.tableSize4)
+    && isCloseTo(left.tableSize3, right.tableSize3)
 }
 
 export function usePairingPresets(weights: Ref<PairingWeights>, setWeights: (nextWeights: Partial<PairingWeights>) => void) {

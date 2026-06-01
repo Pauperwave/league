@@ -1,6 +1,8 @@
-import { h, resolveComponent } from 'vue'
-import type { CalendarDate} from '@internationalized/date'
+import type { TableColumn } from '@nuxt/ui'
+import type { CalendarDate } from '@internationalized/date'
 import { parseDate, today, getLocalTimeZone } from '@internationalized/date'
+import { h } from 'vue'
+import type { Component } from 'vue'
 
 export type StatusColor = 'success' | 'warning' | 'error' | 'neutral' | 'info' | 'primary' | 'secondary'
 
@@ -23,39 +25,51 @@ export function parseDateString(dateStr: string | null): CalendarDate | null {
   }
 }
 
-type SortDirection = 'asc' | 'desc' | false
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SortableColumn = any
 
-interface SortableColumn {
-  getIsSorted: () => SortDirection
-  toggleSorting: () => void
-}
-
-export function sortableHeader(label: string) {
+export function sortableHeader(label: string, UButton: Component) {
   return ({ column }: { column: SortableColumn }) => {
     const isSorted = column.getIsSorted()
-    const UIcon = resolveComponent('UIcon')
+    return h(UButton, {
+      color: 'neutral',
+      variant: 'ghost',
+      label,
+      icon: isSorted
+        ? isSorted === 'asc'
+          ? 'i-lucide-arrow-up-narrow-wide'
+          : 'i-lucide-arrow-down-wide-narrow'
+        : 'i-lucide-arrow-up-down',
+      class: '-mx-2.5',
+      onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
+    })
+  }
+}
 
-    return h(
-      'button',
-      {
-        type: 'button',
-        class: 'flex items-center gap-1 text-left cursor-pointer hover:text-primary transition-colors',
-        onClick: (e: Event) => {
-          e.preventDefault()
-          column.toggleSorting()
-        },
-      },
-      [
-        h('span', { class: 'font-medium text-foreground' }, label),
-        h(UIcon, {
-          name: 'i-lucide-chevron-down',
-          class: [
-            'size-3.5 shrink-0 transition-transform',
-            isSorted === 'asc' ? 'rotate-180' : '',
-            isSorted ? 'text-primary' : 'text-muted opacity-50',
-          ],
-        }),
-      ]
-    )
+export function createActionsColumn<T>(
+  UButton: Component,
+  ActionButtons: Component,
+  handlers: {
+    onView: (item: T) => void
+    onEdit: (item: T) => void
+    onDelete: (item: T) => void
+  }
+): TableColumn<T> {
+  return {
+    id: 'actions',
+    header: 'Azioni',
+    enableSorting: false,
+    meta: { class: { td: 'text-right' } },
+    cell: ({ row }) =>
+      h(ActionButtons, {
+        showView: true,
+        showEdit: true,
+        showDelete: true,
+        size: 'sm',
+        variant: 'outline',
+        onEdit: () => handlers.onEdit(row.original),
+        onView: () => handlers.onView(row.original),
+        onDelete: () => handlers.onDelete(row.original),
+      })
   }
 }

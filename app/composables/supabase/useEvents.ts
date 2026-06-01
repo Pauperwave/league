@@ -7,7 +7,7 @@ import type { Event } from '#shared/utils/types'
 export function useEvents(leagueId?: MaybeRef<number>) {
   const store = useEventStore()
   const leagueIdRef = toRef(leagueId)
-  const key = computed(() => leagueIdRef.value ? `events-${leagueIdRef.value}` : 'events-all')
+  const key = computed(() => leagueIdRef.value ? `events-by-league-${leagueIdRef.value}` : 'events-all')
 
   const { data, pending, error, refresh } = useAsyncData<Event[]>(key, async () => {
     if (!leagueIdRef.value) return []

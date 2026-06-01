@@ -7,7 +7,7 @@ import type { RoundResult } from '#shared/utils/types'
  */
 export function useRoundResults(pairingId?: number) {
   const store = useEventStore()
-  const key = pairingId ? `round-results-${pairingId}` : 'round-results-all'
+  const key = pairingId ? `round-results-by-pairing-${pairingId}` : 'round-results-all'
 
   const { data, pending, error } = useAsyncData<RoundResult[]>(key, async () => {
     if (pairingId) {
