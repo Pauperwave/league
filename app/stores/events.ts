@@ -1,4 +1,6 @@
-import type { Event, EventInsert, StandingWithPlayer, Player, PairingWithResults, RoundResultInsert } from '#shared/utils/types'
+// app\stores\events.ts
+import type { Event, EventInsert, StandingWithPlayer, Player, PairingWithResults, RoundResult, RoundResultInsert } from '#shared/utils/types'
+import { toErrorMessage } from '~/utils/error'
 import { sanitizePlayer } from './players'
 import type {
   PairingPlayer,
@@ -6,30 +8,54 @@ import type {
 } from '~/composables/events/pairing/pairingOptimizer'
 import { getPairingPreferences } from '~/composables/events/pairing/pairingPreferences'
 
-// ─── Utility ────────────────────────────────────────────────────────────────
-function toErrorMessage(err: unknown, fallback: string): string {
-  return err instanceof Error ? err.message : fallback
-}
-
 const UNRANKED_FALLBACK = 9999
 
+/** Map raw pairing rows to PairingHistoryEntry array */
+function mapPairingsToHistory(pairings: any[]): PairingHistoryEntry[] {
+  return (pairings ?? []).map(pairing => ({
+    round: pairing.pairing_round ?? 0,
+    players: [
+      pairing.pairing_player1_id,
+      pairing.pairing_player2_id,
+      pairing.pairing_player3_id,
+      pairing.pairing_player4_id,
+    ].filter((id): id is number => id !== null),
+  }))
+}
+
+async function fetchStandingsForEvents(
+  supabase: any,
+  eventIds: number[],
+  selectColumns: string
+) {
+  const { data, error } = await supabase
+    .from('standings')
+    .select(selectColumns)
+    .in('event_id', eventIds)
+
+  if (error) throw error
+  return data ?? []
+}
+
+/** Shape for inserting a new pairing row into Supabase */
 interface PairingInsert {
-  event_id:           number
-  pairing_round:      number
-  pairing_is_full:    boolean
+  event_id: number
+  pairing_round: number
+  pairing_is_full: boolean
   pairing_player1_id: number | null
   pairing_player2_id: number | null
   pairing_player3_id: number | null
   pairing_player4_id: number | null
 }
 
+/** Build PairingInsert rows from a list of tables (each table is an array of player IDs) */
 function buildPairingRows(eventId: number, round: number, tables: number[][]): PairingInsert[] {
   return tables
     .filter(table => table.length >= 3)
     .map(table => ({
-      event_id:           eventId,
-      pairing_round:      round,
-      pairing_is_full:    table.length === 4,
+      event_id: eventId,
+      pairing_round: round,
+      pairing_is_full: table.length === 4,
       pairing_player1_id: table[0] ?? null,
       pairing_player2_id: table[1] ?? null,
       pairing_player3_id: table[2] ?? null,
@@ -37,38 +63,269 @@ function buildPairingRows(eventId: number, round: number, tables: number[][]): P
     }))
 }
 
+// ─── Round helpers (extracted from nextRound to reduce complexity) ─────────
+
+interface StandingAccumulator {
+  player_id: number
+  standing_player_score: number
+  victories: number
+  brew_received: number
+  play_received: number
+}
+
+/** Resolve event → league → ruleset and build position-value array */
+async function resolveEventRuleset(supabase: any, eventId: number) {
+  const { data: eventData, error: eventError } = await supabase
+    .from('events')
+    .select('league_id, event_round_number')
+    .eq('event_id', eventId)
+    .single()
+
+  if (eventError || !eventData?.league_id) throw eventError ?? new Error('No league_id')
+
+  const { data: leagueData, error: leagueError } = await supabase
+    .from('leagues')
+    .select('ruleset_id')
+    .eq('id', eventData.league_id)
+    .single()
+
+  if (leagueError || !leagueData?.ruleset_id) throw leagueError ?? new Error('No ruleset_id')
+
+  const { data: ruleset, error: rulesetError } = await supabase
+    .from('rulesets')
+    .select('*')
+    .eq('ruleset_id', leagueData.ruleset_id)
+    .single()
+
+  if (rulesetError) throw rulesetError
+
+  const posValues = [
+    0,
+    ruleset?.rule_set_rank1 ?? 0,
+    ruleset?.rule_set_rank2 ?? 0,
+    ruleset?.rule_set_rank3 ?? 0,
+    ruleset?.rule_set_rank4 ?? 0,
+  ]
+
+  return { ruleset, posValues, eventRoundNumber: eventData.event_round_number }
+}
+
+/** Fetch pairings, round results, and current standings for a round */
+async function fetchRoundData(supabase: any, eventId: number, currentRound: number) {
+  const [{ data: pairingsData, error: pairingsError }, { data: currentStandings, error: currentStandingsError }] = await Promise.all([
+    supabase.from('pairings').select('*').eq('event_id', eventId).eq('pairing_round', currentRound),
+    supabase.from('standings').select('player_id, standing_player_score, victories, brew_received, play_received').eq('event_id', eventId),
+  ])
+
+  if (pairingsError) throw pairingsError
+  if (currentStandingsError) throw currentStandingsError
+
+  const pairingIds = (pairingsData ?? []).map((p: any) => p.pairing_id)
+
+  const { data: allResults, error: allResultsError } = await supabase
+    .from('round_results')
+    .select('*')
+    .in('pairing_id', pairingIds)
+
+  if (allResultsError) throw allResultsError
+
+  const standingsMap = new Map<number, StandingAccumulator>(
+    (currentStandings ?? []).map((s: any) => [s.player_id, {
+      player_id: s.player_id,
+      standing_player_score: s.standing_player_score ?? 0,
+      victories: s.victories ?? 0,
+      brew_received: s.brew_received ?? 0,
+      play_received: s.play_received ?? 0,
+    }])
+  )
+
+  return { pairings: pairingsData ?? [], results: allResults ?? [], standingsMap }
+}
+
+/** Calculate scores from round results and update accumulator */
+function calculateRoundScores(
+  pairings: any[],
+  results: any[],
+  standingsMap: Map<number, StandingAccumulator>,
+  posValues: number[],
+  ruleset: any,
+) {
+  for (const pairing of pairings) {
+    const playerIds = ([
+      pairing.pairing_player1_id,
+      pairing.pairing_player2_id,
+      pairing.pairing_player3_id,
+      pairing.pairing_player4_id,
+    ] as Array<number | null>).filter((pid): pid is number => pid !== null)
+
+    const tableResults = results.filter((r: any) => r.pairing_id === pairing.pairing_id)
+
+    for (const playerId of playerIds) {
+      const myResult = tableResults.find((r: any) => r.player_id === playerId)
+      if (!myResult) continue
+
+      const position = myResult.position ?? 0
+      const numberOfKills = myResult.number_of_kills ?? 0
+
+      const otherResults = tableResults.filter((r: any) => r.player_id !== playerId)
+      const brewVote = otherResults.filter((r: any) => r.brew_vote === playerId).length
+      const totalPlayCount = otherResults.filter(
+        (r: any) => r.play_vote_1 === playerId || r.play_vote_2 === playerId,
+      ).length
+
+      const samePositionCount = position !== 0
+        ? tableResults.filter((r: any) => r.position === position).length
+        : 1
+
+      let rankSum = 0
+      for (let i = 0; i < samePositionCount; i++) {
+        rankSum += posValues[Math.min(position + i, 4)] ?? 0
+      }
+      const scoreRank = Math.floor(rankSum / samePositionCount)
+
+      const totalScore = scoreRank
+        + numberOfKills * (ruleset?.rule_set_kill ?? 0)
+        + brewVote * (ruleset?.rule_set_brew ?? 0)
+        + totalPlayCount * (ruleset?.rule_set_play ?? 0)
+
+      const acc = standingsMap.get(playerId)
+      if (acc) {
+        acc.standing_player_score += totalScore
+        acc.victories += position === 1 ? 1 : 0
+        acc.brew_received += brewVote
+        acc.play_received += totalPlayCount
+      }
+    }
+  }
+}
+
+/** Batch-update standings scores, then update ranks */
+async function updateStandingsAndRanks(supabase: any, eventId: number, standingsMap: Map<number, StandingAccumulator>) {
+  await Promise.all(
+    Array.from(standingsMap.values()).map(s =>
+      supabase
+        .from('standings')
+        .update({
+          standing_player_score: s.standing_player_score,
+          victories: s.victories,
+          brew_received: s.brew_received,
+          play_received: s.play_received,
+        })
+        .eq('event_id', eventId)
+        .eq('player_id', s.player_id),
+    ),
+  )
+
+  const ranked = Array.from(standingsMap.values()).sort(
+    (a, b) => b.standing_player_score - a.standing_player_score,
+  )
+
+  await Promise.all(
+    ranked.map((s, index) =>
+      supabase
+        .from('standings')
+        .update({ standing_player_rank: index + 1 })
+        .eq('event_id', eventId)
+        .eq('player_id', s.player_id),
+    ),
+  )
+}
+
 // ─── Store ──────────────────────────────────────────────────────────────────
+
+/**
+ * Store for event management, tournament standings, pairings, and round lifecycle.
+ * Uses a loading counter instead of a boolean to handle nested async operations.
+ */
 export const useEventStore = defineStore('events', () => {
   const supabase = useSupabaseClient()
 
+  /**
+   * Generic upsert helper for the round_results table.
+   * Checks for an existing row by (pairing_id, player_id) and updates or inserts.
+   */
+  async function upsertRoundResult(
+    pairingId: number,
+    playerId: number,
+    data: Partial<Omit<RoundResult, 'id' | 'pairing_id' | 'player_id'>>,
+  ): Promise<{ success: boolean; error?: string }> {
+    try {
+      const { data: existing } = await supabase
+        .from('round_results')
+        .select('id')
+        .eq('pairing_id', pairingId)
+        .eq('player_id', playerId)
+        .maybeSingle()
+
+      console.log('[upsertRoundResult] Existing row?', { pairingId, playerId, existing: !!existing })
+      if (existing) {
+        const { error } = await supabase
+          .from('round_results')
+          .update(data)
+          .eq('pairing_id', pairingId)
+          .eq('player_id', playerId)
+        if (error) throw error
+        console.log('[upsertRoundResult] Updated existing row', { pairingId, playerId, data })
+      }
+      else {
+        const { error } = await supabase
+          .from('round_results')
+          .insert({ pairing_id: pairingId, player_id: playerId, ...data })
+        if (error) throw error
+        console.log('[upsertRoundResult] Inserted new row', { pairingId, playerId, data })
+      }
+
+      return { success: true }
+    }
+    catch (err) {
+      console.error('[upsertRoundResult] Error', { pairingId, playerId, data, err })
+      return { success: false, error: toErrorMessage(err, 'Errore nel salvataggio') }
+    }
+  }
+
   // ── State ──────────────────────────────────────────────────────────────────
-  const events        = ref<Event[]>([])
-  const currentEvent  = ref<Event | null>(null)
-  const standings     = ref<StandingWithPlayer[]>([])
-  const pairings      = ref<PairingWithResults[]>([])
+
+  /** Events by league */
+  const events = ref<Event[]>([])
+  /** Currently selected event */
+  const currentEvent = ref<Event | null>(null)
+  /** Current standings data (with player info) */
+  const standings = ref<StandingWithPlayer[]>([])
+  /** Current round pairings (with round results) */
+  const pairings = ref<PairingWithResults[]>([])
+  /** Historical pairings for the pairing optimizer */
   const pairingHistory = ref<PairingHistoryEntry[]>([])
-  const loadingCount  = ref(0)          // counter instead of boolean
-  const error         = ref<string | null>(null)
-  const initialized   = ref<Record<number, boolean>>({})
+  /** Counter for nested loading — stays true while ANY async action is in flight */
+  const loadingCount = ref(0)
+  /** Last error message */
+  const error = ref<string | null>(null)
+  /** Per-league initialization flags to prevent duplicate fetches */
+  const initialized = ref<Record<number, boolean>>({})
 
   // ── Derived loading state ──────────────────────────────────────────────────
-  // Stays true as long as ANY async action is in flight
+
+  /** True while any async action is in flight */
   const loading = computed(() => loadingCount.value > 0)
 
   function beginLoading() { loadingCount.value++ }
-  function endLoading()   { loadingCount.value = Math.max(0, loadingCount.value - 1) }
+  function endLoading() { loadingCount.value = Math.max(0, loadingCount.value - 1) }
 
   // ── Getters ────────────────────────────────────────────────────────────────
-  const getEventsByLeagueId = computed(() => (leagueId: number) =>
-    events.value.filter(e => e.league_id === leagueId)
-  )
 
+  /** Filter events by league ID */
+  function getEventsByLeagueId(leagueId: number): Event[] {
+    return events.value.filter(e => e.league_id === leagueId)
+  }
+
+  /** Check if the current event has finished all rounds */
   const isEventEnded = computed(() => {
     if (!currentEvent.value) return false
     return (currentEvent.value.event_current_round ?? 0) > (currentEvent.value.event_round_number ?? 0)
   })
+
   // ── Actions ────────────────────────────────────────────────────────────────
 
+  /** Load events for a specific league */
   async function fetchEvents(leagueId: number, force = false) {
     if (initialized.value[leagueId] && !force) return
 
@@ -112,6 +369,7 @@ export const useEventStore = defineStore('events', () => {
     }
   }
 
+  /** Create a new event */
   async function createEvent(event: EventInsert) {
     beginLoading()
     error.value = null
@@ -139,6 +397,7 @@ export const useEventStore = defineStore('events', () => {
     }
   }
 
+  /** Delete an event by ID */
   async function deleteEvent(eventId: number) {
     beginLoading()
     error.value = null
@@ -166,6 +425,7 @@ export const useEventStore = defineStore('events', () => {
     }
   }
 
+  /** Update an existing event */
   async function updateEvent(eventId: number, updates: Partial<Event>): Promise<{ success: boolean; data?: Event; error?: string }> {
     beginLoading()
     error.value = null
@@ -201,6 +461,11 @@ export const useEventStore = defineStore('events', () => {
       endLoading()
     }
   }
+
+  /**
+   * Start an event: create standings, clear waitroom, create first round pairings.
+   * Validates player count (min 3, not 5) and optionally accepts a custom player order.
+   */
   async function startEvent(eventId: number, playerOrder?: number[]) {
     beginLoading()
     error.value = null
@@ -231,13 +496,13 @@ export const useEventStore = defineStore('events', () => {
       }
 
       const standingsData = selectedOrder.map((playerId, index) => ({
-        event_id:              eventId,
-        player_id:             playerId,
+        event_id: eventId,
+        player_id: playerId,
         standing_player_score: 0,
-        standing_player_rank:  index + 1,
-        victories:             0,
-        brew_received:         0,
-        play_received:         0,
+        standing_player_rank: index + 1,
+        victories: 0,
+        brew_received: 0,
+        play_received: 0,
       }))
 
       const { error: standingsError } = await supabase
@@ -249,8 +514,8 @@ export const useEventStore = defineStore('events', () => {
       const { data, error: updateError } = await supabase
         .from('events')
         .update({
-          event_playing:           true,
-          event_current_round:     1,
+          event_playing: true,
+          event_current_round: 1,
           event_registration_open: false,
         })
         .eq('event_id', eventId)
@@ -294,96 +559,11 @@ export const useEventStore = defineStore('events', () => {
   async function createPairings(eventId: number, round: number, playerOrder?: number[]) {
     try {
       if (playerOrder !== undefined) {
-        const tables3 = (4 - (playerOrder.length % 4)) % 4
-        const tables4 = (playerOrder.length - tables3 * 3) / 4
-        const sizes = [
-          ...Array.from({ length: tables4 }, () => 4),
-          ...Array.from({ length: tables3 }, () => 3),
-        ]
-        const tables: number[][] = []
-        let cursor = 0
-        for (const size of sizes) {
-          tables.push(playerOrder.slice(cursor, cursor + size))
-          cursor += size
-        }
-
-        const rows = buildPairingRows(eventId, round, tables)
-        if (!rows.length) {
-          console.warn('[useEventStore] createPairings: playerOrder produced no valid tables')
-          return
-        }
-
-        const { error } = await supabase.from('pairings').insert(rows)
-        if (error) throw error
+        await insertRoundOnePairings(supabase, eventId, round, playerOrder)
         return
       }
 
-      const { data: standingsData, error: standingsError } = await supabase
-        .from('standings')
-        .select('player_id, standing_player_rank, standing_player_score')
-        .eq('event_id', eventId)
-        .order('standing_player_rank', { ascending: true })
-
-      if (standingsError) throw standingsError
-      if (!standingsData?.length) {
-        console.warn('[useEventStore] createPairings: no standings found for event', eventId)
-        return
-      }
-
-      const { data: historicalPairings, error: historyError } = await supabase
-        .from('pairings')
-        .select('pairing_round, pairing_player1_id, pairing_player2_id, pairing_player3_id, pairing_player4_id')
-        .eq('event_id', eventId)
-        .lt('pairing_round', round)
-
-      if (historyError) throw historyError
-
-      const history: PairingHistoryEntry[] = (historicalPairings ?? []).map(pairing => ({
-        round: pairing.pairing_round ?? 0,
-        players: [
-          pairing.pairing_player1_id,
-          pairing.pairing_player2_id,
-          pairing.pairing_player3_id,
-          pairing.pairing_player4_id,
-        ].filter((id): id is number => id !== null),
-      }))
-
-      const table3Counter = new Map<number, number>()
-      for (const entry of history) {
-        if (entry.players.length !== 3) continue
-        for (const playerId of entry.players) {
-          table3Counter.set(playerId, (table3Counter.get(playerId) ?? 0) + 1)
-        }
-      }
-
-      const scoringPlayers: PairingPlayer[] = standingsData.map((standing) => ({
-        id: standing.player_id,
-        rank: standing.standing_player_rank ?? UNRANKED_FALLBACK,
-        score: standing.standing_player_score ?? 0,
-        table3Count: table3Counter.get(standing.player_id) ?? 0,
-      }))
-
-      const preferences = getPairingPreferences(eventId)
-      const optimized = optimizePairings({
-        players: scoringPlayers,
-        history,
-        forbiddenPairs: preferences.forbiddenPairs,
-        weights: preferences.weights,
-        currentRound: round,
-      })
-
-      if (!optimized.tables.length || !Number.isFinite(optimized.totalScore)) {
-        throw new Error('Impossibile generare pairings validi con i vincoli correnti')
-      }
-
-      const rows = buildPairingRows(eventId, round, optimized.tables)
-      if (!rows.length) {
-        console.warn('[useEventStore] createPairings: optimizer produced no valid tables')
-        return
-      }
-
-      const { error: insertError } = await supabase.from('pairings').insert(rows)
-      if (insertError) throw insertError
+      await insertOptimizedPairings(supabase, eventId, round)
     }
     catch (err) {
       console.error('[useEventStore] createPairings error:', err)
@@ -391,7 +571,118 @@ export const useEventStore = defineStore('events', () => {
     }
   }
 
+  /** Build round-1 pairings from a fixed player order (no optimizer). */
+  async function insertRoundOnePairings(
+    supabaseClient: any,
+    eventId: number,
+    round: number,
+    playerOrder: number[],
+  ) {
+    const tables = buildRoundOneTables(playerOrder)
+    const rows = buildPairingRows(eventId, round, tables)
+
+    if (!rows.length) {
+      console.warn('[useEventStore] createPairings: playerOrder produced no valid tables')
+      return
+    }
+
+    const { error } = await supabaseClient.from('pairings').insert(rows)
+    if (error) throw error
+  }
+
+  /** Build tables for round 1 by slicing the player order into 4s then 3s. */
+  function buildRoundOneTables(playerOrder: number[]): number[][] {
+    const tables3 = (4 - (playerOrder.length % 4)) % 4
+    const tables4 = (playerOrder.length - tables3 * 3) / 4
+    const sizes = [
+      ...Array.from({ length: tables4 }, () => 4),
+      ...Array.from({ length: tables3 }, () => 3),
+    ]
+
+    const tables: number[][] = []
+    let cursor = 0
+    for (const size of sizes) {
+      tables.push(playerOrder.slice(cursor, cursor + size))
+      cursor += size
+    }
+    return tables
+  }
+
+  /** Fetch standings + history and run the pairing optimizer for round 2+. */
+  async function insertOptimizedPairings(supabaseClient: any, eventId: number, round: number) {
+    const { data: standingsData, error: standingsError } = await supabaseClient
+      .from('standings')
+      .select('player_id, standing_player_rank, standing_player_score')
+      .eq('event_id', eventId)
+      .order('standing_player_rank', { ascending: true })
+
+    if (standingsError) throw standingsError
+    if (!standingsData?.length) {
+      console.warn('[useEventStore] createPairings: no standings found for event', eventId)
+      return
+    }
+
+    const history = await fetchPairingHistoryForOptimizer(supabaseClient, eventId, round)
+    const scoringPlayers = buildScoringPlayers(standingsData, history)
+
+    const preferences = getPairingPreferences(eventId)
+    const optimized = optimizePairings({
+      players: scoringPlayers,
+      history,
+      forbiddenPairs: preferences.forbiddenPairs,
+      weights: preferences.weights,
+      currentRound: round,
+    })
+
+    if (!optimized.tables.length || !Number.isFinite(optimized.totalScore)) {
+      throw new Error('Impossibile generare pairings validi con i vincoli correnti')
+    }
+
+    const rows = buildPairingRows(eventId, round, optimized.tables)
+    if (!rows.length) {
+      console.warn('[useEventStore] createPairings: optimizer produced no valid tables')
+      return
+    }
+
+    const { error: insertError } = await supabaseClient.from('pairings').insert(rows)
+    if (insertError) throw insertError
+  }
+
+  /** Fetch historical pairings for an event and map them to history entries. */
+  async function fetchPairingHistoryForOptimizer(supabaseClient: any, eventId: number, round: number): Promise<PairingHistoryEntry[]> {
+    const { data, error } = await supabaseClient
+      .from('pairings')
+      .select('pairing_round, pairing_player1_id, pairing_player2_id, pairing_player3_id, pairing_player4_id')
+      .eq('event_id', eventId)
+      .lt('pairing_round', round)
+
+    if (error) throw error
+    return mapPairingsToHistory(data)
+  }
+
+  /** Build scoring players from standings + historical table-3 counts. */
+  function buildScoringPlayers(
+    standingsData: any[],
+    history: PairingHistoryEntry[],
+  ): PairingPlayer[] {
+    const table3Counter = new Map<number, number>()
+    for (const entry of history) {
+      if (entry.players.length !== 3) continue
+      for (const playerId of entry.players) {
+        table3Counter.set(playerId, (table3Counter.get(playerId) ?? 0) + 1)
+      }
+    }
+
+    return standingsData.map((standing) => ({
+      id: standing.player_id,
+      rank: standing.standing_player_rank ?? UNRANKED_FALLBACK,
+      score: standing.standing_player_score ?? 0,
+      table3Count: table3Counter.get(standing.player_id) ?? 0,
+    }))
+  }
+
   /* eslint-disable @typescript-eslint/no-explicit-any */
+  /** Load standings for a single event, enriched with total kills and sanitized player info */
   async function fetchStandings(eventId: number) {
     try {
       const { data, error: supaError } = await supabase
@@ -405,14 +696,37 @@ export const useEventStore = defineStore('events', () => {
 
       if (supaError) throw supaError
 
+      const { data: pairingIdsData } = await supabase
+        .from('pairings')
+        .select('pairing_id')
+        .eq('event_id', eventId)
+
+      const pairingIds = (pairingIdsData ?? []).map(p => p.pairing_id)
+
+      const killsMap = new Map<number, number>()
+      if (pairingIds.length) {
+        const { data: resultsData } = await supabase
+          .from('round_results')
+          .select('player_id, number_of_kills')
+          .not('number_of_kills', 'is', null)
+          .in('pairing_id', pairingIds)
+
+        for (const r of resultsData ?? []) {
+          const pid = r.player_id
+          const count = r.number_of_kills ?? 0
+          killsMap.set(pid, (killsMap.get(pid) ?? 0) + count)
+        }
+      }
+
       standings.value = (data ?? []).map(s => ({
         ...s,
+        kills: killsMap.get(s.player_id) ?? 0,
         players: s.players
           ? sanitizePlayer({
-              player_id:      s.players.player_id,
-              player_name:    s.players.player_name,
-              player_surname: s.players.player_surname,
-            }) as any
+            player_id: s.players.player_id,
+            player_name: s.players.player_name,
+            player_surname: s.players.player_surname,
+          }) as any
           : undefined,
       })) as any
     }
@@ -422,6 +736,7 @@ export const useEventStore = defineStore('events', () => {
   }
   /* eslint-enable @typescript-eslint/no-explicit-any */
 
+  /** Load standings across multiple events */
   async function fetchMultipleEventStandings(eventIds: number[]): Promise<StandingWithPlayer[]> {
     try {
       if (!eventIds.length) return []
@@ -440,10 +755,10 @@ export const useEventStore = defineStore('events', () => {
         ...s,
         players: s.players
           ? sanitizePlayer({
-              player_id:      s.players.player_id,
-              player_name:    s.players.player_name,
-              player_surname: s.players.player_surname,
-            }) as Player
+            player_id: s.players.player_id,
+            player_name: s.players.player_name,
+            player_surname: s.players.player_surname,
+          }) as Player
           : undefined,
       })) as StandingWithPlayer[]
     }
@@ -453,6 +768,7 @@ export const useEventStore = defineStore('events', () => {
     }
   }
 
+  /** Simple sum aggregation of standings across all league events */
   async function fetchLeagueStandings(leagueId: number) {
     try {
       const { data: eventsData, error: eventsError } = await supabase
@@ -468,19 +784,18 @@ export const useEventStore = defineStore('events', () => {
 
       const eventIds = eventsData.map(e => e.event_id)
 
-      const { data: standingsData, error: standingsError } = await supabase
-        .from('standings')
-        .select(`
+      const standingsData = await fetchStandingsForEvents(
+        supabase,
+        eventIds,
+        `
           player_id,
           standing_player_score,
           victories,
           brew_received,
           play_received,
           players:player_id (player_id, player_name, player_surname, formats_played, is_active)
-        `)
-        .in('event_id', eventIds)
-
-      if (standingsError) throw standingsError
+        `
+      )
 
       const playerMap = new Map<number, StandingWithPlayer>()
 
@@ -488,28 +803,28 @@ export const useEventStore = defineStore('events', () => {
         const existing = playerMap.get(s.player_id)
         if (existing) {
           existing.standing_player_score = (existing.standing_player_score ?? 0) + (s.standing_player_score ?? 0)
-          existing.victories             = (existing.victories             ?? 0) + (s.victories             ?? 0)
-          existing.brew_received         = (existing.brew_received         ?? 0) + (s.brew_received         ?? 0)
-          existing.play_received         = (existing.play_received         ?? 0) + (s.play_received         ?? 0)
+          existing.victories = (existing.victories ?? 0) + (s.victories ?? 0)
+          existing.brew_received = (existing.brew_received ?? 0) + (s.brew_received ?? 0)
+          existing.play_received = (existing.play_received ?? 0) + (s.play_received ?? 0)
         }
         else {
           playerMap.set(s.player_id, {
-            standing_id:           0,
-            event_id:              null,
-            player_id:             s.player_id,
+            standing_id: 0,
+            event_id: null,
+            player_id: s.player_id,
             standing_player_score: s.standing_player_score ?? 0,
-            standing_player_rank:  null,
-            victories:             s.victories             ?? 0,
-            brew_received:         s.brew_received         ?? 0,
-            play_received:         s.play_received         ?? 0,
+            standing_player_rank: null,
+            victories: s.victories ?? 0,
+            brew_received: s.brew_received ?? 0,
+            play_received: s.play_received ?? 0,
             players: s.players
               ? sanitizePlayer({
-                  player_id:      s.players.player_id,
-                  player_name:    s.players.player_name,
-                  player_surname: s.players.player_surname,
-                  formats_played: s.players.formats_played ?? null,
-                  is_active:      s.players.is_active ?? true,
-                })
+                player_id: s.players.player_id,
+                player_name: s.players.player_name,
+                player_surname: s.players.player_surname,
+                formats_played: s.players.formats_played ?? null,
+                is_active: s.players.is_active ?? true,
+              })
               : undefined,
           })
         }
@@ -522,11 +837,14 @@ export const useEventStore = defineStore('events', () => {
       return standings.value
     } catch (err) {
       console.error('[useEventStore] fetchLeagueStandings error:', err)
-      // never return undefined
       return null
     }
   }
 
+  /**
+   * Full ruleset-scored league results with participation bonus and tie-breakers.
+   * Applies valid events limit, participation bonus, and multi-level tie-breaking.
+   */
   async function fetchLeagueResults(leagueId: number) {
     try {
       const [leagueRes, eventsRes] = await Promise.all([
@@ -546,13 +864,14 @@ export const useEventStore = defineStore('events', () => {
 
       if (rulesetError) throw rulesetError
 
-      const validEventIds = ruleset?.rule_set_valid_events  ?? 0
+      const validEventIds = ruleset?.rule_set_valid_events ?? 0
       const participation = ruleset?.rule_set_partecipation ?? 0
-      const eventIds      = eventsRes.data.map(e => e.event_id)
+      const eventIds = eventsRes.data.map(e => e.event_id)
 
-      const { data: standingsData, error: standingsError } = await supabase
-        .from('standings')
-        .select(`
+      const standingsData = await fetchStandingsForEvents(
+        supabase,
+        eventIds,
+        `
           player_id,
           standing_player_score,
           victories,
@@ -560,18 +879,16 @@ export const useEventStore = defineStore('events', () => {
           play_received,
           standing_player_rank,
           players:player_id (player_id, player_name, player_surname)
-        `)
-        .in('event_id', eventIds)
-
-      if (standingsError) throw standingsError
+        `
+      )
 
       type PlayerAccumulator = {
-        player_id:     number
-        scores:        number[]
-        victories:     number
+        player_id: number
+        scores: number[]
+        victories: number
         brew_received: number
         play_received: number
-        players?:      { player_id: number, player_name: string, player_surname: string }
+        players?: { player_id: number, player_name: string, player_surname: string }
       }
 
       const playerMap = new Map<number, PlayerAccumulator>()
@@ -580,58 +897,58 @@ export const useEventStore = defineStore('events', () => {
         const existing = playerMap.get(s.player_id)
         if (existing) {
           existing.scores.push(s.standing_player_score ?? 0)
-          existing.victories     += s.victories     ?? 0
+          existing.victories += s.victories ?? 0
           existing.brew_received += s.brew_received ?? 0
           existing.play_received += s.play_received ?? 0
         }
         else {
           playerMap.set(s.player_id, {
-            player_id:     s.player_id,
-            scores:        [s.standing_player_score ?? 0],
-            victories:     s.victories     ?? 0,
+            player_id: s.player_id,
+            scores: [s.standing_player_score ?? 0],
+            victories: s.victories ?? 0,
             brew_received: s.brew_received ?? 0,
             play_received: s.play_received ?? 0,
-            players:       s.players ?? undefined,   // kept as raw join for accumulation
+            players: s.players ?? undefined,
           })
         }
       }
 
       const results = Array.from(playerMap.values()).map((p) => {
-        const sortedScores       = [...p.scores].sort((a, b) => b - a)
-        const sum                = sortedScores.slice(0, validEventIds).reduce((a, b) => a + b, 0)
+        const sortedScores = [...p.scores].sort((a, b) => b - a)
+        const sum = sortedScores.slice(0, validEventIds).reduce((a, b) => a + b, 0)
         const participationBonus = participation * p.scores.length
 
         return {
           ...p,
-          totalScore:     sum + participationBonus,
+          totalScore: sum + participationBonus,
           participations: p.scores.length,
         }
       })
 
       results.sort((a, b) => {
-        if (b.totalScore     !== a.totalScore)     return b.totalScore     - a.totalScore
+        if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore
         if (b.participations !== a.participations) return b.participations - a.participations
-        if (b.victories      !== a.victories)      return b.victories      - a.victories
-        if (b.brew_received  !== a.brew_received)  return b.brew_received  - a.brew_received
+        if (b.victories !== a.victories) return b.victories - a.victories
+        if (b.brew_received !== a.brew_received) return b.brew_received - a.brew_received
         return Math.random() - 0.5
       })
 
       /* eslint-disable @typescript-eslint/no-explicit-any */
       standings.value = results.map((r, index) => ({
-        standing_id:           0,
-        event_id:              null,
-        player_id:             r.player_id,
+        standing_id: 0,
+        event_id: null,
+        player_id: r.player_id,
         standing_player_score: r.totalScore,
-        standing_player_rank:  index + 1,
-        victories:             r.victories,
-        brew_received:         r.brew_received,
-        play_received:         r.play_received,
-        players: r.players                      // ✅ sanitized at assignment time
+        standing_player_rank: index + 1,
+        victories: r.victories,
+        brew_received: r.brew_received,
+        play_received: r.play_received,
+        players: r.players
           ? sanitizePlayer({
-              player_id:      r.players.player_id,
-              player_name:    r.players.player_name,
-              player_surname: r.players.player_surname,
-            }) as any
+            player_id: r.players.player_id,
+            player_name: r.players.player_name,
+            player_surname: r.players.player_surname,
+          }) as any
           : undefined,
       })) as any
       /* eslint-enable @typescript-eslint/no-explicit-any */
@@ -641,26 +958,18 @@ export const useEventStore = defineStore('events', () => {
     }
   }
 
+  /** Load pairings with round results for a specific event and round */
   async function fetchPairings(eventId: number, round: number) {
     try {
-      const { data, error: supaError } = await supabase
-        .from('pairings')
-        .select(`
-          *,
-          round_results (*)
-        `)
-        .eq('event_id', eventId)
-        .eq('pairing_round', round)
-        .order('pairing_id')
-
-      if (supaError) throw supaError
-      pairings.value = data ?? []
+      const data = await fetchPairingsWithResults(supabase, eventId, round)
+      pairings.value = data
     }
     catch (err) {
       console.error('[useEventStore] fetchPairings error:', err)
     }
   }
 
+  /** Load historical pairings for the pairing optimizer */
   async function fetchPairingHistory(eventId: number) {
     try {
       const { data, error: supaError } = await supabase
@@ -671,15 +980,7 @@ export const useEventStore = defineStore('events', () => {
 
       if (supaError) throw supaError
 
-      pairingHistory.value = (data ?? []).map((pairing) => ({
-        round: pairing.pairing_round ?? 0,
-        players: [
-          pairing.pairing_player1_id,
-          pairing.pairing_player2_id,
-          pairing.pairing_player3_id,
-          pairing.pairing_player4_id,
-        ].filter((id): id is number => id !== null),
-      }))
+      pairingHistory.value = mapPairingsToHistory(data)
     }
     catch (err) {
       console.error('[useEventStore] fetchPairingHistory error:', err)
@@ -687,43 +988,44 @@ export const useEventStore = defineStore('events', () => {
     }
   }
 
+  /** Insert a new round result */
   async function submitRoundResult(result: RoundResultInsert) {
     try {
-      // RoundResultInsert already maps 1:1 to the table columns — spread directly
       const { error: supaError } = await supabase
         .from('round_results')
         .insert([{
-          player_id:       result.player_id,
-          pairing_id:      result.pairing_id,
-          position:        result.position,
+          player_id: result.player_id,
+          pairing_id: result.pairing_id,
+          position: result.position,
           number_of_kills: result.number_of_kills,
-          brew_vote:       result.brew_vote,
-          play_vote_1:     result.play_vote_1,
-          play_vote_2:     result.play_vote_2,
-          commander_1:     result.commander_1,
-          commander_2:     result.commander_2,
+          brew_vote: result.brew_vote,
+          play_vote_1: result.play_vote_1,
+          play_vote_2: result.play_vote_2,
+          commander_1: result.commander_1,
+          commander_2: result.commander_2,
         }])
 
       if (supaError) throw supaError
     }
     catch (err) {
       console.error('[useEventStore] submitRoundResult error:', err)
-      throw err  // re-throw — callers need to handle submission failures
+      throw err
     }
   }
 
+  /** Update an existing round result by pairing and player */
   async function updateRoundResult(pairingId: number, playerId: number, result: RoundResultInsert) {
     try {
       const { error: supaError } = await supabase
         .from('round_results')
         .update({
-          position:        result.position,
+          position: result.position,
           number_of_kills: result.number_of_kills,
-          brew_vote:       result.brew_vote,
-          play_vote_1:     result.play_vote_1,
-          play_vote_2:     result.play_vote_2,
-          commander_1:     result.commander_1,
-          commander_2:     result.commander_2,
+          brew_vote: result.brew_vote,
+          play_vote_1: result.play_vote_1,
+          play_vote_2: result.play_vote_2,
+          commander_1: result.commander_1,
+          commander_2: result.commander_2,
         })
         .eq('pairing_id', pairingId)
         .eq('player_id', playerId)
@@ -736,303 +1038,76 @@ export const useEventStore = defineStore('events', () => {
     }
   }
 
+  /** Save a player's brew and play votes via the upsert helper */
   async function saveVote(pairingId: number, playerId: number, brewVote: number | null, playVote: number | null): Promise<{ success: boolean; error?: string }> {
-    try {
-      const { data: existing } = await supabase
-        .from('round_results')
-        .select('id')
-        .eq('pairing_id', pairingId)
-        .eq('player_id', playerId)
-        .maybeSingle()
-
-      if (existing) {
-        const { error } = await supabase
-          .from('round_results')
-          .update({ brew_vote: brewVote, play_vote_1: playVote })
-          .eq('pairing_id', pairingId)
-          .eq('player_id', playerId)
-        if (error) throw error
-      }
-      else {
-        const { error } = await supabase
-          .from('round_results')
-          .insert({ pairing_id: pairingId, player_id: playerId, brew_vote: brewVote, play_vote_1: playVote })
-        if (error) throw error
-      }
-
-      return { success: true }
+    console.log('[useEventStore] saveVote called', { pairingId, playerId, brewVote, playVote })
+    const result = await upsertRoundResult(pairingId, playerId, { brew_vote: brewVote, play_vote_1: playVote })
+    if (!result.success) {
+      console.error('[useEventStore] saveVote error:', result.error)
+      return { success: false, error: result.error || 'Errore nel salvataggio del voto' }
     }
-    catch (err) {
-      console.error('[useEventStore] saveVote error:', err)
-      return { success: false, error: err instanceof Error ? err.message : 'Errore nel salvataggio del voto' }
-    }
+    console.log('[useEventStore] saveVote success', { pairingId, playerId })
+    return result
   }
 
-  async function saveCommander(pairingId: number, playerId: number, commander1: string | null): Promise<{ success: boolean; error?: string }> {
-    try {
-      const { data: existing } = await supabase
-        .from('round_results')
-        .select('id')
-        .eq('pairing_id', pairingId)
-        .eq('player_id', playerId)
-        .maybeSingle()
-
-      if (existing) {
-        const { error } = await supabase
-          .from('round_results')
-          .update({ commander_1: commander1, commander_2: null })
-          .eq('pairing_id', pairingId)
-          .eq('player_id', playerId)
-        if (error) throw error
-      }
-      else {
-        const { error } = await supabase
-          .from('round_results')
-          .insert({ pairing_id: pairingId, player_id: playerId, commander_1: commander1 })
-        if (error) throw error
-      }
-      return { success: true }
+  /** Save a player's commanders via the upsert helper */
+  async function saveCommander(pairingId: number, playerId: number, commander1: string | null, commander2: string | null = null): Promise<{ success: boolean; error?: string }> {
+    console.log('[useEventStore] saveCommander called', { pairingId, playerId, commander1, commander2 })
+    const result = await upsertRoundResult(pairingId, playerId, { commander_1: commander1, commander_2: commander2 })
+    if (!result.success) {
+      console.error('[useEventStore] saveCommander error:', result.error)
+      return { success: false, error: result.error || 'Errore nel salvataggio dei comandanti' }
     }
-    catch (err) {
-      console.error('[useEventStore] saveCommander error:', err)
-      return { success: false, error: err instanceof Error ? err.message : 'Errore nel salvataggio del comandante' }
-    }
+    console.log('[useEventStore] saveCommander success', { pairingId, playerId })
+    return result
   }
 
+  /** Save player rankings (positions) for a pairing via the upsert helper */
   async function savePairingRankings(pairingId: number, rankings: { playerId: number; position: number }[]): Promise<{ success: boolean; error?: string }> {
     try {
       for (const { playerId, position } of rankings) {
-        const { data: existing } = await supabase
-          .from('round_results')
-          .select('id')
-          .eq('pairing_id', pairingId)
-          .eq('player_id', playerId)
-          .maybeSingle()
-
-        if (existing) {
-          const { error } = await supabase
-            .from('round_results')
-            .update({ position })
-            .eq('pairing_id', pairingId)
-            .eq('player_id', playerId)
-          if (error) throw error
-        }
-        else {
-          const { error } = await supabase
-            .from('round_results')
-            .insert({ pairing_id: pairingId, player_id: playerId, position })
-          if (error) throw error
-        }
+        const result = await upsertRoundResult(pairingId, playerId, { position })
+        if (!result.success) throw new Error(result.error)
       }
       return { success: true }
     }
     catch (err) {
       console.error('[useEventStore] savePairingRankings error:', err)
-      return { success: false, error: err instanceof Error ? err.message : 'Errore nel salvataggio delle posizioni' }
+      return { success: false, error: toErrorMessage(err, 'Errore nel salvataggio delle posizioni') }
     }
   }
 
+  /** Save kill counts for a pairing via the upsert helper */
   async function savePairingKills(pairingId: number, killCounts: { playerId: number; count: number }[]): Promise<{ success: boolean; error?: string }> {
     try {
       for (const { playerId, count } of killCounts) {
-        const { data: existing } = await supabase
-          .from('round_results')
-          .select('id')
-          .eq('pairing_id', pairingId)
-          .eq('player_id', playerId)
-          .maybeSingle()
-
-        if (existing) {
-          const { error } = await supabase
-            .from('round_results')
-            .update({ number_of_kills: count })
-            .eq('pairing_id', pairingId)
-            .eq('player_id', playerId)
-          if (error) throw error
-        }
-        else {
-          const { error } = await supabase
-            .from('round_results')
-            .insert({ pairing_id: pairingId, player_id: playerId, number_of_kills: count })
-          if (error) throw error
-        }
+        const result = await upsertRoundResult(pairingId, playerId, { number_of_kills: count })
+        if (!result.success) throw new Error(result.error)
       }
       return { success: true }
     }
     catch (err) {
       console.error('[useEventStore] savePairingKills error:', err)
-      return { success: false, error: err instanceof Error ? err.message : 'Errore nel salvataggio delle uccisioni' }
+      return { success: false, error: toErrorMessage(err, 'Errore nel salvataggio delle uccisioni') }
     }
   }
 
+  /**
+   * Advance to the next round: calculate scores from round results, update standings,
+   * increment round, and create new pairings (or end the event).
+   */
   async function nextRound(eventId: number, currentRound: number, playerOrder?: number[]) {
     beginLoading()
     error.value = null
 
     try {
-      // ── 1. Resolve ruleset ────────────────────────────────────────────────
-      const { data: eventData, error: eventError } = await supabase
-        .from('events')
-        .select('league_id, event_round_number')
-        .eq('event_id', eventId)
-        .single()
+      const { ruleset, posValues, eventRoundNumber } = await resolveEventRuleset(supabase, eventId)
+      const { pairings, results, standingsMap } = await fetchRoundData(supabase, eventId, currentRound)
 
-      if (eventError || !eventData?.league_id) throw eventError ?? new Error('No league_id')
-
-      const { data: leagueData, error: leagueError } = await supabase
-        .from('leagues')
-        .select('ruleset_id')
-        .eq('id', eventData.league_id)
-        .single()
-
-      if (leagueError || !leagueData?.ruleset_id) throw leagueError ?? new Error('No ruleset_id')
-
-      const { data: ruleset, error: rulesetError } = await supabase
-        .from('rulesets')
-        .select('*')
-        .eq('ruleset_id', leagueData.ruleset_id)
-        .single()
-
-      if (rulesetError) throw rulesetError
-
-      const posValues = [
-        0,
-        ruleset?.rule_set_rank1 ?? 0,
-        ruleset?.rule_set_rank2 ?? 0,
-        ruleset?.rule_set_rank3 ?? 0,
-        ruleset?.rule_set_rank4 ?? 0,
-      ]
-
-      // ── 2. Fetch all pairings for this round ──────────────────────────────
-      const { data: pairingsData, error: pairingsError } = await supabase
-        .from('pairings')
-        .select('*')
-        .eq('event_id', eventId)
-        .eq('pairing_round', currentRound)
-
-      if (pairingsError) throw pairingsError
-
-      const pairingIds = (pairingsData ?? []).map(p => p.pairing_id)
-
-      // ── 3. Fetch ALL round results for all pairings in one query ──────────
-      const { data: allResults, error: allResultsError } = await supabase
-        .from('round_results')
-        .select('*')
-        .in('pairing_id', pairingIds)
-
-      if (allResultsError) throw allResultsError
-
-      // ── 4. Fetch ALL current standings in one query ───────────────────────
-      const { data: currentStandings, error: currentStandingsError } = await supabase
-        .from('standings')
-        .select('player_id, standing_player_score, victories, brew_received, play_received')
-        .eq('event_id', eventId)
-
-      if (currentStandingsError) throw currentStandingsError
-
-      type StandingAccumulator = {
-        player_id:             number
-        standing_player_score: number
-        victories:             number
-        brew_received:         number
-        play_received:         number
-      }
-
-      const standingsMap = new Map<number, StandingAccumulator>(
-        (currentStandings ?? []).map(s => [s.player_id, {
-          player_id:             s.player_id,
-          standing_player_score: s.standing_player_score ?? 0,
-          victories:             s.victories             ?? 0,
-          brew_received:         s.brew_received         ?? 0,
-          play_received:         s.play_received         ?? 0,
-        }])
-      )
-
-      // ── 5. Calculate scores entirely in memory ────────────────────────────
-      for (const pairing of pairingsData ?? []) {
-        const playerIds = ([
-          pairing.pairing_player1_id,
-          pairing.pairing_player2_id,
-          pairing.pairing_player3_id,
-          pairing.pairing_player4_id,
-        ] as Array<number | null>).filter((pid): pid is number => pid !== null)
-
-        const tableResults = (allResults ?? []).filter(r => r.pairing_id === pairing.pairing_id)
-
-        for (const playerId of playerIds) {
-          const myResult = tableResults.find(r => r.player_id === playerId)
-          if (!myResult) continue
-
-          const position      = myResult.position        ?? 0
-          const numberOfKills = myResult.number_of_kills ?? 0
-
-          // Votes from everyone else at the table
-          const otherResults   = tableResults.filter(r => r.player_id !== playerId)
-          const brewVote       = otherResults.filter(r => r.brew_vote === playerId).length
-          const totalPlayCount = otherResults.filter(
-            r => r.play_vote_1 === playerId || r.play_vote_2 === playerId
-          ).length
-
-          // Tied-position score averaging
-          const samePositionCount = position !== 0
-            ? tableResults.filter(r => r.position === position).length
-            : 1
-
-          let rankSum = 0
-          for (let i = 0; i < samePositionCount; i++) {
-            rankSum += posValues[Math.min(position + i, 4)] ?? 0
-          }
-          const scoreRank = Math.floor(rankSum / samePositionCount)
-
-          const totalScore = scoreRank
-            + numberOfKills  * (ruleset?.rule_set_kill  ?? 0)
-            + brewVote       * (ruleset?.rule_set_brew  ?? 0)
-            + totalPlayCount * (ruleset?.rule_set_play  ?? 0)
-
-          const acc = standingsMap.get(playerId)
-          if (acc) {
-            acc.standing_player_score += totalScore
-            acc.victories             += position === 1 ? 1 : 0
-            acc.brew_received         += brewVote
-            acc.play_received         += totalPlayCount
-          }
-        }
-      }
-
-      // ── 6. Batch update scores ────────────────────────────────────────────
-      await Promise.all(
-        Array.from(standingsMap.values()).map(s =>
-          supabase
-            .from('standings')
-            .update({
-              standing_player_score: s.standing_player_score,
-              victories:             s.victories,
-              brew_received:         s.brew_received,
-              play_received:         s.play_received,
-            })
-            .eq('event_id', eventId)
-            .eq('player_id', s.player_id)
-        )
-      )
-
-      // ── 7. Persist updated ranks to DB ────────────────────────────────────
-      const ranked = Array.from(standingsMap.values()).sort(
-        (a, b) => b.standing_player_score - a.standing_player_score
-      )
-      await Promise.all(
-        ranked.map((s, index) =>
-          supabase
-            .from('standings')
-            .update({ standing_player_rank: index + 1 })
-            .eq('event_id', eventId)
-            .eq('player_id', s.player_id)
-        )
-      )
-
-      // Refresh local standings state from DB
+      calculateRoundScores(pairings, results, standingsMap, posValues, ruleset)
+      await updateStandingsAndRanks(supabase, eventId, standingsMap)
       await fetchStandings(eventId)
 
-      // ── 8. Increment round ────────────────────────────────────────────────
       const { error: roundError } = await supabase
         .from('events')
         .update({ event_current_round: currentRound + 1 })
@@ -1040,14 +1115,10 @@ export const useEventStore = defineStore('events', () => {
 
       if (roundError) throw roundError
 
-      // ── 9. Check if event has ended ───────────────────────────────────────
-      const hasEnded = (currentRound + 1) > (eventData.event_round_number ?? 0)
+      const hasEnded = (currentRound + 1) > (eventRoundNumber ?? 0)
 
       if (hasEnded) {
-        await supabase
-          .from('events')
-          .update({ event_playing: false })
-          .eq('event_id', eventId)
+        await supabase.from('events').update({ event_playing: false }).eq('event_id', eventId)
       }
       else {
         await createPairings(eventId, currentRound + 1, playerOrder)
@@ -1065,6 +1136,10 @@ export const useEventStore = defineStore('events', () => {
     }
   }
 
+  /**
+   * Go back to the previous round, or to registration state if currently in round 1.
+   * When going back from round 1, restores players to the waitroom.
+   */
   async function turnBackRound(eventId: number, currentRound: number, leagueId: number) {
     beginLoading()
     error.value = null
@@ -1098,8 +1173,8 @@ export const useEventStore = defineStore('events', () => {
           supabase
             .from('events')
             .update({
-              event_current_round:     0,
-              event_playing:           false,
+              event_current_round: 0,
+              event_playing: false,
               event_registration_open: true,
             })
             .eq('event_id', eventId),
@@ -1125,6 +1200,7 @@ export const useEventStore = defineStore('events', () => {
     }
   }
 
+  /** Set the currently selected event */
   function setCurrentEvent(event: Event | null) {
     currentEvent.value = event
   }
@@ -1137,7 +1213,7 @@ export const useEventStore = defineStore('events', () => {
     standings,
     pairings,
     pairingHistory,
-    loading,        // now a computed, stays true while ANY action is in flight
+    loading,
     error,
 
     // Getters
