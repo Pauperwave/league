@@ -10,7 +10,7 @@ export default defineNuxtConfig({
     '@vueuse/nuxt',
     '@nuxt/image',
     'motion-v/nuxt',
-    'pinia-plugin-persistedstate/nuxt'
+    '@nuxt/test-utils/module',
   ],
 
   components: [
