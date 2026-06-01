@@ -41,10 +41,11 @@ function toggleDirection() {
 // Fetch commander data when color or mana-cost sort is selected
 watch(selectedSort, async (newSort) => {
   if ((newSort === 'color' || newSort === 'mana-cost') && commanderCache.value.size === 0) {
-    const uniqueCommanders = [...new Set(commanderDecksStore.decks.map(d => d.commander_1_name))]
+    const uniqueCommanders: string[] = [...new Set(commanderDecksStore.decks.map((d: CommanderDeck) => d.commander_1_name))]
     if (uniqueCommanders.length > 0) {
       commanderLoading.value = true
-      const cards = await fetchCommandersByNames(uniqueCommanders)
+      const supabase = useSupabaseClient()
+      const cards = await fetchCommandersByNames(uniqueCommanders, supabase)
       commanderCache.value = cards
       commanderLoading.value = false
     }
@@ -58,7 +59,7 @@ function getDeckKey(deck: CommanderDeck): string {
 function getAggregate(deck: CommanderDeck) {
   const key = getDeckKey(deck)
   return commanderStatsList.value?.find(s =>
-    `${s.commander1}|${s.commander2 ?? ''}` === key
+    `${s.commander_1}|${s.commander_2 ?? ''}` === key
   )
 }
 
@@ -66,64 +67,59 @@ function getCommanderData(deck: CommanderDeck): CommanderCard | undefined {
   return commanderCache.value.get(deck.commander_1_name)
 }
 
+// ─── Sort comparators ─────────────────────────────────────────────────────────
+
+function compareAlphabetical(a: CommanderDeck, b: CommanderDeck): number {
+  return a.commander_1_name.localeCompare(b.commander_1_name)
+}
+
+function comparePopularity(a: CommanderDeck, b: CommanderDeck): number {
+  const aggA = getAggregate(a)
+  const aggB = getAggregate(b)
+  return (aggA?.player_count ?? 0) - (aggB?.player_count ?? 0)
+}
+
+function compareFrequency(a: CommanderDeck, b: CommanderDeck): number {
+  const aggA = getAggregate(a)
+  const aggB = getAggregate(b)
+  return (aggA?.match_count ?? 0) - (aggB?.match_count ?? 0)
+}
+
 // WUBRG order for color sorting
 const colorOrder = ['W', 'U', 'B', 'R', 'G']
 
 function colorSortKey(deck: CommanderDeck): string {
   const colors = getCommanderData(deck)?.colorIdentity ?? []
-  if (colors.length === 0) return 'ZZZZ' // No color = sort last
+  if (colors.length === 0) return 'ZZZZ'
   const count = colors.length.toString().padStart(2, '0')
   const order = colors
-    .sort((a, b) => colorOrder.indexOf(a) - colorOrder.indexOf(b))
+    .sort((c1, c2) => colorOrder.indexOf(c1) - colorOrder.indexOf(c2))
     .join('')
   return `${count}${order}`
 }
 
-function manaCostSortKey(deck: CommanderDeck): number {
-  return getCommanderData(deck)?.cmc ?? 0
+function compareColor(a: CommanderDeck, b: CommanderDeck): number {
+  return colorSortKey(a).localeCompare(colorSortKey(b))
+}
+
+function compareManaCost(a: CommanderDeck, b: CommanderDeck): number {
+  return (getCommanderData(a)?.cmc ?? 0) - (getCommanderData(b)?.cmc ?? 0)
+}
+
+const SORT_COMPARATORS: Record<string, (a: CommanderDeck, b: CommanderDeck) => number> = {
+  alphabetical: compareAlphabetical,
+  popularity: comparePopularity,
+  frequency: compareFrequency,
+  color: compareColor,
+  'mana-cost': compareManaCost,
 }
 
 const sortedDecks = computed(() => {
   const decks = [...commanderDecksStore.decks]
-  const sort = selectedSort.value
-  const dir = sortDirection.value
+  const comparator = SORT_COMPARATORS[selectedSort.value] ?? compareAlphabetical
+  const multiplier = sortDirection.value === 'asc' ? 1 : -1
 
-  decks.sort((a, b) => {
-    let comparison = 0
-
-    switch (sort) {
-      case 'alphabetical':
-        comparison = a.commander_1_name.localeCompare(b.commander_1_name)
-        break
-      case 'popularity': {
-        const aggA = getAggregate(a)
-        const aggB = getAggregate(b)
-        const countA = aggA?.player_count ?? 0
-        const countB = aggB?.player_count ?? 0
-        comparison = countA - countB
-        break
-      }
-      case 'frequency': {
-        const aggA = getAggregate(a)
-        const aggB = getAggregate(b)
-        const countA = aggA?.match_count ?? 0
-        const countB = aggB?.match_count ?? 0
-        comparison = countA - countB
-        break
-      }
-      case 'color':
-        comparison = colorSortKey(a).localeCompare(colorSortKey(b))
-        break
-      case 'mana-cost':
-        comparison = manaCostSortKey(a) - manaCostSortKey(b)
-        break
-      default:
-        comparison = a.commander_1_name.localeCompare(b.commander_1_name)
-    }
-
-    return dir === 'asc' ? comparison : -comparison
-  })
-
+  decks.sort((a, b) => comparator(a, b) * multiplier)
   return decks
 })
 

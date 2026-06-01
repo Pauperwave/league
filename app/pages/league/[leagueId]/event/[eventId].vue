@@ -1,155 +1,170 @@
 <!-- app\pages\league\[leagueId]\event\[eventId].vue -->
 <script setup lang="ts">
-import type { EventStatus, Player, NewPlayer, Seat, TournamentPlayer, TournamentTable, Kill } from '#shared/utils/types'
+import { getPairingPlayerIds } from '#shared/utils/types'
+import type { Seat, TournamentPlayer, TournamentTable } from '#shared/utils/types'
 import type { PairingHistoryEntry, PairingPlayer } from '~/composables/events/pairing/pairingOptimizer'
-import CommanderModal from '~/components/modals/CommanderModal.vue'
 import { buildStandingsSubmissionMap } from '~/utils/standingsSubmission'
 
-type PlayerStatusUpdate = {
-  playerId: number
-  paid: boolean
-  companion: boolean
-}
+// ── Types ──────────────────────────────────────────────────────────────────
+
+// Note: PlayerStatusUpdate is emitted by WaitingList but not processed in this page
+
+// ── Composables & Stores ───────────────────────────────────────────────────
 
 const {
-  leagueId,
-  eventId,
-  currentLeague,
-  currentEvent,
-  currentRound,
-  totalRounds,
-  eventStatus,
-  canStartEvent,
-  waitingPlayers,
-  waitroomEntries,
-  pairings,
-  standings,
-  players,
-  tableEstimate,
-  getPlayerName,
-  hasSubmittedScore,
-  addToWaitingList,
-  removeFromWaitingList,
-  startEvent,
-  nextRound,
-  turnBackRound,
-  updateEvent,
-  refreshWaiting,
-  refreshStandings,
-  refreshPairingHistory,
-  refreshEvents,
-  pairingHistory,
-  loading,
-  previewTables,
+  leagueId, eventId, currentLeague, currentEvent, currentRound, totalRounds,
+  eventStatus, canStartEvent, waitingPlayers, waitroomEntries, pairings, standings,
+  players, tableEstimate, getPlayerName, hasSubmittedScore,
+  addToWaitingList, removeFromWaitingList, startEvent, nextRound, turnBackRound, updateEvent,
+  refreshWaiting, refreshStandings, refreshPairingHistory, refreshEvents,
+  pairingHistory, loading, previewTables, viewedRound, isViewingPastRound, viewRound, clearViewedRound,
+  displayedPairings,
 } = useEventPage()
 
-const { syncUrl, phaseFromQuery, roundFromQuery, syncPreview, previewFromQuery, syncScoreModal, scoreModalFromQuery, syncKillModal, killModalFromQuery, syncVotesModal, votesModalFromQuery, syncCommanderModal, commanderModalFromQuery } = useEventUrl()
+const {
+  syncUrl, phaseFromQuery,
+  syncPreview, previewFromQuery,
+  syncScoreModal, scoreModalFromQuery,
+  syncKillModal, killModalFromQuery,
+  syncVotesModal, votesModalFromQuery,
+  syncCommanderModal, commanderModalFromQuery,
+} = useEventUrl()
 
-console.log('[PAGE LOAD] Initial state', {
-  eventStatus: eventStatus.value,
-  currentRound: currentRound.value,
-  phaseFromQuery: phaseFromQuery.value,
-  roundFromQuery: roundFromQuery.value,
-})
+const {
+  showEventEditModal,
+  showNextRoundModal,
+  showStartPreviewModal,
+  showCancelRoundConfirm,
+  showEndEventConfirm,
+  showKillModal,
+  showPlayerSearchModal,
+  showCreatePlayerModal,
+  playerToEdit,
+  showScoreModal,
+  selectedPairingId,
+  selectedTableIndex,
+  showCommanderModal,
+  selectedPlayerId,
+  selectedCommanderPairingId,
+  commanderModalRef,
+  showScoresModal,
+  selectedScoresPairingId,
+  showVotesModal,
+  selectedVotesPlayerId,
+  selectedVotesPairingId,
+  selectedKillPairingId,
+} = useEventModals()
 
-// Run data fetching in parallel instead of sequentially
+const eventStore = useEventStore()
+const playerStore = usePlayerStore()
+const rankingsStore = useRankingsStore()
+const commandersStore = useCommandersStore()
+const killsStore = useKillsStore()
+const votesStore = useVotesStore()
+
+const toast = useToast()
+const { liveStandings } = useLiveStandings(
+  computed(() => currentLeague.value?.ruleset_id),
+  eventStatus, pairings, standings,
+)
+
+// ── Data Fetching ──────────────────────────────────────────────────────────
+
 await Promise.all([
-  useAsyncData(`events-${leagueId}`, refreshEvents),
+  useAsyncData(`event-page-events-${leagueId}`, refreshEvents),
   useAsyncData(`waiting-${eventId}`, refreshWaiting),
   useAsyncData(`event-standings-${eventId}`, refreshStandings),
   useAsyncData(`event-pairing-history-${eventId}`, refreshPairingHistory),
 ])
 
-const eventStore = useEventStore()
-
-const { liveStandings } = useLiveStandings(
-  computed(() => currentLeague.value?.ruleset_id),
-  eventStatus,
-  pairings,
-  standings,
-)
-
-console.log('[PAGE LOAD] After data fetch', {
-  eventStatus: eventStatus.value,
-  currentRound: currentRound.value,
-  phaseFromQuery: phaseFromQuery.value,
-  roundFromQuery: roundFromQuery.value,
-})
-
-// Load pairings for current round if event is already in playing phase
 if (eventStatus.value === 'playing' && currentRound.value > 0) {
   await eventStore.fetchPairings(eventId, currentRound.value)
-  console.log('[PAGE LOAD] Pairings loaded for round', currentRound.value)
 }
-
-// Sync URL with current event state after data is loaded
-// Only sync if URL doesn't have correct parameters (e.g., when navigating from league page)
-// This prevents overwriting correct parameters on page reload
-console.log('[PAGE LOAD] Checking if sync needed', {
-  phaseFromQuery: phaseFromQuery.value,
-  eventStatus: eventStatus.value,
-  shouldSync: phaseFromQuery.value !== 'previewTables' && phaseFromQuery.value !== eventStatus.value,
-})
 
 if (phaseFromQuery.value !== 'previewTables' && phaseFromQuery.value !== eventStatus.value) {
-  console.log('[PAGE LOAD] Syncing URL manually', { eventStatus: eventStatus.value, currentRound: currentRound.value })
   syncUrl(eventStatus.value, currentRound.value)
-} else {
-  console.log('[PAGE LOAD] Skipping manual sync')
 }
 
-const showEventEditModal = ref(false)
-const showNextRoundModal = ref(false)
-const showStartPreviewModal = ref(previewFromQuery.value)
-const showCancelRoundConfirm = ref(false)
-const showEndEventConfirm = ref(false)
-const showKillModal = ref(false)
-const selectedKillPairingId = ref<number | null>(null)
-const showPlayerSearchModal = ref(false)
-const showCreatePlayerModal = ref(false)
-const playerToEdit = ref<Player | null>(null)
+// ── URL Sync ─────────────────────────────────────────────────────────────
 
-// Score modal state
-const showScoreModal = ref(false)
-const selectedPairingId = ref<number | null>(null)
-const selectedTableIndex = ref<number | null>(null)
+useEventUrlSync({
+  syncPreview, syncScoreModal, syncKillModal, syncVotesModal, syncCommanderModal,
+  previewFromQuery, scoreModalFromQuery, killModalFromQuery, votesModalFromQuery, commanderModalFromQuery,
+  showStartPreviewModal,
+  showScoreModal,
+  selectedPairingId,
+  selectedTableIndex,
+  pairings,
+  showVotesModal,
+  selectedVotesPlayerId,
+  selectedVotesPairingId,
+  showCommanderModal,
+  selectedPlayerId,
+  selectedCommanderPairingId,
+  showKillModal,
+  selectedKillPairingId,
+})
 
-// Commander modal state
-const showCommanderModal = ref(false)
-const selectedPlayerId = ref<number | null>(null)
-const selectedCommanderPairingId = ref<number | null>(null)
-const commanderModalRef = ref<InstanceType<typeof CommanderModal> | null>(null)
+// ── Lifecycle Handlers ───────────────────────────────────────────────────
 
-// Scores modal state
-const showScoresModal = ref(false)
-const selectedScoresPairingId = ref<number | null>(null)
+const lifecycle = useEventLifecycle({
+  nextRound,
+  turnBackRound,
+  startEvent,
+  updateEvent,
+  showNextRoundModal,
+  showEndEventConfirm,
+  showStartPreviewModal,
+  showCancelRoundConfirm,
+  showEventEditModal,
+  isLastRound: computed(() => eventStatus.value === 'playing' && currentRound.value >= totalRounds.value && totalRounds.value > 0),
+  currentRound,
+  eventStatus,
+  syncUrl,
+  killsStore,
+  rankingsStore,
+  commandersStore,
+  votesStore,
+})
 
-// Votes modal state
-const showVotesModal = ref(false)
-const selectedVotesPlayerId = ref<number | null>(null)
-const selectedVotesPairingId = ref<number | null>(null)
+// ── Player Handlers ──────────────────────────────────────────────────────
 
-// Rankings state: pairingId -> array of playerIds in ranking order
-const rankingsStore = useRankingsStore()
+const playersHandlers = useEventPlayers({
+  playerStore,
+  addToWaitingList,
+  removeFromWaitingList,
+  players,
+  showCreatePlayerModal,
+  playerToEdit,
+  toast,
+})
 
-// Commanders state
-const commandersStore = useCommandersStore()
+// ── Submit Handlers ────────────────────────────────────────────────────────
 
-// Kills state
-const killsStore = useKillsStore()
+const submitHandlers = useEventSubmitHandlers({
+  rankingsStore,
+  eventStore,
+  killsStore,
+  commandersStore,
+  votesStore,
+  toast,
+  selectedPairingId,
+  selectedPlayerId,
+  selectedCommanderPairingId,
+  selectedVotesPlayerId,
+  selectedVotesPairingId,
+  pairings,
+})
 
-// Votes state
-const votesStore = useVotesStore()
+// ── Computed: Advance Check ────────────────────────────────────────────────
 
 const canAdvance = computed(() => {
   if (eventStatus.value !== 'playing' || pairings.value.length === 0) return false
 
   return pairings.value.every((pairing) => {
     const playerIds = [
-      pairing.pairing_player1_id,
-      pairing.pairing_player2_id,
-      pairing.pairing_player3_id,
-      pairing.pairing_player4_id,
+      pairing.pairing_player1_id, pairing.pairing_player2_id,
+      pairing.pairing_player3_id, pairing.pairing_player4_id,
     ].filter((id): id is number => id !== null)
 
     if (playerIds.length === 0) return false
@@ -172,127 +187,12 @@ const canAdvance = computed(() => {
   })
 })
 
-// Get players for the selected kill pairing
-const selectedKillPlayers = computed(() => {
-  if (!selectedKillPairingId.value) return []
-  const pairing = pairings.value.find(p => p.pairing_id === selectedKillPairingId.value)
-  if (!pairing) return []
-  const ids = [pairing.pairing_player1_id, pairing.pairing_player2_id, pairing.pairing_player3_id, pairing.pairing_player4_id]
-    .filter((id): id is number => !!id)
-  return tournamentPlayers.value.filter(p => ids.includes(p.id))
-})
-
-// Get players at the same table as selected player for votes modal
-const tablePlayersForVotes = computed(() => {
-  if (!selectedVotesPlayerId.value) return []
-  const pairing = pairings.value.find(p =>
-    [p.pairing_player1_id, p.pairing_player2_id, p.pairing_player3_id, p.pairing_player4_id]
-      .includes(selectedVotesPlayerId.value!)
-  )
-  if (!pairing) return []
-  const playerIds = [pairing.pairing_player1_id, pairing.pairing_player2_id, pairing.pairing_player3_id, pairing.pairing_player4_id]
-    .filter((id): id is number => !!id)
-  return tournamentPlayers.value.filter(p => playerIds.includes(p.id) && p.id !== selectedVotesPlayerId.value)
-})
-
-watch(showStartPreviewModal, (isOpen) => {
-  syncPreview(isOpen)
-})
-
-watch(previewFromQuery, (isPreview) => {
-  if (isPreview) {
-    showStartPreviewModal.value = true
-  }
-})
-
-watch(showScoreModal, (isOpen) => {
-  if (isOpen) {
-    syncScoreModal(true, selectedPairingId.value)
-  } else {
-    console.log('Score modal closed')
-    syncScoreModal(false, null)
-  }
-})
-
-watch(scoreModalFromQuery, (pairingId) => {
-  if (pairingId !== null && !showScoreModal.value) {
-    const pairing = pairings.value.find(p => p.pairing_id === pairingId)
-    if (pairing) {
-      const index = pairings.value.indexOf(pairing)
-      selectedPairingId.value = pairingId
-      selectedTableIndex.value = index
-      showScoreModal.value = true
-    }
-  }
-})
-
-watch(showVotesModal, (isOpen) => {
-  if (isOpen) {
-    syncVotesModal(true, selectedVotesPlayerId.value)
-  }
-  else {
-    syncVotesModal(false, null)
-  }
-})
-
-watch(votesModalFromQuery, (playerId) => {
-  if (playerId !== null && !showVotesModal.value) {
-    selectedVotesPlayerId.value = playerId
-    const pairing = pairings.value.find(p =>
-      [p.pairing_player1_id, p.pairing_player2_id, p.pairing_player3_id, p.pairing_player4_id]
-        .includes(playerId)
-    )
-    if (pairing) {
-      selectedVotesPairingId.value = pairing.pairing_id
-    }
-    showVotesModal.value = true
-  }
-})
-
-watch(showCommanderModal, (isOpen) => {
-  if (isOpen) {
-    syncCommanderModal(true, selectedPlayerId.value)
-  }
-  else {
-    syncCommanderModal(false, null)
-  }
-})
-
-watch(showKillModal, (isOpen) => {
-  if (isOpen) {
-    syncKillModal(true, selectedKillPairingId.value)
-  }
-  else {
-    syncKillModal(false, null)
-  }
-})
-
-watch(killModalFromQuery, (tableId) => {
-  if (tableId !== null && !showKillModal.value) {
-    selectedKillPairingId.value = tableId
-    showKillModal.value = true
-  }
-})
-
-watch(commanderModalFromQuery, (playerId) => {
-  if (playerId !== null && !showCommanderModal.value) {
-    selectedPlayerId.value = playerId
-    const pairing = pairings.value.find(p =>
-      [p.pairing_player1_id, p.pairing_player2_id, p.pairing_player3_id, p.pairing_player4_id]
-        .includes(playerId)
-    )
-    if (pairing) {
-      selectedCommanderPairingId.value = pairing.pairing_id
-    }
-    showCommanderModal.value = true
-  }
-})
+// ── Computed: Tables & Players ─────────────────────────────────────────────
 
 const previewModalTables = computed<TournamentTable[]>(() =>
   previewTables.value.map((table, tableIndex) => {
     const seats = Array.from({ length: 4 }, (_, seatIndex) => {
       const playerId = table[seatIndex]
-
       let player: TournamentPlayer | null = null
       if (playerId !== undefined) {
         const playerData = players.value.find(p => p.player_id === playerId)
@@ -302,18 +202,10 @@ const previewModalTables = computed<TournamentTable[]>(() =>
           surname: playerData?.player_surname ?? '',
         }
       }
-
-      return {
-        id: `table-${tableIndex + 1}-seat-${seatIndex + 1}`,
-        player,
-      }
+      return { id: `table-${tableIndex + 1}-seat-${seatIndex + 1}`, player }
     }) as [Seat, Seat, Seat, Seat]
 
-    return {
-      id: `table-${tableIndex + 1}`,
-      tableNumber: tableIndex + 1,
-      seats,
-    }
+    return { id: `table-${tableIndex + 1}`, tableNumber: tableIndex + 1, seats }
   })
 )
 
@@ -335,14 +227,12 @@ const tournamentPlayers = computed<TournamentPlayer[]>(() =>
 
 const pairingPlayersForScoring = computed<PairingPlayer[]>(() => {
   const table3Counter = new Map<number, number>()
-
   for (const entry of pairingHistory.value) {
     if (entry.players.length !== 3) continue
     for (const playerId of entry.players) {
       table3Counter.set(playerId, (table3Counter.get(playerId) ?? 0) + 1)
     }
   }
-
   return standings.value.map((standing) => ({
     id: standing.player_id,
     rank: standing.standing_player_rank ?? 9999,
@@ -353,6 +243,26 @@ const pairingPlayersForScoring = computed<PairingPlayer[]>(() => {
 
 const pairingHistoryForScoring = computed<PairingHistoryEntry[]>(() => pairingHistory.value)
 
+// ── Computed: Selected Players for Modals ──────────────────────────────────
+
+const selectedKillPlayers = computed(() => {
+  if (!selectedKillPairingId.value) return []
+  const pairing = pairings.value.find(p => p.pairing_id === selectedKillPairingId.value)
+  if (!pairing) return []
+  const ids = getPairingPlayerIds(pairing)
+  return tournamentPlayers.value.filter(p => ids.includes(p.id))
+})
+
+const tablePlayersForVotes = computed(() => {
+  if (!selectedVotesPlayerId.value) return []
+  const pairing = pairings.value.find(p => getPairingPlayerIds(p).includes(selectedVotesPlayerId.value!))
+  if (!pairing) return []
+  const playerIds = getPairingPlayerIds(pairing)
+  return tournamentPlayers.value.filter(p => playerIds.includes(p.id) && p.id !== selectedVotesPlayerId.value)
+})
+
+// ── Computed: Rankings & Submissions ───────────────────────────────────────
+
 const rankingsByPairing = computed(() => {
   const entries = new Map<number, number[]>()
   for (const [pairingId, rankingWithRanks] of rankingsStore.rankingsWithRanks.entries()) {
@@ -361,156 +271,64 @@ const rankingsByPairing = computed(() => {
   return entries
 })
 
-const submittedByPlayerId = computed<Record<number, boolean>>(() =>
-  Object.fromEntries(
-    buildStandingsSubmissionMap(pairings.value, rankingsByPairing.value).entries()
-  )
-)
-
-const isLastRoundState = (status: EventStatus, currentRoundValue: number, totalRoundsValue: number): boolean =>
-  status === 'playing' && currentRoundValue >= totalRoundsValue && totalRoundsValue > 0
-
-const getStandingsTitle = (status: EventStatus, currentRoundValue: number): string => {
-  if (status === 'ended') return 'Classifica Finale'
-  if (currentRoundValue > 0) return `Classifica Round ${currentRoundValue}`
-  return 'Classifica'
-}
-
-const standingsTitle = computed(() => getStandingsTitle(eventStatus.value, currentRound.value))
-const isLastRound = computed(() => isLastRoundState(eventStatus.value, currentRound.value, totalRounds.value))
-
-async function confirmStartEvent(playerOrder: number[]) {
-  const ok = await startEvent(playerOrder)
-  if (ok) showStartPreviewModal.value = false
-}
-
-async function confirmNextRound() {
-  showNextRoundModal.value = false
-  const ok = await nextRound()
-  if (ok) {
-    killsStore.reset()
-    rankingsStore.reset()
-    commandersStore.reset()
-    votesStore.reset()
-  }
-}
-
-function handleOpenKillModal(pairingId: number) {
-  killsStore.reset()
-  selectedKillPairingId.value = pairingId
-  showKillModal.value = true
-}
-
-async function handlePreviewConfirm(playerOrder: number[]) {
-  if (eventStatus.value === 'registration') {
-    const ok = await startEvent(playerOrder)
-    if (ok) showStartPreviewModal.value = false
-  }
-  else {
-    const ok = await nextRound(playerOrder)
-    if (ok) {
-      killsStore.reset()
-      rankingsStore.reset()
-      commandersStore.reset()
-      votesStore.reset()
-      showStartPreviewModal.value = false
+const submittedByPlayerId = computed<Record<number, boolean>>(() => {
+  const hasVotesByPlayerId = new Map<number, boolean>()
+  for (const pairing of pairings.value) {
+    const playerIds = [
+      pairing.pairing_player1_id, pairing.pairing_player2_id,
+      pairing.pairing_player3_id, pairing.pairing_player4_id,
+    ].filter((id): id is number => id !== null)
+    for (const playerId of playerIds) {
+      hasVotesByPlayerId.set(playerId, votesStore.hasVotes(playerId))
     }
   }
-}
+  return Object.fromEntries(
+    buildStandingsSubmissionMap(pairings.value, rankingsByPairing.value, hasVotesByPlayerId, killsStore.confirmedPairings).entries(),
+  )
+})
 
-async function confirmEndEvent() {
-  showEndEventConfirm.value = false
-  const ok = await nextRound()
-  if (ok) {
-    killsStore.reset()
-    rankingsStore.reset()
-    commandersStore.reset()
-    votesStore.reset()
-  }
-}
+// ── Computed: UI Text ──────────────────────────────────────────────────────
 
-function handleAdvance() {
-  if (isLastRound.value) {
-    showEndEventConfirm.value = true
-    return
-  }
-
-  showStartPreviewModal.value = true
-}
-
-async function handleUpdateEvent(payload: Parameters<typeof updateEvent>[0]) {
-  const ok = await updateEvent(payload)
-  if (ok) showEventEditModal.value = false
-}
-
-const playerStore = usePlayerStore()
-const toast = useToast()
-
-function handleCreateNewPlayer() {
-  playerToEdit.value = null
-  showCreatePlayerModal.value = true
-}
-
-function handleEditPlayer(playerId: number) {
-  const player = players.value.find(p => p.player_id === playerId)
-  if (player) {
-    playerToEdit.value = player
-    showCreatePlayerModal.value = true
-  }
-}
-
-async function handlePlayerCreate(player: NewPlayer) {
-  const result = await playerStore.createPlayer(player)
-  if (result?.success && result.data) {
-    // Aggiungi automaticamente alla waiting list
-    await addToWaitingList([result.data.player_id])
-    showCreatePlayerModal.value = false
-    toast.add({
-      title: 'Giocatore creato',
-      description: `${result.data.player_name} ${result.data.player_surname} aggiunto alla lista`,
-      color: 'success'
-    })
-  }
-}
-
-async function handlePlayerUpdate(payload: { id: number, data: NewPlayer }) {
-  const result = await playerStore.updatePlayer(payload.id, payload.data)
-  if (result?.success) {
-    showCreatePlayerModal.value = false
-    toast.add({
-      title: 'Giocatore aggiornato',
-      color: 'success'
-    })
-  }
-}
-
-async function handlePlayerSelectFromModal(playerId: number) {
-  // Seleziona giocatore esistente dalla ricerca simili
-  await addToWaitingList([playerId])
-  showCreatePlayerModal.value = false
-  toast.add({
-    title: 'Giocatore aggiunto',
-    description: 'Giocatore esistente aggiunto alla lista d\'attesa',
-    color: 'success'
+  const standingsTitle = computed(() => {
+    if (eventStatus.value === 'ended') return 'Classifica Finale'
+    if (currentRound.value > 0) return `Classifica Round ${currentRound.value}`
+    return 'Classifica'
   })
-}
 
-function handlePlayerStatusUpdate(payload: PlayerStatusUpdate) {
-  // Qui potresti salvare lo stato nel database se necessario
-  console.log('Player status updated:', payload)
-  // Per ora solo log, ma in futuro potresti voler persistere questi dati
-}
+  const roundDuration = computed(() => {
+    return (currentEvent.value as any)?.event_round_duration ?? 75
+  })
 
-function handleStepChanged(step: string) {
-  if (step === 'registration') {
-    syncUrl('registration', currentRound.value)
-  } else if (step === 'ended') {
-    syncUrl('ended', currentRound.value)
-  } else if (step.startsWith('round-')) {
-    const round = parseInt(step.replace('round-', ''))
-    syncUrl('playing', round)
+  function handleTimerExpired() {
+    toast.add({
+      title: 'Tempo scaduto!',
+      description: `Il tempo del round ${currentRound.value} è terminato`,
+      color: 'warning',
+      icon: 'i-lucide-timer-off',
+    })
   }
-}
+
+const formattedDate = computed(() => {
+  const dt = currentEvent.value?.event_datetime
+  if (!dt) return ''
+  return new Date(dt).toLocaleDateString('it-IT', { year: 'numeric', month: 'long', day: 'numeric' })
+})
+
+const leagueName = computed(() => currentLeague.value?.name ?? 'Lega')
+const eventName = computed(() => currentEvent.value?.event_name ?? 'Evento')
+
+const breadcrumbItems = computed(() => [
+  { label: 'Home', to: '/', icon: 'i-lucide-home' },
+  { label: 'Leghe', to: '/leagues' },
+  { label: leagueName.value, to: `/league/${leagueId}` },
+  { label: eventName.value },
+])
+
+const playerNames = computed<Record<number, string>>(() =>
+  Object.fromEntries(players.value.map(p => [p.player_id, `${p.player_name} ${p.player_surname}`]))
+)
+
+// ── Modal Open Handlers ──────────────────────────────────────────────────
 
 function handleOpenScoreModal(pairingId: number, tableIndex: number) {
   selectedPairingId.value = pairingId
@@ -535,151 +353,47 @@ function handleOpenVotesModal(pairingId: number, playerId: number) {
   showVotesModal.value = true
 }
 
-function handleCommanderSubmit(commander1: string | null) {
-  if (selectedPlayerId.value !== null && selectedCommanderPairingId.value !== null) {
-    commandersStore.setCommanders(selectedPlayerId.value, commander1, null)
-    toast.add({ title: 'Comandante salvato', color: 'success' })
-    eventStore.saveCommander(selectedCommanderPairingId.value, selectedPlayerId.value, commander1)
-      .then(result => { if (!result.success) toast.add({ title: 'Errore', description: result.error, color: 'error' }) })
-  }
-  showCommanderModal.value = false
+function handleOpenKillModal(pairingId: number) {
+  killsStore.reset()
+  selectedKillPairingId.value = pairingId
+  showKillModal.value = true
 }
 
-function handleVotesSubmit(deckVotePlayerId: number | null, playVotePlayerId: number | null) {
-  if (selectedVotesPlayerId.value !== null && selectedVotesPairingId.value !== null) {
-    votesStore.setVotes(selectedVotesPlayerId.value, deckVotePlayerId, playVotePlayerId)
-    eventStore.saveVote(selectedVotesPairingId.value, selectedVotesPlayerId.value, deckVotePlayerId, playVotePlayerId)
-      .then(result => {
-        toast.add({ title: result.success ? 'Voto salvato' : 'Errore', description: result.success ? undefined : result.error, color: result.success ? 'success' : 'error' })
-      })
-  }
-  showVotesModal.value = false
-}
+// ── Reset / Utility ──────────────────────────────────────────────────────
 
 function handleResetTable(pairingId: number) {
   const pairing = pairings.value.find(p => p.pairing_id === pairingId)
   if (!pairing) return
 
-  const playerIds = [
-    pairing.pairing_player1_id,
-    pairing.pairing_player2_id,
-    pairing.pairing_player3_id,
-    pairing.pairing_player4_id,
-  ].filter((id): id is number => id !== null)
+    const playerIds = getPairingPlayerIds(pairing)
 
-  // Reset classifica
   rankingsStore.removeRanking(pairingId)
 
-  // Reset uccisioni per questo tavolo
   const tableKills = killsStore.kills.filter((k) =>
     playerIds.includes(k.killerId) && playerIds.includes(k.victimId)
   )
   tableKills.forEach((kill) => {
-    const index = killsStore.kills.findIndex(
-      (k) => k.killerId === kill.killerId && k.victimId === kill.victimId
-    )
-    if (index !== -1) {
-      killsStore.kills.splice(index, 1)
-    }
+    const index = killsStore.kills.findIndex((k) => k.killerId === kill.killerId && k.victimId === kill.victimId)
+    if (index !== -1) killsStore.kills.splice(index, 1)
   })
 
-  // Reset comandanti per tutti i giocatori del tavolo
   playerIds.forEach((playerId) => {
     commandersStore.removeCommanders(playerId)
-  })
-
-  // Reset voti per tutti i giocatori del tavolo
-  playerIds.forEach((playerId) => {
     votesStore.removeVotes(playerId)
   })
 }
-
-function handleScoreSubmit(ranking: number[], rankingWithRanks: { playerId: number; rank: number }[]) {
-  if (selectedPairingId.value !== null) {
-    rankingsStore.setRankingWithRanks(selectedPairingId.value, rankingWithRanks)
-    toast.add({ title: 'Classifica salvata', color: 'success' })
-    eventStore.savePairingRankings(selectedPairingId.value, rankingWithRanks.map(r => ({ playerId: r.playerId, position: r.rank })))
-      .then(result => { if (!result.success) toast.add({ title: 'Errore', description: result.error, color: 'error' }) })
-  }
-  showScoreModal.value = false
-}
-
-function handleKillsSubmit(pairingId: number, kills: Kill[]) {
-  const pairing = pairings.value.find(p => p.pairing_id === pairingId)
-  if (!pairing) return
-
-  const playerIds = [
-    pairing.pairing_player1_id,
-    pairing.pairing_player2_id,
-    pairing.pairing_player3_id,
-    pairing.pairing_player4_id,
-  ].filter((id): id is number => id !== null)
-
-  const killCounts = playerIds.map(pid => ({
-    playerId: pid,
-    count: kills.filter(k => k.killerId === pid).length,
-  }))
-
-  toast.add({ title: 'Uccisioni salvate', color: 'success' })
-  eventStore.savePairingKills(pairingId, killCounts)
-    .then(result => { if (!result.success) toast.add({ title: 'Errore', description: result.error, color: 'error' }) })
-}
-
-function handleCancelRound() {
-  showCancelRoundConfirm.value = true
-}
-
-async function confirmCancelRound() {
-  showCancelRoundConfirm.value = false
-  const ok = await turnBackRound()
-  if (ok) {
-    killsStore.reset()
-    rankingsStore.reset()
-    commandersStore.reset()
-    votesStore.reset()
-  }
-}
-
-async function handleBatchRemove(playerIds: number[]) {
-  for (const playerId of playerIds) {
-    await removeFromWaitingList(playerId)
-  }
-}
-
-const formattedDate = computed(() => {
-  const dt = currentEvent.value?.event_datetime
-  if (!dt) return ''
-  return new Date(dt).toLocaleDateString('it-IT', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  })
-})
-
-// Cleaner with Object.fromEntries
-const playerNames = computed<Record<number, string>>(() =>
-  Object.fromEntries(
-    players.value.map(p => [p.player_id, `${p.player_name} ${p.player_surname}`])
-  )
-)
-
-// Extracted from template to keep it readable
-const breadcrumbItems = computed(() => [
-  { label: 'Home', to: '/', icon: 'i-lucide-home' },
-  { label: 'Leghe', to: '/leagues' },
-  { label: currentLeague.value?.name ?? 'Lega', to: `/league/${leagueId}` },
-  { label: currentEvent.value?.event_name ?? 'Evento' },
-])
 </script>
 
 <template>
   <div class="min-h-screen bg-default">
-    <div class="p-6 pb-0">
+    <!-- Header -->
+    <div class="p-6 pb-0 space-y-2">
       <UBreadcrumb :items="breadcrumbItems" />
+      <h1 class="text-2xl font-bold">{{ eventName }}</h1>
     </div>
 
+    <!-- Main Content -->
     <div class="flex flex-col gap-6 p-6">
-      <!-- Event Control Panel - Centered at top -->
       <EventControlPanel
         :current-round="currentRound"
         :total-rounds="totalRounds"
@@ -687,16 +401,36 @@ const breadcrumbItems = computed(() => [
         :can-start-event="canStartEvent"
         :can-advance="canAdvance"
         @start="showStartPreviewModal = true"
-        @advance="handleAdvance"
+        @advance="lifecycle.handleAdvance"
         @end="showEndEventConfirm = true"
-        @step-changed="handleStepChanged"
-        @cancel-round="handleCancelRound"
+        @step-changed="lifecycle.handleStepChanged"
+        @cancel-round="lifecycle.handleCancelRound"
+        @view-round="viewRound"
       >
         <template #content>
-          <!-- Registration Phase - Show EventHeaderCard -->
+          <!-- Viewing Past Round Banner -->
+          <div
+            v-if="isViewingPastRound"
+            class="mb-4 p-4 rounded-lg border bg-elevated border-muted flex items-center justify-between"
+          >
+            <span class="text-sm font-medium">
+              Visualizzando il round {{ viewedRound }}
+            </span>
+            <UButton
+              size="sm"
+              color="primary"
+              variant="soft"
+              icon="i-lucide-rotate-ccw"
+              @click="clearViewedRound"
+            >
+              Torna al round corrente
+            </UButton>
+          </div>
+
+          <!-- Registration / Ended Phase -->
           <EventHeaderCard
-            v-if="eventStatus !== 'playing'"
-            :event-name="currentEvent?.event_name ?? 'Evento'"
+            v-if="eventStatus !== 'playing' && !isViewingPastRound"
+            :event-name="eventName"
             :event-date="formattedDate"
             :event-status="eventStatus"
             @edit="showEventEditModal = true"
@@ -707,10 +441,10 @@ const breadcrumbItems = computed(() => [
                 :player-names="playerNames"
                 :waitroom-entries="waitroomEntries"
                 :table-estimate="tableEstimate"
-                @update="handlePlayerStatusUpdate"
+                @update="playersHandlers.handlePlayerStatusUpdate"
                 @remove="removeFromWaitingList"
-                @batch-remove="handleBatchRemove"
-                @edit="handleEditPlayer"
+                @batch-remove="playersHandlers.handleBatchRemove"
+                @edit="playersHandlers.handleEditPlayer"
                 @add-player="showPlayerSearchModal = true"
               />
 
@@ -719,16 +453,16 @@ const breadcrumbItems = computed(() => [
                 :players="players"
                 :waiting-players="waitingPlayers"
                 @select="addToWaitingList"
-                @create-new="handleCreateNewPlayer"
+                @create-new="playersHandlers.handleCreateNewPlayer"
               />
 
               <CreatePlayerModal
                 v-model:open="showCreatePlayerModal"
                 :player="playerToEdit"
                 :existing-players="players"
-                @create="handlePlayerCreate"
-                @update="handlePlayerUpdate"
-                @select="handlePlayerSelectFromModal"
+                @create="playersHandlers.handlePlayerCreate"
+                @update="playersHandlers.handlePlayerUpdate"
+                @select="playersHandlers.handlePlayerSelectFromModal"
               />
             </div>
 
@@ -739,23 +473,22 @@ const breadcrumbItems = computed(() => [
             />
           </EventHeaderCard>
 
-          <!-- Playing Phase - Pairings + Standings -->
+          <!-- Playing Phase -->
           <div
             v-else
             class="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]"
           >
             <div class="space-y-4">
-              <div class="flex justify-end">
-                <UButton
-                  trailing-icon="i-lucide-arrow-right"
-                  @click="handleAdvance"
-                >
-                  Avanti
-                </UButton>
-              </div>
+              <RoundTimer
+                v-if="!isViewingPastRound && currentRound > 0"
+                :duration-minutes="roundDuration"
+                :round="currentRound"
+                @expired="handleTimerExpired"
+              />
               <PairingsCard
-                :pairings="pairings"
+                :pairings="displayedPairings"
                 :current-round="currentRound"
+                :readonly="isViewingPastRound"
                 :get-player-name="getPlayerName"
                 :has-submitted-score="hasSubmittedScore"
                 :all-players="tournamentPlayers"
@@ -764,7 +497,7 @@ const breadcrumbItems = computed(() => [
                 :kills-store="killsStore"
                 :votes-store="votesStore"
                 @open-score-modal="handleOpenScoreModal"
-                @submit-kills="handleKillsSubmit"
+                @submit-kills="(pid, kills) => submitHandlers.handleKillsSubmit(pid, kills)"
                 @open-commander-modal="handleOpenCommanderModal"
                 @open-scores-modal="handleOpenScoresModal"
                 @open-votes-modal="handleOpenVotesModal"
@@ -781,13 +514,13 @@ const breadcrumbItems = computed(() => [
           </div>
         </template>
       </EventControlPanel>
-
     </div>
 
-    <!-- Modals -->
+    <!-- ── Modals ─────────────────────────────────────────────────────────── -->
+
     <NextRoundModal
       v-model:open="showNextRoundModal"
-      @confirm="confirmNextRound"
+      @confirm="lifecycle.confirmNextRound"
     />
 
     <TablePreviewModal
@@ -799,7 +532,7 @@ const breadcrumbItems = computed(() => [
       :current-round="Math.max(1, currentRound || 1)"
       :all-players="playersForPreview"
       :loading="loading"
-      @confirm="handlePreviewConfirm"
+      @confirm="lifecycle.handlePreviewConfirm"
     />
 
     <ConfirmModal
@@ -808,10 +541,10 @@ const breadcrumbItems = computed(() => [
       description="Tornare al round precedente"
       question="Sei sicuro di voler tornare al round precedente"
       warning="I dati del round corrente andranno persi."
-      confirm-label="Conferma"
+      confirm-label="Annulla round"
       cancel-label="Annulla"
-      confirm-icon="i-lucide-arrow-left"
-      @confirm="confirmCancelRound"
+      confirm-icon="i-lucide-trash-2"
+      @confirm="lifecycle.confirmCancelRound"
     />
 
     <ConfirmModal
@@ -823,109 +556,64 @@ const breadcrumbItems = computed(() => [
       confirm-label="Termina"
       cancel-label="Annulla"
       confirm-icon="i-lucide-flag"
-      @confirm="confirmEndEvent"
+      @confirm="lifecycle.confirmEndEvent"
     />
 
-    <UModal
-      v-model:open="showScoreModal"
-      title="Inserisci classifica"
-      :description="`Tavolo ${selectedTableIndex !== null ? selectedTableIndex + 1 : ''}`"
-      :ui="{ content: 'sm:max-w-3xl' }"
-    >
-      <template #body>
-        <TableScoreGrid
-          :pairing="selectedPairingId ? pairings.find(p => p.pairing_id === selectedPairingId) ?? null : null"
-          :get-player-name="getPlayerName"
-          :all-players="players"
-          :saved-ranking-with-ranks="selectedPairingId ? rankingsStore.getRankingWithRanks(selectedPairingId) : undefined"
-          @submit="handleScoreSubmit"
-          @cancel="showScoreModal = false"
-        />
-      </template>
-    </UModal>
-
-    <UModal
-      v-model:open="showCommanderModal"
-      title="Imposta Comandanti"
-      :description="selectedPlayerId ? getPlayerName(selectedPlayerId) : ''"
-      :scrollable="true"
-      :ui="{
-        content: 'w-[calc(100vw-2rem)] max-w-4xl rounded-lg shadow-lg ring ring-default',
-        body: 'flex-1 p-4 sm:p-6 min-h-[60vh]'
-      }"
-    >
-      <template #body>
-        <CommanderModal
-          v-if="selectedPlayerId"
-          ref="commanderModalRef"
-          :player-id="selectedPlayerId"
-          :player-name="getPlayerName(selectedPlayerId)"
-          :commander1="commandersStore.getCommander1(selectedPlayerId)"
-          @submit="handleCommanderSubmit"
-          @cancel="showCommanderModal = false"
-        />
-      </template>
-
-      <template #footer>
-        <div class="flex gap-2 justify-end">
-          <UButton color="neutral" variant="outline" @click="showCommanderModal = false">
-            Annulla
-          </UButton>
-          <UButton color="primary" @click="commanderModalRef?.submit()">
-            Salva
-          </UButton>
-        </div>
-      </template>
-    </UModal>
-
-    <UModal
-      v-model:open="showScoresModal"
-      title="Punteggi Tavolo"
-      :ui="{ content: 'sm:max-w-2xl' }"
-    >
-      <template #body>
-        <TableScoresModal
-          :pairing="selectedScoresPairingId ? pairings.find(p => p.pairing_id === selectedScoresPairingId) ?? null : null"
-          :all-players="tournamentPlayers"
-          :rankings="rankingsStore"
-          :kills-store="killsStore"
-          :votes-store="votesStore"
-        />
-      </template>
-    </UModal>
-
-    <KillSystemModal
-      v-model:open="showKillModal"
-      :players="selectedKillPlayers"
-      :pairing-id="selectedKillPairingId"
-      @submit="(kills: Kill[]) => handleKillsSubmit(selectedKillPairingId!, kills)"
+    <EventScoreModal
+      :show-score-modal="showScoreModal"
+      :selected-pairing-id="selectedPairingId"
+      :selected-table-index="selectedTableIndex"
+      :pairings="pairings"
+      :all-players="players"
+      :rankings-store="rankingsStore"
+      :get-player-name="getPlayerName"
+      @submit="submitHandlers.handleScoreSubmit"
+      @cancel="showScoreModal = false"
     />
 
-    <UModal
-      v-model:open="showVotesModal"
-      title="Voti Mazzo e Giocata"
-      :description="selectedVotesPlayerId ? getPlayerName(selectedVotesPlayerId) : ''"
-      :ui="{ content: 'sm:max-w-md' }"
-    >
-      <template #body>
-        <DeckPlayVotesModal
-          v-if="selectedVotesPlayerId"
-          :player-id="selectedVotesPlayerId"
-          :player-name="getPlayerName(selectedVotesPlayerId)"
-          :deck-vote-player-id="votesStore.getDeckVote(selectedVotesPlayerId)"
-          :play-vote-player-id="votesStore.getPlayVote(selectedVotesPlayerId)"
-          :other-players="tablePlayersForVotes"
-          @submit="handleVotesSubmit"
-          @cancel="showVotesModal = false"
-        />
-      </template>
-    </UModal>
+    <EventCommanderModal
+      :show-commander-modal="showCommanderModal"
+      :selected-player-id="selectedPlayerId"
+      :selected-commander-pairing-id="selectedCommanderPairingId"
+      :commander-modal-ref="commanderModalRef"
+      :get-player-name="getPlayerName"
+      :commanders-store="commandersStore"
+      @submit="submitHandlers.handleCommanderSubmit"
+      @cancel="showCommanderModal = false"
+    />
+
+    <EventScoresModal
+      :show-scores-modal="showScoresModal"
+      :selected-scores-pairing-id="selectedScoresPairingId"
+      :pairings="pairings"
+      :tournament-players="tournamentPlayers"
+      :rankings-store="rankingsStore"
+      :kills-store="killsStore"
+      :votes-store="votesStore"
+    />
+
+    <EventKillModal
+      :show-kill-modal="showKillModal"
+      :selected-kill-players="selectedKillPlayers"
+      :selected-kill-pairing-id="selectedKillPairingId"
+      @submit="(kills) => submitHandlers.handleKillsSubmit(selectedKillPairingId!, kills)"
+    />
+
+    <EventVotesModal
+      :show-votes-modal="showVotesModal"
+      :selected-votes-player-id="selectedVotesPlayerId"
+      :get-player-name="getPlayerName"
+      :votes-store="votesStore"
+      :table-players-for-votes="tablePlayersForVotes"
+      @submit="submitHandlers.handleVotesSubmit"
+      @cancel="showVotesModal = false"
+    />
 
     <EventFormModal
       v-model:open="showEventEditModal"
       :event="currentEvent ?? null"
       :league-id="leagueId"
-      @update="handleUpdateEvent"
+      @update="lifecycle.handleUpdateEvent"
     />
   </div>
 </template>

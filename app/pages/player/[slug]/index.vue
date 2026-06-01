@@ -1,17 +1,11 @@
 <!-- app\pages\player\[slug]\index.vue -->
 <script setup lang="ts">
-import { slugify } from '~/utils/slug'
+import type { CommanderDeck } from '#shared/utils/types'
 
 const route = useRoute()
 const slug = route.params.slug as string
 
-const playersStore = usePlayerStore()
-
-const player = computed(() => {
-  return playersStore.players.find(p =>
-    slugify(`${p.player_name ?? ''} ${p.player_surname ?? ''}`.trim()) === slug
-  )
-})
+const { player, playerId } = usePlayerBySlug(slug)
 
 const breadcrumbItems = computed(() => [
   { label: 'Home', to: '/' },
@@ -20,7 +14,6 @@ const breadcrumbItems = computed(() => [
 ])
 
 // Fetch commander decks for this player
-const playerId = computed(() => player.value?.player_id)
 const {
   data: commanderDecks,
   pending: decksLoading,
@@ -126,17 +119,11 @@ async function confirmDeleteDeck() {
   }
 }
 
-const ownedDeckCount = computed(() => commanderDecks.value?.filter(d => !d.is_borrowed).length ?? 0)
-const borrowedDeckCount = computed(() => commanderDecks.value?.filter(d => d.is_borrowed).length ?? 0)
+const ownedDeckCount = computed(() => commanderDecks.value?.filter((d: CommanderDeck) => !d.is_borrowed).length ?? 0)
+const borrowedDeckCount = computed(() => commanderDecks.value?.filter((d: CommanderDeck) => d.is_borrowed).length ?? 0)
 
 // Match history
 const { data: matchHistory } = usePlayerMatchHistory(playerId)
-
-onMounted(() => {
-  if (playersStore.players.length === 0) {
-    playersStore.fetchPlayers()
-  }
-})
 </script>
 
 <template>

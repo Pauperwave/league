@@ -35,6 +35,11 @@ const rulesets = computed(() => rulesetsData.value ?? [])
 const { data: events, pending: eventsLoading, refresh: refreshEvents } = useEvents(leagueId)
 
 const currentLeague = computed(() => leagueStore.getLeagueById(leagueId))
+
+// Fetch league data if not already in store (e.g., on direct page reload)
+if (!currentLeague.value) {
+  await leagueStore.fetchLeagues()
+}
 const classificaTitle = computed(() =>
   `Classifica ${currentLeague.value?.name ?? ''}`.trim()
 )
@@ -45,7 +50,7 @@ const breadcrumbItems = computed(() => [
   { label: currentLeague.value?.name ?? 'Lega' },
 ])
 
-const { error: standingsError } = await useAsyncData(`standings-${leagueId}`, () => eventsStore.fetchLeagueStandings(leagueId))
+const { error: standingsError } = await useAsyncData(`league-standings-${leagueId}`, () => eventsStore.fetchLeagueStandings(leagueId))
 
 onMounted(() => {
   if (standingsError.value) {

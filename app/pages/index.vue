@@ -17,7 +17,23 @@
         Vai alle Leghe
       </UButton>
 
-      <div class="mt-4">
+      <div class="mt-4 flex flex-col sm:flex-row gap-2 justify-center">
+        <UButton
+          to="/players"
+          color="neutral"
+          size="md"
+          icon="i-lucide-users"
+        >
+          Tutti i Giocatori
+        </UButton>
+        <UButton
+          to="/decks"
+          color="neutral"
+          size="md"
+          icon="i-lucide-swords"
+        >
+          Tutti i Deck
+        </UButton>
         <UButton
           to="/rulesets"
           color="neutral"
