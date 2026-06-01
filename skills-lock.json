@@ -1,11 +1,35 @@
 {
   "version": 1,
   "skills": {
+    "accessibility": {
+      "source": "addyosmani/web-quality-skills",
+      "sourceType": "github",
+      "skillPath": "skills/accessibility/SKILL.md",
+      "computedHash": "ebfa09617a2ac4fd64afd73267726b787145a8d14294df3f8802b462c91594ab"
+    },
     "antfu": {
       "source": "antfu/skills",
       "sourceType": "github",
       "skillPath": "skills/antfu/SKILL.md",
       "computedHash": "36eef78a205ff2618a6916a76cfb593a2fa5cb9dd428b321c5a73790e439b8bd"
+    },
+    "caveman": {
+      "source": "juliusbrussee/caveman",
+      "sourceType": "github",
+      "skillPath": "skills/caveman/SKILL.md",
+      "computedHash": "7935e83f9c6a8b7cbb5404d144b0d19e3ba93583f4388301c3dada37cd25adf8"
+    },
+    "fallow": {
+      "source": "fallow-rs/fallow-skills",
+      "sourceType": "github",
+      "skillPath": "fallow/skills/fallow/SKILL.md",
+      "computedHash": "826c4eefb25d3f5fd33191f6b91f8509a65d31da7269338e18ebd84c847a1f55"
+    },
+    "motion": {
+      "source": "onmax/nuxt-skills",
+      "sourceType": "github",
+      "skillPath": "skills/motion/SKILL.md",
+      "computedHash": "88f028610d2a273dd1de1b79c0e4cc70ed041105af86f890520ff9b1c674352e"
     },
     "nuxt": {
       "source": "antfu/skills",
@@ -18,6 +42,12 @@
       "sourceType": "github",
       "skillPath": "skills/nuxt-ui/SKILL.md",
       "computedHash": "26228b7bba74ab869f52526f2ba5fbfa0c2353ea0d4bc1176c5e57ee4ee95040"
+    },
+    "nuxt4-patterns": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "skillPath": "skills/nuxt4-patterns/SKILL.md",
+      "computedHash": "b46b846c8feeb54e86d4649bec66e79602058fb2932fb9f76cd24b7611273f02"
     },
     "pinia": {
       "source": "antfu/skills",
@@ -36,6 +66,18 @@
       "sourceType": "github",
       "skillPath": "skills/slidev/SKILL.md",
       "computedHash": "ecde2e0d684f770a50c8718ab036e5df5e1ead082cb608739673507079a524a3"
+    },
+    "supabase": {
+      "source": "supabase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/supabase/SKILL.md",
+      "computedHash": "2df21087c49ef5d9cc1189ea24d41d67e4b06b64009e580f44d0e89b1a8b079b"
+    },
+    "supabase-postgres-best-practices": {
+      "source": "supabase/agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/supabase-postgres-best-practices/SKILL.md",
+      "computedHash": "38fb49d3b57c46cba18b07a44254bd42c4c93903fda1d8cb683429615d32fec4"
     },
     "tsdown": {
       "source": "antfu/skills",

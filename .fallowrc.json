@@ -1,0 +1,24 @@
+{
+  "entry": [
+    "app/app.vue",
+    "app/pages/**/*.vue",
+    "app/components/**/*.vue",
+    "app/composables/**/*.ts",
+    "app/stores/**/*.ts",
+    "server/**/*.ts",
+    "scripts/sync-commanders.ts"
+  ],
+  "ignorePatterns": [
+    "public/**",
+    "docs/**",
+    "shared/utils/types/database.ts"
+  ],
+  "ignoreDependencies": [
+    "@formkit/auto-animate",
+    "@iconify-json/lucide",
+    "@iconify-json/simple-icons",
+    "@nuxt/hints",
+    "@vue/test-utils",
+    "@vueuse/core"
+  ]
+}
