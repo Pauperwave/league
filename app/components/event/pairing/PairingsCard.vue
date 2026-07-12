@@ -258,97 +258,32 @@ function toggleKillConfirmation(pairingId: number) {
 
         <!-- Player rows -->
         <div class="space-y-2">
-          <div
+          <PairingPlayerRow
             v-for="playerId in pairingPlayerIds(pairing)"
             :key="playerId"
-            class="flex items-center gap-2 p-2 bg-elevated rounded"
-          >
-            <PlayerNameTag
-              :name="allPlayers.find(p => p.id === playerId)?.name ?? ''"
-              :surname="allPlayers.find(p => p.id === playerId)?.surname ?? ''"
-              class="flex-1"
-            />
-
-            <!-- Per-player action buttons — hidden in readonly mode -->
-            <template v-if="!readonly">
-              <!-- Commander button -->
-              <UTooltip
-                :key="`cmd-${playerId}-${commandersStore?.getCommander1(playerId) ? 1 : 0}`"
-                :content="{ side: 'right' }"
-                :text="commandersStore?.getCommander1(playerId) ? t('event.pairing.commanderSetTooltip') : t('event.pairing.commanderNotSetTooltip')"
-              >
-                <UButton
-                  size="xs"
-                  variant="outline"
-                  :color="commandersStore?.getCommander1(playerId) ? 'neutral' : 'warning'"
-                  :icon="commandersStore?.getCommander1(playerId) ? ICONS.commanderSet : ICONS.commanderNotSet"
-                  :aria-label="t('event.pairing.commanderAriaLabel')"
-                  @click="emit('openCommanderModal', pairing.pairing_id, playerId)"
-                />
-              </UTooltip>
-
-              <!-- Vote button -->
-              <UTooltip
-                :key="`vote-${playerId}-${votesStore?.hasVotes(playerId) ? 1 : 0}`"
-                :content="{ side: 'right' }"
-                :text="votesStore?.hasVotes(playerId) ? t('event.pairing.voteSetTooltip') : t('event.pairing.voteNotSetTooltip')"
-              >
-                <UButton
-                  size="xs"
-                  variant="outline"
-                  :color="votesStore?.hasVotes(playerId) ? 'neutral' : 'warning'"
-                  :icon="votesStore?.hasVotes(playerId) ? ICONS.confirm : ICONS.vote"
-                  :aria-label="t('event.pairing.voteAriaLabel')"
-                  @click="emit('openVotesModal', pairing.pairing_id, playerId)"
-                />
-              </UTooltip>
-            </template>
-          </div>
+            :player-id="playerId"
+            :pairing-id="pairing.pairing_id"
+            :name="allPlayers.find(p => p.id === playerId)?.name ?? ''"
+            :surname="allPlayers.find(p => p.id === playerId)?.surname ?? ''"
+            :readonly="readonly"
+            :has-commander="!!commandersStore?.getCommander1(playerId)"
+            :has-votes="votesStore?.hasVotes(playerId) === true"
+            @open-commander-modal="(pairingId, pid) => emit('openCommanderModal', pairingId, pid)"
+            @open-votes-modal="(pairingId, pid) => emit('openVotesModal', pairingId, pid)"
+          />
         </div>
 
         <!-- Table-level action buttons — hidden in readonly mode -->
-        <div v-if="!readonly" class="flex gap-2 mt-3">
-          <!-- Rankings button -->
-          <UTooltip :content="{ side: 'top' }" :text="hasRanking(pairing.pairing_id) ? t('event.pairing.rankingSetTooltip') : t('event.pairing.rankingNotSetTooltip')">
-            <UButton
-              :color="hasRanking(pairing.pairing_id) ? 'neutral' : 'warning'"
-              class="flex-1"
-              :icon="ICONS.standings"
-              variant="outline"
-              @click="handleOpenScoreModal(pairing.pairing_id, index)"
-            >
-              {{ t('event.pairing.rankingButton') }}
-            </UButton>
-          </UTooltip>
-
-          <!-- Kills entry button -->
-          <UTooltip :content="{ side: 'top' }" :text="killsStore?.isPairingConfirmed(pairing.pairing_id) ? t('event.pairing.killsSetTooltip') : t('event.pairing.killsNotSetTooltip')">
-            <UButton
-              :color="killsStore?.isPairingConfirmed(pairing.pairing_id) ? 'neutral' : 'warning'"
-              class="flex-1"
-              :icon="ICONS.kills"
-              variant="outline"
-              @click="emit('openKillModal', pairing.pairing_id)"
-            >
-              {{ t('event.pairing.killsButton') }}
-            </UButton>
-          </UTooltip>
-
-          <!-- Kill confirmation toggle -->
-          <UTooltip
-            :content="{ side: 'top' }"
-            :text="killsStore?.isPairingConfirmed(pairing.pairing_id) ? t('event.pairing.removeKillConfirmTooltip') : t('event.pairing.confirmKillsTooltip')"
-          >
-            <UButton
-              :color="killsStore?.isPairingConfirmed(pairing.pairing_id) ? 'success' : 'warning'"
-              :icon="killsStore?.isPairingConfirmed(pairing.pairing_id) ? ICONS.confirm : ICONS.dot"
-              variant="outline"
-              size="sm"
-              :aria-label="killsStore?.isPairingConfirmed(pairing.pairing_id) ? t('event.pairing.removeKillConfirmTooltip') : t('event.pairing.confirmKillsAriaLabel')"
-              @click="toggleKillConfirmation(pairing.pairing_id)"
-            />
-          </UTooltip>
-        </div>
+        <PairingTableActions
+          v-if="!readonly"
+          :pairing-id="pairing.pairing_id"
+          :table-index="index"
+          :has-ranking="hasRanking(pairing.pairing_id)"
+          :kills-confirmed="!!killsStore?.isPairingConfirmed(pairing.pairing_id)"
+          @open-score-modal="handleOpenScoreModal"
+          @open-kill-modal="emit('openKillModal', $event)"
+          @toggle-kill-confirmation="toggleKillConfirmation"
+        />
       </UCard>
     </div>
 
