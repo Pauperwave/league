@@ -1,5 +1,34 @@
 # Todos
 
+## Centralize icon names
+- 87+ unique `i-lucide-*` strings currently scattered as inline literals across `app/components`/`app/pages` — no single source of truth, easy to pick a different icon for the same concept in two places
+- `app/app.config.ts` already exists (currently just `ui.colors`/`ui.button` theming) — Nuxt UI supports an `ui.icons` key there, but that only renames Nuxt UI's *internal* semantic slots (`close`, `chevronDown`, `loading`, …), not app-level icon choices
+- For app-level icons (delete, edit, calendar, etc.), add a small constants module (e.g. `app/utils/icons.ts`, following the `app/utils/CLAUDE.md` inventory convention) exporting named icon constants, and migrate components to reference it instead of inline `i-lucide-*` strings
+- Note: `ACTION_MAP` in `app/utils/actionButton.ts` already does this narrowly for the remove/edit/view action-button icons — same idea, needs to cover the rest
+
+## Add @nuxtjs/i18n for Italian string centralization
+- UI strings are hardcoded Italian literals throughout components (`docs/AGENTS.md`: "UI-facing strings: Italian") — no single source, hard to audit/change copy consistently
+- Install: `npx nuxi@latest module add i18n`
+- Even for a single-locale (Italian-only) app, `@nuxtjs/i18n` gives centralized string management (one `it.json`/`it.ts` locale file instead of literals scattered across every `.vue` file) — worth it purely for maintainability, not for actual multi-language support
+- Nuxt UI has built-in locale support that should be wired up alongside it, in `app/app.vue` (root `<UApp>` already lives there):
+  ```vue
+  <script setup lang="ts">
+  import { it } from '@nuxt/ui/locale'
+  </script>
+
+  <template>
+    <UApp :locale="it">
+      <NuxtPage />
+    </UApp>
+  </template>
+  ```
+- While in `app/app.vue`: `htmlAttrs.lang` is still `'en'` and the `useSeoMeta` title/description/OG image are unedited Nuxt UI starter-template boilerplate ("A production-ready starter template powered by Nuxt UI...", starter template screenshot as `ogImage`) — fix `lang` to `'it'` and write real app copy while touching this file for locale setup
+
+## Add Playwright + Playwright MCP
+- Add `@playwright/test` and a `playwright.config.ts` for E2E tests (`docs/AGENTS.md` already calls for Playwright + `@nuxt/test-utils` E2E coverage on critical flows: event creation, round progression, score submission)
+- Currently only `playwright-core` is installed (transitive), with no config or tests
+- Set up the Playwright MCP server for browser-driven E2E authoring/debugging
+
 ## Stepper for Event Phases
 - Implement `UStepper` component to track event phases (registration -> playing -> ended)
 - See: https://ui.nuxt.com/raw/docs/components/stepper.md
