@@ -1,6 +1,6 @@
 <!-- app\components\players\PlayersToolbar.vue -->
 <script setup lang="ts">
-import { SORT_OPTIONS, type SortField } from '~/composables/usePlayersFilter'
+import { SORT_OPTIONS, type SortField } from '~/composables/players/usePlayersFilter'
 
 const searchQuery = defineModel<string>('searchQuery', { required: true })
 const showOnlyWithDecks = defineModel<boolean>('showOnlyWithDecks', { required: true })

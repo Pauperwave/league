@@ -1,6 +1,6 @@
 <!-- app\components\Events\WaitingList.vue -->
 <script setup lang="ts">
-import { useButtonLogging } from '~/composables/useButtonLogging'
+import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 const props = defineProps<{
   waitingPlayers: number[]

@@ -1,5 +1,5 @@
 import type { Ruleset } from '#shared/utils/types'
-import { useButtonLogging } from '~/composables/useButtonLogging'
+import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 /**
  * Composable per gestire i dati dei regolamenti.

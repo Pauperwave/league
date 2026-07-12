@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import type { Player } from '#shared/utils/types'
 import { usePlayerOptions } from '~/composables/supabase/usePlayers'
-import { useButtonLogging } from '~/composables/useButtonLogging'
+import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 const props = defineProps<{
   players: Player[]

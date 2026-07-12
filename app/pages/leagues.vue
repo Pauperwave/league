@@ -1,6 +1,6 @@
 <!-- app\pages\leagues.vue -->
 <script setup lang="ts">
-import { useButtonLogging } from '~/composables/useButtonLogging'
+import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 import type { League } from '#shared/utils/types'
 
 interface UpdateLeagueData {

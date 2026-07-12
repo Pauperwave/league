@@ -1,7 +1,7 @@
 <!-- app\components\players\PlayersGrid.vue -->
 <script setup lang="ts">
 import type { Player } from '#shared/utils/types'
-import type { SortField } from '~/composables/usePlayersFilter'
+import type { SortField } from '~/composables/players/usePlayersFilter'
 
 const props = defineProps<{
   players: Player[]

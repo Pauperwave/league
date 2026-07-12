@@ -1,7 +1,7 @@
  <script setup lang="ts">
 import type { CommanderDeck, CommanderAggregate } from '#shared/utils/types'
 import { slugify } from '~/utils/slug'
-import { getArtCrop, useCommanderCards } from '~/composables/useCommanderCards'
+import { getArtCrop, useCommanderCards } from '~/composables/commanders/useCommanderCards'
 
 const props = defineProps<{
   deck: CommanderDeck

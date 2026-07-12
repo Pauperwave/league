@@ -1,6 +1,6 @@
 <!-- app\components\Modals\LeaguesUsingRulesetModal.vue -->
 <script setup lang="ts">
-import { useButtonLogging } from '~/composables/useButtonLogging'
+import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 interface LeagueInfo {
   id: number

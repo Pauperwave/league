@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import type { Ruleset } from '#shared/utils/types'
 import * as v from 'valibot'
-import { useButtonLogging } from '~/composables/useButtonLogging'
+import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 const props = defineProps<{
   ruleset: Ruleset | null

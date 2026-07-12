@@ -5,7 +5,7 @@
   Componente per il logout dell'utente.
 -->
 <script setup lang="ts">
-import { useButtonLogging } from '~/composables/useButtonLogging'
+import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 const { logout } = usePasswordAuth()
 

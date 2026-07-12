@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import type { Pairing, Seat } from '#shared/utils/types'
 import TableSeatItem from '../TableSeatItem.vue'
-import { useButtonLogging } from '~/composables/useButtonLogging'
+import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 interface DatabasePlayer {
   player_id: number

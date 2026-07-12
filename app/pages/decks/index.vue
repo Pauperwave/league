@@ -3,7 +3,7 @@
 import {
   fetchCommandersByNames,
   type CommanderCard,
-} from '~/composables/useCommanderCards'
+} from '~/composables/commanders/useCommanderCards'
 import { useAllCommanderStats } from '~/composables/supabase/useCommanderStats'
 import type { CommanderDeck } from '#shared/utils/types'
 

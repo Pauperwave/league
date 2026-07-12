@@ -1,6 +1,6 @@
 <!-- app\pages\player\[slug]\deck\[deckSlug].vue -->
 <script setup lang="ts">
-import { useCommanderCards } from '~/composables/useCommanderCards'
+import { useCommanderCards } from '~/composables/commanders/useCommanderCards'
 import type { CommanderDeck } from '#shared/utils/types'
 
 const route = useRoute()

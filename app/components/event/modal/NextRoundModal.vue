@@ -1,6 +1,6 @@
 <!-- app\components\Events\NextRoundModal.vue -->
 <script setup lang="ts">
-import { useButtonLogging } from '~/composables/useButtonLogging'
+import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 const open = defineModel<boolean>('open', { default: false })
 

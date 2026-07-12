@@ -3,7 +3,7 @@
 import type { CalendarDate } from '@internationalized/date'
 import type { Ruleset, League } from '#shared/utils/types'
 import * as v from 'valibot'
-import { useButtonLogging } from '~/composables/useButtonLogging'
+import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 const LeagueFormSchema = v.object({
   name: v.pipe(v.string(), v.trim(), v.minLength(1, 'Nome lega richiesto')),

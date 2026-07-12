@@ -1,7 +1,7 @@
 <!-- app\components\CardPreview.vue -->
 <script setup lang="ts">
 import { computed, watch } from 'vue'
-import type { CommanderCard } from '~/composables/useCommanderCards'
+import type { CommanderCard } from '~/composables/commanders/useCommanderCards'
 
 const props = defineProps<{
   card: CommanderCard | null

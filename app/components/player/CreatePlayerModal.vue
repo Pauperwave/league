@@ -3,7 +3,7 @@
 import type { Player, NewPlayer } from '#shared/utils/types'
 import { findSimilarPlayers } from '#shared/utils/playerSimilarity'
 import * as v from 'valibot'
-import { useButtonLogging } from '~/composables/useButtonLogging'
+import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 const props = defineProps<{
   player: Player | null

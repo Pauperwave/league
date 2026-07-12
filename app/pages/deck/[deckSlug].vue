@@ -1,7 +1,7 @@
 <!-- app\pages\deck\[deckSlug].vue -->
 <script setup lang="ts">
 import { slugify } from '~/utils/slug'
-import { getArtCrop, useCommanderCards } from '~/composables/useCommanderCards'
+import { getArtCrop, useCommanderCards } from '~/composables/commanders/useCommanderCards'
 import { useCommanderStats } from '~/composables/supabase/useCommanderStats'
 import type { CommanderDeck } from '#shared/utils/types'
 
