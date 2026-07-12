@@ -1,4 +1,15 @@
 // Greedy + local-swap pairing optimizer with hard constraints and transparent scoring details.
+//
+// Invariant: for every table, sum(perPlayer[p].total for p in table) === tableScore.total.
+// Each weight is applied exactly where its metric is naturally attributable:
+//   - strengthBalance is a table-level quantity (rank spread has no single owner), so it's
+//     weighted once in calculateStrengthBalance and heuristically redistributed to players.
+//   - novelty, rematchPenalty, rotateTable3 are naturally per-pair/per-player (a new pairing
+//     belongs to two players, a table3Count belongs to one), so they're weighted once at that
+//     attribution point (calculatePairwiseScore / distributeTable3Penalty) AND once more when
+//     aggregateTableScore re-weights the raw (unweighted) count for the table-level total.
+//   This double application is intentional, not a bug — do not "fix" it by adding the weight
+//   to the raw counters (e.g. calculateTable3Penalty) or you will double-weight the metric.
 import type { PairingForbiddenPair, PairingWeights, TournamentPlayer, Seat, TournamentTable } from '#shared/utils/types'
 import { useTableCalculator } from '../tables/useTableCalculator'
 
@@ -126,7 +137,6 @@ function hasForbiddenConflict(table: number[], forbiddenSet: Set<string>): boole
  * @param weights - PairingWeights config
  * @returns Object containing:
  *   - `strengthTotal`: weighted total for the table (negative, higher is better)
- *   - `strengthSpreadPenalty`: raw rank spread (0 = perfectly balanced)
  *   - `rankByPlayer`: Map of playerId → rank for reuse
  */
 function calculateStrengthBalance(
@@ -135,7 +145,6 @@ function calculateStrengthBalance(
   weights: PairingWeights
 ): {
   strengthTotal: number
-  strengthSpreadPenalty: number
   rankByPlayer: Map<number, number>
 } {
   const ranks = table
@@ -152,7 +161,7 @@ function calculateStrengthBalance(
     table.map(playerId => [playerId, playersById.get(playerId)?.rank ?? 9999])
   )
 
-  return { strengthTotal, strengthSpreadPenalty, rankByPlayer }
+  return { strengthTotal, rankByPlayer }
 }
 
 /**
@@ -203,13 +212,11 @@ function distributeStrengthBalance(
  *
  * @param table - Array of player IDs at this table
  * @param playersById - Map of player ID → PairingPlayer (includes table3Count)
- * @param weights - PairingWeights config
  * @returns Total rotation penalty for the table (≥ 0)
  */
 function calculateTable3Penalty(
   table: number[],
-  playersById: Map<number, PairingPlayer>,
-  weights: PairingWeights
+  playersById: Map<number, PairingPlayer>
 ): number {
   if (table.length !== 3) return 0
 
@@ -321,10 +328,10 @@ function calculatePairwiseScore(
  * @param perPlayer - Mutable Map of playerId → PairingPlayerScore
  * @param weights - PairingWeights config
  * @param params - Intermediate scoring results:
- *   - `strengthTotal`: weighted strength total
- *   - `novelty`: count of new pairings
- *   - `rematchPenalty`: accumulated rematch penalty
- *   - `rotateTable3`: raw 3-player rotation penalty
+ *   - `strengthTotal`: weighted strength total (already includes weights.strengthBalance)
+ *   - `novelty`: raw count of new pairings (weighted here via weights.novelty)
+ *   - `rematchPenalty`: raw accumulated rematch penalty (weighted here via weights.rematch)
+ *   - `rotateTable3`: raw 3-player rotation penalty (weighted here via weights.rotateTable3)
  * @returns Final PairingTableScore with per-player breakdown
  */
 function aggregateTableScore(
@@ -336,10 +343,9 @@ function aggregateTableScore(
     novelty: number
     rematchPenalty: number
     rotateTable3: number
-    strengthSpreadPenalty: number
   }
 ): PairingTableScore {
-  const { strengthTotal, novelty, rematchPenalty, rotateTable3, strengthSpreadPenalty } = params
+  const { strengthTotal, novelty, rematchPenalty, rotateTable3 } = params
   const size = table.length
   const tableSizeWeight = size === 4 ? weights.tableSize4 : weights.tableSize3
   const tableSizePerPlayer = table.length > 0 ? tableSizeWeight / table.length : 0
@@ -365,7 +371,7 @@ function aggregateTableScore(
     + tableSizeWeight
 
   return {
-    strengthBalance: -strengthSpreadPenalty * weights.strengthBalance,
+    strengthBalance: strengthTotal,
     novelty: novelty * weights.novelty,
     rematchPenalty: -rematchPenalty * weights.rematch,
     rotateTable3: -rotateTable3 * weights.rotateTable3,
@@ -413,10 +419,10 @@ function scoreTable(
     })
   }
 
-  const { strengthTotal, strengthSpreadPenalty, rankByPlayer } = calculateStrengthBalance(table, playersById, weights)
+  const { strengthTotal, rankByPlayer } = calculateStrengthBalance(table, playersById, weights)
   distributeStrengthBalance(table, perPlayer, strengthTotal, rankByPlayer)
 
-  const rotateTable3 = calculateTable3Penalty(table, playersById, weights)
+  const rotateTable3 = calculateTable3Penalty(table, playersById)
   distributeTable3Penalty(table, perPlayer, playersById, weights)
 
   const { novelty, rematchPenalty } = calculatePairwiseScore(table, perPlayer, rematchMap, currentRound, weights)
@@ -426,7 +432,6 @@ function scoreTable(
     novelty,
     rematchPenalty,
     rotateTable3,
-    strengthSpreadPenalty,
   })
 }
 
