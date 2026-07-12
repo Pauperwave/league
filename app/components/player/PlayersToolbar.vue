@@ -27,7 +27,7 @@ const sortDirection = defineModel<'asc' | 'desc'>('sortDirection', { required: t
         :icon="sortDirection === 'asc' ? 'i-lucide-arrow-up' : 'i-lucide-arrow-down'"
         :aria-label="sortDirection === 'asc' ? 'Ordina decrescente' : 'Ordina crescente'"
         :title="sortDirection === 'asc' ? 'Ordina decrescente' : 'Ordina crescente'"
-        @click="sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'"
+        @click="() => { sortDirection = sortDirection === 'asc' ? 'desc' : 'asc' }"
       />
     </div>
   </div>

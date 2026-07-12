@@ -282,7 +282,7 @@ const { data: matchHistory } = usePlayerMatchHistory(playerId)
           color="primary"
           variant="soft"
           icon="i-lucide-plus"
-          @click="createModalOpen = true"
+          @click="() => { createModalOpen = true }"
         >
           Aggiungi Deck
         </UButton>

@@ -32,7 +32,7 @@ const router = useRouter()
         color="neutral"
         icon="i-lucide-arrow-left"
         aria-label="Torna indietro"
-        @click="router.push('/leagues')"
+        @click="() => { router.push('/leagues') }"
       >
         Indietro
       </UButton>

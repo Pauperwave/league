@@ -96,7 +96,7 @@ function handleSubmit() {
             label="Annulla"
             color="neutral"
             variant="outline"
-            @click="open = false"
+            @click="() => { open = false }"
           />
           <UButton
             label="Conferma"

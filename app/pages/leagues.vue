@@ -72,7 +72,7 @@ async function updateLeague({ id, data }: UpdateLeagueData) {
       <h1 class="text-2xl font-bold">
         Leghe
       </h1>
-      <UButton color="primary" icon="i-lucide-plus" @click="showCreateModal = true">
+      <UButton color="primary" icon="i-lucide-plus" @click="() => { showCreateModal = true }">
         Nuova Lega
       </UButton>
     </div>
