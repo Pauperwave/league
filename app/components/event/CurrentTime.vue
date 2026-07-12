@@ -1,5 +1,6 @@
 <!-- app\\components\\event\\CurrentTime.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 const now = ref(new Date())
 
 useIntervalFn(() => {
@@ -18,7 +19,7 @@ const display = computed(() =>
 <template>
   <div class="flex items-center gap-[1.5cqmin]">
     <UIcon
-      name="i-lucide-clock"
+      :name="ICONS.clock"
       class="size-[10cqmin]"
     />
     <span class="font-mono font-semibold tabular-nums text-[10cqmin]">

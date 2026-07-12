@@ -1,5 +1,6 @@
 <!-- app\components\events\Pairings\Settings\PairingPresetButtons.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 export type PairingPresetKind = 'balanced' | 'social' | 'competitive' | 'reset' | 'custom'
 
 defineProps<{
@@ -11,9 +12,9 @@ const emit = defineEmits<{
 }>()
 
 const presets: Array<{ key: Exclude<PairingPresetKind, 'custom' | 'reset'>; label: string; icon: string }> = [
-  { key: 'social', label: 'Sociale', icon: 'i-lucide-users' },
-  { key: 'balanced', label: 'Bilanciato', icon: 'i-lucide-scale' },
-  { key: 'competitive', label: 'Competitivo', icon: 'i-lucide-trophy' },
+  { key: 'social', label: 'Sociale', icon: ICONS.players },
+  { key: 'balanced', label: 'Bilanciato', icon: ICONS.rules },
+  { key: 'competitive', label: 'Competitivo', icon: ICONS.standings },
 ]
 </script>
 
@@ -33,7 +34,7 @@ const presets: Array<{ key: Exclude<PairingPresetKind, 'custom' | 'reset'>; labe
     </UFieldGroup>
 
     <UButton
-      icon="i-lucide-rotate-ccw"
+      :icon="ICONS.reset"
       color="warning"
       variant="soft"
       @click="emit('select', 'reset')"
@@ -42,7 +43,7 @@ const presets: Array<{ key: Exclude<PairingPresetKind, 'custom' | 'reset'>; labe
     </UButton>
 
     <UButton
-      icon="i-lucide-sliders-horizontal"
+      :icon="ICONS.filters"
       :color="selected === 'custom' ? 'primary' : 'neutral'"
       :variant="selected === 'custom' ? 'soft' : 'outline'"
       class="pointer-events-none select-none"

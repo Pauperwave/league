@@ -1,5 +1,6 @@
 <!-- app\components\players\PlayersEmptyState.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 const props = defineProps<{
   type: 'no-search-results' | 'no-decks-filter' | 'no-players'
   searchQuery?: string
@@ -18,18 +19,18 @@ function handleAction() {
 
 const config = computed(() => ({
   'no-search-results': {
-    icon: 'i-lucide-search-x',
+    icon: ICONS.noResults,
     title: `Nessun risultato per "${props.searchQuery}"`,
     description: 'Vuoi creare un nuovo giocatore?',
     action: {
       label: 'Crea Giocatore',
-      icon: 'i-lucide-user-plus',
+      icon: ICONS.addPlayer,
       color: 'primary' as const,
       event: 'createPlayer' as const
     }
   },
   'no-decks-filter': {
-    icon: 'i-lucide-layers',
+    icon: ICONS.noDecks,
     title: 'Nessun giocatore ha mazzi associati',
     description: 'Disattiva il filtro per vedere tutti i giocatori',
     action: {
@@ -40,12 +41,12 @@ const config = computed(() => ({
     }
   },
   'no-players': {
-    icon: 'i-lucide-users',
+    icon: ICONS.players,
     title: 'Nessun giocatore trovato',
     description: 'Inizia creando il primo giocatore',
     action: {
       label: 'Crea Giocatore',
-      icon: 'i-lucide-user-plus',
+      icon: ICONS.addPlayer,
       color: 'primary' as const,
       event: 'createPlayer' as const
     }

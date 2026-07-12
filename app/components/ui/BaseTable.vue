@@ -1,5 +1,6 @@
 <!-- app\components\ui\BaseTable.vue -->
 <script setup lang="ts" generic="T extends object">
+import { ICONS } from '~/utils/icons'
 import type { TableColumn } from '@nuxt/ui'
 
 defineProps<{
@@ -31,7 +32,7 @@ defineProps<{
     <template #loading>
       <div class="flex items-center justify-center py-12">
         <UIcon
-          name="i-lucide-loader-2"
+          :name="ICONS.loading"
           class="animate-spin text-4xl text-primary"
         />
       </div>

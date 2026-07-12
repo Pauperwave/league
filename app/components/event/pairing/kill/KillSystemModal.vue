@@ -1,5 +1,6 @@
 <!-- app\components\events\Pairings\Kill\KillSystemModal.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import type { TournamentPlayer, Kill } from '#shared/utils/types'
 
 const props = defineProps<{
@@ -52,7 +53,7 @@ function handleSubmit() {
           <KillFlowCanvas :players="players" />
           <template #fallback>
             <div class="h-96 flex items-center justify-center text-muted">
-              <UIcon name="i-lucide-loader-circle" class="animate-spin size-6" />
+              <UIcon :name="ICONS.loading" class="animate-spin size-6" />
             </div>
           </template>
         </ClientOnly>
@@ -69,7 +70,7 @@ function handleSubmit() {
               class="gap-1.5"
             >
               {{ getPlayerName(kill.killerId) }}
-              <UIcon name="i-lucide-arrow-right" class="size-3" />
+              <UIcon :name="ICONS.forward" class="size-3" />
               {{ getPlayerName(kill.victimId) }}
             </UBadge>
           </div>
@@ -85,7 +86,7 @@ function handleSubmit() {
       <div class="flex justify-between w-full">
         <UButton
           label="Azzera"
-          icon="i-lucide-trash-2"
+          :icon="ICONS.delete"
           color="neutral"
           variant="ghost"
           :disabled="killsStore.kills.length === 0"
@@ -100,7 +101,7 @@ function handleSubmit() {
           />
           <UButton
             label="Conferma"
-            icon="i-lucide-check"
+            :icon="ICONS.confirm"
             color="primary"
             @click="handleSubmit"
           />

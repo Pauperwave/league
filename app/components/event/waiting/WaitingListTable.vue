@@ -1,5 +1,6 @@
 <!-- app/components/Events/WaitingListTable.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import type { TableColumn } from '@nuxt/ui'
 import { UCheckbox } from '#components'
 import ActionButtons from '~/components/ui/ActionButtons.vue'
@@ -210,7 +211,7 @@ const meta = computed(() => ({
     <div class="flex items-center justify-between gap-2">
       <UInput v-model="searchQuery" placeholder="Cerca giocatori..." class="max-w-sm" />
       <UDropdownMenu :items="columnVisibilityItems" :content="{ align: 'end' }">
-        <UButton label="Colonne" color="neutral" trailing-icon="i-lucide-chevron-down" />
+        <UButton label="Colonne" color="neutral" :trailing-icon="ICONS.chevronDown" />
       </UDropdownMenu>
     </div>
 
@@ -226,21 +227,21 @@ const meta = computed(() => ({
         </span>
         <div class="flex items-center gap-1 ml-auto">
           <UButton
-            size="xs" color="success" variant="soft" icon="i-lucide-dollar-sign"
+            size="xs" color="success" variant="soft" :icon="ICONS.paid"
             :disabled="!hasSelection"
             @click="executeBatch(id => setPlayer(id, 'paid', true), ids => emit('batchMarkPaid', ids))"
           >
             Marca pagati
           </UButton>
           <UButton
-            size="xs" color="warning" variant="soft" icon="i-lucide-users"
+            size="xs" color="warning" variant="soft" :icon="ICONS.players"
             :disabled="!hasSelection"
             @click="executeBatch(id => setPlayer(id, 'companion', true), ids => emit('batchMarkCompanion', ids))"
           >
             Marca companion
           </UButton>
           <UButton
-            size="xs" color="error" variant="soft" icon="i-lucide-trash-2"
+            size="xs" color="error" variant="soft" :icon="ICONS.delete"
             :disabled="!hasSelection"
             @click="executeBatch(null, ids => emit('batchRemove', ids))"
           >
@@ -267,10 +268,10 @@ const meta = computed(() => ({
     >
       <template #empty>
         <div v-if="searchQuery" class="flex flex-col items-center gap-1 py-4 text-muted">
-          <UIcon name="i-lucide-search-x" class="text-4xl mb-1" />
+          <UIcon :name="ICONS.noResults" class="text-4xl mb-1" />
           <p>Nessun risultato per "{{ searchQuery }}"</p>
         </div>
-        <UEmpty v-else title="Nessun giocatore in lista d'attesa" icon="i-lucide-users" />
+        <UEmpty v-else title="Nessun giocatore in lista d'attesa" :icon="ICONS.players" />
       </template>
     </UTable>
   </div>

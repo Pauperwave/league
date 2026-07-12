@@ -1,5 +1,6 @@
 <!-- app\components\Modals\LeaguesUsingRulesetModal.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 interface LeagueInfo {
@@ -46,7 +47,7 @@ function handleClose() {
   >
     <template #title>
       <div class="flex items-center gap-2">
-        <UIcon name="i-lucide-trophy" class="text-primary" />
+        <UIcon :name="ICONS.standings" class="text-primary" />
         <span>Leghe che usano il regolamento "{{ rulesetName }}"</span>
       </div>
     </template>
@@ -54,7 +55,7 @@ function handleClose() {
     <template #body>
       <!-- Stato vuoto -->
       <div v-if="leagues.length === 0" class="flex flex-col items-center gap-2 py-8 text-muted">
-        <UIcon name="i-lucide-inbox" class="size-8" />
+        <UIcon :name="ICONS.empty" class="size-8" />
         <p class="text-sm">Nessuna lega sta usando questo regolamento</p>
       </div>
 
@@ -68,13 +69,13 @@ function handleClose() {
             variant="ghost"
             color="neutral"
             block
-            :trailing-icon="'i-lucide-arrow-right'"
+            :trailing-icon="ICONS.forward"
             :to="`/league/${league.id}`"
             :ui="{ base: 'justify-between', trailingIcon: 'text-muted' }"
             @click="handleNavigate(league.id)"
           >
             <div class="flex items-center gap-2">
-              <UIcon name="i-lucide-shield" class="size-4 text-primary shrink-0" />
+              <UIcon :name="ICONS.commander" class="size-4 text-primary shrink-0" />
               <span class="font-medium truncate">{{ league.name }}</span>
             </div>
           </UButton>

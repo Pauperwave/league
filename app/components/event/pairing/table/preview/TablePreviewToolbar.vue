@@ -1,5 +1,6 @@
 <!-- app\components\events\Pairings\Table\TablePreviewToolbar.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 const {
   totalScore,
   loading = false,
@@ -21,10 +22,10 @@ const emit = defineEmits<{
     </div>
 
     <div class="flex flex-wrap items-center gap-2">
-      <UButton size="sm" color="neutral" variant="soft" icon="i-lucide-settings-2" @click="emit('openSettings')">
+      <UButton size="sm" color="neutral" variant="soft" :icon="ICONS.settings" @click="emit('openSettings')">
         Pesi e Vincoli
       </UButton>
-      <UButton size="sm" color="neutral" variant="outline" icon="i-lucide-shuffle" :disabled="loading" @click="emit('optimize')">
+      <UButton size="sm" color="neutral" variant="outline" :icon="ICONS.shuffle" :disabled="loading" @click="emit('optimize')">
         Ottimizza
       </UButton>
     </div>

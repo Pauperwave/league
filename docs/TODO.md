@@ -1,11 +1,5 @@
 # Todos
 
-## Centralize icon names
-- 87+ unique `i-lucide-*` strings currently scattered as inline literals across `app/components`/`app/pages` — no single source of truth, easy to pick a different icon for the same concept in two places
-- `app/app.config.ts` already exists (currently just `ui.colors`/`ui.button` theming) — Nuxt UI supports an `ui.icons` key there, but that only renames Nuxt UI's *internal* semantic slots (`close`, `chevronDown`, `loading`, …), not app-level icon choices
-- For app-level icons (delete, edit, calendar, etc.), add a small constants module (e.g. `app/utils/icons.ts`, following the `app/utils/CLAUDE.md` inventory convention) exporting named icon constants, and migrate components to reference it instead of inline `i-lucide-*` strings
-- Note: `ACTION_MAP` in `app/utils/actionButton.ts` already does this narrowly for the remove/edit/view action-button icons — same idea, needs to cover the rest
-
 ## Add @nuxtjs/i18n for Italian string centralization
 - UI strings are hardcoded Italian literals throughout components (`docs/AGENTS.md`: "UI-facing strings: Italian") — no single source, hard to audit/change copy consistently
 - Install: `npx nuxi@latest module add i18n`

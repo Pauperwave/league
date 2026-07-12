@@ -6,6 +6,7 @@
   Usa il composable useThemeTransition per gestire il cambio tema con animazione.
 -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 // Recupera lo stato del tema e la funzione di toggle dal composable
 const { isDark, toggleTheme } = useThemeTransition()
 </script>
@@ -19,7 +20,7 @@ const { isDark, toggleTheme } = useThemeTransition()
       - isDark = false → luna (tema scuro)
     -->
     <UButton
-      :icon="isDark ? 'i-lucide-sun' : 'i-lucide-moon'"
+      :icon="isDark ? ICONS.lightMode : ICONS.darkMode"
       color="neutral"
       variant="ghost"
       :aria-label="`Switch to ${isDark ? 'light' : 'dark'} mode`"

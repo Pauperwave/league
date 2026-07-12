@@ -1,5 +1,6 @@
 <!-- app\components\events\Pairings\Settings\ForbiddenPairsSection.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import { getForbiddenPairKey } from '~/composables/event-pairing/pairingOptimizer'
 import { usePlayerOptions } from '~/composables/supabase/usePlayers'
 
@@ -78,7 +79,7 @@ const forbiddenPairsDisplay = computed(() => {
       <UButton
         color="neutral"
         variant="soft"
-        icon="i-lucide-plus"
+        :icon="ICONS.add"
         :disabled="!canAddForbiddenPair"
         @click="emit('addPair')"
       >
@@ -88,7 +89,7 @@ const forbiddenPairsDisplay = computed(() => {
       <UButton
         color="warning"
         variant="outline"
-        icon="i-lucide-refresh-cw"
+        :icon="ICONS.refresh"
         @click="emit('resolveConflicts')"
       >
         Risolvi conflitti
@@ -110,7 +111,7 @@ const forbiddenPairsDisplay = computed(() => {
           size="xs"
           color="neutral"
           variant="ghost"
-          icon="i-lucide-trash-2"
+          :icon="ICONS.delete"
           @click="emit('removePair', pair.playerA, pair.playerB)"
         />
       </div>

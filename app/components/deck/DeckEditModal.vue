@@ -1,5 +1,6 @@
 <!-- app\components\Modals\DeckEditModal.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import type { CommanderDeck } from '#shared/utils/types'
 
 const props = defineProps<{
@@ -76,7 +77,7 @@ function handleCancel() {
   >
     <template #title>
       <div class="flex items-center gap-2">
-        <UIcon name="i-lucide-pencil" class="text-primary" />
+        <UIcon :name="ICONS.edit" class="text-primary" />
         <span>Modifica Deck</span>
       </div>
     </template>
@@ -111,7 +112,7 @@ function handleCancel() {
         </UFormField>
 
         <div v-if="isBorrowed && !lenderId" class="text-sm text-warning flex items-center gap-1.5">
-          <UIcon name="i-lucide-alert-triangle" class="size-4" />
+          <UIcon :name="ICONS.warning" class="size-4" />
           <span>Seleziona un proprietario per salvare</span>
         </div>
       </form>

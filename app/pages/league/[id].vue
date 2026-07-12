@@ -1,5 +1,6 @@
 <!-- app\pages\league\[leagueId].vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import type { Event } from '#shared/utils/types'
 
 interface CreateEventData {
@@ -46,7 +47,7 @@ const classificaTitle = computed(() =>
 )
 
 const breadcrumbItems = computed(() => [
-  { label: 'Home', to: '/', icon: 'i-lucide-home' },
+  { label: 'Home', to: '/', icon: ICONS.home },
   { label: 'Leghe', to: '/leagues' },
   { label: currentLeague.value?.name ?? 'Lega' },
 ])
@@ -266,7 +267,7 @@ async function updateLeague({ id, data }: UpdateLeagueData) {
       warning="Questa azione non può essere annullata."
       confirm-label="Elimina"
       cancel-label="Annulla"
-      confirm-icon="i-lucide-trash-2"
+      :confirm-icon="ICONS.delete"
       @confirm="confirmDeleteEvent"
     />
   </div>

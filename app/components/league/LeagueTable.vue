@@ -1,5 +1,6 @@
 <!-- app\components\Tables\LeagueTable.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import { h, resolveComponent } from 'vue'
 import type { Component } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
@@ -23,13 +24,13 @@ const UButton = resolveComponent('UButton') as Component
 const ActionButtons = resolveComponent('ActionButtons') as Component
 
 const statusConfig: Record<string, { color: StatusColor, icon: string }> = {
-  Programmata: { color: 'info', icon: 'i-lucide-clock' },
-  Attiva: { color: 'success', icon: 'i-lucide-circle-check' },
-  Terminata: { color: 'neutral', icon: 'i-lucide-circle-x' }
+  Programmata: { color: 'info', icon: ICONS.clock },
+  Attiva: { color: 'success', icon: ICONS.success },
+  Terminata: { color: 'neutral', icon: ICONS.clear }
 }
 
 function getStatusConfig(status: string) {
-  return statusConfig[status] ?? { color: 'neutral' as StatusColor, icon: 'i-lucide-circle-help' }
+  return statusConfig[status] ?? { color: 'neutral' as StatusColor, icon: ICONS.help }
 }
 
 const tableMeta = {
@@ -102,6 +103,6 @@ const columns: TableColumn<League>[] = [
     :sorting="[{ id: 'starts_at', desc: false }]"
     empty-title="Nessuna lega creata"
     empty-description="Clicca 'Nuova Lega' per iniziare"
-    empty-icon="i-lucide-trophy"
+    :empty-icon="ICONS.standings"
   />
 </template>

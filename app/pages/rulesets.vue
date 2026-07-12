@@ -1,5 +1,6 @@
 <!-- app\pages\rulesets.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 const {
@@ -23,7 +24,7 @@ const {
 const openLeaguesModalLogging = useButtonLogging('Open Leagues Modal')
 
 const breadcrumbItems = [
-  { label: 'Home', to: '/', icon: 'i-lucide-home' },
+  { label: 'Home', to: '/', icon: ICONS.home },
   { label: 'Regolamenti' },
 ]
 
@@ -53,10 +54,10 @@ const RANK_STYLES = [
 ] as const
 
 const ACTION_ROWS = [
-  { icon: 'i-lucide-user',           tooltip: "Punti per partecipare all'evento",      label: 'Partecipazione', key: 'rule_set_partecipation' },
-  { icon: 'i-lucide-sword',          tooltip: 'Punti per aver eliminato un avversario', label: 'Kill',           key: 'rule_set_kill' },
-  { icon: 'i-lucide-beer',           tooltip: 'Punti per originalità del deck',         label: 'Brew',           key: 'rule_set_brew' },
-  { icon: 'i-lucide-play',           tooltip: 'Punti per la miglior giocata',           label: 'Play',           key: 'rule_set_play' },
+  { icon: ICONS.player,           tooltip: "Punti per partecipare all'evento",      label: 'Partecipazione', key: 'rule_set_partecipation' },
+  { icon: ICONS.ruleKill,          tooltip: 'Punti per aver eliminato un avversario', label: 'Kill',           key: 'rule_set_kill' },
+  { icon: ICONS.ruleBrew,           tooltip: 'Punti per originalità del deck',         label: 'Brew',           key: 'rule_set_brew' },
+  { icon: ICONS.play,           tooltip: 'Punti per la miglior giocata',           label: 'Play',           key: 'rule_set_play' },
 ] as const
 </script>
 
@@ -67,13 +68,13 @@ const ACTION_ROWS = [
     </div>
 
     <div class="flex items-center justify-between p-6 pt-4">
-      <UButton color="neutral" icon="i-lucide-arrow-left" to="/">
+      <UButton color="neutral" :icon="ICONS.back" to="/">
         Home
       </UButton>
       <h1 class="text-2xl font-bold">
         Regolamenti e Punteggi
       </h1>
-      <UButton color="primary" icon="i-lucide-plus" @click="handleEditClick(null)">
+      <UButton color="primary" :icon="ICONS.add" @click="handleEditClick(null)">
         Nuovo Regolamento
       </UButton>
     </div>
@@ -81,7 +82,7 @@ const ACTION_ROWS = [
     <UAlert v-if="error" color="error" :title="errorMessage" class="mx-6 mb-4" />
 
     <div v-if="shouldShowLoading" class="flex items-center justify-center py-12">
-      <UIcon name="i-lucide-loader-2" class="animate-spin text-4xl text-primary" />
+      <UIcon :name="ICONS.loading" class="animate-spin text-4xl text-primary" />
     </div>
 
     <div v-else class="p-6">
@@ -94,7 +95,7 @@ const ACTION_ROWS = [
         >
           <template #header>
             <div class="flex items-center gap-2">
-              <UIcon name="i-lucide-scale" class="text-primary" />
+              <UIcon :name="ICONS.rules" class="text-primary" />
               <h2 class="text-lg font-semibold flex-1">
                 {{ ruleset.name }}
               </h2>
@@ -102,7 +103,7 @@ const ACTION_ROWS = [
               <UButton
                 color="neutral"
                 variant="ghost"
-                icon="i-lucide-pencil"
+                :icon="ICONS.edit"
                 size="sm"
                 aria-label="Modifica regolamento"
                 @click="handleEditClick(ruleset)"
@@ -116,7 +117,7 @@ const ACTION_ROWS = [
                 <UButton
                   color="primary"
                   variant="ghost"
-                  icon="i-lucide-trophy"
+                  :icon="ICONS.standings"
                   size="sm"
                   aria-label="Leghe che usano questo regolamento"
                   @click="openLeaguesModal(ruleset)"
@@ -133,7 +134,7 @@ const ACTION_ROWS = [
                 <UButton
                   color="error"
                   variant="ghost"
-                  icon="i-lucide-trash-2"
+                  :icon="ICONS.delete"
                   size="sm"
                   aria-label="Elimina regolamento"
                   :disabled="isRulesetInUse(ruleset.ruleset_id)"
@@ -155,7 +156,7 @@ const ACTION_ROWS = [
                   :key="i"
                   :class="[style, 'rounded p-1.5 text-center']"
                 >
-                  <UIcon name="i-lucide-medal" class="size-3 text-primary mx-auto mb-0.5" />
+                  <UIcon :name="ICONS.victories" class="size-3 text-primary mx-auto mb-0.5" />
                   <div class="text-sm font-semibold">
                     {{ formatScore(ruleset[`rule_set_rank${i + 1}` as keyof typeof ruleset] as number | null) }}
                     <span class="text-xs">pt</span>
@@ -184,7 +185,7 @@ const ACTION_ROWS = [
                   </tr>
                   <tr v-if="ruleset.rule_set_valid_events">
                     <td class="py-2 flex items-center gap-2">
-                      <UIcon name="i-lucide-calendar-check" class="size-4 text-default" />
+                      <UIcon :name="ICONS.calendarConfirmed" class="size-4 text-default" />
                       <UTooltip text="Minimo eventi per la classifica finale">
                         <span class="cursor-help text-default">Eventi validi</span>
                       </UTooltip>
@@ -218,7 +219,7 @@ const ACTION_ROWS = [
       warning="Questa azione non può essere annullata."
       confirm-label="Elimina"
       cancel-label="Annulla"
-      confirm-icon="i-lucide-trash-2"
+      :confirm-icon="ICONS.delete"
       confirm-color="error"
       @confirm="confirmDeleteRuleset"
     />

@@ -1,5 +1,6 @@
 <!-- app\pages\deck\[deckSlug].vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import { slugify } from '~/utils/slug'
 import { getArtCrop, useCommanderCards } from '~/composables/commanders/useCommanderCards'
 import { useCommanderStats } from '~/composables/supabase/useCommanderStats'
@@ -91,7 +92,7 @@ watch(() => firstDeck.value?.commander_1_name, () => {
     <div v-if="firstDeck" class="bg-elevated rounded-xl p-6 border border-default shadow-lg space-y-6">
       <!-- Deck Header -->
       <div class="flex items-center gap-4">
-        <UIcon name="i-lucide-swords" class="size-8 text-primary" />
+        <UIcon :name="ICONS.battle" class="size-8 text-primary" />
         <div class="min-w-0">
           <h1 class="text-2xl font-bold truncate">
             {{ commanderDisplayName }}
@@ -104,11 +105,11 @@ watch(() => firstDeck.value?.commander_1_name, () => {
             />
             <UIcon
               v-else-if="scryfallLoading"
-              name="i-lucide-loader-2"
+              :name="ICONS.loading"
               class="animate-spin size-4 text-muted"
             />
             <UBadge v-if="firstDeck.companion_name" variant="soft" color="error" class="text-xs">
-              <UIcon name="i-lucide-heart" class="size-3 mr-1" />
+              <UIcon :name="ICONS.favorite" class="size-3 mr-1" />
               {{ firstDeck.companion_name }}
             </UBadge>
           </div>
@@ -128,10 +129,10 @@ watch(() => firstDeck.value?.commander_1_name, () => {
             class="w-full h-full object-cover object-top"
           >
           <div v-else-if="scryfallLoading" class="flex items-center justify-center h-full">
-            <UIcon name="i-lucide-loader-2" class="animate-spin text-2xl text-muted" />
+            <UIcon :name="ICONS.loading" class="animate-spin text-2xl text-muted" />
           </div>
           <div v-else class="flex items-center justify-center h-full text-muted">
-            <UIcon name="i-lucide-image-off" class="text-4xl opacity-30" />
+            <UIcon :name="ICONS.imageMissing" class="text-4xl opacity-30" />
           </div>
         </div>
         <div v-if="firstDeck.commander_2_name" class="relative h-full w-full">
@@ -142,10 +143,10 @@ watch(() => firstDeck.value?.commander_1_name, () => {
             class="w-full h-full object-cover object-top"
           >
           <div v-else-if="scryfallLoading" class="flex items-center justify-center h-full">
-            <UIcon name="i-lucide-loader-2" class="animate-spin text-2xl text-muted" />
+            <UIcon :name="ICONS.loading" class="animate-spin text-2xl text-muted" />
           </div>
           <div v-else class="flex items-center justify-center h-full text-muted">
-            <UIcon name="i-lucide-image-off" class="text-4xl opacity-30" />
+            <UIcon :name="ICONS.imageMissing" class="text-4xl opacity-30" />
           </div>
         </div>
       </div>
@@ -153,7 +154,7 @@ watch(() => firstDeck.value?.commander_1_name, () => {
       <!-- Aggregate Commander Stats -->
       <div class="grid grid-cols-3 sm:grid-cols-5 gap-3">
         <div class="flex items-center gap-3 p-3 bg-default rounded-lg">
-          <UIcon name="i-lucide-users" class="size-5 text-primary shrink-0" />
+          <UIcon :name="ICONS.players" class="size-5 text-primary shrink-0" />
           <div>
             <p class="text-xl font-bold leading-none">{{ commanderStats?.player_count ?? 0 }}</p>
             <p class="text-xs text-muted">Giocatori</p>
@@ -161,7 +162,7 @@ watch(() => firstDeck.value?.commander_1_name, () => {
         </div>
 
         <div class="flex items-center gap-3 p-3 bg-default rounded-lg">
-          <UIcon name="i-lucide-swords" class="size-5 text-primary shrink-0" />
+          <UIcon :name="ICONS.battle" class="size-5 text-primary shrink-0" />
           <div>
             <p class="text-xl font-bold leading-none">{{ commanderStats?.match_count ?? 0 }}</p>
             <p class="text-xs text-muted">Match</p>
@@ -169,7 +170,7 @@ watch(() => firstDeck.value?.commander_1_name, () => {
         </div>
 
         <div class="flex items-center gap-3 p-3 bg-default rounded-lg">
-          <UIcon name="i-lucide-trophy" class="size-5 text-warning shrink-0" />
+          <UIcon :name="ICONS.standings" class="size-5 text-warning shrink-0" />
           <div>
             <p class="text-xl font-bold leading-none">{{ commanderStats?.win_count ?? 0 }}</p>
             <p class="text-xs text-muted">Vittorie</p>
@@ -177,7 +178,7 @@ watch(() => firstDeck.value?.commander_1_name, () => {
         </div>
 
         <div class="flex items-center gap-3 p-3 bg-default rounded-lg">
-          <UIcon name="i-lucide-skull" class="size-5 text-error shrink-0" />
+          <UIcon :name="ICONS.kills" class="size-5 text-error shrink-0" />
           <div>
             <p class="text-xl font-bold leading-none">{{ commanderStats?.total_kills ?? 0 }}</p>
             <p class="text-xs text-muted">Uccisioni</p>
@@ -185,7 +186,7 @@ watch(() => firstDeck.value?.commander_1_name, () => {
         </div>
 
         <div class="flex items-center gap-3 p-3 bg-default rounded-lg">
-          <UIcon name="i-lucide-star" class="size-5 text-success shrink-0" />
+          <UIcon :name="ICONS.vote" class="size-5 text-success shrink-0" />
           <div>
             <p class="text-xl font-bold leading-none">{{ commanderStats?.average_score ?? 0 }}</p>
             <p class="text-xs text-muted">Media</p>
@@ -196,7 +197,7 @@ watch(() => firstDeck.value?.commander_1_name, () => {
       <!-- Players with this deck -->
       <div class="space-y-3">
         <h2 class="text-lg font-bold flex items-center gap-2">
-          <UIcon name="i-lucide-users" class="size-5 text-primary" />
+          <UIcon :name="ICONS.players" class="size-5 text-primary" />
           Giocatori con questo deck
         </h2>
 
@@ -208,7 +209,7 @@ watch(() => firstDeck.value?.commander_1_name, () => {
             variant="soft"
             color="primary"
             size="sm"
-            icon="i-lucide-user"
+            :icon="ICONS.player"
           >
             {{ player ? `${player.player_name} ${player.player_surname}` : 'Giocatore sconosciuto' }}
             <span v-if="deck.is_borrowed" class="ml-1 text-warning">
@@ -221,7 +222,7 @@ watch(() => firstDeck.value?.commander_1_name, () => {
       <!-- Actions -->
       <div class="flex items-center gap-2">
         <UButton
-          icon="i-lucide-external-link"
+          :icon="ICONS.externalLink"
           :to="scryfallSearchUrl"
           target="_blank"
           color="neutral"
@@ -233,7 +234,7 @@ watch(() => firstDeck.value?.commander_1_name, () => {
     </div>
 
     <div v-else class="text-center py-12 text-muted">
-      <UIcon name="i-lucide-shield-off" class="text-4xl mb-2 opacity-30" />
+      <UIcon :name="ICONS.noCommander" class="text-4xl mb-2 opacity-30" />
       <p>Deck non trovato</p>
     </div>
   </div>

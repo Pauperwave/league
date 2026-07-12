@@ -1,5 +1,6 @@
 <!-- app\components\events\Pairings\TableScoreModal.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import { getPairingPlayerIds, type Pairing } from '#shared/utils/types'
 
 const props = defineProps<{
@@ -53,7 +54,7 @@ const team2Players = computed(() => {
     <UCard>
       <template #header>
         <div class="flex items-center gap-2">
-          <UIcon name="i-lucide-trophy" class="size-5 text-primary" />
+          <UIcon :name="ICONS.standings" class="size-5 text-primary" />
           <h3 class="text-lg font-semibold">Inserisci Punteggi - Tavolo {{ tableIndex !== null ? tableIndex + 1 : '' }}</h3>
         </div>
       </template>

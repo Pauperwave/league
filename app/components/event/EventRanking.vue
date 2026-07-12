@@ -1,5 +1,6 @@
 <!-- app\components\Rankings\EventRanking.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import type { Player } from '#shared/utils/types'
 
 const props = defineProps<{
@@ -137,7 +138,7 @@ function getScore(playerId: number, eventId: number): number | null {
       class="flex items-center justify-center py-8"
     >
       <UIcon
-        name="i-lucide-loader-2"
+        :name="ICONS.loading"
         class="animate-spin text-2xl text-primary"
       />
     </div>
@@ -147,7 +148,7 @@ function getScore(playerId: number, eventId: number): number | null {
       class="text-center py-8 text-muted"
     >
       <UIcon
-        name="i-lucide-trophy"
+        :name="ICONS.standings"
         class="text-4xl mb-2 opacity-30"
       />
       <p>Nessun punteggio disponibile</p>

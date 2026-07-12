@@ -23,6 +23,7 @@
 -->
 
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 defineProps<{
   /** Prevents the button from being clicked. Use when event requirements are not met */
   disabled?: boolean
@@ -39,7 +40,7 @@ defineProps<{
     block
     :disabled
     :loading
-    icon="i-lucide-play"
+    :icon="ICONS.play"
   >
     Avvia Evento
   </UButton>

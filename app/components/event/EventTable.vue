@@ -1,5 +1,6 @@
 <!-- app\components\Tables\EventTable.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import { h, resolveComponent } from 'vue'
 import type { Component } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
@@ -23,12 +24,12 @@ const ActionButtons = resolveComponent('ActionButtons') as Component
 
 function getEventStatus(event: Event): { label: string, color: StatusColor, icon: string } {
   if ((event.event_current_round || 0) > (event.event_round_number || 0)) {
-    return { label: 'Terminato', color: 'error', icon: 'i-lucide-circle-x' }
+    return { label: 'Terminato', color: 'error', icon: ICONS.clear }
   }
   if (event.event_playing) {
-    return { label: 'In Corso', color: 'success', icon: 'i-lucide-circle-check' }
+    return { label: 'In Corso', color: 'success', icon: ICONS.success }
   }
-  return { label: 'Programmato', color: 'warning', icon: 'i-lucide-clock' }
+  return { label: 'Programmato', color: 'warning', icon: ICONS.clock }
 }
 
 function getRegistrationStatus(open: boolean | null): {
@@ -37,9 +38,9 @@ function getRegistrationStatus(open: boolean | null): {
   icon: string
 } {
   if (open) {
-    return { label: 'Aperta', color: 'success', icon: 'i-lucide-circle-check' }
+    return { label: 'Aperta', color: 'success', icon: ICONS.success }
   }
-  return { label: 'Chiusa', color: 'error', icon: 'i-lucide-circle-x' }
+  return { label: 'Chiusa', color: 'error', icon: ICONS.clear }
 }
 
 function formatRound(current: number | null, total: number | null): string {
@@ -120,6 +121,6 @@ const columns: TableColumn<Event>[] = [
     :sorting="[{ id: 'event_datetime', desc: false }]"
     empty-title="Nessun evento creato"
     empty-description="Clicca 'Nuovo Evento' per iniziare"
-    empty-icon="i-lucide-calendar-x"
+    :empty-icon="ICONS.calendarCancel"
   />
 </template>

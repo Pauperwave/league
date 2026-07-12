@@ -1,5 +1,6 @@
 <!-- app\components\events\Pairings\Kill\KillFlowCanvas.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import { VueFlow, MarkerType, useVueFlow, type Node, type Edge, type Connection, type EdgeMouseEvent } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import { Controls, ControlButton } from '@vue-flow/controls'
@@ -117,7 +118,7 @@ function onConnect(connection: Connection) {
       title: 'Non valido',
       description: result.error,
       color: 'warning',
-      icon: 'i-lucide-alert-triangle',
+      icon: ICONS.warning,
     })
   }
 }
@@ -128,7 +129,7 @@ function onEdgeClick({ edge }: EdgeMouseEvent) {
   toast.add({
     title: 'Uccisione rimossa',
     color: 'neutral',
-    icon: 'i-lucide-trash-2',
+    icon: ICONS.delete,
     duration: 2000,
   })
 }
@@ -178,20 +179,20 @@ function logToObject() {
       <!-- Controlli in alto a sinistra -->
       <Controls position="top-left">
         <ControlButton title="Reset Transform" @click="resetTransform">
-          <UIcon name="i-lucide-refresh-cw" />
+          <UIcon :name="ICONS.refresh" />
         </ControlButton>
 
         <ControlButton title="Fit View" @click="handleFitView">
-          <UIcon name="i-lucide-maximize" />
+          <UIcon :name="ICONS.fitView" />
         </ControlButton>
 
         <ControlButton title="Toggle Dark Mode" @click="toggleDarkMode">
-          <UIcon v-if="dark" name="i-lucide-sun" />
-          <UIcon v-else name="i-lucide-moon" />
+          <UIcon v-if="dark" :name="ICONS.lightMode" />
+          <UIcon v-else :name="ICONS.darkMode" />
         </ControlButton>
 
         <ControlButton title="Log Data" @click="logToObject">
-          <UIcon name="i-lucide-terminal" />
+          <UIcon :name="ICONS.terminal" />
         </ControlButton>
       </Controls>
     </VueFlow>

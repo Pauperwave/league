@@ -1,5 +1,6 @@
 <!-- app\components\events\Pairings\Kill\KillPlayerNode.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import { Handle, Position } from '@vue-flow/core'
 import type { TournamentPlayer } from '#shared/utils/types'
 
@@ -56,7 +57,7 @@ const hasSuicided = computed(() =>
         />
         <UBadge
           v-if="hasSuicided"
-          icon="i-lucide-refresh-cw"
+          :icon="ICONS.refresh"
           color="warning"
           variant="solid"
           size="xs"

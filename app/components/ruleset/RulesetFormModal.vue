@@ -1,5 +1,6 @@
 <!-- app\components\Modals\RulesetFormModal.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import type { Ruleset } from '#shared/utils/types'
 import * as v from 'valibot'
 import { useButtonLogging } from '~/composables/ui/useButtonLogging'
@@ -47,7 +48,7 @@ const RulesetUpdateSchema = v.object({
 const isEditing = computed(() => !!props.ruleset)
 const title = computed(() => isEditing.value ? 'Modifica Regolamento' : 'Crea Regolamento')
 const description = computed(() => isEditing.value ? 'Modifica il regolamento e i punteggi' : 'Crea un nuovo regolamento con i relativi punteggi')
-const icon = computed(() => isEditing.value ? 'i-lucide-pencil' : 'i-lucide-scale')
+const icon = computed(() => isEditing.value ? ICONS.edit : ICONS.rules)
 const submitLabel = computed(() => isEditing.value ? 'Salva' : 'Crea')
 
 const defaultForm = () => ({
@@ -96,10 +97,10 @@ watch(open, (isOpen) => {
 })
 
 const gameActionFields = [
-  { key: 'partecipation', label: 'Partecipazione', icon: 'i-lucide-user' },
-  { key: 'kill', label: 'Kill', icon: 'i-lucide-sword' },
-  { key: 'brew', label: 'Brew', icon: 'i-lucide-beer' },
-  { key: 'play', label: 'Play', icon: 'i-lucide-play' },
+  { key: 'partecipation', label: 'Partecipazione', icon: ICONS.player },
+  { key: 'kill', label: 'Kill', icon: ICONS.ruleKill },
+  { key: 'brew', label: 'Brew', icon: ICONS.ruleBrew },
+  { key: 'play', label: 'Play', icon: ICONS.play },
 ] as const
 
 const rankFields = ['rank1', 'rank2', 'rank3', 'rank4'] as const
@@ -172,7 +173,7 @@ function handleCancel() {
         <!-- Punti per azioni di gioco -->
         <div>
           <label class="flex text-xs font-medium mb-2 text-muted items-center justify-center gap-1.5">
-            <UIcon name="i-lucide-swords" class="size-3" /> Punti per azioni di gioco
+            <UIcon :name="ICONS.battle" class="size-3" /> Punti per azioni di gioco
           </label>
           <div class="grid grid-cols-4 gap-3">
             <UFormField
@@ -199,7 +200,7 @@ function handleCancel() {
         <!-- Punti per posizione -->
         <div>
           <label class="flex text-xs font-medium mb-2 text-muted items-center justify-center gap-1.5">
-            <UIcon name="i-lucide-trophy" class="size-3" /> Punti per posizione
+            <UIcon :name="ICONS.standings" class="size-3" /> Punti per posizione
           </label>
           <div class="grid grid-cols-4 gap-2">
             <UFormField
@@ -209,7 +210,7 @@ function handleCancel() {
             >
               <template #label>
                 <span class="flex items-center justify-center gap-1 text-muted">
-                  <UIcon name="i-lucide-medal" class="size-3" /> {{ index + 1 }}°
+                  <UIcon :name="ICONS.victories" class="size-3" /> {{ index + 1 }}°
                 </span>
               </template>
               <UInputNumber
@@ -226,7 +227,7 @@ function handleCancel() {
         <!-- Eventi validi richiesti -->
         <div class="flex flex-col items-center gap-1">
           <label class="flex text-xs font-medium text-muted items-center gap-1.5">
-            <UIcon name="i-lucide-calendar-check" class="size-3" /> Eventi validi richiesti
+            <UIcon :name="ICONS.calendarConfirmed" class="size-3" /> Eventi validi richiesti
           </label>
           <UInputNumber
             id="field-valid-events"

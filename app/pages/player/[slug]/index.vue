@@ -1,5 +1,6 @@
 <!-- app\pages\player\[slug]\index.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import type { CommanderDeck } from '#shared/utils/types'
 
 const route = useRoute()
@@ -45,14 +46,14 @@ async function handleUpdateDeck({ id, updates }: { id: number; updates: Partial<
       title: 'Deck aggiornato',
       description: 'Le informazioni di proprietà sono state salvate',
       color: 'success',
-      icon: 'i-lucide-check'
+      icon: ICONS.confirm
     })
   } else {
     useToast().add({
       title: 'Errore',
       description: result.error || 'Impossibile aggiornare il deck',
       color: 'error',
-      icon: 'i-lucide-x'
+      icon: ICONS.close
     })
   }
 }
@@ -71,7 +72,7 @@ async function handleCreateDeck(deckData: {
       title: 'Deck creato',
       description: 'Il deck è stato aggiunto con successo',
       color: 'success',
-      icon: 'i-lucide-check'
+      icon: ICONS.confirm
     })
     // Refresh the composable data
     refreshNuxtData(`commander-decks-usage-by-player-${playerId.value}`)
@@ -80,7 +81,7 @@ async function handleCreateDeck(deckData: {
       title: 'Errore',
       description: result.error || 'Impossibile creare il deck',
       color: 'error',
-      icon: 'i-lucide-x'
+      icon: ICONS.close
     })
   }
 }
@@ -106,7 +107,7 @@ async function confirmDeleteDeck() {
       title: 'Deck eliminato',
       description: 'Il deck è stato rimosso con successo',
       color: 'success',
-      icon: 'i-lucide-check'
+      icon: ICONS.confirm
     })
     refreshNuxtData(`commander-decks-usage-by-player-${playerId.value}`)
   } else {
@@ -114,7 +115,7 @@ async function confirmDeleteDeck() {
       title: 'Errore',
       description: result.error || 'Impossibile eliminare il deck',
       color: 'error',
-      icon: 'i-lucide-x'
+      icon: ICONS.close
     })
   }
 }
@@ -144,7 +145,7 @@ const { data: matchHistory } = usePlayerMatchHistory(playerId)
     <div v-if="player" class="bg-elevated rounded-xl p-6 border border-default shadow-lg space-y-6">
       <!-- Profile Header -->
       <div class="flex items-center gap-4">
-        <UAvatar size="lg" icon="i-lucide-user">
+        <UAvatar size="lg" :icon="ICONS.player">
           {{ player.player_name?.charAt(0).toUpperCase() ?? '?' }}
         </UAvatar>
         <div>
@@ -159,7 +160,7 @@ const { data: matchHistory } = usePlayerMatchHistory(playerId)
       <!-- Player Stats — compact horizontal bar -->
       <div class="grid grid-cols-3 sm:grid-cols-6 gap-3">
         <div class="flex items-center gap-3 p-3 bg-elevated rounded-lg">
-          <UIcon name="i-lucide-calendar-days" class="size-5 text-primary shrink-0" />
+          <UIcon :name="ICONS.calendarDays" class="size-5 text-primary shrink-0" />
           <div>
             <p class="text-xl font-bold leading-none">{{ playerStats?.events_played ?? 0 }}</p>
             <p class="text-xs text-muted">Eventi</p>
@@ -167,7 +168,7 @@ const { data: matchHistory } = usePlayerMatchHistory(playerId)
         </div>
 
         <div class="flex items-center gap-3 p-3 bg-elevated rounded-lg">
-          <UIcon name="i-lucide-swords" class="size-5 text-primary shrink-0" />
+          <UIcon :name="ICONS.battle" class="size-5 text-primary shrink-0" />
           <div>
             <p class="text-xl font-bold leading-none">{{ playerStats?.total_matches ?? 0 }}</p>
             <p class="text-xs text-muted">Match</p>
@@ -175,7 +176,7 @@ const { data: matchHistory } = usePlayerMatchHistory(playerId)
         </div>
 
         <div class="flex items-center gap-3 p-3 bg-elevated rounded-lg">
-          <UIcon name="i-lucide-trophy" class="size-5 text-warning shrink-0" />
+          <UIcon :name="ICONS.standings" class="size-5 text-warning shrink-0" />
           <div>
             <p class="text-xl font-bold leading-none">{{ playerStats?.total_wins ?? 0 }}</p>
             <p class="text-xs text-muted">Vittorie</p>
@@ -183,7 +184,7 @@ const { data: matchHistory } = usePlayerMatchHistory(playerId)
         </div>
 
         <div class="flex items-center gap-3 p-3 bg-elevated rounded-lg">
-          <UIcon name="i-lucide-skull" class="size-5 text-error shrink-0" />
+          <UIcon :name="ICONS.kills" class="size-5 text-error shrink-0" />
           <div>
             <p class="text-xl font-bold leading-none">{{ playerStats?.total_kills ?? 0 }}</p>
             <p class="text-xs text-muted">Uccisioni</p>
@@ -191,7 +192,7 @@ const { data: matchHistory } = usePlayerMatchHistory(playerId)
         </div>
 
         <div class="flex items-center gap-3 p-3 bg-elevated rounded-lg">
-          <UIcon name="i-lucide-star" class="size-5 text-success shrink-0" />
+          <UIcon :name="ICONS.vote" class="size-5 text-success shrink-0" />
           <div>
             <p class="text-xl font-bold leading-none">{{ playerStats?.average_score ?? 0 }}</p>
             <p class="text-xs text-muted">Media</p>
@@ -199,7 +200,7 @@ const { data: matchHistory } = usePlayerMatchHistory(playerId)
         </div>
 
         <div class="flex items-center gap-3 p-3 bg-elevated rounded-lg">
-          <UIcon name="i-lucide-shield" class="size-5 text-info shrink-0" />
+          <UIcon :name="ICONS.commander" class="size-5 text-info shrink-0" />
           <div>
             <p class="text-xl font-bold leading-none">{{ ownedDeckCount }}</p>
             <p class="text-xs text-muted">Mazzi</p>
@@ -212,7 +213,7 @@ const { data: matchHistory } = usePlayerMatchHistory(playerId)
     <!-- Match History Table -->
     <div v-if="player && matchHistory && matchHistory.length > 0" class="bg-elevated rounded-xl p-6 border border-default shadow-lg">
       <div class="flex items-center gap-2 mb-4">
-        <UIcon name="i-lucide-swords" class="size-5 text-primary" />
+        <UIcon :name="ICONS.battle" class="size-5 text-primary" />
         <h2 class="text-lg font-bold">Storico Partite</h2>
       </div>
 
@@ -274,14 +275,14 @@ const { data: matchHistory } = usePlayerMatchHistory(playerId)
     <div v-if="player" class="bg-elevated rounded-xl p-6 border border-default shadow-lg">
       <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-2">
-          <UIcon name="i-lucide-shield" class="size-5 text-primary" />
+          <UIcon :name="ICONS.commander" class="size-5 text-primary" />
           <h2 class="text-lg font-bold">Commander Decks</h2>
         </div>
         <UButton
           size="sm"
           color="primary"
           variant="soft"
-          icon="i-lucide-plus"
+          :icon="ICONS.add"
           @click="() => { createModalOpen = true }"
         >
           Aggiungi Deck
@@ -289,7 +290,7 @@ const { data: matchHistory } = usePlayerMatchHistory(playerId)
       </div>
 
       <div v-if="decksLoading" class="flex items-center justify-center py-8">
-        <UIcon name="i-lucide-loader-2" class="animate-spin text-2xl text-primary" />
+        <UIcon :name="ICONS.loading" class="animate-spin text-2xl text-primary" />
       </div>
 
       <div v-else-if="commanderDecks && commanderDecks.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -306,13 +307,13 @@ const { data: matchHistory } = usePlayerMatchHistory(playerId)
       </div>
 
       <div v-else class="text-center py-8 text-muted">
-        <UIcon name="i-lucide-shield-off" class="text-4xl mb-2 opacity-30" />
+        <UIcon :name="ICONS.noCommander" class="text-4xl mb-2 opacity-30" />
         <p>Nessun commander deck registrato</p>
       </div>
     </div>
 
     <div v-else class="text-center py-12 text-muted">
-      <UIcon name="i-lucide-user-x" class="text-4xl mb-2 opacity-30" />
+      <UIcon :name="ICONS.removePlayer" class="text-4xl mb-2 opacity-30" />
       <p>Giocatore non trovato</p>
     </div>
 
@@ -338,7 +339,7 @@ const { data: matchHistory } = usePlayerMatchHistory(playerId)
       warning="Questa azione non può essere annullata."
       confirm-label="Elimina"
       cancel-label="Annulla"
-      confirm-icon="i-lucide-trash-2"
+      :confirm-icon="ICONS.delete"
       :loading="deleteLoading"
       @confirm="confirmDeleteDeck"
     />

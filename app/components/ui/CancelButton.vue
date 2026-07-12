@@ -1,10 +1,11 @@
 <!-- app\components\ui\CancelButton.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 const {
   label = 'Annulla',
-  icon = 'i-lucide-undo-2',
+  icon = ICONS.undo,
   loading = false,
   disabled = false,
 } = defineProps<{

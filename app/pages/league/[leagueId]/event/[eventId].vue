@@ -1,5 +1,6 @@
 <!-- app\pages\league\[leagueId]\event\[eventId].vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import { getPairingPlayerIds } from '#shared/utils/types'
 import type { Seat, TournamentPlayer, TournamentTable } from '#shared/utils/types'
 import type { PairingHistoryEntry, PairingPlayer } from '~/composables/event-pairing/pairingOptimizer'
@@ -304,7 +305,7 @@ const submittedByPlayerId = computed<Record<number, boolean>>(() => {
       title: 'Tempo scaduto!',
       description: `Il tempo del round ${currentRound.value} è terminato`,
       color: 'warning',
-      icon: 'i-lucide-timer-off',
+      icon: ICONS.timerOff,
     })
   }
 
@@ -318,7 +319,7 @@ const leagueName = computed(() => currentLeague.value?.name ?? 'Lega')
 const eventName = computed(() => currentEvent.value?.event_name ?? 'Evento')
 
 const breadcrumbItems = computed(() => [
-  { label: 'Home', to: '/', icon: 'i-lucide-home' },
+  { label: 'Home', to: '/', icon: ICONS.home },
   { label: 'Leghe', to: '/leagues' },
   { label: leagueName.value, to: `/league/${leagueId}` },
   { label: eventName.value },
@@ -420,7 +421,7 @@ function handleResetTable(pairingId: number) {
               size="sm"
               color="primary"
               variant="soft"
-              icon="i-lucide-rotate-ccw"
+              :icon="ICONS.reset"
               @click="clearViewedRound"
             >
               Torna al round corrente
@@ -540,7 +541,7 @@ function handleResetTable(pairingId: number) {
       warning="I dati del round corrente andranno persi."
       confirm-label="Annulla round"
       cancel-label="Annulla"
-      confirm-icon="i-lucide-trash-2"
+      :confirm-icon="ICONS.delete"
       @confirm="lifecycle.confirmCancelRound"
     />
 
@@ -552,7 +553,7 @@ function handleResetTable(pairingId: number) {
       warning="Dopo la conferma l'evento verrà contrassegnato come terminato."
       confirm-label="Termina"
       cancel-label="Annulla"
-      confirm-icon="i-lucide-flag"
+      :confirm-icon="ICONS.flag"
       @confirm="lifecycle.confirmEndEvent"
     />
 

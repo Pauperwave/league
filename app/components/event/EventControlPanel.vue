@@ -1,5 +1,6 @@
 <!-- app/components/Events/EventControlPanel.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import type { EventStatus } from '#shared/utils/types'
 import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
@@ -73,7 +74,7 @@ function handleStartEvent() {
           <div v-else-if="eventStatus === 'playing' || eventStatus === 'ended'" class="flex gap-2 justify-between mb-4">
             <UTooltip :content="{ side: 'top' }" text="Torna al round precedente">
               <UButton
-                leading-icon="i-lucide-arrow-left"
+                :leading-icon="ICONS.back"
                 color="error"
                 variant="outline"
                 @click="cancelRound"
@@ -84,7 +85,7 @@ function handleStartEvent() {
 
             <UTooltip v-if="eventStatus === 'playing'" :content="{ side: 'top' }" :text="isLastRound ? 'Termina l\'evento' : (props.canAdvance ? 'Procedi al round successivo' : 'Dati dei tavoli incompleti')">
               <UButton
-                :trailing-icon="isLastRound ? 'i-lucide-flag' : 'i-lucide-arrow-right'"
+                :trailing-icon="isLastRound ? ICONS.flag : ICONS.forward"
                 :color="props.canAdvance ? 'success' : 'neutral'"
                 :disabled="!props.canAdvance"
                 @click="isLastRound ? emit('end') : emit('advance')"

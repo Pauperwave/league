@@ -1,5 +1,6 @@
 <!-- app/components/Events/EventStepper.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import type { StepperItem } from '@nuxt/ui'
 import type { EventStatus } from '#shared/utils/types'
 
@@ -28,7 +29,7 @@ const items = computed<StepperItem[]>(() => {
     {
       title: 'Registrazione',
       description: 'Iscrizioni aperte',
-      icon: 'i-lucide-clipboard-list',
+      icon: ICONS.registration,
       value: 'registration',
     },
   ]
@@ -41,7 +42,7 @@ const items = computed<StepperItem[]>(() => {
         : i === props.currentRound
           ? 'In corso'
           : 'In attesa',
-      icon: 'i-lucide-swords',
+      icon: ICONS.battle,
       value: `round-${i}`,
     })
   }
@@ -49,7 +50,7 @@ const items = computed<StepperItem[]>(() => {
   steps.push({
     title: 'Terminato',
     description: 'Evento concluso',
-    icon: 'i-lucide-flag',
+    icon: ICONS.flag,
     value: 'ended',
   })
 

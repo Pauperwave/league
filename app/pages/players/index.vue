@@ -1,5 +1,6 @@
 <!-- app/pages/players/index.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import type { NewPlayer } from '#shared/utils/types'
 
 useSeoMeta({ title: 'Giocatori' })
@@ -51,7 +52,7 @@ onMounted(() => {
     />
 
     <div v-if="playersStore.loading" class="flex items-center justify-center py-12">
-      <UIcon name="i-lucide-loader-2" class="size-8 animate-spin text-primary" />
+      <UIcon :name="ICONS.loading" class="size-8 animate-spin text-primary" />
     </div>
 
     <PlayersGrid

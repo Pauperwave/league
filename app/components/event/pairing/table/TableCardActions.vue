@@ -1,5 +1,6 @@
 <!-- app\components\events\Pairings\TableCardActions.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import type { Pairing } from '#shared/utils/types'
 
 defineProps<{
@@ -25,7 +26,7 @@ const emit = defineEmits<{
         size="xs"
         variant="outline"
         label="Punteggi"
-        trailing-icon="i-lucide-eye"
+        :trailing-icon="ICONS.show"
         @click="emit('viewScores', pairing.pairing_id)"
       />
     </UTooltip>
@@ -34,7 +35,7 @@ const emit = defineEmits<{
         size="xs"
         variant="outline"
         color="error"
-        icon="i-lucide-rotate-ccw"
+        :icon="ICONS.reset"
         aria-label="Resetta tavolo"
         @click="emit('resetTable', pairing.pairing_id)"
       />
@@ -44,7 +45,7 @@ const emit = defineEmits<{
         size="xs"
         variant="outline"
         color="warning"
-        icon="i-lucide-bolt"
+        :icon="ICONS.quickAction"
         aria-label="Compila test"
         @click="emit('quickFill', pairing)"
       />

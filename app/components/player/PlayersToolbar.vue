@@ -1,5 +1,6 @@
 <!-- app\components\players\PlayersToolbar.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import { SORT_OPTIONS, type SortField } from '~/composables/players/usePlayersFilter'
 
 const searchQuery = defineModel<string>('searchQuery', { required: true })
@@ -13,7 +14,7 @@ const sortDirection = defineModel<'asc' | 'desc'>('sortDirection', { required: t
     <UInput
       v-model="searchQuery"
       type="search"
-      icon="i-lucide-search"
+      :icon="ICONS.search"
       placeholder="Cerca giocatore per nome..."
       class="max-w-sm flex-1"
     />
@@ -24,7 +25,7 @@ const sortDirection = defineModel<'asc' | 'desc'>('sortDirection', { required: t
         color="neutral"
         variant="ghost"
         size="sm"
-        :icon="sortDirection === 'asc' ? 'i-lucide-arrow-up' : 'i-lucide-arrow-down'"
+        :icon="sortDirection === 'asc' ? ICONS.up : ICONS.down"
         :aria-label="sortDirection === 'asc' ? 'Ordina decrescente' : 'Ordina crescente'"
         :title="sortDirection === 'asc' ? 'Ordina decrescente' : 'Ordina crescente'"
         @click="() => { sortDirection = sortDirection === 'asc' ? 'desc' : 'asc' }"

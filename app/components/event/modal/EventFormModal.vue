@@ -1,5 +1,6 @@
 <!-- app\components\Modals\EventFormModal.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import { type CalendarDate, getLocalTimeZone } from '@internationalized/date'
 import type { Event } from '#shared/utils/types'
 import * as v from 'valibot'
@@ -58,7 +59,7 @@ const cancelLogging = useButtonLogging('Cancel Event Form')
 const isEditing = computed(() => !!props.event)
 const modalTitle = computed(() => isEditing.value ? 'Modifica Evento' : 'Crea Nuovo Evento')
 const modalDescription = computed(() => isEditing.value ? "Modifica i dati dell'evento" : 'Compila i campi per creare un nuovo evento')
-const modalIcon = computed(() => isEditing.value ? 'i-lucide-pencil' : 'i-lucide-calendar-plus')
+const modalIcon = computed(() => isEditing.value ? ICONS.edit : ICONS.calendarAdd)
 const submitLabel = computed(() => isEditing.value ? 'Salva' : 'Crea Evento')
 
 // — Form —

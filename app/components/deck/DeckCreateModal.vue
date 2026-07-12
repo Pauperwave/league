@@ -1,5 +1,6 @@
 <!-- app/components/Modals/DeckCreateModal.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 const emit = defineEmits<{
   create: [deck: {
     player_id: number
@@ -84,7 +85,7 @@ function handleCancel() {
   >
     <template #title>
       <div class="flex items-center gap-2">
-        <UIcon name="i-lucide-plus" class="text-primary" />
+        <UIcon :name="ICONS.add" class="text-primary" />
         <span>Nuovo Deck</span>
       </div>
     </template>
@@ -155,7 +156,7 @@ function handleCancel() {
         type="submit"
         form="deck-create-form"
         color="primary"
-        trailing-icon="i-lucide-plus"
+        :trailing-icon="ICONS.add"
         :disabled="!canSubmit"
       >
         Aggiungi

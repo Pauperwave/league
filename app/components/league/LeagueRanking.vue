@@ -1,5 +1,6 @@
 <!-- app\components\Rankings\LeagueRanking.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import type { TableColumn, TableRow } from '@nuxt/ui'
 import type { StandingWithPlayer } from '#shared/utils/types'
 import PlayerNameTag from '~/components/player/PlayerNameTag.vue'
@@ -118,7 +119,7 @@ const columns: TableColumn<StandingWithPlayer>[] = [
     }">
       <template #empty>
         <div class="flex flex-col items-center gap-2 py-12 text-muted">
-          <LazyUIcon name="i-lucide-trophy" class="size-10 opacity-30" />
+          <LazyUIcon :name="ICONS.standings" class="size-10 opacity-30" />
           <p class="text-sm">
             Nessun punteggio disponibile
           </p>

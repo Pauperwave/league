@@ -1,4 +1,8 @@
 <!-- app\pages\index.vue -->
+<script setup lang="ts">
+import { ICONS } from '~/utils/icons'
+</script>
+
 <template>
   <div class="min-h-screen bg-default flex flex-col items-center justify-center p-6">
     <div class="text-center">
@@ -12,7 +16,7 @@
         to="/leagues"
         color="primary"
         size="lg"
-        icon="i-lucide-trophy"
+        :icon="ICONS.standings"
       >
         Vai alle Leghe
       </UButton>
@@ -22,7 +26,7 @@
           to="/players"
           color="neutral"
           size="md"
-          icon="i-lucide-users"
+          :icon="ICONS.players"
         >
           Tutti i Giocatori
         </UButton>
@@ -30,7 +34,7 @@
           to="/decks"
           color="neutral"
           size="md"
-          icon="i-lucide-swords"
+          :icon="ICONS.battle"
         >
           Tutti i Deck
         </UButton>
@@ -38,7 +42,7 @@
           to="/rulesets"
           color="neutral"
           size="md"
-          icon="i-lucide-scale"
+          :icon="ICONS.rules"
         >
           Vedi Regolamenti
         </UButton>

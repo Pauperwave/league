@@ -11,7 +11,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "fallow:dead-code": "fallow dead-code",
-    "fallow:dupes": "fallow dupes",
+    "fallow:dupes": "fallow dupes --mode semantic",
     "fallow:audit": "fallow audit --format json",
     "fallow:health": "fallow health --score --hotspots --targets",
     "typecheck": "nuxt typecheck",

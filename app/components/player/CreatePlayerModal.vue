@@ -1,5 +1,6 @@
 <!-- app\components\Modals\CreatePlayerModal.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import type { Player, NewPlayer } from '#shared/utils/types'
 import { findSimilarPlayers } from '#shared/utils/playerSimilarity'
 import * as v from 'valibot'
@@ -31,7 +32,7 @@ const PlayerFormSchema = v.object({
 const isEditing = computed(() => !!props.player)
 const modalTitle = computed(() => isEditing.value ? 'Modifica Giocatore' : 'Crea Nuovo Giocatore')
 const modalDescription = computed(() => isEditing.value ? 'Modifica i dati del giocatore' : 'Cerca giocatori esistenti prima di crearne uno nuovo')
-const modalIcon = computed(() => isEditing.value ? 'i-lucide-pencil' : 'i-lucide-user-plus')
+const modalIcon = computed(() => isEditing.value ? ICONS.edit : ICONS.addPlayer)
 const submitLabel = computed(() => isEditing.value ? 'Salva' : 'Crea Giocatore')
 
 // — Form —
@@ -150,7 +151,7 @@ function handleCancel() {
         >
           <div class="space-y-3">
             <div class="flex items-center gap-2 text-warning">
-              <UIcon name="i-lucide-alert-triangle" class="size-5" />
+              <UIcon :name="ICONS.warning" class="size-5" />
               <span class="font-medium">Giocatori simili trovati</span>
             </div>
 
@@ -174,7 +175,7 @@ function handleCancel() {
                   size="xs"
                   color="primary"
                   variant="soft"
-                  icon="i-lucide-check"
+                  :icon="ICONS.confirm"
                   @click="handleSelectExisting(similarPlayer.player_id)"
                 >
                   Seleziona
@@ -193,7 +194,7 @@ function handleCancel() {
           v-else-if="!isEditing && isValid && !hasSimilarPlayers"
           class="flex items-center gap-2 text-success text-sm"
         >
-          <UIcon name="i-lucide-check-circle" />
+          <UIcon :name="ICONS.success" />
           <span>Nessun giocatore simile trovato. Puoi procedere con la creazione.</span>
         </div>
       </form>

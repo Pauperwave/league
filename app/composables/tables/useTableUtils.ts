@@ -1,4 +1,5 @@
 import type { TableColumn } from '@nuxt/ui'
+import { ICONS } from '~/utils/icons'
 import type { CalendarDate } from '@internationalized/date'
 import { parseDate, today, getLocalTimeZone } from '@internationalized/date'
 import { h } from 'vue'
@@ -37,9 +38,9 @@ export function sortableHeader(label: string, UButton: Component) {
       label,
       icon: isSorted
         ? isSorted === 'asc'
-          ? 'i-lucide-arrow-up-narrow-wide'
-          : 'i-lucide-arrow-down-wide-narrow'
-        : 'i-lucide-arrow-up-down',
+          ? ICONS.sortAscNumeric
+          : ICONS.sortDescNumeric
+        : ICONS.sortBoth,
       class: '-mx-2.5',
       onClick: () => column.toggleSorting(column.getIsSorted() === 'asc')
     })

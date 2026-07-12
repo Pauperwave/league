@@ -1,5 +1,6 @@
 <!-- app\components\events\LeagueEventsPanel.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import type { Event, League } from '#shared/utils/types'
 
 const {
@@ -30,7 +31,7 @@ const router = useRouter()
     <div class="flex items-center justify-between shrink-0 mb-3">
       <UButton
         color="neutral"
-        icon="i-lucide-arrow-left"
+        :icon="ICONS.back"
         aria-label="Torna indietro"
         @click="() => { router.push('/leagues') }"
       >
@@ -44,7 +45,7 @@ const router = useRouter()
         <UButton
           color="neutral"
           variant="ghost"
-          icon="i-lucide-pencil"
+          :icon="ICONS.edit"
           size="sm"
           aria-label="Modifica nome lega"
           @click="emit('editLeague')"
@@ -53,7 +54,7 @@ const router = useRouter()
 
       <UButton
         color="primary"
-        icon="i-lucide-plus"
+        :icon="ICONS.add"
         @click="emit('createEvent')"
       >
         Nuovo Evento

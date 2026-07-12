@@ -1,5 +1,6 @@
 <!-- app\components\DeckCardActions.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import type { CommanderDeck } from '#shared/utils/types'
 
 defineProps<{
@@ -20,7 +21,7 @@ const emit = defineEmits<{
       size="xs"
       variant="ghost"
       color="neutral"
-      icon="i-lucide-pencil"
+      :icon="ICONS.edit"
       aria-label="Modifica proprietà"
       @click="emit('edit', deck)"
     />
@@ -31,7 +32,7 @@ const emit = defineEmits<{
         size="xs"
         variant="ghost"
         color="error"
-        icon="i-lucide-trash-2"
+        :icon="ICONS.delete"
         aria-label="Elimina deck"
         @click="emit('delete', deck)"
       />

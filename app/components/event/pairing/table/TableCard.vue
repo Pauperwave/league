@@ -1,5 +1,6 @@
 <!-- app\components\events\Pairings\Table\TableCard.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import type { Seat, TournamentTable } from '#shared/utils/types'
 import { VueDraggable } from 'vue-draggable-plus'
 
@@ -43,7 +44,7 @@ const visibleSeats = computed(() => {
     <template #header>
       <div class="flex items-center justify-between gap-2">
         <div class="flex items-center gap-2">
-          <UIcon name="i-lucide-grid-2x2" class="size-4 text-primary" />
+          <UIcon :name="ICONS.tableView" class="size-4 text-primary" />
           <span class="font-semibold text-base">Tavolo {{ table.tableNumber }}</span>
         </div>
         <div class="flex items-center gap-1.5">
@@ -51,7 +52,7 @@ const visibleSeats = computed(() => {
             size="xs"
             color="neutral"
             variant="soft"
-            icon="i-lucide-eye"
+            :icon="ICONS.show"
             @click="emit('openBreakdown', tableIndex)"
           >
             Punteggio: {{ tableScore.toFixed(2) }}

@@ -1,5 +1,6 @@
 <!-- app/components/events/Pairings/PairingsCard.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import type { Pairing, TournamentPlayer, Kill } from '#shared/utils/types'
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -230,7 +231,7 @@ function toggleKillConfirmation(pairingId: number) {
   <UCard variant="outline">
     <template #header>
       <div class="flex items-center gap-2">
-        <UIcon name="i-lucide-layout-grid" class="size-5 text-primary" />
+        <UIcon :name="ICONS.gridView" class="size-5 text-primary" />
         <h2 class="text-lg font-semibold">Tavoli</h2>
       </div>
     </template>
@@ -277,7 +278,7 @@ function toggleKillConfirmation(pairingId: number) {
                   size="xs"
                   variant="outline"
                   :color="commandersStore?.getCommander1(playerId) ? 'neutral' : 'warning'"
-                  :icon="commandersStore?.getCommander1(playerId) ? 'i-lucide-shield-check' : 'i-lucide-shield-plus'"
+                  :icon="commandersStore?.getCommander1(playerId) ? ICONS.commanderSet : ICONS.commanderNotSet"
                   aria-label="Imposta comandanti"
                   @click="emit('openCommanderModal', pairing.pairing_id, playerId)"
                 />
@@ -293,7 +294,7 @@ function toggleKillConfirmation(pairingId: number) {
                   size="xs"
                   variant="outline"
                   :color="votesStore?.hasVotes(playerId) ? 'neutral' : 'warning'"
-                  :icon="votesStore?.hasVotes(playerId) ? 'i-lucide-check' : 'i-lucide-star'"
+                  :icon="votesStore?.hasVotes(playerId) ? ICONS.confirm : ICONS.vote"
                   aria-label="Imposta voti"
                   @click="emit('openVotesModal', pairing.pairing_id, playerId)"
                 />
@@ -309,7 +310,7 @@ function toggleKillConfirmation(pairingId: number) {
             <UButton
               :color="hasRanking(pairing.pairing_id) ? 'neutral' : 'warning'"
               class="flex-1"
-              icon="i-lucide-trophy"
+              :icon="ICONS.standings"
               variant="outline"
               @click="handleOpenScoreModal(pairing.pairing_id, index)"
             >
@@ -322,7 +323,7 @@ function toggleKillConfirmation(pairingId: number) {
             <UButton
               :color="killsStore?.isPairingConfirmed(pairing.pairing_id) ? 'neutral' : 'warning'"
               class="flex-1"
-              icon="i-lucide-skull"
+              :icon="ICONS.kills"
               variant="outline"
               @click="emit('openKillModal', pairing.pairing_id)"
             >
@@ -337,7 +338,7 @@ function toggleKillConfirmation(pairingId: number) {
           >
             <UButton
               :color="killsStore?.isPairingConfirmed(pairing.pairing_id) ? 'success' : 'warning'"
-              :icon="killsStore?.isPairingConfirmed(pairing.pairing_id) ? 'i-lucide-check' : 'i-lucide-circle'"
+              :icon="killsStore?.isPairingConfirmed(pairing.pairing_id) ? ICONS.confirm : ICONS.dot"
               variant="outline"
               size="sm"
               :aria-label="killsStore?.isPairingConfirmed(pairing.pairing_id) ? 'Rimuovi conferma uccisioni' : 'Conferma uccisioni'"
@@ -348,7 +349,7 @@ function toggleKillConfirmation(pairingId: number) {
       </UCard>
     </div>
 
-    <UEmpty v-else icon="i-lucide-users" title="Nessun tavolo disponibile" />
+    <UEmpty v-else :icon="ICONS.players" title="Nessun tavolo disponibile" />
 
     <!-- Reset confirmation dialog -->
     <ConfirmModal
@@ -360,7 +361,7 @@ function toggleKillConfirmation(pairingId: number) {
       warning="Questa azione non può essere annullata."
       confirm-label="Reset"
       cancel-label="Annulla"
-      confirm-icon="i-lucide-rotate-ccw"
+      :confirm-icon="ICONS.reset"
       @confirm="handleConfirm"
     />
 
@@ -374,7 +375,7 @@ function toggleKillConfirmation(pairingId: number) {
       warning="Questa azione sovrascriverà i dati esistenti."
       confirm-label="Compila"
       cancel-label="Annulla"
-      confirm-icon="i-lucide-bolt"
+      :confirm-icon="ICONS.quickAction"
       @confirm="handleConfirm"
     />
   </UCard>

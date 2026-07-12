@@ -1,7 +1,9 @@
+import { ICONS } from './icons'
+
 export const ACTION_MAP = {
-  remove: { color: 'error',   icon: 'i-lucide-trash-2', label: 'Rimuovi'   },
-  edit:   { color: 'neutral', icon: 'i-lucide-pencil',  label: 'Modifica'  },
-  view:   { color: 'neutral', icon: 'i-lucide-eye',     label: 'Visualizza'},
+  remove: { color: 'error',   icon: ICONS.delete, label: 'Rimuovi'   },
+  edit:   { color: 'neutral', icon: ICONS.edit,   label: 'Modifica'  },
+  view:   { color: 'neutral', icon: ICONS.show,   label: 'Visualizza'},
 } as const satisfies Record<string, { color: string; icon: string; label: string }>
 
 export type ActionType = keyof typeof ACTION_MAP

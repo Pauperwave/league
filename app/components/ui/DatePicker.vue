@@ -1,5 +1,6 @@
 <!-- app\components\ui\DatePicker.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
 
 const {
@@ -32,7 +33,7 @@ const selectedDate = computed({
       {{ label }} <span v-if="required" class="text-error">*</span>
     </label>
     <UPopover v-model:open="open">
-      <UButton color="neutral" variant="subtle" icon="i-lucide-calendar" class="w-full justify-between">
+      <UButton color="neutral" variant="subtle" :icon="ICONS.calendar" class="w-full justify-between">
         <span class="truncate">
           {{ modelValue ? df.format(modelValue.toDate(getLocalTimeZone())) : "Seleziona una data" }}
         </span>
@@ -42,7 +43,7 @@ const selectedDate = computed({
             class="inline-flex ml-2 p-0.5 rounded cursor-pointer hover:bg-neutral-200 dark:hover:bg-neutral-700"
             @click.stop="modelValue = null"
           >
-            <UIcon name="i-lucide-circle-x" class="size-4" />
+            <UIcon :name="ICONS.clear" class="size-4" />
           </span>
         </template>
       </UButton>

@@ -1,5 +1,6 @@
 <!-- app\components\events\Pairings\Table\TableSeatItem.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import type { Seat } from '#shared/utils/types'
 
 const props = defineProps<{
@@ -40,7 +41,7 @@ function handleCommanderClick() {
         class="drag-handle text-muted hover:text-default transition cursor-grab hover:cursor-grab active:cursor-grabbing"
         aria-label="Trascina giocatore"
       >
-        <UIcon name="i-lucide-grip-vertical" class="size-4 cursor-grab hover:cursor-grab active:cursor-grabbing" />
+        <UIcon :name="ICONS.dragHandle" class="size-4 cursor-grab hover:cursor-grab active:cursor-grabbing" />
       </button>
 
       <UAvatar
@@ -71,7 +72,7 @@ function handleCommanderClick() {
         size="xs"
         variant="ghost"
         :color="hasCommander ? 'success' : 'warning'"
-        :icon="hasCommander ? 'i-lucide-shield' : 'i-lucide-shield-plus'"
+        :icon="hasCommander ? ICONS.commanderSet : ICONS.commanderNotSet"
         aria-label="Imposta comandanti"
         @click="handleCommanderClick"
       />
@@ -82,7 +83,7 @@ function handleCommanderClick() {
       class="h-full min-h-10 flex items-center justify-center gap-1.5 text-base px-1.5 py-1"
       :class="isDragging ? 'text-amber-700' : 'text-muted'"
     >
-      <UIcon name="i-lucide-plus" class="size-4" />
+      <UIcon :name="ICONS.add" class="size-4" />
       <span>{{ isDragging ? 'Rilascia qui' : 'Slot libero' }}</span>
     </div>
   </div>

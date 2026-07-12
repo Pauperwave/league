@@ -1,5 +1,6 @@
 <!-- app\components\Events\EventHeaderCard.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import type { EventStatus } from '#shared/utils/types'
 import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
@@ -32,14 +33,14 @@ const statusBadge = computed(() => {
     <template #header>
       <div class="flex items-start justify-between gap-4">
         <div class="flex items-center gap-3">
-          <UIcon name="i-lucide-calendar" class="size-5 text-primary mt-1" />
+          <UIcon :name="ICONS.calendar" class="size-5 text-primary mt-1" />
           <div>
             <div class="flex items-center gap-2">
               <h1 class="text-xl font-semibold">{{ eventName }}</h1>
               <UButton
                 color="neutral"
                 variant="ghost"
-                icon="i-lucide-pencil"
+                :icon="ICONS.edit"
                 size="xs"
                 aria-label="Modifica evento"
                 @click="handleEdit"
@@ -50,7 +51,7 @@ const statusBadge = computed(() => {
         </div>
 
         <div class="flex flex-row items-end gap-1">
-          <UBadge :color="statusBadge.color" :icon="eventStatus === 'ended' ? 'i-lucide-flag' : undefined">
+          <UBadge :color="statusBadge.color" :icon="eventStatus === 'ended' ? ICONS.flag : undefined">
             {{ statusBadge.label }}
           </UBadge>
         </div>

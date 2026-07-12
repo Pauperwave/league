@@ -1,5 +1,6 @@
 <!-- app\components\Modals\LeagueFormModal.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import type { CalendarDate } from '@internationalized/date'
 import type { Ruleset, League } from '#shared/utils/types'
 import * as v from 'valibot'
@@ -44,7 +45,7 @@ const cancelLogging = useButtonLogging('Cancel League Form')
 const isEditing = computed(() => !!props.league)
 const title = computed(() => isEditing.value ? 'Modifica Lega' : 'Crea Nuova Lega')
 const description = computed(() => isEditing.value ? 'Modifica i dati della lega' : 'Compila i campi per creare una nuova lega')
-const icon = computed(() => isEditing.value ? 'i-lucide-pencil' : 'i-lucide-trophy')
+const icon = computed(() => isEditing.value ? ICONS.edit : ICONS.standings)
 const submitLabel = computed(() => isEditing.value ? 'Salva' : 'Crea Lega')
 
 const defaultForm = () => ({

@@ -1,5 +1,6 @@
 <!-- app\components\Events\WaitingList.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 const props = defineProps<{
@@ -50,7 +51,7 @@ const tableData = computed(() => {
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-2">
         <h2 class="font-semibold text-xl flex items-center gap-2">
-          <UIcon name="i-lucide-users" size="lg" class="text-muted" />
+          <UIcon :name="ICONS.players" size="lg" class="text-muted" />
           Lista d'Attesa
         </h2>
       </div>
@@ -64,7 +65,7 @@ const tableData = computed(() => {
           color="warning"
           variant="subtle"
           size="lg"
-          icon="i-lucide-user-plus"
+          :icon="ICONS.addPlayer"
           label="Aggiungi Giocatori"
           class="font-semibold"
           @click="handleAddPlayer"

@@ -1,5 +1,6 @@
 <!-- app/components/Events/RoundTimer.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 /**
  * RoundTimer
  *
@@ -167,7 +168,7 @@ onMounted(() => {
       class="absolute top-[4cqmin] right-[4cqmin] text-muted"
     />
     <UIcon
-      name="i-lucide-timer"
+      :name="ICONS.timer"
       :class="[
         isExpired ? 'text-error' : isRunning ? 'text-primary' : 'text-muted',
         isFullscreen ? 'size-[15cqmin]' : 'size-5',
@@ -194,7 +195,7 @@ onMounted(() => {
       <template v-if="!isRunning">
         <UTooltip v-if="!isFullscreen" :content="{ side: 'top' }" :text="isExpired ? 'Timer scaduto' : 'Avvia timer'">
           <UButton
-            icon="i-lucide-play"
+            :icon="ICONS.play"
             color="primary"
             variant="soft"
             :disabled="isExpired"
@@ -205,7 +206,7 @@ onMounted(() => {
         </UTooltip>
         <UButton
           v-else
-          icon="i-lucide-play"
+          :icon="ICONS.play"
           color="primary"
           variant="soft"
           :disabled="isExpired"
@@ -220,7 +221,7 @@ onMounted(() => {
       <template v-else>
         <UTooltip v-if="!isFullscreen" :content="{ side: 'top' }" text="Pausa timer">
           <UButton
-            icon="i-lucide-pause"
+            :icon="ICONS.pause"
             color="neutral"
             variant="soft"
             :size="btnSize"
@@ -230,7 +231,7 @@ onMounted(() => {
         </UTooltip>
         <UButton
           v-else
-          icon="i-lucide-pause"
+          :icon="ICONS.pause"
           color="neutral"
           variant="soft"
           :size="btnSize"
@@ -243,7 +244,7 @@ onMounted(() => {
       <!-- Reset -->
       <UTooltip v-if="!isFullscreen" :content="{ side: 'top' }" text="Resetta timer">
         <UButton
-          icon="i-lucide-rotate-ccw"
+          :icon="ICONS.reset"
           color="neutral"
           variant="ghost"
           :size="btnSize"
@@ -253,7 +254,7 @@ onMounted(() => {
       </UTooltip>
       <UButton
         v-else
-        icon="i-lucide-rotate-ccw"
+        :icon="ICONS.reset"
         color="neutral"
         variant="ghost"
         :size="btnSize"
@@ -265,7 +266,7 @@ onMounted(() => {
       <!-- Add 5 minutes -->
       <UTooltip v-if="!isFullscreen" :content="{ side: 'top' }" text="Aggiungi 5 minuti">
         <UButton
-          icon="i-lucide-plus"
+          :icon="ICONS.add"
           color="success"
           variant="soft"
           :size="btnSize"
@@ -277,7 +278,7 @@ onMounted(() => {
       </UTooltip>
       <UButton
         v-else
-        icon="i-lucide-plus"
+        :icon="ICONS.add"
         color="success"
         variant="soft"
         :size="btnSize"
@@ -291,7 +292,7 @@ onMounted(() => {
       <!-- Add 10 minutes -->
       <UTooltip v-if="!isFullscreen" :content="{ side: 'top' }" text="Aggiungi 10 minuti">
         <UButton
-          icon="i-lucide-plus"
+          :icon="ICONS.add"
           color="success"
           variant="soft"
           :size="btnSize"
@@ -303,7 +304,7 @@ onMounted(() => {
       </UTooltip>
       <UButton
         v-else
-        icon="i-lucide-plus"
+        :icon="ICONS.add"
         color="success"
         variant="soft"
         :size="btnSize"
@@ -317,7 +318,7 @@ onMounted(() => {
       <!-- Fullscreen toggle -->
       <UTooltip v-if="!isFullscreen" :content="{ side: 'top' }" text="Schermo intero">
         <UButton
-          icon="i-lucide-expand"
+          :icon="ICONS.expand"
           color="neutral"
           variant="ghost"
           :size="btnSize"
@@ -327,7 +328,7 @@ onMounted(() => {
       </UTooltip>
       <UButton
         v-else
-        icon="i-lucide-shrink"
+        :icon="ICONS.collapse"
         color="neutral"
         variant="ghost"
         :size="btnSize"

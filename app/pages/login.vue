@@ -1,5 +1,6 @@
 <!-- app\pages\login.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 const { login } = usePasswordAuth()
@@ -60,7 +61,7 @@ function handleTogglePassword() {
             v-model="inputPassword"
             :type="showPassword ? 'text' : 'password'"
             placeholder="Inserisci la password"
-            leading-icon="i-lucide-lock"
+            :leading-icon="ICONS.lock"
             class="w-full"
           >
             <template #trailing>
@@ -70,7 +71,7 @@ function handleTogglePassword() {
                   color="neutral"
                   variant="link"
                   size="xs"
-                  icon="i-lucide-circle-x"
+                  :icon="ICONS.clear"
                   aria-label="Cancella password"
                   @click="handleClearPassword"
                 />
@@ -78,7 +79,7 @@ function handleTogglePassword() {
                   color="neutral"
                   variant="link"
                   size="xs"
-                  :icon="showPassword ? 'i-lucide-eye-off' : 'i-lucide-eye'"
+                  :icon="showPassword ? ICONS.hide : ICONS.show"
                   :aria-label="showPassword ? 'Nascondi password' : 'Mostra password'"
                   @click="handleTogglePassword"
                 />

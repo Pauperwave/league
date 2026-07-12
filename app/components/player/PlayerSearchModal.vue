@@ -1,5 +1,6 @@
 <!-- app\components\Modals\PlayerSearchModal.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import type { Player } from '#shared/utils/types'
 import { usePlayerOptions } from '~/composables/supabase/usePlayers'
 import { useButtonLogging } from '~/composables/ui/useButtonLogging'
@@ -62,7 +63,7 @@ function handleClose() {
   <UModal v-model:open="open">
     <template #title>
       <div class="flex items-center gap-2">
-        <UIcon name="i-lucide-user-plus" class="text-primary" />
+        <UIcon :name="ICONS.addPlayer" class="text-primary" />
         <span>Aggiungi giocatori alla lista d'attesa</span>
       </div>
     </template>
@@ -95,7 +96,7 @@ function handleClose() {
       <div class="flex justify-between w-full">
         <UButton
           color="neutral"
-          icon="i-lucide-x"
+          :icon="ICONS.close"
           @click="handleClose"
         >
           Chiudi
@@ -104,14 +105,14 @@ function handleClose() {
           <UButton
             color="neutral"
             variant="ghost"
-            icon="i-lucide-user-plus"
+            :icon="ICONS.addPlayer"
             @click="handleCreateNew"
           >
             Crea nuovo
           </UButton>
           <UButton
             color="primary"
-            icon="i-lucide-user-check"
+            :icon="ICONS.playerConfirmed"
             :disabled="!hasSelection"
             @click="handleConfirm"
           >

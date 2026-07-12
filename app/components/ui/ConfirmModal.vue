@@ -1,5 +1,6 @@
 <!-- app\components\ui\ConfirmModal.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 const {
@@ -10,8 +11,8 @@ const {
   warning = '',
   confirmLabel,
   cancelLabel,
-  confirmIcon = 'i-lucide-check',
-  cancelIcon = 'i-lucide-undo-2',
+  confirmIcon = ICONS.confirm,
+  cancelIcon = ICONS.undo,
   loading = false,
   dismissible = true,
 } = defineProps<{
@@ -63,7 +64,7 @@ function onCancel() {
     <template #title>
       <div class="flex items-center gap-2">
         <UIcon
-          name="i-lucide-alert-triangle"
+          :name="ICONS.warning"
           class="text-warning"
         />
         <span>{{ title }}</span>

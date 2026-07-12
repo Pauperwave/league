@@ -5,6 +5,7 @@
   Componente per il logout dell'utente.
 -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 const { logout } = usePasswordAuth()
@@ -19,7 +20,7 @@ function handleLogout() {
 
 <template>
   <UButton
-    icon="i-lucide-log-out"
+    :icon="ICONS.logout"
     color="neutral"
     variant="ghost"
     aria-label="Logout"

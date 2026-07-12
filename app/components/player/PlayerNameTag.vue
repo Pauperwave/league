@@ -1,5 +1,6 @@
 <!-- app\components\PlayerNameTag.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import { slugify } from '~/utils/slug'
 
 const {
@@ -26,7 +27,7 @@ const playerLink = computed(() => `/player/${slugify(`${name} ${surname}`.trim()
       size="xs"
       :src="avatarUrl"
       :alt="name"
-      icon="i-lucide-user"
+      :icon="ICONS.player"
     >
       {{ initial }}
     </UAvatar>

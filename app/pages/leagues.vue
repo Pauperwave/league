@@ -1,5 +1,6 @@
 <!-- app\pages\leagues.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 import type { League } from '#shared/utils/types'
 
@@ -28,7 +29,7 @@ const {
 const leagueStore = useLeagueStore()
 
 const breadcrumbItems = [
-  { label: 'Home', to: '/', icon: 'i-lucide-home' },
+  { label: 'Home', to: '/', icon: ICONS.home },
   { label: 'Leghe' },
 ]
 
@@ -66,13 +67,13 @@ async function updateLeague({ id, data }: UpdateLeagueData) {
     </div>
 
     <div class="flex items-center justify-between p-6 pt-4">
-      <UButton color="neutral" icon="i-lucide-arrow-left" to="/">
+      <UButton color="neutral" :icon="ICONS.back" to="/">
         Home
       </UButton>
       <h1 class="text-2xl font-bold">
         Leghe
       </h1>
-      <UButton color="primary" icon="i-lucide-plus" @click="() => { showCreateModal = true }">
+      <UButton color="primary" :icon="ICONS.add" @click="() => { showCreateModal = true }">
         Nuova Lega
       </UButton>
     </div>
@@ -80,7 +81,7 @@ async function updateLeague({ id, data }: UpdateLeagueData) {
     <UAlert v-if="error" color="error" :title="errorMessage" class="mx-6 mb-4" />
 
     <div v-if="rulesetsLoading" class="flex items-center justify-center py-12">
-      <UIcon name="i-lucide-loader-2" class="animate-spin text-4xl text-primary" />
+      <UIcon :name="ICONS.loading" class="animate-spin text-4xl text-primary" />
     </div>
 
     <div v-else class="p-6">
@@ -119,7 +120,7 @@ async function updateLeague({ id, data }: UpdateLeagueData) {
       warning="Questa azione non può essere annullata."
       confirm-label="Elimina"
       cancel-label="Annulla"
-      confirm-icon="i-lucide-trash-2"
+      :confirm-icon="ICONS.delete"
       confirm-color="error"
       @confirm="confirmDeleteLeague"
     />

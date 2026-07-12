@@ -1,5 +1,6 @@
 <!-- app\pages\decks\index.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import {
   fetchCommandersByNames,
   type CommanderCard,
@@ -23,11 +24,11 @@ const commanderLoading = ref(false)
 
 // Sort state
 const sortOptions = [
-  { label: 'Alfabetico', value: 'alphabetical', icon: 'i-lucide-arrow-up-a-z' },
-  { label: 'Popolarita', value: 'popularity', icon: 'i-lucide-users' },
-  { label: 'Frequenza', value: 'frequency', icon: 'i-lucide-swords' },
-  { label: 'Colore', value: 'color', icon: 'i-lucide-palette' },
-  { label: 'Costo mana', value: 'mana-cost', icon: 'i-lucide-hash' },
+  { label: 'Alfabetico', value: 'alphabetical', icon: ICONS.sortAlpha },
+  { label: 'Popolarita', value: 'popularity', icon: ICONS.players },
+  { label: 'Frequenza', value: 'frequency', icon: ICONS.battle },
+  { label: 'Colore', value: 'color', icon: ICONS.palette },
+  { label: 'Costo mana', value: 'mana-cost', icon: ICONS.manaCost },
 ]
 
 const selectedSort = ref('alphabetical')
@@ -152,7 +153,7 @@ const breadcrumbItems = [
 
     <!-- Header -->
     <div class="flex items-center justify-between">
-      <UButton color="neutral" icon="i-lucide-arrow-left" to="/">
+      <UButton color="neutral" :icon="ICONS.back" to="/">
         Home
       </UButton>
       <h1 class="text-2xl font-bold">
@@ -172,7 +173,7 @@ const breadcrumbItems = [
           variant="ghost"
           color="neutral"
           size="sm"
-          :icon="sortDirection === 'asc' ? 'i-lucide-arrow-up' : 'i-lucide-arrow-down'"
+          :icon="sortDirection === 'asc' ? ICONS.up : ICONS.down"
           @click="toggleDirection"
         />
       </div>
@@ -180,12 +181,12 @@ const breadcrumbItems = [
 
     <!-- Loading -->
     <div v-if="commanderDecksStore.loading || commanderLoading" class="flex items-center justify-center py-12">
-      <UIcon name="i-lucide-loader-2" class="animate-spin text-3xl text-muted" />
+      <UIcon :name="ICONS.loading" class="animate-spin text-3xl text-muted" />
     </div>
 
     <!-- Empty state -->
     <div v-else-if="uniqueDecks.length === 0" class="text-center py-12 text-muted">
-      <UIcon name="i-lucide-swords" class="text-4xl mb-2 opacity-30" />
+      <UIcon :name="ICONS.battle" class="text-4xl mb-2 opacity-30" />
       <p>Nessun deck trovato</p>
     </div>
 

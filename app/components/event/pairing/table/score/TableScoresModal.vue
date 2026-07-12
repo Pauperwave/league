@@ -1,5 +1,6 @@
 <!-- app\components\events\Pairings\TableScoresModal.vue -->
 <script setup lang="ts">
+import { ICONS } from '~/utils/icons'
 import { h, resolveComponent } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import type { CellContext } from '@tanstack/vue-table'
@@ -132,15 +133,15 @@ const columns: TableColumn<TableRow>[] = [
     accessorKey: 'name',
     header: () =>
       h('div', { class: 'flex items-center gap-2' }, [
-        h(UIcon, { name: 'i-lucide-user', class: 'size-5' }),
+        h(UIcon, { name: ICONS.player, class: 'size-5' }),
         h('span', 'Giocatore'),
       ]),
   },
-  iconColumn('placementPoints', 'i-lucide-trophy', 'Posizionamento'),
-  iconColumn('killPoints', 'i-lucide-skull', 'Uccisioni'),
-  iconColumn('deckPoints', 'i-lucide-wand-2', 'Mazzo'),
-  iconColumn('playPoints', 'i-lucide-gamepad-2', 'Giocata'),
-  iconColumn('total', 'i-lucide-calculator', 'Totale', 'text-center px-3 py-1.5 font-bold'),
+  iconColumn('placementPoints', ICONS.standings, 'Posizionamento'),
+  iconColumn('killPoints', ICONS.kills, 'Uccisioni'),
+  iconColumn('deckPoints', ICONS.generate, 'Mazzo'),
+  iconColumn('playPoints', ICONS.gameplay, 'Giocata'),
+  iconColumn('total', ICONS.total, 'Totale', 'text-center px-3 py-1.5 font-bold'),
 ]
 </script>
 
