@@ -1,5 +1,6 @@
 // app/composables/useCommanderCards.ts
 import * as v from 'valibot'
+import type { Database } from '#shared/utils/types/database'
 
 // ─── Schema ───────────────────────────────────────────────────────────────────
 
@@ -96,7 +97,7 @@ const SNAKE_TO_CAMEL: Record<string, string> = {
   back_type_line: 'backTypeLine',
 }
 
-export function mapToCommanderCard(row: Record<string, any>): CommanderCard {
+export function mapToCommanderCard(row: Record<string, unknown>): CommanderCard {
   const raw: Record<string, unknown> = {}
 
   for (const [snakeKey, camelKey] of Object.entries(SNAKE_TO_CAMEL)) {
@@ -111,7 +112,7 @@ export function mapToCommanderCard(row: Record<string, any>): CommanderCard {
 
 export async function fetchCommandersByNames(
   cardNames: string[],
-  supabase: any
+  supabase: ReturnType<typeof useSupabaseClient<Database>>
 ): Promise<Map<string, CommanderCard>> {
   const result = new Map<string, CommanderCard>()
   if (cardNames.length === 0) return result

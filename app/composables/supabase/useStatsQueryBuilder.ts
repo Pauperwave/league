@@ -10,7 +10,7 @@
  *     commander2Name
  *   )
  */
-export function applyCommander2Filter<T extends { eq: (col: string, val: any) => T; is: (col: string, val: null) => T }>(
+export function applyCommander2Filter<T extends { eq(col: string, val: unknown): T; is(col: string, val: null): T }>(
   query: T,
   commander2Name: string | null | undefined
 ): T {

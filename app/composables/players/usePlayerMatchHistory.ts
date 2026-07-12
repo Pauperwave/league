@@ -1,4 +1,5 @@
 // app\composables\supabase\usePlayerMatchHistory.ts
+import type { Database } from '#shared/utils/types/database'
 
 export interface PlayerMatchHistory {
   event_id: number
@@ -17,8 +18,25 @@ export interface PlayerMatchHistory {
   pairing_datetime: string
 }
 
+interface RawMatchRow {
+  pairing_id: number
+  commander_1: string | null
+  commander_2: string | null
+  position: number
+  number_of_kills: number
+  brew_vote: number | null
+  play_vote_1: number | null
+  play_vote_2: number | null
+  pairings: {
+    pairing_round: number
+    pairing_datetime: string
+    event_id: number
+    events: { event_name: string; league_id: number } | null
+  } | null
+}
+
 export async function fetchPlayerMatchHistory(
-  supabase: any,
+  supabase: ReturnType<typeof useSupabaseClient<Database>>,
   playerId: number,
 ): Promise<PlayerMatchHistory[]> {
   const { data, error } = await supabase
@@ -55,12 +73,12 @@ export async function fetchPlayerMatchHistory(
   let currentEventId = -1
   let tableCounter = 0
 
-  const rows = (data ?? []) as any[]
+  const rows = (data ?? []) as unknown as RawMatchRow[]
   for (const row of rows) {
-    const pairings = row.pairings as Record<string, any> | null
+    const pairings = row.pairings
     if (!pairings) continue
 
-    const eventId = pairings.event_id as number
+    const eventId = pairings.event_id
 
     // Reset table counter when event changes
     if (eventId !== currentEventId) {
@@ -73,17 +91,17 @@ export async function fetchPlayerMatchHistory(
       event_id: eventId,
       league_id: pairings.events?.league_id ?? 0,
       event_name: pairings.events?.event_name ?? 'Evento sconosciuto',
-      pairing_id: row.pairing_id as number,
-      pairing_round: pairings.pairing_round as number,
+      pairing_id: row.pairing_id,
+      pairing_round: pairings.pairing_round,
       table_number: tableCounter,
-      commander_1: row.commander_1 as string | null,
-      commander_2: row.commander_2 as string | null,
-      position: row.position as number,
-      number_of_kills: row.number_of_kills as number,
-      brew_vote: row.brew_vote as number | null,
-      play_vote_1: row.play_vote_1 as number | null,
-      play_vote_2: row.play_vote_2 as number | null,
-      pairing_datetime: pairings.pairing_datetime as string,
+      commander_1: row.commander_1,
+      commander_2: row.commander_2,
+      position: row.position,
+      number_of_kills: row.number_of_kills,
+      brew_vote: row.brew_vote,
+      play_vote_1: row.play_vote_1,
+      play_vote_2: row.play_vote_2,
+      pairing_datetime: pairings.pairing_datetime,
     })
   }
 

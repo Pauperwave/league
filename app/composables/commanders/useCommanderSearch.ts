@@ -1,10 +1,11 @@
 // app/composables/useCommanderSearch.ts
 import { mapToCommanderCard, type CommanderCard } from './useCommanderCards'
+import type { Database } from '#shared/utils/types/database'
 
 type SuggestionRow = { card_name: string; mana_cost: string | null; edhrec_rank: number | null }
 
 async function reorderByPlayerUsage(
-  supabase: any,
+  supabase: ReturnType<typeof useSupabaseClient<Database>>,
   data: SuggestionRow[],
   playerId: number
 ): Promise<SuggestionRow[]> {

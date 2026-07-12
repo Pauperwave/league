@@ -1,17 +1,20 @@
 // app\stores\events.ts
-import type { Event, EventInsert, StandingWithPlayer, Player, PairingWithResults, RoundResult, RoundResultInsert } from '#shared/utils/types'
+import type { Event, EventInsert, StandingWithPlayer, Player, Pairing, PairingWithResults, RoundResult, RoundResultInsert, Ruleset, Standing } from '#shared/utils/types'
+import type { Database } from '#shared/utils/types/database'
 import { toErrorMessage } from '~/utils/error'
 import { sanitizePlayer } from './players'
 import type {
   PairingPlayer,
   PairingHistoryEntry,
-} from '~/composables/events/pairing/pairingOptimizer'
-import { getPairingPreferences } from '~/composables/events/pairing/pairingPreferences'
+} from '~/composables/event-pairing/pairingOptimizer'
+import { getPairingPreferences } from '~/composables/event-pairing/pairingPreferences'
 
 const UNRANKED_FALLBACK = 9999
 
+type PairingRoundIds = Pick<Pairing, 'pairing_round' | 'pairing_player1_id' | 'pairing_player2_id' | 'pairing_player3_id' | 'pairing_player4_id'>
+
 /** Map raw pairing rows to PairingHistoryEntry array */
-function mapPairingsToHistory(pairings: any[]): PairingHistoryEntry[] {
+function mapPairingsToHistory(pairings: PairingRoundIds[]): PairingHistoryEntry[] {
   return (pairings ?? []).map(pairing => ({
     round: pairing.pairing_round ?? 0,
     players: [
@@ -23,18 +26,20 @@ function mapPairingsToHistory(pairings: any[]): PairingHistoryEntry[] {
   }))
 }
 
-async function fetchStandingsForEvents(
-  supabase: any,
+async function fetchStandingsForEvents<T>(
+  supabase: ReturnType<typeof useSupabaseClient<Database>>,
   eventIds: number[],
   selectColumns: string
-) {
+): Promise<T[]> {
+  // selectColumns is a dynamic string, so Supabase can't statically type the
+  // response shape — callers pass T to describe the columns they selected.
   const { data, error } = await supabase
     .from('standings')
     .select(selectColumns)
     .in('event_id', eventIds)
 
   if (error) throw error
-  return data ?? []
+  return (data ?? []) as unknown as T[]
 }
 
 /** Shape for inserting a new pairing row into Supabase */
@@ -74,7 +79,7 @@ interface StandingAccumulator {
 }
 
 /** Resolve event → league → ruleset and build position-value array */
-async function resolveEventRuleset(supabase: any, eventId: number) {
+async function resolveEventRuleset(supabase: ReturnType<typeof useSupabaseClient<Database>>, eventId: number) {
   const { data: eventData, error: eventError } = await supabase
     .from('events')
     .select('league_id, event_round_number')
@@ -111,7 +116,7 @@ async function resolveEventRuleset(supabase: any, eventId: number) {
 }
 
 /** Fetch pairings, round results, and current standings for a round */
-async function fetchRoundData(supabase: any, eventId: number, currentRound: number) {
+async function fetchRoundData(supabase: ReturnType<typeof useSupabaseClient<Database>>, eventId: number, currentRound: number) {
   const [{ data: pairingsData, error: pairingsError }, { data: currentStandings, error: currentStandingsError }] = await Promise.all([
     supabase.from('pairings').select('*').eq('event_id', eventId).eq('pairing_round', currentRound),
     supabase.from('standings').select('player_id, standing_player_score, victories, brew_received, play_received').eq('event_id', eventId),
@@ -120,7 +125,7 @@ async function fetchRoundData(supabase: any, eventId: number, currentRound: numb
   if (pairingsError) throw pairingsError
   if (currentStandingsError) throw currentStandingsError
 
-  const pairingIds = (pairingsData ?? []).map((p: any) => p.pairing_id)
+  const pairingIds = (pairingsData ?? []).map(p => p.pairing_id)
 
   const { data: allResults, error: allResultsError } = await supabase
     .from('round_results')
@@ -130,7 +135,7 @@ async function fetchRoundData(supabase: any, eventId: number, currentRound: numb
   if (allResultsError) throw allResultsError
 
   const standingsMap = new Map<number, StandingAccumulator>(
-    (currentStandings ?? []).map((s: any) => [s.player_id, {
+    (currentStandings ?? []).map(s => [s.player_id, {
       player_id: s.player_id,
       standing_player_score: s.standing_player_score ?? 0,
       victories: s.victories ?? 0,
@@ -144,11 +149,11 @@ async function fetchRoundData(supabase: any, eventId: number, currentRound: numb
 
 /** Calculate scores from round results and update accumulator */
 function calculateRoundScores(
-  pairings: any[],
-  results: any[],
+  pairings: Pairing[],
+  results: RoundResult[],
   standingsMap: Map<number, StandingAccumulator>,
   posValues: number[],
-  ruleset: any,
+  ruleset: Ruleset | null,
 ) {
   for (const pairing of pairings) {
     const playerIds = ([
@@ -158,23 +163,23 @@ function calculateRoundScores(
       pairing.pairing_player4_id,
     ] as Array<number | null>).filter((pid): pid is number => pid !== null)
 
-    const tableResults = results.filter((r: any) => r.pairing_id === pairing.pairing_id)
+    const tableResults = results.filter(r => r.pairing_id === pairing.pairing_id)
 
     for (const playerId of playerIds) {
-      const myResult = tableResults.find((r: any) => r.player_id === playerId)
+      const myResult = tableResults.find(r => r.player_id === playerId)
       if (!myResult) continue
 
       const position = myResult.position ?? 0
       const numberOfKills = myResult.number_of_kills ?? 0
 
-      const otherResults = tableResults.filter((r: any) => r.player_id !== playerId)
-      const brewVote = otherResults.filter((r: any) => r.brew_vote === playerId).length
+      const otherResults = tableResults.filter(r => r.player_id !== playerId)
+      const brewVote = otherResults.filter(r => r.brew_vote === playerId).length
       const totalPlayCount = otherResults.filter(
-        (r: any) => r.play_vote_1 === playerId || r.play_vote_2 === playerId,
+        r => r.play_vote_1 === playerId || r.play_vote_2 === playerId,
       ).length
 
       const samePositionCount = position !== 0
-        ? tableResults.filter((r: any) => r.position === position).length
+        ? tableResults.filter(r => r.position === position).length
         : 1
 
       let rankSum = 0
@@ -200,7 +205,7 @@ function calculateRoundScores(
 }
 
 /** Batch-update standings scores, then update ranks */
-async function updateStandingsAndRanks(supabase: any, eventId: number, standingsMap: Map<number, StandingAccumulator>) {
+async function updateStandingsAndRanks(supabase: ReturnType<typeof useSupabaseClient<Database>>, eventId: number, standingsMap: Map<number, StandingAccumulator>) {
   await Promise.all(
     Array.from(standingsMap.values()).map(s =>
       supabase
@@ -573,7 +578,7 @@ export const useEventStore = defineStore('events', () => {
 
   /** Build round-1 pairings from a fixed player order (no optimizer). */
   async function insertRoundOnePairings(
-    supabaseClient: any,
+    supabaseClient: ReturnType<typeof useSupabaseClient<Database>>,
     eventId: number,
     round: number,
     playerOrder: number[],
@@ -609,7 +614,7 @@ export const useEventStore = defineStore('events', () => {
   }
 
   /** Fetch standings + history and run the pairing optimizer for round 2+. */
-  async function insertOptimizedPairings(supabaseClient: any, eventId: number, round: number) {
+  async function insertOptimizedPairings(supabaseClient: ReturnType<typeof useSupabaseClient<Database>>, eventId: number, round: number) {
     const { data: standingsData, error: standingsError } = await supabaseClient
       .from('standings')
       .select('player_id, standing_player_rank, standing_player_score')
@@ -649,7 +654,7 @@ export const useEventStore = defineStore('events', () => {
   }
 
   /** Fetch historical pairings for an event and map them to history entries. */
-  async function fetchPairingHistoryForOptimizer(supabaseClient: any, eventId: number, round: number): Promise<PairingHistoryEntry[]> {
+  async function fetchPairingHistoryForOptimizer(supabaseClient: ReturnType<typeof useSupabaseClient<Database>>, eventId: number, round: number): Promise<PairingHistoryEntry[]> {
     const { data, error } = await supabaseClient
       .from('pairings')
       .select('pairing_round, pairing_player1_id, pairing_player2_id, pairing_player3_id, pairing_player4_id')
@@ -662,7 +667,7 @@ export const useEventStore = defineStore('events', () => {
 
   /** Build scoring players from standings + historical table-3 counts. */
   function buildScoringPlayers(
-    standingsData: any[],
+    standingsData: Pick<Standing, 'player_id' | 'standing_player_rank' | 'standing_player_score'>[],
     history: PairingHistoryEntry[],
   ): PairingPlayer[] {
     const table3Counter = new Map<number, number>()
@@ -784,7 +789,16 @@ export const useEventStore = defineStore('events', () => {
 
       const eventIds = eventsData.map(e => e.event_id)
 
-      const standingsData = await fetchStandingsForEvents(
+      interface LeagueStandingRow {
+        player_id: number
+        standing_player_score: number | null
+        victories: number | null
+        brew_received: number | null
+        play_received: number | null
+        players: Pick<Player, 'player_id' | 'player_name' | 'player_surname' | 'formats_played' | 'is_active'> | null
+      }
+
+      const standingsData = await fetchStandingsForEvents<LeagueStandingRow>(
         supabase,
         eventIds,
         `
@@ -868,7 +882,17 @@ export const useEventStore = defineStore('events', () => {
       const participation = ruleset?.rule_set_partecipation ?? 0
       const eventIds = eventsRes.data.map(e => e.event_id)
 
-      const standingsData = await fetchStandingsForEvents(
+      interface LeagueResultRow {
+        player_id: number
+        standing_player_score: number | null
+        victories: number | null
+        brew_received: number | null
+        play_received: number | null
+        standing_player_rank: number | null
+        players: Pick<Player, 'player_id' | 'player_name' | 'player_surname'> | null
+      }
+
+      const standingsData = await fetchStandingsForEvents<LeagueResultRow>(
         supabase,
         eventIds,
         `

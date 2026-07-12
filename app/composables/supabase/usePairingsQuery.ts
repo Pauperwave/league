@@ -1,12 +1,15 @@
+import type { PairingWithResults } from '#shared/utils/types'
+import type { Database } from '#shared/utils/types/database'
+
 /**
  * Fetch pairings with nested round_results for a specific event and round.
  * Extracted to avoid duplicating this query in useEventPage.ts and events.ts.
  */
 export async function fetchPairingsWithResults(
-  supabase: any,
+  supabase: ReturnType<typeof useSupabaseClient<Database>>,
   eventId: number,
   round: number
-): Promise<any[]> {
+): Promise<PairingWithResults[]> {
   const { data, error } = await supabase
     .from('pairings')
     .select(`
@@ -18,5 +21,5 @@ export async function fetchPairingsWithResults(
     .order('pairing_id')
 
   if (error) throw error
-  return data ?? []
+  return (data ?? []) as unknown as PairingWithResults[]
 }
