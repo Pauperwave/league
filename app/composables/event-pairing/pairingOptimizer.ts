@@ -68,6 +68,8 @@ export const DEFAULT_PAIRING_WEIGHTS: PairingWeights = {
   tableSize3: -0.15,
 }
 
+// ── Key / lookup helpers ─────────────────────────────────────────────────────
+
 function pairKey(a: number, b: number): string {
   return a < b ? `${a}-${b}` : `${b}-${a}`
 }
@@ -124,6 +126,8 @@ function hasForbiddenConflict(table: number[], forbiddenSet: Set<string>): boole
   }
   return false
 }
+
+// ── Scoring primitives (per-table, per-player) ────────────────────────────────
 
 /**
  * Calculates the strength balance for a table.
@@ -467,6 +471,8 @@ function scoreSolution(
   }
 }
 
+// ── Public scoring API ─────────────────────────────────────────────────────────
+
 /**
  * Scores an already-built table arrangement without modifying it.
  * Used to preview/validate a candidate seating (e.g. a manually edited one) using the
@@ -504,6 +510,8 @@ export function scorePairingTables(params: {
     isValid: Number.isFinite(result.totalScore),
   }
 }
+
+// ── Solution construction (greedy) ────────────────────────────────────────────
 
 function removeAt<T>(arr: T[], index: number): T {
   const value = arr[index]
@@ -565,6 +573,8 @@ function buildGreedyTables(
   return tables
 }
 
+// ── Solution improvement (local search) ───────────────────────────────────────
+
 function cloneTables(tables: number[][]): number[][] {
   return tables.map(table => [...table])
 }
@@ -619,6 +629,8 @@ function improveBySwap(
 
   return best
 }
+
+// ── Public optimization API ───────────────────────────────────────────────────
 
 /**
  * Builds a table seating for the round via multi-start greedy construction + local search.
@@ -695,6 +707,8 @@ export function optimizePairings(params: {
 
   return best
 }
+
+// ── Utilities ──────────────────────────────────────────────────────────────────
 
 export function getForbiddenPairKey(playerA: number, playerB: number): string {
   return pairKey(playerA, playerB)

@@ -9,10 +9,14 @@ import type { Kill } from '#shared/utils/types'
 export const useKillsStore = defineStore('kills', () => {
   const { t } = useI18n()
 
+  // ── State ──────────────────────────────────────────────────────────────────
+
   /** All kills registered in the current round */
   const kills = ref<Kill[]>([])
   /** Set of pairing IDs whose kills have been confirmed/submitted */
   const confirmedPairings = ref<Set<number>>(new Set())
+
+  // ── Getters ────────────────────────────────────────────────────────────────
 
   /** Check if a specific kill (killer → victim) already exists */
   const isKillPresent = computed(() => (killerId: number, victimId: number) =>
@@ -37,6 +41,8 @@ export const useKillsStore = defineStore('kills', () => {
   /** Check if a pairing's kills have been confirmed */
   const isPairingConfirmed = computed(() => (pairingId: number) =>
     confirmedPairings.value.has(pairingId))
+
+  // ── Actions ────────────────────────────────────────────────────────────────
 
   /**
    * Add a kill after validating no duplicate or reverse exists.
