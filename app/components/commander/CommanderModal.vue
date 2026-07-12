@@ -10,7 +10,6 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   submit: [commander1: string | null, commander2: string | null]
-  cancel: []
 }>()
 
 const commander1 = ref(props.commander1 || '')

@@ -9,7 +9,6 @@ const {
   pairings,
   allPlayers,
   rankingsStore,
-  getPlayerName,
 } = defineProps<{
   showScoreModal: boolean
   selectedPairingId: number | null
@@ -17,7 +16,6 @@ const {
   pairings: PairingWithResults[]
   allPlayers: Player[]
   rankingsStore: ReturnType<typeof import('~/stores/rankings').useRankingsStore>
-  getPlayerName: (playerId: number) => string
 }>()
 
 const emit = defineEmits<{
@@ -53,7 +51,6 @@ const open = computed({
     <template #body>
       <TableScoreGrid
         :pairing="pairing"
-        :get-player-name="getPlayerName"
         :all-players="allPlayers"
         :saved-ranking-with-ranks="savedRankingWithRanks"
         @submit="(r, rw) => emit('submit', r, rw)"

@@ -99,11 +99,6 @@ export function useEventPage() {
     return playerStore.waitingPlayers.includes(playerId)
   }
 
-  function hasSubmittedScore(pairingId: number, playerId: number): boolean {
-    const pairing = eventStore.pairings.find(p => p.pairing_id === pairingId)
-    return pairing?.round_results?.some(s => s.player_id === playerId) ?? false
-  }
-
   async function addToWaitingList(playerIds: number[]) {
     for (const playerId of playerIds) {
       await playerStore.addToWaitingList(eventId, playerId)
@@ -275,7 +270,6 @@ export function useEventPage() {
     players: computed(() => players.value ?? []),
     getPlayerName,
     isInWaitingList,
-    hasSubmittedScore,
     addToWaitingList,
     removeFromWaitingList,
     startEvent,

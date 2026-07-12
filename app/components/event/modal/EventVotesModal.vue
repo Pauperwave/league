@@ -37,8 +37,6 @@ const open = computed({
     <template #body>
       <DeckPlayVotesModal
         v-if="selectedVotesPlayerId"
-        :player-id="selectedVotesPlayerId"
-        :player-name="getPlayerName(selectedVotesPlayerId)"
         :deck-vote-player-id="votesStore.getDeckVote(selectedVotesPlayerId)"
         :play-vote-player-id="votesStore.getPlayVote(selectedVotesPlayerId)"
         :other-players="tablePlayersForVotes"

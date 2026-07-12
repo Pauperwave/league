@@ -14,7 +14,6 @@ interface DatabasePlayer {
 
 const props = defineProps<{
   pairing: Pairing | null
-  getPlayerName: (playerId: number) => string
   allPlayers: DatabasePlayer[]
   savedRankingWithRanks?: { playerId: number; rank: number }[]
 }>()

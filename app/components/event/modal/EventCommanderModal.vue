@@ -49,7 +49,6 @@ function onSubmit() {
         :commander1="commandersStore.getCommander1(selectedPlayerId)"
         :commander2="commandersStore.getCommander2(selectedPlayerId)"
         @submit="(cmd1, cmd2) => emit('submit', cmd1, cmd2)"
-        @cancel="emit('cancel')"
       />
     </template>
 

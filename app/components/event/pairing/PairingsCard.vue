@@ -7,14 +7,8 @@ import type { Pairing, TournamentPlayer, Kill } from '#shared/utils/types'
 const props = defineProps<{
   /** List of pairings for the current round. */
   pairings: Pairing[]
-  /** The currently active round number, or null if no round is active. */
-  currentRound: number | null
   /** When true, hides all action buttons and renders the card in read-only mode. */
   readonly?: boolean
-  /** Returns the display name of a player by their ID. */
-  getPlayerName: (playerId: number) => string
-  /** Returns whether a player has already submitted their score for a given pairing. */
-  hasSubmittedScore: (pairingId: number, playerId: number) => boolean
   /** Full list of tournament players used to resolve player details. */
   allPlayers: TournamentPlayer[]
   /** Store managing player rankings per pairing. */

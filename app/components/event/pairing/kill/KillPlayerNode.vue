@@ -8,6 +8,7 @@ defineOptions({
 })
 
 const props = defineProps<{
+  // fallow-ignore-next-line unused-component-props -- required by Vue Flow's node component contract, always passed even though this component keys off data.player.id instead
   id: string
   data: { player: TournamentPlayer }
   selected: boolean

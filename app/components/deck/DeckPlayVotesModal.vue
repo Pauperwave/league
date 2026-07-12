@@ -3,8 +3,6 @@
 import type { TournamentPlayer } from '#shared/utils/types'
 
 const props = defineProps<{
-  playerId: number
-  playerName: string
   deckVotePlayerId: number | null
   playVotePlayerId: number | null
   otherPlayers: TournamentPlayer[]
@@ -37,7 +35,7 @@ watch(
           :key="`deck-${player.id}`"
           :variant="localDeckVotePlayerId === player.id ? 'solid' : 'outline'"
           :color="localDeckVotePlayerId === player.id ? 'primary' : 'neutral'"
-          @click="localDeckVotePlayerId = player.id"
+          @click="() => { localDeckVotePlayerId = player.id }"
         >
           {{ `${player.name} ${player.surname}` }}
         </UButton>
@@ -52,7 +50,7 @@ watch(
           :key="`play-${player.id}`"
           :variant="localPlayVotePlayerId === player.id ? 'solid' : 'outline'"
           :color="localPlayVotePlayerId === player.id ? 'primary' : 'neutral'"
-          @click="localPlayVotePlayerId = player.id"
+          @click="() => { localPlayVotePlayerId = player.id }"
         >
           {{ `${player.name} ${player.surname}` }}
         </UButton>

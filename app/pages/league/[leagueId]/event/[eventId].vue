@@ -14,7 +14,7 @@ import { buildStandingsSubmissionMap } from '~/utils/standingsSubmission'
 const {
   leagueId, eventId, currentLeague, currentEvent, currentRound, totalRounds,
   eventStatus, canStartEvent, waitingPlayers, waitroomEntries, pairings, standings,
-  players, tableEstimate, getPlayerName, hasSubmittedScore,
+  players, tableEstimate, getPlayerName,
   addToWaitingList, removeFromWaitingList, startEvent, nextRound, turnBackRound, updateEvent,
   refreshWaiting, refreshStandings, refreshPairingHistory, refreshEvents,
   pairingHistory, loading, previewTables, viewedRound, isViewingPastRound, viewRound, clearViewedRound,
@@ -487,10 +487,7 @@ function handleResetTable(pairingId: number) {
               />
               <PairingsCard
                 :pairings="displayedPairings"
-                :current-round="currentRound"
                 :readonly="isViewingPastRound"
-                :get-player-name="getPlayerName"
-                :has-submitted-score="hasSubmittedScore"
                 :all-players="tournamentPlayers"
                 :rankings="rankingsStore"
                 :commanders-store="commandersStore"
@@ -566,7 +563,6 @@ function handleResetTable(pairingId: number) {
       :pairings="pairings"
       :all-players="players"
       :rankings-store="rankingsStore"
-      :get-player-name="getPlayerName"
       @submit="submitHandlers.handleScoreSubmit"
       @cancel="showScoreModal = false"
     />
