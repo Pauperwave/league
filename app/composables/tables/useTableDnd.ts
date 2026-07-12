@@ -12,8 +12,8 @@ import {
   type PairingPlayer,
   type PairingHistoryEntry,
   type PairingScoreDetails,
-} from '@/composables/events/pairing/pairingOptimizer'
-import { normalizePairingForbiddenPairs } from '@/composables/events/pairing/pairingPreferences'
+} from '@/composables/event-pairing/pairingOptimizer'
+import { normalizePairingForbiddenPairs } from '@/composables/event-pairing/pairingPreferences'
 
 function cloneTables(tables: TournamentTable[]): TournamentTable[] {
   return tables.map(table => ({

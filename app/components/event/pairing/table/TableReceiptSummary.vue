@@ -1,6 +1,6 @@
 <!-- app\components\events\Pairings\Table\TableReceiptSummary.vue -->
 <script setup lang="ts">
-import type { PairingTableScore } from '~/composables/events/pairing/pairingOptimizer'
+import type { PairingTableScore } from '~/composables/event-pairing/pairingOptimizer'
 
 defineProps<{
   score: PairingTableScore

@@ -1,6 +1,6 @@
 <!-- app\components\events\Pairings\Settings\ForbiddenPairsSection.vue -->
 <script setup lang="ts">
-import { getForbiddenPairKey } from '~/composables/events/pairing/pairingOptimizer'
+import { getForbiddenPairKey } from '~/composables/event-pairing/pairingOptimizer'
 import { usePlayerOptions } from '~/composables/supabase/usePlayers'
 
 interface ForbiddenPair {

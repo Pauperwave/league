@@ -1,7 +1,7 @@
 import type { PairingWeights } from '#shared/utils/types'
 import type { Ref } from 'vue'
 import { isCloseTo } from '~/utils/math'
-import { DEFAULT_PAIRING_WEIGHTS } from '~/composables/events/pairing/pairingOptimizer'
+import { DEFAULT_PAIRING_WEIGHTS } from '~/composables/event-pairing/pairingOptimizer'
 import type { PairingPresetKind } from '~/components/event/pairing/settings/PairingPresetButtons.vue'
 
 const SOCIAL_PRESET: PairingWeights = {

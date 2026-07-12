@@ -12,13 +12,13 @@ import { computed, ref, watch } from 'vue'
 import type {
   PairingHistoryEntry,
   PairingPlayer,
-} from '~/composables/events/pairing/pairingOptimizer'
+} from '~/composables/event-pairing/pairingOptimizer'
 import { useToast } from '#imports'
 import { useTableDnd } from '~/composables/tables/useTableDnd'
 import { usePairingPresets } from '~/composables/event/usePairingPresets'
 import { useOptimizationNotifier } from '~/composables/event/useOptimizationNotifier'
-import { getPairingPreferences, savePairingPreferences } from '~/composables/events/pairing/pairingPreferences'
-import { useButtonLogging } from '~/composables/useButtonLogging'
+import { getPairingPreferences, savePairingPreferences } from '~/composables/event-pairing/pairingPreferences'
+import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 const open = defineModel<boolean>('open', { default: false })
 
