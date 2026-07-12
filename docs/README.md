@@ -22,8 +22,9 @@ Master index of all project documentation.
 | `bugs.md` | Known bugs (minimal) | Maintenance |
 | `buttons.md` | ActionButton component pattern discussion | UI patterns |
 | `TODO.md` | Future features: stepper, timer, alarm sound, Vite optimizeDeps | Roadmap |
-| `skills-audit-checklist.md` | Skills audit completion checklist | Process |
-| `skills-audit-report.md` | Full skills audit with scores and recommendations | Process |
+| `audits/skills-audit-checklist.md` | Skills audit completion checklist | Process |
+| `audits/skills-audit-report.md` | Full skills audit with scores and recommendations | Process |
+| `audits/2026-07-12-vue-nuxt-conventions.md` | Vue 3.5+/Nuxt 4 convention compliance audit | Process |
 | `superpowers/` | Feature specs and plans (multi-device realtime, event flow) | Planning |
 
 ---
@@ -54,7 +55,8 @@ Master index of all project documentation.
 
 1. `reinventing-the-wheel.md` — patterns to replace with libraries
 2. `AGENTS.md` — lint workflow, fallow integration
-3. `skills-audit-report.md` — comprehensive audit results
+3. `audits/skills-audit-report.md` — comprehensive audit results
+4. `audits/2026-07-12-vue-nuxt-conventions.md` — Vue/Nuxt convention compliance
 
 ---
 
@@ -69,6 +71,10 @@ docs/
 ├── README.md                    ← you are here
 ├── AGENTS.md
 ├── async-data-keys.md
+├── audits/
+│   ├── skills-audit-checklist.md
+│   ├── skills-audit-report.md
+│   └── 2026-07-12-vue-nuxt-conventions.md
 ├── bugs.md
 ├── buttons.md
 ├── component-hierarchy.md
@@ -78,8 +84,6 @@ docs/
 ├── prompt-for-ai.md
 ├── reinventing-the-wheel.md
 ├── routes.md
-├── skills-audit-checklist.md
-├── skills-audit-report.md
 ├── state-flow.md
 ├── stores.md
 ├── TODO.md

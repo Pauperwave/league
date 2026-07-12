@@ -206,7 +206,7 @@ Gli store di sessione hanno **persistenza ottimistica**: update immediato UI + s
 - [x] Creato `CLAUDE.md` alla radice del repo
 - [x] Aggiunto TODO per Playwright + Playwright MCP in `docs/TODO.md`
 
-Audit dettagliato: [`docs/skills-audit-report.md`](docs/skills-audit-report.md), checklist: [`docs/skills-audit-checklist.md`](docs/skills-audit-checklist.md) — **non riverificati in questa sessione**, possono essere datati.
+Audit dettagliato: [`docs/audits/skills-audit-report.md`](docs/audits/skills-audit-report.md), checklist: [`docs/audits/skills-audit-checklist.md`](docs/audits/skills-audit-checklist.md) — **non riverificati in questa sessione**, possono essere datati. Vedi anche [`docs/audits/2026-07-12-vue-nuxt-conventions.md`](docs/audits/2026-07-12-vue-nuxt-conventions.md) per l'audit Vue 3.5+/Nuxt 4.
 
 ---
 
@@ -248,8 +248,9 @@ Indice completo e aggiornato: [`docs/README.md`](docs/README.md). Voci principal
 | [`docs/modal-url-sync.md`](docs/modal-url-sync.md) | Sync query ↔ modali evento |
 | [`docs/buttons.md`](docs/buttons.md) | Pattern bottoni / logging |
 | [`docs/TODO.md`](docs/TODO.md) | Idee e snippet storici, incl. Playwright + MCP |
-| [`docs/skills-audit-report.md`](docs/skills-audit-report.md) | Audit best practices |
-| [`docs/skills-audit-checklist.md`](docs/skills-audit-checklist.md) | Checklist convenzioni |
+| [`docs/audits/skills-audit-report.md`](docs/audits/skills-audit-report.md) | Audit best practices |
+| [`docs/audits/skills-audit-checklist.md`](docs/audits/skills-audit-checklist.md) | Checklist convenzioni |
+| [`docs/audits/2026-07-12-vue-nuxt-conventions.md`](docs/audits/2026-07-12-vue-nuxt-conventions.md) | Audit Vue 3.5+/Nuxt 4 conventions |
 
 ---
 
