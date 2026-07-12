@@ -2,21 +2,21 @@
 <script setup lang="ts">
 import { slugify } from '~/utils/slug'
 
-interface Props {
+const {
+  name,
+  surname,
+  avatarUrl,
+  showAvatar = true
+} = defineProps<{
   name: string
   surname: string
   avatarUrl?: string
   showAvatar?: boolean
-}
+}>()
 
-const props = withDefaults(defineProps<Props>(), {
-  avatarUrl: undefined,
-  showAvatar: true,
-})
+const initial = computed(() => name.trim().charAt(0).toUpperCase() || '?')
 
-const initial = computed(() => props.name.trim().charAt(0).toUpperCase() || '?')
-
-const playerLink = computed(() => `/player/${slugify(`${props.name} ${props.surname}`.trim())}`)
+const playerLink = computed(() => `/player/${slugify(`${name} ${surname}`.trim())}`)
 </script>
 
 <template>
