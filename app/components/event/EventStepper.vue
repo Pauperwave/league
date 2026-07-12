@@ -88,8 +88,8 @@ defineExpose({
   <div class="w-full">
     <UStepper
       ref="stepper"
-      :items="items"
       v-model="internalStep"
+      :items="items"
       class="w-full"
       @update:model-value="handleStepClick"
     >
