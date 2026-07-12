@@ -64,8 +64,16 @@ export default defineNuxtConfig({
         '@vue-flow/background',
         '@vue-flow/controls',
         'vue-draggable-plus',
-        'valibot'
+        'valibot',
+        'vue',
+        'vue-router'
       ]
+    },
+    // Works around a known Nuxt/Nitro prerender bug where the SSR bundle
+    // does a default import from vue's ESM entry, which has no default
+    // export: https://github.com/nuxt/nuxt/issues/33132
+    ssr: {
+      noExternal: ['vue', 'vue-router']
     }
   },
 
