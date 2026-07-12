@@ -3,18 +3,14 @@
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
 
 const {
-  modelValue,
   label = 'Data',
   required = false,
 } = defineProps<{
-  modelValue: CalendarDate | null
   label?: string
   required?: boolean
 }>()
 
-const emit = defineEmits<{
-  'update:modelValue': [value: CalendarDate | null]
-}>()
+const modelValue = defineModel<CalendarDate | null>({ required: true })
 
 const open = ref(false)
 const df = new DateFormatter('it-IT', { dateStyle: 'long' })
@@ -25,8 +21,8 @@ function getToday(): CalendarDate {
 }
 
 const selectedDate = computed({
-  get: () => modelValue ?? getToday(),
-  set: (v: CalendarDate) => emit('update:modelValue', v)
+  get: () => modelValue.value ?? getToday(),
+  set: (v: CalendarDate) => { modelValue.value = v }
 })
 </script>
 
@@ -44,7 +40,7 @@ const selectedDate = computed({
           <span
             v-if="modelValue"
             class="inline-flex ml-2 p-0.5 rounded cursor-pointer hover:bg-neutral-200 dark:hover:bg-neutral-700"
-            @click.stop="emit('update:modelValue', null)"
+            @click.stop="modelValue = null"
           >
             <UIcon name="i-lucide-circle-x" class="size-4" />
           </span>

@@ -1,14 +1,11 @@
 <!-- app\components\CommanderSearch.vue -->
 <script setup lang="ts">
 const props = defineProps<{
-  modelValue?: string | null
   whitelist?: string[] | null
   playerId?: number | null
 }>()
 
-const emit = defineEmits<{
-  'update:modelValue': [value: string | null]
-}>()
+const modelValue = defineModel<string | null>()
 
 // Logging quando la whitelist cambia
 watch(() => props.whitelist, (newWhitelist) => {
@@ -78,18 +75,15 @@ watch(card, (newCard) => {
   }
 })
 
-const localValue = ref(props.modelValue || '')
-
-watch(() => props.modelValue, (newValue) => {
-  console.log('[CommanderSearch] props.modelValue changed:', newValue)
-  localValue.value = newValue || ''
+const localValue = computed({
+  get: () => modelValue.value || '',
+  set: (v: string) => { modelValue.value = v || null }
 })
 
-watch(localValue, (newValue) => {
-  console.log('[CommanderSearch] localValue changed:', newValue)
-  emit('update:modelValue', newValue || null)
+watch(modelValue, (newValue) => {
+  console.log('[CommanderSearch] modelValue changed:', newValue)
   query.value = newValue || ''
-  console.log('[CommanderSearch] query set from localValue:', query.value)
+  console.log('[CommanderSearch] query set from modelValue:', query.value)
 })
 
 watch(suggestions, (newSuggestions) => {

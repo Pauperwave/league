@@ -76,7 +76,6 @@ const forbiddenPairsDisplay = computed(() => {
       />
 
       <UButton
-        ref="addButton"
         color="neutral"
         variant="soft"
         icon="i-lucide-plus"
