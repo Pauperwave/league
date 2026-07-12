@@ -5,7 +5,7 @@ interface LifecycleDeps {
   nextRound: (playerOrder?: number[]) => Promise<boolean>
   turnBackRound: () => Promise<boolean>
   startEvent: (playerOrder: number[]) => Promise<boolean>
-  updateEvent: (payload: { id: number; data: { eventName: string; eventDate: string | null; numRound: number } }) => Promise<boolean>
+  updateEvent: (payload: { id: number; data: { eventName: string; eventDate: string | null; numRound: number; roundDuration: number } }) => Promise<boolean>
 
   // State refs
   showNextRoundModal: Ref<boolean>

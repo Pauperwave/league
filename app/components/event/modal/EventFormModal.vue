@@ -3,7 +3,7 @@
 import { type CalendarDate, getLocalTimeZone } from '@internationalized/date'
 import type { Event } from '#shared/utils/types'
 import * as v from 'valibot'
-import { useButtonLogging } from '~/composables/useButtonLogging'
+import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 // — Constants —
 const DEFAULT_ROUND_DURATION = 75 // 1:15 hours
@@ -82,7 +82,7 @@ watch(open, (isOpen) => {
         eventName: e.event_name,
         eventDate: parseDateString(e.event_datetime),
         numRound: e.event_round_number ?? 2,
-        roundDuration: (e as any).event_round_duration ?? DEFAULT_ROUND_DURATION,
+        roundDuration: e.event_round_duration ?? DEFAULT_ROUND_DURATION,
       }
     : defaultForm()
   )

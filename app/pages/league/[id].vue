@@ -6,11 +6,12 @@ interface CreateEventData {
   eventName: string
   eventDate: string
   numRound: number
+  roundDuration: number
 }
 
 interface UpdateEventData {
   id: number
-  data: { eventName: string; eventDate: string | null; numRound: number }
+  data: { eventName: string; eventDate: string | null; numRound: number; roundDuration: number }
 }
 
 interface UpdateLeagueData {
@@ -92,6 +93,7 @@ async function createEvent(data: CreateEventData) {
     league_id: leagueId,
     event_datetime: data.eventDate,
     event_round_number: data.numRound,
+    event_round_duration: data.roundDuration,
     event_registration_open: true,
   })
 
@@ -118,6 +120,7 @@ async function updateEvent({ id, data }: UpdateEventData) {
     event_name: data.eventName,
     event_datetime: data.eventDate ?? undefined,
     event_round_number: data.numRound,
+    event_round_duration: data.roundDuration,
   })
 
   if (!result.success) {

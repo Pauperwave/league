@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import { getPairingPlayerIds } from '#shared/utils/types'
 import type { Seat, TournamentPlayer, TournamentTable } from '#shared/utils/types'
-import type { PairingHistoryEntry, PairingPlayer } from '~/composables/events/pairing/pairingOptimizer'
+import type { PairingHistoryEntry, PairingPlayer } from '~/composables/event-pairing/pairingOptimizer'
 import { buildStandingsSubmissionMap } from '~/utils/standingsSubmission'
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -296,7 +296,7 @@ const submittedByPlayerId = computed<Record<number, boolean>>(() => {
   })
 
   const roundDuration = computed(() => {
-    return (currentEvent.value as any)?.event_round_duration ?? 75
+    return currentEvent.value?.event_round_duration ?? 75
   })
 
   function handleTimerExpired() {

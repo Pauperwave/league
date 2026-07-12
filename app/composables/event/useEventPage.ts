@@ -166,11 +166,12 @@ export function useEventPage() {
     return true
   }
 
-  async function updateEvent({ id, data }: { id: number; data: { eventName: string; eventDate: string | null; numRound: number } }) {
+  async function updateEvent({ id, data }: { id: number; data: { eventName: string; eventDate: string | null; numRound: number; roundDuration: number } }) {
     const result = await eventStore.updateEvent(id, {
       event_name: data.eventName,
       event_datetime: data.eventDate ?? undefined,
       event_round_number: data.numRound,
+      event_round_duration: data.roundDuration,
     })
     if (!result.success) {
       console.error(result.error)
