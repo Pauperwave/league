@@ -1,22 +1,9 @@
 # Todos
 
-## Add @nuxtjs/i18n for Italian string centralization
-- UI strings are hardcoded Italian literals throughout components (`docs/AGENTS.md`: "UI-facing strings: Italian") — no single source, hard to audit/change copy consistently
-- Install: `npx nuxi@latest module add i18n`
-- Even for a single-locale (Italian-only) app, `@nuxtjs/i18n` gives centralized string management (one `it.json`/`it.ts` locale file instead of literals scattered across every `.vue` file) — worth it purely for maintainability, not for actual multi-language support
-- Nuxt UI has built-in locale support that should be wired up alongside it, in `app/app.vue` (root `<UApp>` already lives there):
-  ```vue
-  <script setup lang="ts">
-  import { it } from '@nuxt/ui/locale'
-  </script>
-
-  <template>
-    <UApp :locale="it">
-      <NuxtPage />
-    </UApp>
-  </template>
-  ```
-- While in `app/app.vue`: `htmlAttrs.lang` is still `'en'` and the `useSeoMeta` title/description/OG image are unedited Nuxt UI starter-template boilerplate ("A production-ready starter template powered by Nuxt UI...", starter template screenshot as `ogImage`) — fix `lang` to `'it'` and write real app copy while touching this file for locale setup
+## Migrate Italian strings into @nuxtjs/i18n
+- `@nuxtjs/i18n@10.4.1` is installed and configured (`nuxt.config.ts`: `locales: [{ code: 'it' }]`, `defaultLocale: 'it'`, `strategy: 'no_prefix'` — no `/it/` URL prefix, single-locale only) with `i18n/i18n.config.ts` as the vue-i18n config (currently `messages: { it: {} }`, empty)
+- Nuxt UI's locale support is wired up in `app/app.vue` (`<UApp :locale="it">` with `import { it } from '@nuxt/ui/locale'`); `htmlAttrs.lang` fixed to `'it'` and the SEO title/description replaced with real app copy (was unedited Nuxt UI starter-template boilerplate)
+- **Not done yet**: the actual string migration. UI strings are still hardcoded Italian literals throughout every component — the module is only in place to centralize them into, nothing has been moved into `messages.it` yet. This is a large, separate migration on the scale of the icon-centralization pass (dozens of files) — populate `messages.it` with real keys and replace literals with `$t()`/`useI18n()` calls
 
 ## Add Playwright + Playwright MCP
 - Add `@playwright/test` and a `playwright.config.ts` for E2E tests (`docs/AGENTS.md` already calls for Playwright + `@nuxt/test-utils` E2E coverage on critical flows: event creation, round progression, score submission)

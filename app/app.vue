@@ -1,30 +1,28 @@
 <!-- app\app.vue -->
 <script setup>
+import { it } from '@nuxt/ui/locale'
+
 useHead({
   meta: [{ name: 'viewport', content: 'width=device-width, initial-scale=1' }],
   link: [{ rel: 'icon', href: '/favicon.ico' }],
   htmlAttrs: {
-    lang: 'en'
+    lang: 'it'
   }
 })
 
 const title = 'Gestione Lega'
-const description
-  = 'A production-ready starter template powered by Nuxt UI. Build beautiful, accessible, and performant applications in minutes, not hours.'
+const description = 'Gestione leghe Magic: The Gathering Commander: eventi, abbinamenti, punteggi e classifiche.'
 
 useSeoMeta({
   title,
   description,
   ogTitle: title,
   ogDescription: description,
-  ogImage: 'https://ui.nuxt.com/assets/templates/nuxt/starter-light.png',
-  twitterImage: 'https://ui.nuxt.com/assets/templates/nuxt/starter-light.png',
-  twitterCard: 'summary_large_image'
 })
 </script>
 
 <template>
-  <UApp class="h-screen flex flex-col">
+  <UApp :locale="it" class="h-screen flex flex-col">
     <!-- <UHeader class="shrink-0">
       <template #left>
         <NuxtLink to="/">

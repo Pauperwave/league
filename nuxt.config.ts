@@ -11,6 +11,7 @@ export default defineNuxtConfig({
     '@nuxt/image',
     'motion-v/nuxt',
     '@nuxt/test-utils/module',
+    '@nuxtjs/i18n'
   ],
 
   components: [
@@ -85,5 +86,16 @@ export default defineNuxtConfig({
     redirect: false,
     // https://nuxt.com/docs/4.x/api/nuxt-config#alias
     types: '#shared/utils/types/database.ts'
+  },
+
+  // Single-locale (Italian-only) app — no_prefix means no /it/ URL prefix.
+  // Adopted for centralized string management, not for actual multi-language support.
+  i18n: {
+    locales: [
+      { code: 'it', name: 'Italiano' }
+    ],
+    defaultLocale: 'it',
+    strategy: 'no_prefix',
+    vueI18n: './i18n.config.ts'
   }
 })
