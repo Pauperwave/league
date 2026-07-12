@@ -2,7 +2,7 @@
 
 Documento vivo per tracciare avanzamento, architettura e decisioni. Aggiornare quando cambiano scope, stack o convenzioni rilevanti.
 
-**Ultimo aggiornamento:** 2026-05-26
+**Ultimo aggiornamento:** 2026-07-12
 
 ---
 
@@ -33,20 +33,24 @@ Priorità dichiarate (`docs/AGENTS.md`): **stabilità**, **velocità**, **ottima
 ```
 app/
 ├── pages/              # Route file-based
-├── components/         # UI per feature (events, modals, tables, …)
+├── components/         # UI per feature (commander/, deck/, event/, league/, player/, ruleset/, Ui/)
 ├── composables/        # Logica riutilizzabile
 │   ├── supabase/       # Fetch SSR + delega agli store persistenti
-│   ├── event/          # Pagina evento, URL sync, preset pairing
-│   ├── events/pairing/ # Optimizer abbinamenti + test
-│   └── tables/         # Preview tavoli, DnD, calcolo punteggi
+│   ├── event/          # Pagina evento, URL sync, preset pairing, lifecycle
+│   ├── event-pairing/  # Optimizer abbinamenti + preferenze (fonte canonica, con test)
+│   └── commanders/, players/, tables/, theme/, ui/, auth/
 ├── stores/             # Pinia: Supabase + stato sessione evento
 ├── middleware/         # Protezione password
 ├── plugins/            # Route logger
 └── assets/css/         # Stili globali
 
-shared/utils/types/     # Tipi DB e dominio condivisi
-docs/                   # Documentazione feature e convenzioni
+shared/utils/types/     # Tipi DB (generati) e dominio condivisi
+supabase/migrations/    # Migrazioni SQL (timestamp prefix, idempotenti)
+docs/                   # Documentazione feature e convenzioni (indice: docs/README.md)
+CLAUDE.md               # Guida per Claude Code (comandi, architettura, convenzioni)
 ```
+
+**Nota:** la cartella `app/composables/events/` (plurale) è stata rimossa il 2026-07-12 — era uno shim di re-export lasciato da un rename verso `event-pairing/`. Il progetto non è ancora pubblicato, quindi non manteniamo compatibilità all'indietro: rinominare/cancellare pulito e aggiornare i call site, non lasciare shim.
 
 ### Pattern dati
 
@@ -54,7 +58,7 @@ docs/                   # Documentazione feature e convenzioni
 2. **Composables `use*`** = orchestrazione pagina, `useAsyncData`, helper puri.
 3. **Pagine** = composizione componenti; la pagina evento è la più complessa (`useEventPage` + `useEventUrl`).
 
-Dettaglio completo: [`docs/stores.md`](docs/stores.md) (8 store documentati con Setup API).
+Dettaglio completo: [`docs/stores.md`](docs/stores.md) (documentazione parziale, verificare contro `app/stores/` — vedi nota sotto).
 
 ---
 
@@ -66,29 +70,32 @@ Dettaglio completo: [`docs/stores.md`](docs/stores.md) (8 store documentati con 
 | `/login` | Auth password + redirect query |
 | `/leagues` | CRUD leghe |
 | `/rulesets` | Gestione ruleset |
-| `/league/[leagueId]` | Eventi di una lega |
+| `/league/[id]` | Eventi di una lega |
 | `/league/[leagueId]/event/[eventId]` | Hub evento (registrazione → playing → ended) |
+| `/players`, `/player/[slug]` | Roster giocatori, profilo |
+| `/decks`, `/deck/[deckSlug]`, `/player/[slug]/deck/[deckSlug]` | Mazzi commander |
 
-**Nota tecnica:** parametro lega uniformato a `leagueId` su tutte le route (risolto il 2026-05-25).
-
+**⚠️ Inconsistenza nota (trovata 2026-07-12):** il parametro lega **non** è uniformato come indicato in precedenza — `app/pages/league/[id].vue` usa ancora `route.params.id`, mentre la route annidata evento usa `[leagueId]`. Non rinominato in questa sessione (cambia gli URL pubblici); da decidere se e quando allinearli.
 
 ---
 
-## Store Pinia (8)
+## Store Pinia (10)
 
 | Store | Tipo stato | Ruolo |
 |-------|------------|--------|
 | `useLeagueStore` | Supabase | Leghe |
 | `useRulesetStore` | Supabase | Ruleset punteggio |
 | `usePlayerStore` | Supabase | Giocatori + waiting list |
+| `usePlayerStatsStore` | Supabase | Statistiche giocatore denormalizzate (`player_stats`) |
 | `useEventStore` | Supabase | Eventi, standings, pairings, round, round_results |
+| `useCommanderDeckStore` | Supabase | Mazzi commander registrati |
 | `useRankingsStore` | Sessione + DB | Ordine classifica salvato su `round_results.position` via `savePairingRankings` |
 | `useKillsStore` | Sessione + DB | Kill nel round, persistiti su `round_results.number_of_kills` via `savePairingKills` |
 | `useVotesStore` | Sessione + DB | Voti deck/play, persistiti su `round_results.brew_vote/play_vote_1` via `saveVote` |
 | `useCommandersStore` | Sessione + DB | Commander per giocatore, persistiti su `round_results.commander_1` via `saveCommander` |
 
-Tutti gli store usano **Setup API** (`defineStore('id', () => { … })`) dal 2026-05-25.
-Gli store di sessione ora hanno **persistenza ottimistica**: update immediato UI + salvataggio asincrono su `round_results` via `useEventStore` + toast di esito.
+Tutti gli store usano **Setup API** (`defineStore('id', () => { … })`).
+Gli store di sessione hanno **persistenza ottimistica**: update immediato UI + salvataggio asincrono su `round_results` via `useEventStore` + toast di esito.
 
 ---
 
@@ -113,9 +120,10 @@ Gli store di sessione ora hanno **persistenza ottimistica**: update immediato UI
 
 ### ADR-004 — Pairing optimizer lato client
 
-- **Decisione:** algoritmo in `pairingOptimizer.ts` con pesi/preferenze salvate per evento.
+- **Decisione:** algoritmo in `app/composables/event-pairing/pairingOptimizer.ts` con pesi/preferenze salvate per evento.
 - **Motivo:** preview tavoli interattiva (DnD + ottimizzazione) senza round-trip server per ogni tentativo.
 - **Test:** `pairingOptimizer.test.ts` (6 test Vitest).
+- **Nota (2026-07-12):** documentato esplicitamente nel file l'invariante `sum(perPlayer[p].total) === tableScore.total` — alcuni pesi (novelty, rematch, rotateTable3) sono applicati due volte intenzionalmente (una per giocatore al punto di attribuzione, una per il totale tavolo), a differenza di `strengthBalance` che è pesato una sola volta perché è una quantità di tavolo, non attribuibile a un singolo giocatore. Non "correggere" aggiungendo pesi ai contatori raw.
 
 ### ADR-005 — Convenzioni Vue 3.4+ per le props
 
@@ -135,7 +143,19 @@ Gli store di sessione ora hanno **persistenza ottimistica**: update immediato UI
 
 - **Decisione:** `sitePassword` in `runtimeConfig` + middleware globale; Supabase senza redirect auth utente (`redirect: false`).
 - **Motivo:** app interna / circolo; non login multi-utente Supabase al momento.
-- **Follow-up:** spostare password in variabile d’ambiente (non hardcoded in `nuxt.config.ts`).
+- **Stato:** ✅ già letta da `process.env.NUXT_SITE_PASSWORD` in `nuxt.config.ts` — non più hardcoded.
+
+### ADR-008 — Colonna `event_round_duration`
+
+- **Decisione:** aggiunta colonna `events.event_round_duration` (INTEGER, nullable) per la durata round configurabile per evento.
+- **Stato (2026-07-12):** migrazione scritta in `supabase/migrations/20260712000000_add_event_round_duration.sql` e tipi generati aggiornati manualmente in `shared/utils/types/database.ts` — **non ancora applicata al DB reale** (nessuna credenziale Supabase CLI disponibile in sessione agente). Da applicare (`supabase db push` o dashboard) e poi rigenerare i tipi per davvero via `npx supabase gen types ...`.
+- **Motivo:** il campo era già nel form evento (`EventFormModal.vue`) ma veniva scartato silenziosamente prima di questa modifica — mai persistito, mai letto.
+
+### ADR-009 — Policy 0 warning / 0 errori su lint e typecheck
+
+- **Decisione:** `pnpm lint` e `pnpm typecheck` devono restare a 0 warning / 0 errori; enforced in CI (`.github/workflows/ci.yml`).
+- **Motivo:** prevenire drift silenzioso (es. `any` che nasconde bug reali — vedi la colonna `event_round_duration` sopra, mascherata da `as any` per mesi).
+- **Doc:** sezione "After File Modifications" in `docs/AGENTS.md`, e `CLAUDE.md`.
 
 ---
 
@@ -152,21 +172,21 @@ Gli store di sessione ora hanno **persistenza ottimistica**: update immediato UI
 | Classifiche lega/evento | ✅ Operativo | |
 | URL sync modali evento | ✅ Operativo | Non esteso a `leagues.vue` |
 | Stepper fasi | ✅ Presente | `EventStepper.vue` |
-| Round timer | ✅ Presente | `RoundTimer.vue` |
-| Validazione form (valibot) | ☐ Non iniziato | Dipendenza presente, 0 uso |
-| Test e2e Playwright | ☐ Non iniziato | Richiesto in `AGENTS.md` |
-| Test unitari estesi | 🟡 Parziale | Solo `pairingOptimizer` |
+| Round timer | 🟡 Presente, durata non ancora persistita | `RoundTimer.vue`; legge `event_round_duration`, ma la migrazione non è ancora applicata (vedi ADR-008) |
+| Validazione form (valibot) | 🟡 Parziale | In uso in `EventFormModal` e altri (5 file); non su tutti i form |
+| Test e2e Playwright | ☐ Non iniziato | Richiesto in `AGENTS.md`; TODO aggiunto in `docs/TODO.md` (Playwright + Playwright MCP) |
+| Test unitari | 🟡 Parziale | 19 test / 6 file (`pairingOptimizer`, `BaseButton`, `StandingsCard`, …) |
 
 ---
 
-## Qualità e tooling (2026-05-25)
+## Qualità e tooling (2026-07-12)
 
 | Comando | Stato |
 |---------|--------|
-| `pnpm lint` | ✅ 0 errori (9 warning secondari di tipo o eslint-disable in logger/canvas) |
-| `pnpm typecheck` | ✅ |
-| `pnpm test` | ✅ 6 test |
-| `pnpm build` | ✅ Operativo (compilazione Client/Server/Nitro e prerendering di / con successo) |
+| `pnpm lint` | ✅ 0 warning, 0 errori (vedi ADR-009) |
+| `pnpm typecheck` | ✅ 0 errori — corretti due bug pre-esistenti non legati a questa sessione: mismatch di casing su `~/components/ui/*` (cartella reale `Ui/`) e alias `#test` mancante in `nuxt.config.ts` (risolveva solo lato vitest, non lato `nuxt typecheck`) |
+| `pnpm test` | ✅ 19 test / 6 file |
+| `pnpm build` | ❌ **Rotto** — fallisce in prerender di `/` (`routeRules: { '/': { prerender: true } }`): `SyntaxError: The requested module 'vue/index.mjs' does not provide an export named 'default'` (ESM/CJS interop in Nitro). Non causato da questa sessione (nessuna modifica a Vue, `/`, o config di prerender) — probabile drift di dipendenze (Renovate). Da investigare. |
 
 ### Convenzioni codice — batch completati (2026-05-25)
 
@@ -175,10 +195,18 @@ Gli store di sessione ora hanno **persistenza ottimistica**: update immediato UI
 - [x] Migrazione `withDefaults` → destructuring (8 file)
 - [x] Store Pinia uniformati a Setup API (4 store sessione migrati)
 - [x] Typecheck: `@tanstack/vue-table` devDep + tipi Scryfall in `useCardWhitelists`
-- [x] Uniformato parametro route per lega a [leagueId] (rinominato [id].vue → [leagueId].vue e risolto inconsistenze)
+- [ ] ~~Uniformato parametro route per lega a `[leagueId]`~~ — **non verificato, in realtà regredito**: `app/pages/league/[id].vue` usa ancora `route.params.id` (vedi nota nella sezione Route sopra)
 
+### Batch completati (2026-07-12)
 
-Audit dettagliato: [`docs/skills-audit-report.md`](docs/skills-audit-report.md), checklist: [`docs/skills-audit-checklist.md`](docs/skills-audit-checklist.md).
+- [x] Rimossi tutti gli `any` residui da lint (`useCommanderCards`, `useCommanderSearch`, `usePlayerMatchHistory`, `usePairingsQuery`, `useStatsQueryBuilder`, `stores/events.ts`) con tipi reali da `#shared/utils/types`
+- [x] Aggiunta colonna `event_round_duration` (migrazione + wiring form→store→DB, non ancora applicata al DB reale — ADR-008)
+- [x] Documentato l'invariante di scoring del pairing optimizer (ADR-004)
+- [x] Rimossa cartella shim `app/composables/events/` (re-export verso `event-pairing/`, non necessaria: progetto non pubblicato)
+- [x] Creato `CLAUDE.md` alla radice del repo
+- [x] Aggiunto TODO per Playwright + Playwright MCP in `docs/TODO.md`
+
+Audit dettagliato: [`docs/skills-audit-report.md`](docs/skills-audit-report.md), checklist: [`docs/skills-audit-checklist.md`](docs/skills-audit-checklist.md) — **non riverificati in questa sessione**, possono essere datati.
 
 ---
 
@@ -186,32 +214,40 @@ Audit dettagliato: [`docs/skills-audit-report.md`](docs/skills-audit-report.md),
 
 ### Alta
 
-1. **Rimuovere o centralizzare `console.log` di debug** (`[eventId].vue`, `useEventUrl`, `useCardWhitelists`, …) → usare `app/utils/logger.ts` dove serve.
-2. **`sitePassword` da env** (`NUXT_SITE_PASSWORD` o equivalente), non valore in chiaro in repo.
+0. **`pnpm build` è rotto** — fallisce in prerender di `/` con un errore ESM/CJS su `vue/index.mjs` (vedi tabella Qualità e tooling sopra). CI attuale non lo cattura (`ci.yml` gira solo lint + typecheck, non build). Non correlato a questa sessione.
+1. **Applicare la migrazione `event_round_duration`** al DB reale (`supabase db push` o dashboard) e rigenerare `shared/utils/types/database.ts` per davvero (`npx supabase gen types ...`) — vedi ADR-008.
+2. **Rimuovere o centralizzare `console.log` di debug** (`[eventId].vue`, `useEventUrl`, `useCardWhitelists`, …) → usare `app/utils/logger.ts` dove serve.
+3. **Decidere sul parametro route `[id]` vs `[leagueId]`** su `league/[id].vue` — inconsistenza trovata il 2026-07-12, non ancora risolta (cambia URL pubblici, richiede decisione esplicita).
 
 ### Media
 
-3. **Refactor pagina evento** — spezzare `[eventId].vue` e SFC > 250 righe (`TablePreviewModal`, `TableScoreGrid`).
-4. **Validazione con valibot** su form modali (lega, evento, ruleset, player).
+4. **Refactor pagina evento** — spezzare `[eventId].vue` e SFC > 250 righe (`TablePreviewModal`, `TableScoreGrid`).
+5. **Validazione con valibot** — estendere agli altri form modali oltre a `EventFormModal` (lega, ruleset, player).
 
 ### Bassa
 
-7. **Test Vitest** — store sessione, `useEventUrl`, composables Supabase critici.
-8. **E2E Playwright** — login, crea lega, apri evento, modale punteggi con query.
-9. **Estendere URL sync** alle modali su `/leagues` (opzionale).
-10. **Accessibilità** — review sistematica modali/tabelle (skill web-design-guidelines).
+6. **Test Vitest** — store sessione, `useEventUrl`, composables Supabase critici.
+7. **E2E Playwright** — vedi `docs/TODO.md` (setup `@playwright/test` + Playwright MCP, poi: login, crea lega, apri evento, modale punteggi con query).
+8. **Estendere URL sync** alle modali su `/leagues` (opzionale).
+9. **Accessibilità** — review sistematica modali/tabelle (skill web-design-guidelines).
 
 ---
 
 ## Indice documentazione
 
+Indice completo e aggiornato: [`docs/README.md`](docs/README.md). Voci principali:
+
 | File | Contenuto |
 |------|-----------|
+| [`CLAUDE.md`](../CLAUDE.md) | Guida per Claude Code: comandi, architettura, convenzioni (radice repo) |
 | [`docs/AGENTS.md`](docs/AGENTS.md) | Regole per agenti e convenzioni codice |
-| [`docs/stores.md`](docs/stores.md) | Store Pinia (8 store, Setup API) |
+| [`docs/stores.md`](docs/stores.md) | Store Pinia — **verificare contro `app/stores/` (10 store attuali, non 8)** |
+| [`docs/database.md`](docs/database.md) | RLS, trigger, stats denormalizzate |
+| [`docs/event-flow.md`](docs/event-flow.md) | Lifecycle evento, mutazioni DB per fase |
+| [`docs/state-flow.md`](docs/state-flow.md) | Flusso DB → store → composable → componente |
 | [`docs/modal-url-sync.md`](docs/modal-url-sync.md) | Sync query ↔ modali evento |
 | [`docs/buttons.md`](docs/buttons.md) | Pattern bottoni / logging |
-| [`docs/TODO.md`](docs/TODO.md) | Idee e snippet storici |
+| [`docs/TODO.md`](docs/TODO.md) | Idee e snippet storici, incl. Playwright + MCP |
 | [`docs/skills-audit-report.md`](docs/skills-audit-report.md) | Audit best practices |
 | [`docs/skills-audit-checklist.md`](docs/skills-audit-checklist.md) | Checklist convenzioni |
 
@@ -221,8 +257,9 @@ Audit dettagliato: [`docs/skills-audit-report.md`](docs/skills-audit-report.md),
 
 | Data | Modifica |
 |------|----------|
+| 2026-07-12 | Sessione lint/typecheck/architettura: `pnpm lint` e `pnpm typecheck` portati a 0/0 (ADR-009); aggiunta `event_round_duration` (migrazione + wiring, non ancora applicata — ADR-008); documentato invariante scoring pairing optimizer (ADR-004); rimossa cartella shim `app/composables/events/` (progetto non pubblicato → niente backward-compat); creato `CLAUDE.md`; TODO Playwright + MCP aggiunto; corrette informazioni datate (store count 8→10, claim falso sul rename `[id]`→`[leagueId]`, valibot "0 uso"); scoperto `pnpm build` rotto (prerender `/`, non correlato a questa sessione) |
 | 2026-05-26 | Preview mostra tavoli prima di avanzare round (non dopo); `playerOrder` propagato a `nextRound` → `createPairings`; URL `phase=previewTables` ora include `round=N`; `previewTables` usa standings durante playing |
 | 2026-05-26 | Documentazione completa dei 6 URL query params in `docs/modal-url-sync.md` |
-| 2026-05-25 | Uniformato il parametro di routing da [id] a [leagueId] per consistenza |
+| 2026-05-25 | Uniformato il parametro di routing da [id] a [leagueId] per consistenza — **⚠️ non risulta più vero al 2026-07-12**, `league/[id].vue` esiste ancora con `route.params.id` |
 | 2026-05-25 | Aggiornamento `docs/stores.md`: documentazione 8 store (4 Supabase + 4 sessione) e migrazione Setup API |
 | 2026-05-25 | Creazione iniziale `PROGRESS.md` dopo audit skill e batch convenzioni |
