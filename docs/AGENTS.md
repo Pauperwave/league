@@ -61,8 +61,10 @@ const {
 
 ### After File Modifications
 
-- **Always run `pnpm lint` after modifying files** to ensure code quality and catch issues early
-- If pre-existing lint errors exist in the codebase, fix only errors in files you modified. Aim to reduce warning count over time.
+- **Always run `pnpm lint` and `pnpm typecheck` after modifying files.**
+- **Policy: 0 warnings, 0 errors.** The repo is kept at a clean baseline on both `pnpm lint` and `pnpm typecheck` — do not merge or hand off work that leaves either with warnings or errors, including in files you didn't touch but happened to affect (e.g. via shared types or refactors).
+- If a fix isn't safe to make blindly (e.g. it would require guessing at a schema, or silently changing behavior), stop and flag it instead of suppressing the warning or casting to `any`/`unknown` to make it go away.
+- Never leave a `// eslint-disable` or `@ts-ignore` as the fix for a real warning — resolve the underlying type or lint issue instead.
 
 ### Pinia Stores
 
