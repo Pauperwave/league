@@ -1,4 +1,4 @@
-<!-- app\components\Ui\DatePicker.vue -->
+<!-- app\components\ui\DatePicker.vue -->
 <script setup lang="ts">
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
 

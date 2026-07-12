@@ -1,6 +1,6 @@
-<!-- app\components\Ui\ConfirmModal.vue -->
+<!-- app\components\ui\ConfirmModal.vue -->
 <script setup lang="ts">
-import { useButtonLogging } from '~/composables/useButtonLogging'
+import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 const {
   title,
