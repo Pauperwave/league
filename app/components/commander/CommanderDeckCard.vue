@@ -114,7 +114,7 @@ onMounted(fetchAllData)
     </template>
 
     <!-- Image area: always aspect-[4/3], partners split it vertically -->
-    <div class="aspect-[4/3]" :class="deck.commander_2_name ? 'flex flex-col' : ''">
+    <div class="aspect-4/3" :class="deck.commander_2_name ? 'flex flex-col' : ''">
       <CommanderArt
         :card-name="deck.commander_1_name"
         :art-url="art1"

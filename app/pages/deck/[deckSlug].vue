@@ -119,7 +119,7 @@ watch(() => firstDeck.value?.commander_1_name, () => {
       <!-- Card Art Gallery: same total height for single or partner -->
       <div
         class="overflow-hidden rounded-lg bg-muted"
-        :class="firstDeck.commander_2_name ? 'aspect-[2/3] flex flex-col gap-1' : 'aspect-[2/3]'"
+        :class="firstDeck.commander_2_name ? 'aspect-2/3 flex flex-col gap-1' : 'aspect-2/3'"
       >
         <div class="relative h-full w-full">
           <img
