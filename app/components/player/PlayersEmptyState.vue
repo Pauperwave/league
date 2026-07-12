@@ -21,19 +21,34 @@ const config = computed(() => ({
     icon: 'i-lucide-search-x',
     title: `Nessun risultato per "${props.searchQuery}"`,
     description: 'Vuoi creare un nuovo giocatore?',
-    action: { label: 'Crea Giocatore', icon: 'i-lucide-user-plus', color: 'primary' as const, event: 'createPlayer' as 'createPlayer' }
+    action: {
+      label: 'Crea Giocatore',
+      icon: 'i-lucide-user-plus',
+      color: 'primary' as const,
+      event: 'createPlayer' as const
+    }
   },
   'no-decks-filter': {
     icon: 'i-lucide-layers',
     title: 'Nessun giocatore ha mazzi associati',
     description: 'Disattiva il filtro per vedere tutti i giocatori',
-    action: { label: 'Mostra tutti', icon: undefined, color: 'neutral' as const, event: 'clearFilter' as 'clearFilter' }
+    action: {
+      label: 'Mostra tutti',
+      icon: undefined,
+      color: 'neutral' as const,
+      event: 'clearFilter' as const
+    }
   },
   'no-players': {
     icon: 'i-lucide-users',
     title: 'Nessun giocatore trovato',
     description: 'Inizia creando il primo giocatore',
-    action: { label: 'Crea Giocatore', icon: 'i-lucide-user-plus', color: 'primary' as const, event: 'createPlayer' as 'createPlayer' }
+    action: {
+      label: 'Crea Giocatore',
+      icon: 'i-lucide-user-plus',
+      color: 'primary' as const,
+      event: 'createPlayer' as const
+    }
   },
 })[props.type])
 </script>
