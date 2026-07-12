@@ -9,6 +9,7 @@ import type {
   TournamentTable,
 } from '#shared/utils/types'
 import { computed, ref, watch } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type {
   PairingHistoryEntry,
   PairingPlayer,
@@ -21,6 +22,8 @@ import { getPairingPreferences, savePairingPreferences } from '~/composables/eve
 import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 const open = defineModel<boolean>('open', { default: false })
+
+const { t } = useI18n()
 
 const {
   tables,
@@ -126,12 +129,12 @@ watch([weights, forbiddenPairs], () => {
 
 
 const scoreItems = computed(() => [
-  { key: 'strengthBalance', label: 'Bilanciamento forza', value: weights.value.strengthBalance, min: 0, max: 3, step: 0.1 },
-  { key: 'novelty', label: 'Nuovi incroci', value: weights.value.novelty, min: 0, max: 3, step: 0.1 },
-  { key: 'rematch', label: 'Penalità rematch', value: weights.value.rematch, min: 0, max: 3, step: 0.1 },
-  { key: 'rotateTable3', label: 'Rotazione tavoli da 3', value: weights.value.rotateTable3, min: 0, max: 3, step: 0.1 },
-  { key: 'tableSize4', label: 'Bonus tavoli da 4', value: weights.value.tableSize4, min: -2, max: 2, step: 0.05 },
-  { key: 'tableSize3', label: 'Peso tavoli da 3', value: weights.value.tableSize3, min: -2, max: 2, step: 0.05 },
+  { key: 'strengthBalance', label: t('event.tablePreview.scoreItems.strengthBalance'), value: weights.value.strengthBalance, min: 0, max: 3, step: 0.1 },
+  { key: 'novelty', label: t('event.tablePreview.scoreItems.novelty'), value: weights.value.novelty, min: 0, max: 3, step: 0.1 },
+  { key: 'rematch', label: t('event.tablePreview.scoreItems.rematch'), value: weights.value.rematch, min: 0, max: 3, step: 0.1 },
+  { key: 'rotateTable3', label: t('event.tablePreview.scoreItems.rotateTable3'), value: weights.value.rotateTable3, min: 0, max: 3, step: 0.1 },
+  { key: 'tableSize4', label: t('event.tablePreview.scoreItems.tableSize4'), value: weights.value.tableSize4, min: -2, max: 2, step: 0.05 },
+  { key: 'tableSize3', label: t('event.tablePreview.scoreItems.tableSize3'), value: weights.value.tableSize3, min: -2, max: 2, step: 0.05 },
 ] as const)
 
 const confirmLogging = useButtonLogging('Conferma tavoli', {
@@ -207,8 +210,8 @@ function handleDragEnd() {
   if (!isValid.value && dragSnapshot.value) {
     restoreTables(dragSnapshot.value)
     toast.add({
-      title: 'Spostamento non valido',
-      description: previewError.value || 'Questa disposizione non è consentita',
+      title: t('event.tablePreview.invalidMoveTitle'),
+      description: previewError.value || t('event.tablePreview.invalidMoveFallback'),
       color: 'error',
     })
   }
@@ -267,8 +270,8 @@ function openTableScoreBreakdown(tableIndex: number) {
 <template>
   <UModal
     v-model:open="open"
-    title="Anteprima Tavoli"
-    description="Trascina i giocatori per comporre i tavoli prima di avviare l'evento"
+    :title="t('event.tablePreview.title')"
+    :description="t('event.tablePreview.description')"
     :dismissible="dismissible"
     :ui="{ content: modalMaxWidth, footer: 'justify-end gap-1.5' }"
   >
@@ -297,7 +300,7 @@ function openTableScoreBreakdown(tableIndex: number) {
 
     <template #footer>
       <UButton color="neutral" variant="ghost" size="sm" @click="handleCancel">
-        Annulla
+        {{ t('common.cancel') }}
       </UButton>
       <UButton
         color="primary"
@@ -305,7 +308,7 @@ function openTableScoreBreakdown(tableIndex: number) {
         :disabled="!isValid"
         @click="handleConfirm"
       >
-        Conferma
+        {{ t('common.confirm') }}
       </UButton>
     </template>
   </UModal>

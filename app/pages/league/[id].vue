@@ -1,5 +1,6 @@
 <!-- app\pages\league\[leagueId].vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import type { Event } from '#shared/utils/types'
 
@@ -23,6 +24,7 @@ interface UpdateLeagueData {
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
+const { t } = useI18n()
 
 const leagueId = Number(route.params.id)
 
@@ -43,13 +45,13 @@ if (!currentLeague.value) {
   await leagueStore.fetchLeagues()
 }
 const classificaTitle = computed(() =>
-  `Classifica ${currentLeague.value?.name ?? ''}`.trim()
+  t('league.standingsTitle', { name: currentLeague.value?.name ?? '' }).trim()
 )
 
 const breadcrumbItems = computed(() => [
-  { label: 'Home', to: '/', icon: ICONS.home },
-  { label: 'Leghe', to: '/leagues' },
-  { label: currentLeague.value?.name ?? 'Lega' },
+  { label: t('common.home'), to: '/', icon: ICONS.home },
+  { label: t('league.breadcrumb'), to: '/leagues' },
+  { label: currentLeague.value?.name ?? t('league.fallbackName') },
 ])
 
 const { error: standingsError } = await useAsyncData(`league-standings-${leagueId}`, () => eventsStore.fetchLeagueStandings(leagueId))
@@ -57,8 +59,8 @@ const { error: standingsError } = await useAsyncData(`league-standings-${leagueI
 onMounted(() => {
   if (standingsError.value) {
     toast.add({
-      title: 'Errore caricamento classifica',
-      description: standingsError.value.message || 'Impossibile caricare la classifica della lega',
+      title: t('league.toast.standingsErrorTitle'),
+      description: standingsError.value.message || t('league.toast.standingsErrorFallback'),
       color: 'error'
     })
   }
@@ -100,8 +102,8 @@ async function createEvent(data: CreateEventData) {
 
   if (!result.success) {
     toast.add({
-      title: 'Errore creazione evento',
-      description: result.error || 'Impossibile creare l\'evento',
+      title: t('event.toast.createErrorTitle'),
+      description: result.error || t('event.toast.createErrorFallback'),
       color: 'error'
     })
     return
@@ -109,8 +111,8 @@ async function createEvent(data: CreateEventData) {
 
   showCreateModal.value = false
   toast.add({
-    title: 'Evento creato',
-    description: `L'evento "${data.eventName}" è stato creato con successo.`,
+    title: t('event.toast.createdTitle'),
+    description: t('event.toast.createdDescription', { name: data.eventName }),
     color: 'success'
   })
   await refreshEvents()
@@ -126,8 +128,8 @@ async function updateEvent({ id, data }: UpdateEventData) {
 
   if (!result.success) {
     toast.add({
-      title: 'Errore aggiornamento evento',
-      description: result.error || 'Impossibile aggiornare l\'evento',
+      title: t('event.toast.updateErrorTitle'),
+      description: result.error || t('event.toast.updateErrorFallback'),
       color: 'error'
     })
     return
@@ -136,8 +138,8 @@ async function updateEvent({ id, data }: UpdateEventData) {
   showEventEditModal.value = false
   eventToEdit.value = null
   toast.add({
-    title: 'Evento aggiornato',
-    description: `L'evento "${data.eventName}" è stato aggiornato con successo.`,
+    title: t('event.toast.updatedTitle'),
+    description: t('event.toast.updatedDescription', { name: data.eventName }),
     color: 'success'
   })
   await refreshEvents()
@@ -160,8 +162,8 @@ async function confirmDeleteEvent() {
 
   if (!result.success) {
     toast.add({
-      title: 'Errore eliminazione evento',
-      description: result.error || 'Impossibile eliminare l\'evento',
+      title: t('event.toast.deleteErrorTitle'),
+      description: result.error || t('event.toast.deleteErrorFallback'),
       color: 'error'
     })
     return
@@ -170,8 +172,8 @@ async function confirmDeleteEvent() {
   showDeleteConfirm.value = false
   eventToDelete.value = null
   toast.add({
-    title: 'Evento eliminato',
-    description: 'L\'evento è stato eliminato con successo.',
+    title: t('event.toast.deletedTitle'),
+    description: t('event.toast.deletedDescription'),
     color: 'success'
   })
   await refreshEvents()
@@ -188,8 +190,8 @@ async function updateLeague({ id, data }: UpdateLeagueData) {
 
   if (!result.success) {
     toast.add({
-      title: 'Errore aggiornamento lega',
-      description: result.error || 'Impossibile aggiornare la lega',
+      title: t('league.toast.updateErrorTitle'),
+      description: result.error || t('league.toast.updateErrorFallback'),
       color: 'error'
     })
     return
@@ -197,8 +199,8 @@ async function updateLeague({ id, data }: UpdateLeagueData) {
 
   showLeagueEditModal.value = false
   toast.add({
-    title: 'Lega aggiornata',
-    description: 'Le informazioni della lega sono state aggiornate con successo.',
+    title: t('league.toast.updatedTitle'),
+    description: t('league.toast.updatedDescription'),
     color: 'success'
   })
 }
@@ -260,13 +262,9 @@ async function updateLeague({ id, data }: UpdateLeagueData) {
 
     <ConfirmModal
       v-model:open="showDeleteConfirm"
-      title="Conferma Eliminazione"
-      description="Stai per eliminare un evento"
-      question="Sei sicuro di voler eliminare questo evento?"
+      :description="t('league.confirmDeleteEventDescription')"
+      :question="t('league.confirmDeleteEventQuestion')"
       :subject="eventToDelete?.event_name"
-      warning="Questa azione non può essere annullata."
-      confirm-label="Elimina"
-      cancel-label="Annulla"
       :confirm-icon="ICONS.delete"
       @confirm="confirmDeleteEvent"
     />

@@ -1,11 +1,13 @@
 <!-- app\pages\login.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 const { login } = usePasswordAuth()
 const route = useRoute()
 const toast = useToast()
+const { t } = useI18n()
 
 const inputPassword = ref('')
 const showPassword = ref(false)
@@ -25,8 +27,8 @@ async function handleSubmit() {
     navigateTo(redirectPath.value)
   } else {
     toast.add({
-      title: 'Password errata',
-      description: 'Riprova',
+      title: t('login.wrongPasswordTitle'),
+      description: t('login.wrongPasswordDescription'),
       color: 'error'
     })
   }
@@ -48,7 +50,7 @@ function handleTogglePassword() {
     <UCard class="w-full max-w-sm">
       <template #header>
         <h1 class="text-center text-xl font-bold">
-          Accesso Protetto
+          {{ t('login.title') }}
         </h1>
       </template>
 
@@ -56,11 +58,11 @@ function handleTogglePassword() {
         class="space-y-4"
         @submit.prevent="handleSubmit"
       >
-        <UFormField label="Password">
+        <UFormField :label="t('login.passwordLabel')">
           <UInput
             v-model="inputPassword"
             :type="showPassword ? 'text' : 'password'"
-            placeholder="Inserisci la password"
+            :placeholder="t('login.passwordPlaceholder')"
             :leading-icon="ICONS.lock"
             class="w-full"
           >
@@ -72,7 +74,7 @@ function handleTogglePassword() {
                   variant="link"
                   size="xs"
                   :icon="ICONS.clear"
-                  aria-label="Cancella password"
+                  :aria-label="t('login.clearPasswordAriaLabel')"
                   @click="handleClearPassword"
                 />
                 <UButton
@@ -80,7 +82,7 @@ function handleTogglePassword() {
                   variant="link"
                   size="xs"
                   :icon="showPassword ? ICONS.hide : ICONS.show"
-                  :aria-label="showPassword ? 'Nascondi password' : 'Mostra password'"
+                  :aria-label="showPassword ? t('login.hidePasswordAriaLabel') : t('login.showPasswordAriaLabel')"
                   @click="handleTogglePassword"
                 />
               </span>
@@ -93,7 +95,7 @@ function handleTogglePassword() {
           type="submit"
           :disabled="!inputPassword"
         >
-          Accedi
+          {{ t('login.submitButton') }}
         </UButton>
       </form>
     </UCard>

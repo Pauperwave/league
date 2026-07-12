@@ -1,4 +1,5 @@
 // app\composables\supabase\usePlayerMatchHistory.ts
+import { useI18n } from 'vue-i18n'
 import type { Database } from '#shared/utils/types/database'
 
 export interface PlayerMatchHistory {
@@ -38,6 +39,7 @@ interface RawMatchRow {
 export async function fetchPlayerMatchHistory(
   supabase: ReturnType<typeof useSupabaseClient<Database>>,
   playerId: number,
+  unknownEventName: string,
 ): Promise<PlayerMatchHistory[]> {
   const { data, error } = await supabase
     .from('round_results')
@@ -90,7 +92,7 @@ export async function fetchPlayerMatchHistory(
     results.push({
       event_id: eventId,
       league_id: pairings.events?.league_id ?? 0,
-      event_name: pairings.events?.event_name ?? 'Evento sconosciuto',
+      event_name: pairings.events?.event_name ?? unknownEventName,
       pairing_id: row.pairing_id,
       pairing_round: pairings.pairing_round,
       table_number: tableCounter,
@@ -114,12 +116,13 @@ export async function fetchPlayerMatchHistory(
 /** SSR-friendly composable for fetching player match history */
 export function usePlayerMatchHistory(playerId: Ref<number | undefined>) {
   const supabase = useSupabaseClient()
+  const { t } = useI18n()
 
   return useAsyncData<PlayerMatchHistory[]>(
     () => `player-match-history-${playerId.value ?? 'none'}`,
     () => {
       if (!playerId.value) return Promise.resolve([])
-      return fetchPlayerMatchHistory(supabase, playerId.value)
+      return fetchPlayerMatchHistory(supabase, playerId.value, t('player.matchHistory.unknownEvent'))
     },
     {
       immediate: true,

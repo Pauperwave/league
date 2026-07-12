@@ -1,8 +1,8 @@
 import type { Pairing } from '#shared/utils/types'
 
 /**
- * Composable per fetchare i pairing.
- * Usa lo store events come single source of truth.
+ * Composable for fetching pairings.
+ * Uses the events store as the single source of truth.
  */
 export function usePairings(eventId?: number, round?: number) {
   const store = useEventStore()

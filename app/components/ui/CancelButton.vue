@@ -1,10 +1,14 @@
 <!-- app\components\ui\CancelButton.vue -->
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
+const { t } = useI18n()
+
 const {
-  label = 'Annulla',
+  label,
   icon = ICONS.undo,
   loading = false,
   disabled = false,
@@ -19,7 +23,9 @@ const emit = defineEmits<{
   click: []
 }>()
 
-const clickLogging = useButtonLogging('Cancel Button', { label: () => label })
+const displayLabel = computed(() => label ?? t('common.cancel'))
+
+const clickLogging = useButtonLogging('Cancel Button', { label: () => displayLabel.value })
 
 function handleClick() {
   clickLogging.logClick()
@@ -35,6 +41,6 @@ function handleClick() {
     :disabled="disabled"
     @click="handleClick"
   >
-    {{ label }}
+    {{ displayLabel }}
   </UButton>
 </template>

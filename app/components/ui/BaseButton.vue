@@ -1,7 +1,10 @@
 <!-- app\components\ui\BaseButton.vue -->
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ACTION_MAP, type ActionType } from '~/utils/actionButton'
+
+const { t } = useI18n()
 
 const {
   action,
@@ -20,6 +23,7 @@ const {
 }>()
 
 const config = computed(() => ACTION_MAP[action])
+const label = computed(() => t(config.value.labelKey))
 </script>
 
 <template>
@@ -30,6 +34,6 @@ const config = computed(() => ACTION_MAP[action])
     :variant="variant"
     :disabled="disabled"
     :loading="loading"
-    :aria-label="ariaLabel ?? config.label"
+    :aria-label="ariaLabel ?? label"
   />
 </template>

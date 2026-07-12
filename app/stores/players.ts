@@ -1,4 +1,5 @@
 // app\stores\players.ts
+import { useI18n } from 'vue-i18n'
 import type { Player, NewPlayer } from '#shared/utils/types'
 import { toErrorMessage } from '~/utils/error'
 
@@ -21,6 +22,7 @@ export function sanitizePlayer<T extends Partial<Player>>(player: T): T {
  */
 export const usePlayerStore = defineStore('players', () => {
   const supabase = useSupabaseClient()
+  const { t } = useI18n()
 
   /** All players fetched from Supabase (names sanitized) */
   const players = ref<Player[]>([])
@@ -77,7 +79,7 @@ export const usePlayerStore = defineStore('players', () => {
       players.value = (data || []).map(p => sanitizePlayer(p))
       initialized.value = true
     } catch (err) {
-      error.value = toErrorMessage(err, 'Errore nel caricamento giocatori')
+      error.value = toErrorMessage(err, t('store.player.loadError'))
       console.error('[usePlayerStore] fetchPlayers error:', err)
     } finally {
       loading.value = false
@@ -107,7 +109,7 @@ export const usePlayerStore = defineStore('players', () => {
         return { success: true, data: sanitized }
       }
     } catch (err) {
-      error.value = toErrorMessage(err, 'Errore nella creazione giocatore')
+      error.value = toErrorMessage(err, t('store.player.createError'))
       console.error('[usePlayerStore] createPlayer error:', err)
       return { success: false, error: error.value }
     } finally {
@@ -142,7 +144,7 @@ export const usePlayerStore = defineStore('players', () => {
         return { success: true, data: sanitized }
       }
     } catch (err) {
-      error.value = toErrorMessage(err, 'Errore nella modifica giocatore')
+      error.value = toErrorMessage(err, t('store.player.updateError'))
       console.error('[usePlayerStore] updatePlayer error:', err)
       return { success: false, error: error.value }
     } finally {
@@ -174,7 +176,7 @@ export const usePlayerStore = defineStore('players', () => {
   async function addToWaitingList(eventId: number, playerId: number) {
     try {
       if (waitingPlayers.value.includes(playerId)) {
-        return { success: false, error: 'Player already in waiting list' }
+        return { success: false, error: t('store.player.alreadyInWaitingList') }
       }
 
       const { error } = await supabase.from('waitroom').insert([{

@@ -1,5 +1,6 @@
 // app\composables\event\useEventPlayers.ts
 
+import { useI18n } from 'vue-i18n'
 import type { Player, NewPlayer } from '#shared/utils/types'
 
 interface EventPlayersDeps {
@@ -30,6 +31,8 @@ export function useEventPlayers(deps: EventPlayersDeps) {
     players, showCreatePlayerModal, playerToEdit, toast,
   } = deps
 
+  const { t } = useI18n()
+
   function handleCreateNewPlayer() {
     playerToEdit.value = null
     showCreatePlayerModal.value = true
@@ -48,7 +51,7 @@ export function useEventPlayers(deps: EventPlayersDeps) {
     if (result?.success && result.data) {
       await addToWaitingList([result.data.player_id])
       showCreatePlayerModal.value = false
-      toast.add({ title: 'Giocatore creato', description: `${result.data.player_name} ${result.data.player_surname} aggiunto alla lista`, color: 'success' })
+      toast.add({ title: t('event.playerCreatedTitle'), description: t('event.playerCreatedDescription', { name: `${result.data.player_name} ${result.data.player_surname}` }), color: 'success' })
     }
   }
 
@@ -56,14 +59,14 @@ export function useEventPlayers(deps: EventPlayersDeps) {
     const result = await playerStore.updatePlayer(payload.id, payload.data)
     if (result?.success) {
       showCreatePlayerModal.value = false
-      toast.add({ title: 'Giocatore aggiornato', color: 'success' })
+      toast.add({ title: t('event.playerUpdatedTitle'), color: 'success' })
     }
   }
 
   async function handlePlayerSelectFromModal(playerId: number) {
     await addToWaitingList([playerId])
     showCreatePlayerModal.value = false
-    toast.add({ title: 'Giocatore aggiunto', description: 'Giocatore esistente aggiunto alla lista d\'attesa', color: 'success' })
+    toast.add({ title: t('event.playerAddedTitle'), description: t('event.playerAddedDescription'), color: 'success' })
   }
 
   function handlePlayerStatusUpdate(payload: { playerId: number, paid: boolean, companion: boolean }) {

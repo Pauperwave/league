@@ -1,5 +1,6 @@
 <!-- app\components\Rankings\LeagueRanking.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import type { TableColumn, TableRow } from '@nuxt/ui'
 import type { StandingWithPlayer } from '#shared/utils/types'
@@ -12,6 +13,8 @@ const {
   standings: StandingWithPlayer[]
   loading?: boolean
 }>()
+
+const { t } = useI18n()
 
 const TOP_SPOTS = 8
 
@@ -36,7 +39,7 @@ const tableMeta = {
 const columns: TableColumn<StandingWithPlayer>[] = [
   {
     id: 'rank',
-    header: '#',
+    header: t('league.ranking.rank'),
     meta: { class: { th: 'w-12 text-center', td: 'text-center p-0' } },
     cell: ({ row }) => {
       const i = row.index
@@ -67,9 +70,9 @@ const columns: TableColumn<StandingWithPlayer>[] = [
   },
   {
     id: 'player',
-    header: 'Giocatore',
+    header: t('league.ranking.player'),
     cell: ({ row }) => {
-      const name = row.original.players?.player_name ?? `Giocatore ${row.original.player_id}`
+      const name = row.original.players?.player_name ?? t('league.ranking.playerFallback', { id: row.original.player_id })
       const surname = row.original.players?.player_surname ?? ''
 
       return h(PlayerNameTag, {
@@ -81,7 +84,7 @@ const columns: TableColumn<StandingWithPlayer>[] = [
   },
   {
     accessorKey: 'standing_player_score',
-    header: 'Punti',
+    header: t('league.ranking.points'),
     meta: { class: { th: 'text-right', td: 'text-right p-0' } },
     cell: ({ row }) => {
       const score = row.original.standing_player_score ?? 0
@@ -91,7 +94,7 @@ const columns: TableColumn<StandingWithPlayer>[] = [
       const label = h(
         'span',
         { class: isTop ? 'font-bold text-primary-foreground' : 'font-medium' },
-        `${score} PT`
+        t('league.ranking.pointsAbbrev', { score })
       )
 
       return h(
@@ -121,7 +124,7 @@ const columns: TableColumn<StandingWithPlayer>[] = [
         <div class="flex flex-col items-center gap-2 py-12 text-muted">
           <LazyUIcon :name="ICONS.standings" class="size-10 opacity-30" />
           <p class="text-sm">
-            Nessun punteggio disponibile
+            {{ t('league.ranking.empty') }}
           </p>
         </div>
       </template>

@@ -1,5 +1,6 @@
 <!-- app\components\events\Pairings\Table\TableScoreBreakdownModal.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import type { TournamentPlayer } from '#shared/utils/types'
 import type { PairingPlayerScore, PairingTableScore } from '~/composables/event-pairing/pairingOptimizer'
 
@@ -14,12 +15,14 @@ defineProps<{
 }>()
 
 const open = defineModel<boolean>('open', { default: false })
+
+const { t } = useI18n()
 </script>
 
 <template>
   <UModal
     v-model:open="open"
-    title="Dettaglio calcolo tavolo"
+    :title="t('event.scoreBreakdown.modalTitle')"
     :ui="{ content: 'sm:max-w-2xl' }"
   >
     <template #body>
@@ -37,7 +40,7 @@ const open = defineModel<boolean>('open', { default: false })
       </div>
 
       <div v-else class="text-sm text-muted">
-        Nessun dettaglio disponibile per questo tavolo.
+        {{ t('event.scoreBreakdown.noDetails') }}
       </div>
     </template>
   </UModal>

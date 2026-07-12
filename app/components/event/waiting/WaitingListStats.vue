@@ -1,9 +1,13 @@
 <!-- app\components\Events\WaitingListStats.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
 const props = defineProps<{
   playerCount: number
   tableEstimate?: string
 }>()
+
+const { t } = useI18n()
 
 // — Debounced values for smooth UI updates —
 const debouncedCount = ref(props.playerCount)
@@ -25,7 +29,7 @@ const statsState = computed(() => {
 
   if (count === 0) {
     return {
-      label: 'Nessun giocatore',
+      label: t('event.waitingListStats.noPlayers'),
       color: 'warning' as const,
       show: true
     }
@@ -33,7 +37,7 @@ const statsState = computed(() => {
 
   if (count <= 2) {
     return {
-      label: `${count} / 3 giocatori minimi`,
+      label: t('event.waitingListStats.minPlayers', { count }),
       color: 'warning' as const,
       show: true
     }
@@ -41,7 +45,7 @@ const statsState = computed(() => {
 
   if (count === 5) {
     return {
-      label: '5 giocatori: configurazione non valida',
+      label: t('event.waitingListStats.invalidFive'),
       color: 'error' as const,
       show: true
     }
@@ -49,7 +53,7 @@ const statsState = computed(() => {
 
   // 3, 4, or 6+ giocatori
   const parts: string[] = []
-  parts.push(`${count} giocatori`)
+  parts.push(t('event.waitingListStats.playersCount', { count }))
   if (debouncedEstimate.value) parts.push(debouncedEstimate.value)
 
   return {

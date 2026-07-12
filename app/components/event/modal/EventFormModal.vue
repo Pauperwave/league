@@ -1,10 +1,13 @@
 <!-- app\components\Modals\EventFormModal.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import { type CalendarDate, getLocalTimeZone } from '@internationalized/date'
 import type { Event } from '#shared/utils/types'
 import * as v from 'valibot'
 import { useButtonLogging } from '~/composables/ui/useButtonLogging'
+
+const { t } = useI18n()
 
 // — Constants —
 const DEFAULT_ROUND_DURATION = 75 // 1:15 hours
@@ -57,10 +60,10 @@ const cancelLogging = useButtonLogging('Cancel Event Form')
 
 // — Derived modal state —
 const isEditing = computed(() => !!props.event)
-const modalTitle = computed(() => isEditing.value ? 'Modifica Evento' : 'Crea Nuovo Evento')
-const modalDescription = computed(() => isEditing.value ? "Modifica i dati dell'evento" : 'Compila i campi per creare un nuovo evento')
+const modalTitle = computed(() => isEditing.value ? t('event.form.editTitle') : t('event.form.createTitle'))
+const modalDescription = computed(() => isEditing.value ? t('event.form.editDescription') : t('event.form.createDescription'))
 const modalIcon = computed(() => isEditing.value ? ICONS.edit : ICONS.calendarAdd)
-const submitLabel = computed(() => isEditing.value ? 'Salva' : 'Crea Evento')
+const submitLabel = computed(() => isEditing.value ? t('common.save') : t('event.form.submitCreate'))
 
 // — Form —
 const defaultForm = (): EventForm => ({
@@ -106,12 +109,12 @@ function handleSubmit() {
 
   const parsed = v.safeParse(EventFormSchema, data)
   if (!parsed.success) {
-    logError('EventFormModal', 'Validazione form evento fallita', parsed.issues)
+    logError('EventFormModal', 'Event form validation failed', parsed.issues)
     return
   }
 
   if (!isEditing.value && !parsed.output.eventDate) {
-    logError('EventFormModal', 'Data evento richiesta per creazione')
+    logError('EventFormModal', 'Event date required for creation')
     return
   }
 
@@ -155,19 +158,19 @@ function handleCancel() {
     <template #body>
       <form id="event-form" class="space-y-4" @submit.prevent="handleSubmit">
         <div class="grid grid-cols-2 gap-4">
-          <UFormField label="Nome Evento" required>
+          <UFormField :label="t('event.form.nameLabel')" required>
             <UInput
               id="field-name"
               v-model="form.eventName"
-              placeholder="Es. Commander Night #1"
+              :placeholder="t('event.form.namePlaceholder')"
               class="w-full"
             />
           </UFormField>
-          <DatePicker v-model="form.eventDate" label="Data" />
+          <DatePicker v-model="form.eventDate" :label="t('event.form.dateLabel')" />
         </div>
 
         <div class="grid grid-cols-2 gap-4">
-          <UFormField label="Numero Round">
+          <UFormField :label="t('event.form.numRoundLabel')">
             <UInputNumber
               v-model="form.numRound"
               :min="1"
@@ -176,7 +179,7 @@ function handleCancel() {
               class="w-full"
             />
           </UFormField>
-          <UFormField label="Durata Round (min)">
+          <UFormField :label="t('event.form.roundDurationLabel')">
             <UInputNumber
               v-model="form.roundDuration"
               :min="10"

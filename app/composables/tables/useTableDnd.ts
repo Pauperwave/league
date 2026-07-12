@@ -1,4 +1,5 @@
 // State and validation layer for table drag-and-drop plus pairing constraints/scoring.
+import { useI18n } from 'vue-i18n'
 import type {
   PairingForbiddenPair,
   PairingWeights,
@@ -101,6 +102,8 @@ export function useTableDnd(initialTables: TournamentTable[], params?: {
   initialForbiddenPairs?: PairingForbiddenPair[]
   initialWeights?: Partial<PairingWeights>
 }) {
+  const { t } = useI18n()
+
   const sourceTables = ref<TournamentTable[]>(ensureTableSeatShape(cloneTables(initialTables)))
   const localTables = ref<TournamentTable[]>(ensureTableSeatShape(cloneTables(initialTables)))
   const isDragging = ref(false)
@@ -226,10 +229,10 @@ export function useTableDnd(initialTables: TournamentTable[], params?: {
   })
 
   const previewError = computed(() => {
-    if (!tableSizesValid.value) return 'Ogni tavolo deve avere tra 3 e 4 giocatori'
-    if (!noDuplicates.value) return 'Ci sono giocatori duplicati nei tavoli'
-    if (!noMissingPlayers.value) return 'Mancano giocatori nella disposizione tavoli'
-    if (!scoreDetails.value.isValid) return 'Sono presenti coppie vietate nello stesso tavolo'
+    if (!tableSizesValid.value) return t('event.tablePreview.invalidTableSizes')
+    if (!noDuplicates.value) return t('event.tablePreview.duplicatePlayers')
+    if (!noMissingPlayers.value) return t('event.tablePreview.missingPlayers')
+    if (!scoreDetails.value.isValid) return t('event.tablePreview.forbiddenPairsPresent')
     return ''
   })
 

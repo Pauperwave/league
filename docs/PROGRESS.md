@@ -157,6 +157,18 @@ Gli store di sessione hanno **persistenza ottimistica**: update immediato UI + s
 - **Motivo:** prevenire drift silenzioso (es. `any` che nasconde bug reali — vedi la colonna `event_round_duration` sopra, mascherata da `as any` per mesi).
 - **Doc:** sezione "After File Modifications" in `docs/AGENTS.md`, e `CLAUDE.md`.
 
+### ADR-010 — Migrazione completa delle stringhe UI a `@nuxtjs/i18n`
+
+- **Decisione:** tutte le stringhe italiane hardcoded nell'app (componenti, pagine, composables, store Pinia) sono state centralizzate in `i18n/locales/it.json`, caricato lazy da `@nuxtjs/i18n@10.4.1`. `i18n/i18n.config.ts` contiene solo opzioni non-messaggio (`{ legacy: false, locale: 'it' }`).
+- **Motivo:** prima della migrazione ogni stringa era duplicata inline in decine di call site (stesso problema già risolto per le icone con `app/utils/icons.ts`); centralizzarle rende più facile trovare/riusare testo esistente e prepara il terreno nel caso servisse mai una seconda lingua (non l'obiettivo primario, ma un effetto collaterale utile).
+- **Pattern e vincoli scoperti durante la migrazione** (dettagliati in `CLAUDE.md`, sezione "Conventions worth knowing"):
+  - `defineProps()` con default che referenziano `t()` non compilano (hoisting del compiler Vue) — risolto con `computed()` separato (vedi `CancelButton.vue`, `ConfirmModal.vue`, `DatePicker.vue`).
+  - `useI18n()` funziona dentro un Pinia store (verificato empiricamente) solo se lo store viene istanziato per la prima volta da dentro il `setup()` sincrono di un componente — pattern universale in questo progetto.
+  - Funzioni raggiungibili da un'azione di store o da una callback async (`useAsyncData`) non possono chiamare `useI18n()` direttamente — il `t` va catturato a monte e passato come parametro (vedi `useTableCalculator.ts`, `usePlayerMatchHistory.ts`).
+  - I valori persistiti su DB che sono testo italiano leggibile (es. `leagues.status`) restano stringhe letterali — sono dati, non copy UI.
+- **Test infra:** `test/helpers/mocks.ts` esporta `createI18nTestPlugin(messages)` per montare componenti che usano `useI18n()` in `test/nuxt/**` (plain `@vue/test-utils` `mount()` non applica il plugin reale di Nuxt).
+- **Stato:** ✅ completo — verificato con `pnpm lint`/`pnpm typecheck`/`pnpm test`/`pnpm fallow:dead-code` a zero problemi dopo ogni dominio migrato (league, ruleset, player, deck/commander, event — pagina/control-panel/waiting-list/modali/pairing-kill-table/standings —, store, login/home/misc).
+
 ---
 
 ## Funzionalità per area

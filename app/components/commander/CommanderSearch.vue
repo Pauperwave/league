@@ -1,5 +1,7 @@
 <!-- app\components\CommanderSearch.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
 const props = defineProps<{
   whitelist?: string[] | null
   playerId?: number | null
@@ -7,7 +9,9 @@ const props = defineProps<{
 
 const modelValue = defineModel<string | null>()
 
-// Logging quando la whitelist cambia
+const { t } = useI18n()
+
+// Logging when the whitelist changes
 watch(() => props.whitelist, (newWhitelist) => {
   console.log('[CommanderSearch] 🎫 Whitelist changed:', newWhitelist?.length || 0, 'items')
 }, { immediate: true })
@@ -30,14 +34,14 @@ const {
 })
 
 /**
- * Converte simbolo mana in classe mana-font
+ * Converts a mana symbol to a mana-font class
  * {W} → ms ms-w, {2} → ms ms-2, etc.
  */
 function getManaFontClass(token: string): string {
-  // Rimuovi le graffe
+  // Strip the curly braces
   const symbol = token.replace(/[{}]/g, '').toLowerCase()
 
-  // Mappa simboli speciali
+  // Map special symbols
   const specialMap: Record<string, string> = {
     'w': 'ms ms-w',
     'u': 'ms ms-u',
@@ -60,7 +64,7 @@ function getManaFontClass(token: string): string {
     's': 'ms ms-s', // snow
   }
 
-  // Se è un numero (0-20+), usa ms-{numero}
+  // If it's a number (0-20+), use ms-{number}
   if (/^\d+$/.test(symbol)) {
     return `ms ms-${symbol}`
   }
@@ -68,7 +72,7 @@ function getManaFontClass(token: string): string {
   return specialMap[symbol] || `ms ms-${symbol}`
 }
 
-// Logging quando la carta cambia
+// Logging when the card changes
 watch(card, (newCard) => {
   if (newCard) {
     console.log('[CommanderSearch] 🖼️ Card loaded:', newCard.name)
@@ -98,7 +102,7 @@ watch(showSuggestions, (newValue) => {
 })
 
 /**
- * Evidenzia la parte della query che corrisponde nel suggerimento
+ * Highlights the part of the query that matches in the suggestion
  */
 function highlightMatch(text: string, query: string) {
   if (!query) return text
@@ -160,7 +164,7 @@ function handleKeydown(e: KeyboardEvent) {
   <div class="relative">
     <UInput
       v-model="localValue"
-      placeholder="Nome del comandante"
+      :placeholder="t('commander.searchPlaceholder')"
       :loading="isLoading"
       @focus="showSuggestions = true"
       @blur="handleBlur"
@@ -202,7 +206,7 @@ function handleKeydown(e: KeyboardEvent) {
       </div>
     </div>
 
-    <!-- Preview della carta selezionata -->
+    <!-- Preview of the selected card -->
     <CardPreview :card="card" />
   </div>
 </template>

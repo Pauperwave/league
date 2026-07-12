@@ -1,8 +1,8 @@
 import type { StandingWithPlayer } from '#shared/utils/types'
 
 /**
- * Composable per fetchare le classifiche.
- * Usa lo store events come single source of truth.
+ * Composable for fetching standings.
+ * Uses the events store as the single source of truth.
  */
 export function useStandings(eventId?: number) {
   const store = useEventStore()
@@ -30,8 +30,8 @@ export function useStandings(eventId?: number) {
 }
 
 /**
- * Composable per fetchare le classifiche di più eventi contemporaneamente.
- * Utile per visualizzare punteggi per evento in una lega.
+ * Composable for fetching standings for multiple events at once.
+ * Useful for displaying per-event scores within a league.
  */
 export function useMultipleEventStandings(eventIds: MaybeRef<number[]>) {
   const store = useEventStore()

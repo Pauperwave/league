@@ -36,11 +36,16 @@ export function useTableCalculator() {
     return tables
   }
 
-  function formatTableEstimate(tables4: number, tables3: number): string {
+  function formatTableEstimate(
+    tables4: number,
+    tables3: number,
+    format: (count: number, size: 4 | 3) => string,
+    conjunction: string,
+  ): string {
     const parts: string[] = []
-    if (tables4 > 0) parts.push(`${tables4} tavol${tables4 === 1 ? 'o' : 'i'} da 4`)
-    if (tables3 > 0) parts.push(`${tables3} tavol${tables3 === 1 ? 'o' : 'i'} da 3`)
-    return parts.join(' e ')
+    if (tables4 > 0) parts.push(format(tables4, 4))
+    if (tables3 > 0) parts.push(format(tables3, 3))
+    return parts.join(` ${conjunction} `)
   }
 
   return { calculateTables, getTableSizes, buildPreviewTables, formatTableEstimate }

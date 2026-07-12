@@ -1,5 +1,6 @@
 <!-- app\components\modals\CommanderModal.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 
 const props = defineProps<{
   playerId: number
@@ -8,6 +9,8 @@ const props = defineProps<{
   commander2?: string | null
 }>()
 
+const { t } = useI18n()
+
 const emit = defineEmits<{
   submit: [commander1: string | null, commander2: string | null]
 }>()
@@ -15,10 +18,10 @@ const emit = defineEmits<{
 const commander1 = ref(props.commander1 || '')
 const commander2 = ref(props.commander2 || '')
 
-// Carica le whitelist dei comandanti
+// Load the commander whitelists
 const { whitelists, isLoading, loadAllLists, getPartnerType, getAllowedPartners } = useCommanderWhitelists()
 
-// Carica le whitelist quando il componente è montato
+// Load whitelists when the component mounts
 onMounted(() => {
   console.log('[CommanderModal] 🚀 Component mounted, loading whitelists...')
   loadAllLists().then(() => {
@@ -46,17 +49,17 @@ const commander2Whitelist = computed(() => {
 // Computed: label text for commander2 field
 const commander2Label = computed(() => {
   const type = commander1PartnerType.value
-  if (!type || type === 'commander') return 'Comandante 2 (non disponibile)'
-  if (type === 'partner') return 'Partner'
-  if (type === 'partner_with') return 'Partner With'
-  if (type === 'background' || type === 'background_commander') return 'Background'
-  if (type === 'friends_forever') return 'Friends Forever'
-  if (type === 'doctors_companion') return 'Doctor\'s Companion'
-  if (type === 'companion') return 'Companion'
-  return 'Comandante 2'
+  if (!type || type === 'commander') return t('commander.partnerTypes.commander2Unavailable')
+  if (type === 'partner') return t('commander.partnerTypes.partner')
+  if (type === 'partner_with') return t('commander.partnerTypes.partnerWith')
+  if (type === 'background' || type === 'background_commander') return t('commander.partnerTypes.background')
+  if (type === 'friends_forever') return t('commander.partnerTypes.friendsForever')
+  if (type === 'doctors_companion') return t('commander.partnerTypes.doctorsCompanion')
+  if (type === 'companion') return t('commander.partnerTypes.companion')
+  return t('commander.partnerTypes.commander2')
 })
 
-// Watch per debug
+// Watch for debugging
 watch(() => whitelists.value.commander, (newVal) => {
   console.log('[CommanderModal] 📋 Commander whitelist updated:', newVal.length, 'items')
 })
@@ -79,9 +82,9 @@ defineExpose({ submit })
   <div class="space-y-4">
     <!-- Commander 1 -->
     <div>
-      <label class="block text-sm font-medium mb-1">Comandante</label>
+      <label class="block text-sm font-medium mb-1">{{ t('commander.label') }}</label>
       <div v-if="isLoading" class="text-sm text-gray-500 mb-2">
-        Caricamento liste carte...
+        {{ t('commander.loadingLists') }}
       </div>
       <CommanderSearch
         v-model="commander1"
@@ -99,7 +102,7 @@ defineExpose({ submit })
         variant="soft"
         class="mb-2"
       >
-        {{ commander2Whitelist.length }} carte compatibili
+        {{ t('commander.compatibleCards', { count: commander2Whitelist.length }) }}
       </UBadge>
       <CommanderSearch
         v-model="commander2"
@@ -108,7 +111,7 @@ defineExpose({ submit })
       />
     </div>
     <div v-else-if="commander1" class="text-sm text-gray-500">
-      Questo comandante non supporta un secondo comandante
+      {{ t('commander.noSecondCommander') }}
     </div>
   </div>
 </template>

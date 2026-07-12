@@ -2,12 +2,12 @@
 <!--
   HeaderActions.vue
 
-  Componente wrapper che raggruppa le azioni dell'header:
-  - Cambio tema (ColorModeSwitch)
+  Wrapper component that groups the header actions:
+  - Theme switch (ColorModeSwitch)
   - Logout (LogoutButton)
 -->
 <script setup lang="ts">
-// Nessuna logica necessaria, solo composizione
+// No logic needed, just composition
 </script>
 
 <template>

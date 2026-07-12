@@ -1,5 +1,6 @@
 <!-- app\components\CommanderArt.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 
 defineProps<{
@@ -9,6 +10,8 @@ defineProps<{
   loading?: boolean
   size?: 'sm' | 'base'
 }>()
+
+const { t } = useI18n()
 </script>
 
 <template>
@@ -16,7 +19,7 @@ defineProps<{
     <img
       v-if="artUrl"
       :src="artUrl"
-      :alt="`Art for ${cardName}`"
+      :alt="t('deck.artAlt', { name: cardName })"
       class="w-full h-full object-cover object-top"
       loading="lazy"
     >

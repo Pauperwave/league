@@ -1,5 +1,6 @@
 <!-- app\components\events\Pairings\Table\TablePreviewToolbar.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 const {
   totalScore,
@@ -13,20 +14,22 @@ const emit = defineEmits<{
   openSettings: []
   optimize: []
 }>()
+
+const { t } = useI18n()
 </script>
 
 <template>
   <div class="flex flex-wrap items-center justify-between gap-2">
     <div class="text-sm text-muted">
-      Punteggio totale: <span class="font-semibold text-default">{{ totalScore.toFixed(2) }}</span>
+      {{ t('event.tablePreviewToolbar.totalScoreLabel') }} <span class="font-semibold text-default">{{ totalScore.toFixed(2) }}</span>
     </div>
 
     <div class="flex flex-wrap items-center gap-2">
       <UButton size="sm" color="neutral" variant="soft" :icon="ICONS.settings" @click="emit('openSettings')">
-        Pesi e Vincoli
+        {{ t('event.tablePreviewToolbar.weightsAndConstraints') }}
       </UButton>
       <UButton size="sm" color="neutral" variant="outline" :icon="ICONS.shuffle" :disabled="loading" @click="emit('optimize')">
-        Ottimizza
+        {{ t('event.tablePreviewToolbar.optimize') }}
       </UButton>
     </div>
   </div>

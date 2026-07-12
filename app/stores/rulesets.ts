@@ -1,4 +1,5 @@
 // app\stores\rulesets.ts
+import { useI18n } from 'vue-i18n'
 import type { Ruleset } from '#shared/utils/types'
 import { toErrorMessage } from '~/utils/error'
 
@@ -8,6 +9,7 @@ import { toErrorMessage } from '~/utils/error'
  */
 export const useRulesetStore = defineStore('rulesets', () => {
   const supabase = useSupabaseClient()
+  const { t } = useI18n()
 
   /** All rulesets fetched from Supabase */
   const rulesets = ref<Ruleset[]>([])
@@ -44,7 +46,7 @@ export const useRulesetStore = defineStore('rulesets', () => {
       rulesets.value = data || []
       initialized.value = true
     } catch (err) {
-      error.value = toErrorMessage(err, 'Errore nel caricamento regolamenti')
+      error.value = toErrorMessage(err, t('store.ruleset.loadError'))
       console.error('[useRulesetStore] fetchRulesets error:', err)
     } finally {
       loading.value = false
@@ -64,12 +66,12 @@ export const useRulesetStore = defineStore('rulesets', () => {
         .single()
 
       if (supaError) throw supaError
-      if (!data) throw new Error('Nessun dato restituito dall\'inserimento')
+      if (!data) throw new Error(t('store.ruleset.noDataInsert'))
 
       rulesets.value.push(data)
       return { success: true, data }
     } catch (err) {
-      error.value = toErrorMessage(err, 'Errore nella creazione regolamento')
+      error.value = toErrorMessage(err, t('store.ruleset.createError'))
       console.error('[useRulesetStore] createRuleset error:', err)
       return { success: false, error: error.value }
     } finally {
@@ -91,7 +93,7 @@ export const useRulesetStore = defineStore('rulesets', () => {
         .single()
 
       if (supaError) throw supaError
-      if (!data) throw new Error('Nessun dato restituito dall\'aggiornamento')
+      if (!data) throw new Error(t('store.ruleset.noDataUpdate'))
 
       const index = rulesets.value.findIndex(r => r.ruleset_id === id)
       if (index !== -1) {
@@ -100,7 +102,7 @@ export const useRulesetStore = defineStore('rulesets', () => {
 
       return { success: true, data }
     } catch (err) {
-      error.value = toErrorMessage(err, 'Errore nell\'aggiornamento regolamento')
+      error.value = toErrorMessage(err, t('store.ruleset.updateError'))
       console.error('[useRulesetStore] updateRuleset error:', err)
       return { success: false, error: error.value }
     } finally {
@@ -127,7 +129,7 @@ export const useRulesetStore = defineStore('rulesets', () => {
       if (checkError) throw checkError
 
       if (leaguesUsing && leaguesUsing.length > 0) {
-        return { success: false, error: 'Non è possibile eliminare questo regolamento perché è in uso da una o più leghe' }
+        return { success: false, error: t('store.ruleset.inUseError') }
       }
 
       const { error: supaError } = await supabase
@@ -141,7 +143,7 @@ export const useRulesetStore = defineStore('rulesets', () => {
 
       return { success: true }
     } catch (err) {
-      error.value = toErrorMessage(err, 'Errore nell\'eliminazione regolamento')
+      error.value = toErrorMessage(err, t('store.ruleset.deleteError'))
       console.error('[useRulesetStore] deleteRuleset error:', err)
       return { success: false, error: error.value }
     } finally {

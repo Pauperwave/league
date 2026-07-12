@@ -1,5 +1,6 @@
 <!-- app\components\Modals\LeaguesUsingRulesetModal.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
@@ -13,6 +14,8 @@ const props = defineProps<{
   rulesetName: string
   getLeaguesByRuleset: (rulesetId: number) => LeagueInfo[]
 }>()
+
+const { t } = useI18n()
 
 const emit = defineEmits<{
   navigate: [leagueId: number]
@@ -42,13 +45,13 @@ function handleClose() {
 <template>
   <UModal
     v-model:open="open"
-    :description="`${leagues.length} leghe trovate`"
+    :description="t('league.usingRulesetModal.foundCount', leagues.length, { named: { count: leagues.length } })"
     :ui="{ footer: 'justify-end' }"
   >
     <template #title>
       <div class="flex items-center gap-2">
         <UIcon :name="ICONS.standings" class="text-primary" />
-        <span>Leghe che usano il regolamento "{{ rulesetName }}"</span>
+        <span>{{ t('league.usingRulesetModal.title', { name: rulesetName }) }}</span>
       </div>
     </template>
 
@@ -56,7 +59,7 @@ function handleClose() {
       <!-- Stato vuoto -->
       <div v-if="leagues.length === 0" class="flex flex-col items-center gap-2 py-8 text-muted">
         <UIcon :name="ICONS.empty" class="size-8" />
-        <p class="text-sm">Nessuna lega sta usando questo regolamento</p>
+        <p class="text-sm">{{ t('league.usingRulesetModal.empty') }}</p>
       </div>
 
       <!-- Lista leghe -->
@@ -85,7 +88,7 @@ function handleClose() {
 
     <template #footer>
       <UButton color="neutral" @click="handleClose">
-        Chiudi
+        {{ t('common.close') }}
       </UButton>
     </template>
   </UModal>

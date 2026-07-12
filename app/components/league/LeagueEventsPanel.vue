@@ -1,7 +1,10 @@
 <!-- app\components\events\LeagueEventsPanel.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import type { Event, League } from '#shared/utils/types'
+
+const { t } = useI18n()
 
 const {
   leagueId,
@@ -32,22 +35,22 @@ const router = useRouter()
       <UButton
         color="neutral"
         :icon="ICONS.back"
-        aria-label="Torna indietro"
+        :aria-label="t('league.backAriaLabel')"
         @click="() => { router.push('/leagues') }"
       >
-        Indietro
+        {{ t('common.back') }}
       </UButton>
 
       <div class="flex items-center gap-2">
         <h1 class="text-xl font-semibold">
-          {{ currentLeague?.name ?? 'Lega' }}
+          {{ currentLeague?.name ?? t('league.fallbackName') }}
         </h1>
         <UButton
           color="neutral"
           variant="ghost"
           :icon="ICONS.edit"
           size="sm"
-          aria-label="Modifica nome lega"
+          :aria-label="t('league.editLeagueName')"
           @click="emit('editLeague')"
         />
       </div>
@@ -57,7 +60,7 @@ const router = useRouter()
         :icon="ICONS.add"
         @click="emit('createEvent')"
       >
-        Nuovo Evento
+        {{ t('league.newEvent') }}
       </UButton>
     </div>
 
@@ -72,7 +75,7 @@ const router = useRouter()
 
     <div class="mt-3 flex flex-col flex-1 min-h-0 overflow-hidden">
       <h2 class="text-lg font-semibold mb-2 shrink-0">
-        Punteggi per Evento
+        {{ t('league.scoresByEvent') }}
       </h2>
       <EventRanking :league-id="leagueId" class="flex-1 min-h-0 overflow-auto" />
     </div>

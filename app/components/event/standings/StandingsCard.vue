@@ -1,5 +1,7 @@
 <!-- app\components\events\Standings\StandingsCard.vue -->
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 
 interface Standing {
@@ -18,7 +20,7 @@ interface Standing {
 const {
   standings,
   loading = false,
-  title = 'Classifica',
+  title,
   submittedByPlayerId = {},
 } = defineProps<{
   standings: Standing[]
@@ -26,13 +28,17 @@ const {
   title?: string
   submittedByPlayerId?: Record<number, boolean>
 }>()
+
+const { t } = useI18n()
+
+const displayTitle = computed(() => title ?? t('event.standingsTitleDefault'))
 </script>
 
 <template>
   <div class="bg-linear-to-b from-primary/10 to-transparent rounded-xl p-6 border-2 border-primary/30 shadow-lg">
     <div class="flex items-center justify-center gap-2 mb-4">
       <UIcon :name="ICONS.standings" class="size-5 text-primary" />
-      <h4 class="text-lg font-bold text-primary">{{ title }}</h4>
+      <h4 class="text-lg font-bold text-primary">{{ displayTitle }}</h4>
     </div>
 
     <ClientOnly>
@@ -57,19 +63,19 @@ const {
                   class="font-medium text-sm"
                 />
                  <div class="flex items-center gap-2">
-                   <div class="flex items-center gap-1 text-xs text-muted" title="Vittorie">
+                   <div class="flex items-center gap-1 text-xs text-muted" :title="t('player.stats.wins')">
                      <UIcon :name="ICONS.victories" class="size-3 text-warning" />
                      <span>{{ standing.victories ?? 0 }}</span>
                    </div>
-                   <div class="flex items-center gap-1 text-xs text-muted" title="Uccisioni">
+                   <div class="flex items-center gap-1 text-xs text-muted" :title="t('player.stats.kills')">
                      <UIcon :name="ICONS.kills" class="size-3 text-error" />
                      <span>{{ standing.kills ?? 0 }}</span>
                    </div>
-                   <div class="flex items-center gap-1 text-xs text-muted" title="Brew votes">
+                   <div class="flex items-center gap-1 text-xs text-muted" :title="t('event.standingsCard.brewVotesTooltip')">
                      <UIcon :name="ICONS.brewVotes" class="size-3 text-info" />
                      <span>{{ standing.brew_received ?? 0 }}</span>
                    </div>
-                   <div class="flex items-center gap-1 text-xs text-muted" title="Play votes">
+                   <div class="flex items-center gap-1 text-xs text-muted" :title="t('event.standingsCard.playVotesTooltip')">
                      <UIcon :name="ICONS.playVotes" class="size-3 text-success" />
                      <span>{{ standing.play_received ?? 0 }}</span>
                    </div>
@@ -80,7 +86,7 @@ const {
                     variant="soft"
                     class="text-sm px-2 py-1"
                   >
-                    Inserito
+                    {{ t('event.standingsCard.submittedBadge') }}
                   </UBadge>
                 </div>
               </div>
@@ -90,7 +96,7 @@ const {
       </div>
       <div v-else class="text-center py-8 text-muted">
         <UIcon :name="ICONS.statsEmpty" class="text-4xl mb-2" />
-        <p class="text-sm">Nessun punteggio</p>
+        <p class="text-sm">{{ t('event.standingsCard.emptyText') }}</p>
       </div>
 
       <template #fallback>

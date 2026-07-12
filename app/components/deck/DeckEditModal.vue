@@ -1,5 +1,6 @@
 <!-- app\components\Modals\DeckEditModal.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import type { CommanderDeck } from '#shared/utils/types'
 
@@ -13,6 +14,7 @@ const emit = defineEmits<{
 }>()
 
 const open = defineModel<boolean>('open', { default: false })
+const { t } = useI18n()
 const playersStore = usePlayerStore()
 
   // — Form state —
@@ -72,13 +74,13 @@ function handleCancel() {
 <template>
   <UModal
     v-model:open="open"
-    description="Gestisci la proprietà del deck"
+    :description="t('deck.editModal.description')"
     :ui="{ footer: 'justify-between' }"
   >
     <template #title>
       <div class="flex items-center gap-2">
         <UIcon :name="ICONS.edit" class="text-primary" />
-        <span>Modifica Deck</span>
+        <span>{{ t('deck.editModal.title') }}</span>
       </div>
     </template>
 
@@ -88,9 +90,9 @@ function handleCancel() {
           <div class="flex items-center gap-3">
             <USwitch v-model="isBorrowed" />
             <div>
-              <p class="font-medium">Deck prestato</p>
+              <p class="font-medium">{{ t('deck.ownership.borrowedTitle') }}</p>
               <p class="text-sm text-muted">
-                Attiva se questo deck non è di proprietà del giocatore
+                {{ t('deck.ownership.borrowedDescription') }}
               </p>
             </div>
           </div>
@@ -98,22 +100,22 @@ function handleCancel() {
 
         <UFormField
           v-if="isBorrowed"
-          label="Prestato da"
+          :label="t('deck.ownership.lenderLabel')"
           required
         >
           <USelectMenu
             v-model="lenderId"
             :items="lenderOptions"
             value-key="value"
-            placeholder="Cerca e seleziona il proprietario"
-            :search-input="{ placeholder: 'Cerca giocatore...' }"
+            :placeholder="t('deck.ownership.lenderPlaceholder')"
+            :search-input="{ placeholder: t('deck.ownership.lenderSearchPlaceholder') }"
             class="w-full"
           />
         </UFormField>
 
         <div v-if="isBorrowed && !lenderId" class="text-sm text-warning flex items-center gap-1.5">
           <UIcon :name="ICONS.warning" class="size-4" />
-          <span>Seleziona un proprietario per salvare</span>
+          <span>{{ t('deck.editModal.selectLenderWarning') }}</span>
         </div>
       </form>
     </template>
@@ -126,7 +128,7 @@ function handleCancel() {
         color="primary"
         :disabled="isBorrowed && !lenderId"
       >
-        Salva
+        {{ t('common.save') }}
       </UButton>
     </template>
   </UModal>

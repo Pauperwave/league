@@ -1,8 +1,11 @@
 <!-- app\components\events\Pairings\TableScoreGrid.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import type { Pairing, Seat } from '#shared/utils/types'
 import TableSeatItem from '../TableSeatItem.vue'
 import { useButtonLogging } from '~/composables/ui/useButtonLogging'
+
+const { t } = useI18n()
 
 interface DatabasePlayer {
   player_id: number
@@ -43,7 +46,7 @@ const gridRange = computed(() => Array.from({ length: gridSize.value }, (_, i) =
 const isValidFormation = computed(() => {
   const size = gridSize.value
 
-  // Per ogni colonna (giocatore), trova in quale riga (rank) si trova
+  // For each column (player), find which row (rank) it's in
   const formation: (number | null)[] = Array(size).fill(null)
   for (let col = 0; col < size; col++) {
     for (let row = 0; row < size; row++) {
@@ -54,10 +57,10 @@ const isValidFormation = computed(() => {
     }
   }
 
-  // Tutti i giocatori devono essere posizionati
+  // All players must be placed
   if (formation.some(r => r === null)) return false
 
-  // I rank usati devono essere consecutivi a partire da 1 (niente buchi)
+  // Ranks used must be consecutive starting from 1 (no gaps)
   const uniqueRanks = [...new Set(formation as number[])].sort((a, b) => a - b)
   const isValid = uniqueRanks.every((rank, i) => rank === i + 1)
 
@@ -85,17 +88,17 @@ function initializeGrid() {
   )
 
   if (props.savedRankingWithRanks && props.savedRankingWithRanks.length > 0) {
-    // Usa il ranking salvato con rank effettivi per posizionare i giocatori
+    // Use the saved ranking with actual ranks to place players
     const savedRanking = props.savedRankingWithRanks
     players.value.forEach((playerId, colIndex) => {
       const player = getPlayerById(playerId)
       if (!player) return
 
-      // Trova il rank di questo giocatore nel ranking salvato
+      // Find this player's rank in the saved ranking
       const savedEntry = savedRanking.find(entry => entry.playerId === playerId)
       if (!savedEntry) return
 
-      // Posiziona il giocatore nella riga corrispondente al suo rank (rank 1 → row 0)
+      // Place the player in the row matching their rank (rank 1 → row 0)
       const row = savedEntry.rank - 1
       if (row >= 0 && row < size && newGrid[row]) {
         newGrid[row][colIndex] = {
@@ -111,7 +114,7 @@ function initializeGrid() {
       }
     })
   } else {
-    // Posiziona tutti nella prima riga (default)
+    // Place everyone in the first row (default)
     const firstRow = newGrid[0]
     if (!firstRow) return
 
@@ -233,7 +236,7 @@ function handleSubmit() {
 }
 
 function handleCancel() {
-  console.log('Score modal cancelled (Annulla clicked)')
+  console.log('Score modal cancelled (Cancel clicked)')
   emit('cancel')
 }
 
@@ -260,8 +263,7 @@ function getCellClass(row: number, col: number): string {
 <template>
   <div class="space-y-4">
     <p class="text-sm text-muted-foreground">
-      Trascina le chip dei giocatori per definire l'ordine di classifica (da sinistra a destra,
-      dall'alto in basso)
+      {{ t('event.scoreGrid.instructions') }}
     </p>
 
     <div
@@ -299,14 +301,14 @@ function getCellClass(row: number, col: number): string {
     <!-- Actions -->
     <div class="flex gap-2 justify-end">
       <UButton color="neutral" variant="outline" @click="handleCancel">
-        Annulla
+        {{ t('common.cancel') }}
       </UButton>
       <UButton
         color="primary"
         :disabled="!isValidFormation"
         @click="handleSubmit"
       >
-        Conferma Classifica
+        {{ t('event.scoreGrid.confirmRanking') }}
       </UButton>
     </div>
   </div>

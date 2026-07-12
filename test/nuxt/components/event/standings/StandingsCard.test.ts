@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import StandingsCard from '~/components/event/standings/StandingsCard.vue'
-import { defaultStubs } from '#test/helpers/mocks'
+import { defaultStubs, createI18nTestPlugin } from '#test/helpers/mocks'
 
 describe('StandingsCard', () => {
   it('renders title and Inserito badge when provided', () => {
@@ -18,6 +18,10 @@ describe('StandingsCard', () => {
       },
       global: {
         stubs: defaultStubs,
+        plugins: [createI18nTestPlugin({
+          player: { stats: { wins: 'Vittorie', kills: 'Uccisioni' } },
+          event: { standingsCard: { brewVotesTooltip: 'Brew votes', playVotesTooltip: 'Play votes', submittedBadge: 'Inserito' } },
+        })],
       },
     })
 

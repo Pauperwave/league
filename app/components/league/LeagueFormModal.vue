@@ -1,13 +1,16 @@
 <!-- app\components\Modals\LeagueFormModal.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import type { CalendarDate } from '@internationalized/date'
 import type { Ruleset, League } from '#shared/utils/types'
 import * as v from 'valibot'
 import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
+const { t } = useI18n()
+
 const LeagueFormSchema = v.object({
-  name: v.pipe(v.string(), v.trim(), v.minLength(1, 'Nome lega richiesto')),
+  name: v.pipe(v.string(), v.trim(), v.minLength(1, 'League name required')),
   startsAt: v.nullable(v.string()),
   endsAt: v.nullable(v.string()),
   rulesetId: v.nullable(v.number()),
@@ -43,10 +46,10 @@ const submitLogging = useButtonLogging('Submit League Form', { isEditing: () => 
 const cancelLogging = useButtonLogging('Cancel League Form')
 
 const isEditing = computed(() => !!props.league)
-const title = computed(() => isEditing.value ? 'Modifica Lega' : 'Crea Nuova Lega')
-const description = computed(() => isEditing.value ? 'Modifica i dati della lega' : 'Compila i campi per creare una nuova lega')
+const title = computed(() => isEditing.value ? t('league.form.editTitle') : t('league.form.createTitle'))
+const description = computed(() => isEditing.value ? t('league.form.editDescription') : t('league.form.createDescription'))
 const icon = computed(() => isEditing.value ? ICONS.edit : ICONS.standings)
-const submitLabel = computed(() => isEditing.value ? 'Salva' : 'Crea Lega')
+const submitLabel = computed(() => isEditing.value ? t('common.save') : t('league.form.submitCreate'))
 
 const defaultForm = () => ({
   name: '',
@@ -61,7 +64,7 @@ const isValid = computed(() => !!form.name.trim())
 
 const rulesetItems = computed(() =>
   props.rulesets.map((r) => ({
-    label: r.name ?? `Ruleset ${r.ruleset_id}`,
+    label: r.name ?? t('league.form.rulesetFallback', { id: r.ruleset_id }),
     value: r.ruleset_id
   }))
 )
@@ -106,7 +109,7 @@ function handleSubmit() {
 
   const parsed = v.safeParse(LeagueFormSchema, data)
   if (!parsed.success) {
-    logError('LeagueFormModal', 'Validazione form lega fallita', parsed.issues)
+    logError('LeagueFormModal', 'League form validation failed', parsed.issues)
     return
   }
 
@@ -147,11 +150,11 @@ function handleCancel() {
 
     <template #body>
       <form id="league-form" class="space-y-4" @submit.prevent="handleSubmit">
-        <UFormField label="Nome Lega" required>
+        <UFormField :label="t('league.form.nameLabel')" required>
           <UInput
             id="field-name"
             v-model="form.name"
-            placeholder="Es. Commander League 2025"
+            :placeholder="t('league.form.namePlaceholder')"
             class="w-full"
           />
         </UFormField>
@@ -159,15 +162,15 @@ function handleCancel() {
         <div class="grid grid-cols-2 gap-4">
           <DatePicker
             v-model="form.startsAt"
-            label="Data Inizio"
+            :label="t('league.form.startsLabel')"
           />
           <DatePicker
             v-model="form.endsAt"
-            label="Data Fine"
+            :label="t('league.form.endsLabel')"
           />
         </div>
 
-        <UFormField label="Regolamento">
+        <UFormField :label="t('league.form.rulesetLabel')">
           <USelect
             v-model="form.rulesetId"
             :items="rulesetItems"

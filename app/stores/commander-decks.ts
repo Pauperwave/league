@@ -1,4 +1,5 @@
 // app\stores\commander-decks.ts
+import { useI18n } from 'vue-i18n'
 import { toErrorMessage } from '~/utils/error'
 import type { CommanderDeck } from '#shared/utils/types'
 import { applyCommander2Filter } from '~/composables/supabase/useStatsQueryBuilder'
@@ -9,6 +10,7 @@ import { applyCommander2Filter } from '~/composables/supabase/useStatsQueryBuild
  */
 export const useCommanderDeckStore = defineStore('commanderDecks', () => {
   const supabase = useSupabaseClient()
+  const { t } = useI18n()
 
   /** All commander decks fetched from Supabase */
   const decks = ref<CommanderDeck[]>([])
@@ -50,7 +52,7 @@ export const useCommanderDeckStore = defineStore('commanderDecks', () => {
       decks.value = data || []
       initialized.value = true
     } catch (err) {
-      error.value = toErrorMessage(err, 'Errore nel caricamento dei deck')
+      error.value = toErrorMessage(err, t('store.deck.loadError'))
       console.error('[useCommanderDeckStore] fetchDecks error:', err)
     } finally {
       loading.value = false
@@ -84,7 +86,7 @@ export const useCommanderDeckStore = defineStore('commanderDecks', () => {
       }
       return newDecks
     } catch (err) {
-      error.value = toErrorMessage(err, 'Errore nel caricamento dei deck')
+      error.value = toErrorMessage(err, t('store.deck.loadError'))
       console.error('[useCommanderDeckStore] fetchDecksByPlayer error:', err)
       return []
     } finally {
@@ -110,9 +112,9 @@ export const useCommanderDeckStore = defineStore('commanderDecks', () => {
         decks.value.push(data)
         return { success: true as const, data }
       }
-      return { success: false as const, error: 'Nessun dato restituito' }
+      return { success: false as const, error: t('store.deck.noData') }
     } catch (err) {
-      error.value = toErrorMessage(err, 'Errore nella creazione del deck')
+      error.value = toErrorMessage(err, t('store.deck.createError'))
       console.error('[useCommanderDeckStore] createDeck error:', err)
       return { success: false as const, error: error.value }
     } finally {
@@ -142,9 +144,9 @@ export const useCommanderDeckStore = defineStore('commanderDecks', () => {
         }
         return { success: true as const, data }
       }
-      return { success: false as const, error: 'Nessun dato restituito' }
+      return { success: false as const, error: t('store.deck.noData') }
     } catch (err) {
-      error.value = toErrorMessage(err, 'Errore nella modifica del deck')
+      error.value = toErrorMessage(err, t('store.deck.updateError'))
       console.error('[useCommanderDeckStore] updateDeck error:', err)
       return { success: false as const, error: error.value }
     } finally {
@@ -187,13 +189,13 @@ export const useCommanderDeckStore = defineStore('commanderDecks', () => {
     try {
       const deck = decks.value.find((d: CommanderDeck) => d.id === id)
       if (!deck) {
-        return { success: false as const, error: 'Deck non trovato' }
+        return { success: false as const, error: t('store.deck.notFound') }
       }
 
       // Check if deck is used in any event
       const inUse = await isDeckInUse(deck)
       if (inUse) {
-        return { success: false, error: 'Non è possibile eliminare questo deck perché è stato usato in un evento' }
+        return { success: false, error: t('store.deck.inUseError') }
       }
 
       const { error: supaError } = await supabase
@@ -206,7 +208,7 @@ export const useCommanderDeckStore = defineStore('commanderDecks', () => {
       decks.value = decks.value.filter((d: CommanderDeck) => d.id !== id)
       return { success: true }
     } catch (err) {
-      error.value = toErrorMessage(err, 'Errore nella eliminazione del deck')
+      error.value = toErrorMessage(err, t('store.deck.deleteError'))
       console.error('[useCommanderDeckStore] deleteDeck error:', err)
       return { success: false, error: error.value }
     } finally {

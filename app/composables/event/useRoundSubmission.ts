@@ -1,16 +1,18 @@
+import { useI18n } from 'vue-i18n'
 import type { RoundResultInsert } from '#shared/utils/types'
 
 /**
- * Composable per gestire la sottomissione dei risultati del round.
- * Integra rankingsStore e killsStore con il database.
+ * Composable for handling round result submission.
+ * Integrates rankingsStore and killsStore with the database.
  */
 export function useRoundSubmission() {
   const rankingsStore = useRankingsStore()
   const killsStore = useKillsStore()
   const eventStore = useEventStore()
+  const { t } = useI18n()
 
   /**
-   * Converte i dati degli store in RoundResultInsert per il database
+   * Converts store data into RoundResultInsert for the database
    */
   function prepareRoundResults(pairingId: number, playerIds: number[]): RoundResultInsert[] {
     const rankingWithRanks = rankingsStore.getRankingWithRanks(pairingId)
@@ -22,7 +24,7 @@ export function useRoundSubmission() {
       const entry = rankingWithRanks.find(r => r.playerId === playerId)
       const position = entry?.rank ?? 0
 
-      // Calcola il numero di kill per questo giocatore
+      // Calculate the number of kills for this player
       const numberOfKills = kills.filter((k) => k.killerId === playerId).length
 
       return {
@@ -40,7 +42,7 @@ export function useRoundSubmission() {
   }
 
   /**
-   * Sottomette i risultati del round al database
+   * Submits the round results to the database
    */
   async function submitRoundResults(pairingId: number, playerIds: number[]): Promise<{ success: boolean; error?: string }> {
     try {
@@ -54,12 +56,12 @@ export function useRoundSubmission() {
     }
     catch (err) {
       console.error('[useRoundSubmission] submitRoundResults error:', err)
-      return { success: false, error: err instanceof Error ? err.message : 'Errore nella sottomissione dei risultati' }
+      return { success: false, error: err instanceof Error ? err.message : t('store.event.submissionError') }
     }
   }
 
   /**
-   * Aggiorna i risultati di un round esistente
+   * Updates the results of an existing round
    */
   async function updateRoundResults(pairingId: number, playerIds: number[]): Promise<{ success: boolean; error?: string }> {
     try {
@@ -73,7 +75,7 @@ export function useRoundSubmission() {
     }
     catch (err) {
       console.error('[useRoundSubmission] updateRoundResults error:', err)
-      return { success: false, error: err instanceof Error ? err.message : 'Errore nell\'aggiornamento dei risultati' }
+      return { success: false, error: err instanceof Error ? err.message : t('store.event.resultsUpdateError') }
     }
   }
 

@@ -1,8 +1,11 @@
 <!-- app\pages\leagues.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 import type { League } from '#shared/utils/types'
+
+const { t } = useI18n()
 
 interface UpdateLeagueData {
   id: number
@@ -28,10 +31,10 @@ const {
 
 const leagueStore = useLeagueStore()
 
-const breadcrumbItems = [
-  { label: 'Home', to: '/', icon: ICONS.home },
-  { label: 'Leghe' },
-]
+const breadcrumbItems = computed(() => [
+  { label: t('common.home'), to: '/', icon: ICONS.home },
+  { label: t('league.breadcrumb') },
+])
 
 const normalizedRulesets = computed(() => rulesets.value ?? [])
 
@@ -68,13 +71,13 @@ async function updateLeague({ id, data }: UpdateLeagueData) {
 
     <div class="flex items-center justify-between p-6 pt-4">
       <UButton color="neutral" :icon="ICONS.back" to="/">
-        Home
+        {{ t('common.home') }}
       </UButton>
       <h1 class="text-2xl font-bold">
-        Leghe
+        {{ t('league.breadcrumb') }}
       </h1>
       <UButton color="primary" :icon="ICONS.add" @click="() => { showCreateModal = true }">
-        Nuova Lega
+        {{ t('league.newLeague') }}
       </UButton>
     </div>
 
@@ -113,13 +116,9 @@ async function updateLeague({ id, data }: UpdateLeagueData) {
 
     <ConfirmModal
       v-model:open="showDeleteConfirm"
-      title="Conferma Eliminazione"
-      description="Stai per eliminare una lega"
-      question="Sei sicuro di voler eliminare la lega"
+      :description="t('league.confirmDeleteDescription')"
+      :question="t('league.confirmDeleteQuestion')"
       :subject="leagueToDelete?.name"
-      warning="Questa azione non può essere annullata."
-      confirm-label="Elimina"
-      cancel-label="Annulla"
       :confirm-icon="ICONS.delete"
       confirm-color="error"
       @confirm="confirmDeleteLeague"

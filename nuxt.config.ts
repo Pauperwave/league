@@ -92,10 +92,11 @@ export default defineNuxtConfig({
   // Adopted for centralized string management, not for actual multi-language support.
   i18n: {
     locales: [
-      { code: 'it', name: 'Italiano' }
+      { code: 'it', name: 'Italiano', file: 'it.json' }
     ],
     defaultLocale: 'it',
     strategy: 'no_prefix',
+    langDir: 'locales/',
     vueI18n: './i18n.config.ts'
   }
 })

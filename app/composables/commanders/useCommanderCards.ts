@@ -1,4 +1,5 @@
 // app/composables/useCommanderCards.ts
+import { useI18n } from 'vue-i18n'
 import * as v from 'valibot'
 import type { Database } from '#shared/utils/types/database'
 
@@ -147,6 +148,7 @@ export function useCommanderCards(
   commander2Name: MaybeRefOrGetter<string | null | undefined>
 ) {
   const supabase = useSupabaseClient()
+  const { t } = useI18n()
   const commander1Data = ref<CommanderCard | null>(null)
   const commander2Data = ref<CommanderCard | null>(null)
   const loading = ref(false)
@@ -186,7 +188,7 @@ export function useCommanderCards(
       commander1Data.value = data1
       commander2Data.value = data2
     } catch (err) {
-      error.value = err instanceof Error ? err.message : 'Errore nel caricamento dati carta'
+      error.value = err instanceof Error ? err.message : t('commander.cardLoadError')
       console.error('[useCommanderCards] Error:', err)
     } finally {
       loading.value = false

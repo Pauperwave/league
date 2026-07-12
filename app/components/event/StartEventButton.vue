@@ -23,6 +23,7 @@
 -->
 
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 defineProps<{
   /** Prevents the button from being clicked. Use when event requirements are not met */
@@ -30,6 +31,8 @@ defineProps<{
   /** Shows a loading spinner. Use while the start request is in progress */
   loading?: boolean
 }>()
+
+const { t } = useI18n()
 </script>
 
 <template>
@@ -42,6 +45,6 @@ defineProps<{
     :loading
     :icon="ICONS.play"
   >
-    Avvia Evento
+    {{ t('event.startButton') }}
   </UButton>
 </template>

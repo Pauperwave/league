@@ -1,5 +1,6 @@
 <!-- app\components\Modals\PlayerSearchModal.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import type { Player } from '#shared/utils/types'
 import { usePlayerOptions } from '~/composables/supabase/usePlayers'
@@ -9,6 +10,8 @@ const props = defineProps<{
   players: Player[]
   waitingPlayers: number[]
 }>()
+
+const { t } = useI18n()
 
 const emit = defineEmits<{
   select: [playerIds: number[]]
@@ -64,7 +67,7 @@ function handleClose() {
     <template #title>
       <div class="flex items-center gap-2">
         <UIcon :name="ICONS.addPlayer" class="text-primary" />
-        <span>Aggiungi giocatori alla lista d'attesa</span>
+        <span>{{ t('player.searchModal.title') }}</span>
       </div>
     </template>
 
@@ -75,19 +78,19 @@ function handleClose() {
           :items="items"
           value-key="value"
           multiple
-          placeholder="Cerca giocatori..."
-          :search-input="{ placeholder: 'Cerca per nome...' }"
+          :placeholder="t('player.searchModal.searchPlaceholder')"
+          :search-input="{ placeholder: t('player.searchModal.searchInputPlaceholder') }"
           class="w-full"
         />
 
         <p v-if="players.length === 0" class="text-muted text-center py-4">
-          Nessun giocatore registrato
+          {{ t('player.searchModal.noPlayersRegistered') }}
         </p>
         <p v-else-if="allPlayersInQueue" class="text-muted text-center py-4">
-          Tutti i giocatori sono già nella lista d'attesa
+          {{ t('player.searchModal.allInQueue') }}
         </p>
         <p v-else-if="hasSelection" class="text-sm text-muted">
-          {{ selectedPlayerIds.length }} giocatore/i selezionato/i
+          {{ t('player.searchModal.selectedCount', { count: selectedPlayerIds.length }) }}
         </p>
       </div>
     </template>
@@ -99,7 +102,7 @@ function handleClose() {
           :icon="ICONS.close"
           @click="handleClose"
         >
-          Chiudi
+          {{ t('common.close') }}
         </UButton>
         <div class="flex items-center gap-2">
           <UButton
@@ -108,7 +111,7 @@ function handleClose() {
             :icon="ICONS.addPlayer"
             @click="handleCreateNew"
           >
-            Crea nuovo
+            {{ t('player.searchModal.createNew') }}
           </UButton>
           <UButton
             color="primary"
@@ -116,7 +119,7 @@ function handleClose() {
             :disabled="!hasSelection"
             @click="handleConfirm"
           >
-            Aggiungi ({{ selectedPlayerIds.length }})
+            {{ t('player.searchModal.addCount', { count: selectedPlayerIds.length }) }}
           </UButton>
         </div>
       </div>

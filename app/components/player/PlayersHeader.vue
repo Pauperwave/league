@@ -1,12 +1,15 @@
 <!-- app\components\players\PlayersHeader.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 defineEmits<{ createPlayer: [] }>()
 
-const breadcrumbItems = [
-  { label: 'Home', to: '/' },
-  { label: 'Giocatori' }
-]
+const { t } = useI18n()
+
+const breadcrumbItems = computed(() => [
+  { label: t('common.home'), to: '/' },
+  { label: t('player.breadcrumb') }
+])
 </script>
 
 <template>
@@ -14,13 +17,13 @@ const breadcrumbItems = [
     <UBreadcrumb :items="breadcrumbItems" />
     <div class="flex items-center justify-between">
       <UButton color="neutral" :icon="ICONS.back" to="/">
-        Home
+        {{ t('common.home') }}
       </UButton>
       <h1 class="text-2xl font-bold">
-        Giocatori
+        {{ t('player.pageTitle') }}
       </h1>
       <UButton :icon="ICONS.addPlayer" color="primary" @click="$emit('createPlayer')">
-        Crea Giocatore
+        {{ t('player.newPlayer') }}
       </UButton>
     </div>
   </div>

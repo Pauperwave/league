@@ -1,4 +1,5 @@
 // app\stores\events.ts
+import { useI18n } from 'vue-i18n'
 import type { Event, EventInsert, StandingWithPlayer, Player, Pairing, PairingWithResults, RoundResult, RoundResultInsert, Ruleset, Standing } from '#shared/utils/types'
 import type { Database } from '#shared/utils/types/database'
 import { toErrorMessage } from '~/utils/error'
@@ -244,6 +245,7 @@ async function updateStandingsAndRanks(supabase: ReturnType<typeof useSupabaseCl
  */
 export const useEventStore = defineStore('events', () => {
   const supabase = useSupabaseClient()
+  const { t } = useI18n()
 
   /**
    * Generic upsert helper for the round_results table.
@@ -284,7 +286,7 @@ export const useEventStore = defineStore('events', () => {
     }
     catch (err) {
       console.error('[upsertRoundResult] Error', { pairingId, playerId, data, err })
-      return { success: false, error: toErrorMessage(err, 'Errore nel salvataggio') }
+      return { success: false, error: toErrorMessage(err, t('store.event.saveError')) }
     }
   }
 
@@ -366,7 +368,7 @@ export const useEventStore = defineStore('events', () => {
       initialized.value[leagueId] = true
     }
     catch (err) {
-      error.value = toErrorMessage(err, 'Errore nel caricamento eventi')
+      error.value = toErrorMessage(err, t('store.event.loadError'))
       console.error('[useEventStore] fetchEvents error:', err)
     }
     finally {
@@ -393,7 +395,7 @@ export const useEventStore = defineStore('events', () => {
       return { success: true as const, data }
     }
     catch (err) {
-      error.value = toErrorMessage(err, 'Errore nella creazione evento')
+      error.value = toErrorMessage(err, t('store.event.createError'))
       console.error('[useEventStore] createEvent error:', err)
       return { success: false as const, error: error.value }
     }
@@ -421,7 +423,7 @@ export const useEventStore = defineStore('events', () => {
       return { success: true as const }
     }
     catch (err) {
-      error.value = toErrorMessage(err, "Errore nell'eliminazione evento")
+      error.value = toErrorMessage(err, t('store.event.deleteError'))
       console.error('[useEventStore] deleteEvent error:', err)
       return { success: false as const, error: error.value }
     }
@@ -458,7 +460,7 @@ export const useEventStore = defineStore('events', () => {
       return { success: true as const, data }
     }
     catch (err) {
-      error.value = toErrorMessage(err, "Errore nell'aggiornamento evento")
+      error.value = toErrorMessage(err, t('store.event.updateError'))
       console.error('[useEventStore] updateEvent error:', err)
       return { success: false as const, error: error.value }
     }
@@ -486,7 +488,7 @@ export const useEventStore = defineStore('events', () => {
 
       const count = waitingPlayers?.length ?? 0
       if (count < 3 || count === 5) {
-        throw new Error('Numero giocatori non valido (min 3, non 5)')
+        throw new Error(t('store.event.invalidPlayerCount'))
       }
 
       const waitroomIds = (waitingPlayers ?? []).map(player => player.player_id)
@@ -497,7 +499,7 @@ export const useEventStore = defineStore('events', () => {
       const hasUniqueIds = new Set(selectedOrder).size === selectedOrder.length
 
       if (!hasSameLength || !hasValidIds || !hasUniqueIds) {
-        throw new Error('Ordine giocatori non valido per avvio evento')
+        throw new Error(t('store.event.invalidPlayerOrder'))
       }
 
       const standingsData = selectedOrder.map((playerId, index) => ({
@@ -541,7 +543,7 @@ export const useEventStore = defineStore('events', () => {
       return { success: true as const, data }
     }
     catch (err) {
-      error.value = toErrorMessage(err, "Errore nell'avvio evento")
+      error.value = toErrorMessage(err, t('store.event.startError'))
       console.error('[useEventStore] startEvent error:', err)
       return { success: false as const, error: error.value }
     }
@@ -640,7 +642,7 @@ export const useEventStore = defineStore('events', () => {
     })
 
     if (!optimized.tables.length || !Number.isFinite(optimized.totalScore)) {
-      throw new Error('Impossibile generare pairings validi con i vincoli correnti')
+      throw new Error(t('store.event.optimizerFailed'))
     }
 
     const rows = buildPairingRows(eventId, round, optimized.tables)
@@ -1068,7 +1070,7 @@ export const useEventStore = defineStore('events', () => {
     const result = await upsertRoundResult(pairingId, playerId, { brew_vote: brewVote, play_vote_1: playVote })
     if (!result.success) {
       console.error('[useEventStore] saveVote error:', result.error)
-      return { success: false, error: result.error || 'Errore nel salvataggio del voto' }
+      return { success: false, error: result.error || t('store.event.voteSaveError') }
     }
     console.log('[useEventStore] saveVote success', { pairingId, playerId })
     return result
@@ -1080,7 +1082,7 @@ export const useEventStore = defineStore('events', () => {
     const result = await upsertRoundResult(pairingId, playerId, { commander_1: commander1, commander_2: commander2 })
     if (!result.success) {
       console.error('[useEventStore] saveCommander error:', result.error)
-      return { success: false, error: result.error || 'Errore nel salvataggio dei comandanti' }
+      return { success: false, error: result.error || t('store.event.commanderSaveError') }
     }
     console.log('[useEventStore] saveCommander success', { pairingId, playerId })
     return result
@@ -1097,7 +1099,7 @@ export const useEventStore = defineStore('events', () => {
     }
     catch (err) {
       console.error('[useEventStore] savePairingRankings error:', err)
-      return { success: false, error: toErrorMessage(err, 'Errore nel salvataggio delle posizioni') }
+      return { success: false, error: toErrorMessage(err, t('store.event.rankingsSaveError')) }
     }
   }
 
@@ -1112,7 +1114,7 @@ export const useEventStore = defineStore('events', () => {
     }
     catch (err) {
       console.error('[useEventStore] savePairingKills error:', err)
-      return { success: false, error: toErrorMessage(err, 'Errore nel salvataggio delle uccisioni') }
+      return { success: false, error: toErrorMessage(err, t('store.event.killsSaveError')) }
     }
   }
 
@@ -1151,7 +1153,7 @@ export const useEventStore = defineStore('events', () => {
       return { success: true as const }
     }
     catch (err) {
-      error.value = toErrorMessage(err, 'Errore nel prossimo round')
+      error.value = toErrorMessage(err, t('store.event.nextRoundError'))
       console.error('[useEventStore] nextRound error:', err)
       return { success: false as const, error: error.value }
     }
@@ -1215,7 +1217,7 @@ export const useEventStore = defineStore('events', () => {
       return { success: true as const }
     }
     catch (err) {
-      error.value = toErrorMessage(err, 'Errore nel tornare indietro')
+      error.value = toErrorMessage(err, t('store.event.turnBackError'))
       console.error('[useEventStore] turnBackRound error:', err)
       return { success: false as const, error: error.value }
     }

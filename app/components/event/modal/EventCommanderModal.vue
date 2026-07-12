@@ -1,5 +1,9 @@
 <!-- app\components\events\modals\EventCommanderModal.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
+
 const {
   showCommanderModal,
   selectedPlayerId,
@@ -32,7 +36,7 @@ function onSubmit() {
 <template>
   <UModal
     v-model:open="open"
-    title="Imposta Comandanti"
+    :title="t('event.commanderModal.title')"
     :description="selectedPlayerId ? getPlayerName(selectedPlayerId) : ''"
     :scrollable="true"
     :ui="{
@@ -55,10 +59,10 @@ function onSubmit() {
     <template #footer>
       <div class="flex gap-2 justify-end">
         <UButton color="neutral" variant="outline" @click="emit('cancel')">
-          Annulla
+          {{ t('common.cancel') }}
         </UButton>
         <UButton color="primary" @click="onSubmit">
-          Salva
+          {{ t('common.save') }}
         </UButton>
       </div>
     </template>

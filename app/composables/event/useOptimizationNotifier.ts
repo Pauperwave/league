@@ -1,4 +1,5 @@
 import type { Ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import type { TournamentTable } from '#shared/utils/types'
 import { isCloseTo } from '~/utils/math'
 import type { PairingScoreDetails } from '~/composables/event-pairing/pairingOptimizer'
@@ -37,7 +38,7 @@ function changedTableNumbers(beforeTableTotals: number[], afterTableTotals: numb
   }, [])
 }
 
-function notifyOptimizationResult(toast: ToastApi, params: {
+function notifyOptimizationResult(toast: ToastApi, t: ReturnType<typeof useI18n>['t'], params: {
   changed: boolean
   beforeTotal: number
   afterTotal: number
@@ -49,7 +50,7 @@ function notifyOptimizationResult(toast: ToastApi, params: {
   if (!params.changed || params.afterTotal <= params.beforeTotal) {
     toast.add({
       title: params.noChangeTitle,
-      description: 'Non sono stati trovati miglioramenti con i vincoli correnti',
+      description: t('event.optimizer.noImprovements'),
       color: 'neutral',
     })
     return
@@ -60,12 +61,17 @@ function notifyOptimizationResult(toast: ToastApi, params: {
 
   toast.add({
     title: params.successTitle,
-    description: `+${delta.toFixed(2)} punti, tavoli aggiornati: ${changedTables.join(', ') || 'nessuno'}`,
+    description: t('event.optimizer.improvedDescription', {
+      delta: delta.toFixed(2),
+      tables: changedTables.join(', ') || t('event.optimizer.noneFallback'),
+    }),
     color: 'success',
   })
 }
 
 export function useOptimizationNotifier(params: Params) {
+  const { t } = useI18n()
+
   function optimizeNow() {
     const beforeTotal = params.scoreDetails.value.totalScore
     const beforeTableTotals = params.scoreDetails.value.tableScores.map(table => table.total)
@@ -75,14 +81,14 @@ export function useOptimizationNotifier(params: Params) {
     const afterTotal = params.scoreDetails.value.totalScore
     const afterTableTotals = params.scoreDetails.value.tableScores.map(table => table.total)
 
-    notifyOptimizationResult(params.toast, {
+    notifyOptimizationResult(params.toast, t, {
       changed,
       beforeTotal,
       afterTotal,
       beforeTableTotals,
       afterTableTotals,
-      successTitle: 'Ottimizzazione completata',
-      noChangeTitle: 'Accoppiamenti già ottimizzati',
+      successTitle: t('event.optimizer.optimizationCompleteTitle'),
+      noChangeTitle: t('event.optimizer.alreadyOptimizedTitle'),
     })
   }
 
@@ -96,8 +102,8 @@ export function useOptimizationNotifier(params: Params) {
     if (!params.isValid.value) {
       params.restoreTables(snapshot)
       params.toast.add({
-        title: 'Risoluzione conflitti non riuscita',
-        description: params.previewError.value || 'Nessuna soluzione valida trovata',
+        title: t('event.optimizer.conflictResolutionFailedTitle'),
+        description: params.previewError.value || t('event.optimizer.noValidSolutionFallback'),
         color: 'error',
       })
       return
@@ -109,21 +115,21 @@ export function useOptimizationNotifier(params: Params) {
     if (afterTotal < beforeTotal) {
       params.restoreTables(snapshot)
       params.toast.add({
-        title: 'Accoppiamenti già ottimizzati',
-        description: 'Non sono stati trovati miglioramenti con i vincoli correnti',
+        title: t('event.optimizer.alreadyOptimizedTitle'),
+        description: t('event.optimizer.noImprovements'),
         color: 'neutral',
       })
       return
     }
 
-    notifyOptimizationResult(params.toast, {
+    notifyOptimizationResult(params.toast, t, {
       changed,
       beforeTotal,
       afterTotal,
       beforeTableTotals,
       afterTableTotals,
-      successTitle: 'Risoluzione conflitti completata',
-      noChangeTitle: 'Accoppiamenti già ottimizzati',
+      successTitle: t('event.optimizer.conflictResolutionCompleteTitle'),
+      noChangeTitle: t('event.optimizer.alreadyOptimizedTitle'),
     })
   }
 

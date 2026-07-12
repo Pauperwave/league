@@ -1,6 +1,9 @@
 <!-- app\components\events\modals\EventVotesModal.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import type { TournamentPlayer } from '#shared/utils/types'
+
+const { t } = useI18n()
 
 const {
   showVotesModal,
@@ -30,7 +33,7 @@ const open = computed({
 <template>
   <UModal
     v-model:open="open"
-    title="Voti Mazzo e Giocata"
+    :title="t('event.votesModal.title')"
     :description="selectedVotesPlayerId ? getPlayerName(selectedVotesPlayerId) : ''"
     :ui="{ content: 'sm:max-w-md' }"
   >

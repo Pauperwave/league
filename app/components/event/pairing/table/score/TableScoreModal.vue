@@ -1,7 +1,10 @@
 <!-- app\components\events\Pairings\TableScoreModal.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import { getPairingPlayerIds, type Pairing } from '#shared/utils/types'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   pairing: Pairing | null
@@ -55,14 +58,14 @@ const team2Players = computed(() => {
       <template #header>
         <div class="flex items-center gap-2">
           <UIcon :name="ICONS.standings" class="size-5 text-primary" />
-          <h3 class="text-lg font-semibold">Inserisci Punteggi - Tavolo {{ tableIndex !== null ? tableIndex + 1 : '' }}</h3>
+          <h3 class="text-lg font-semibold">{{ t('event.tableScoreModal.headingTemplate', { n: tableIndex !== null ? tableIndex + 1 : '' }) }}</h3>
         </div>
       </template>
 
       <div class="space-y-6">
         <!-- Team 1 -->
         <div class="space-y-2">
-          <h4 class="font-medium text-sm text-muted-foreground">Squadra 1</h4>
+          <h4 class="font-medium text-sm text-muted-foreground">{{ t('event.tableScoreModal.team1') }}</h4>
           <div class="flex items-center gap-2 p-3 bg-muted/30 rounded">
             <div class="flex-1 space-y-1">
               <div v-for="playerId in team1Players.filter((id): id is number => id !== undefined)" :key="playerId" class="text-sm">
@@ -81,7 +84,7 @@ const team2Players = computed(() => {
 
         <!-- Team 2 -->
         <div class="space-y-2">
-          <h4 class="font-medium text-sm text-muted-foreground">Squadra 2</h4>
+          <h4 class="font-medium text-sm text-muted-foreground">{{ t('event.tableScoreModal.team2') }}</h4>
           <div class="flex items-center gap-2 p-3 bg-muted/30 rounded">
             <div class="flex-1 space-y-1">
               <div v-for="playerId in team2Players.filter((id): id is number => id !== undefined)" :key="playerId" class="text-sm">
@@ -106,13 +109,13 @@ const team2Players = computed(() => {
             variant="outline"
             @click="handleCancel"
           >
-            Annulla
+            {{ t('common.cancel') }}
           </UButton>
           <UButton
             color="primary"
             @click="handleSubmit"
           >
-            Conferma
+            {{ t('common.confirm') }}
           </UButton>
         </div>
       </template>

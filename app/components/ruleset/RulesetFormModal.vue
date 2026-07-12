@@ -1,5 +1,6 @@
 <!-- app\components\Modals\RulesetFormModal.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import type { Ruleset } from '#shared/utils/types'
 import * as v from 'valibot'
@@ -8,6 +9,8 @@ import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 const props = defineProps<{
   ruleset: Ruleset | null
 }>()
+
+const { t } = useI18n()
 
 const emit = defineEmits<{
   create: [Omit<Ruleset, 'ruleset_id'>]
@@ -46,10 +49,10 @@ const RulesetUpdateSchema = v.object({
 })
 
 const isEditing = computed(() => !!props.ruleset)
-const title = computed(() => isEditing.value ? 'Modifica Regolamento' : 'Crea Regolamento')
-const description = computed(() => isEditing.value ? 'Modifica il regolamento e i punteggi' : 'Crea un nuovo regolamento con i relativi punteggi')
+const title = computed(() => isEditing.value ? t('ruleset.form.editTitle') : t('ruleset.form.createTitle'))
+const description = computed(() => isEditing.value ? t('ruleset.form.editDescription') : t('ruleset.form.createDescription'))
 const icon = computed(() => isEditing.value ? ICONS.edit : ICONS.rules)
-const submitLabel = computed(() => isEditing.value ? 'Salva' : 'Crea')
+const submitLabel = computed(() => isEditing.value ? t('common.save') : t('ruleset.form.submitCreate'))
 
 const defaultForm = () => ({
   name: '',
@@ -97,10 +100,10 @@ watch(open, (isOpen) => {
 })
 
 const gameActionFields = [
-  { key: 'partecipation', label: 'Partecipazione', icon: ICONS.player },
-  { key: 'kill', label: 'Kill', icon: ICONS.ruleKill },
-  { key: 'brew', label: 'Brew', icon: ICONS.ruleBrew },
-  { key: 'play', label: 'Play', icon: ICONS.play },
+  { key: 'partecipation', label: t('ruleset.actions.partecipation'), icon: ICONS.player },
+  { key: 'kill', label: t('ruleset.actions.kill'), icon: ICONS.ruleKill },
+  { key: 'brew', label: t('ruleset.actions.brew'), icon: ICONS.ruleBrew },
+  { key: 'play', label: t('ruleset.actions.play'), icon: ICONS.play },
 ] as const
 
 const rankFields = ['rank1', 'rank2', 'rank3', 'rank4'] as const
@@ -122,7 +125,7 @@ function handleSubmit() {
   const schema = isEditing.value ? RulesetUpdateSchema : RulesetCreateSchema
   const parsed = v.safeParse(schema, scoreData)
   if (!parsed.success) {
-    logError('RulesetFormModal', 'Validazione form ruleset fallita', parsed.issues)
+    logError('RulesetFormModal', 'Ruleset form validation failed', parsed.issues)
     return
   }
 
@@ -160,20 +163,20 @@ function handleCancel() {
     <template #body>
       <form id="ruleset-form" class="space-y-4" @submit.prevent="handleSubmit">
 
-        <!-- Nome -->
-        <UFormField label="Nome" required>
+        <!-- Name -->
+        <UFormField :label="t('ruleset.form.nameLabel')" required>
           <UInput
             id="field-name"
             v-model="form.name"
-            placeholder="Es. Regolamento Standard"
+            :placeholder="t('ruleset.form.namePlaceholder')"
             class="w-full"
           />
         </UFormField>
 
-        <!-- Punti per azioni di gioco -->
+        <!-- Points for game actions -->
         <div>
           <label class="flex text-xs font-medium mb-2 text-muted items-center justify-center gap-1.5">
-            <UIcon :name="ICONS.battle" class="size-3" /> Punti per azioni di gioco
+            <UIcon :name="ICONS.battle" class="size-3" /> {{ t('ruleset.form.gameActionsHeading') }}
           </label>
           <div class="grid grid-cols-4 gap-3">
             <UFormField
@@ -197,10 +200,10 @@ function handleCancel() {
           </div>
         </div>
 
-        <!-- Punti per posizione -->
+        <!-- Points for position -->
         <div>
           <label class="flex text-xs font-medium mb-2 text-muted items-center justify-center gap-1.5">
-            <UIcon :name="ICONS.standings" class="size-3" /> Punti per posizione
+            <UIcon :name="ICONS.standings" class="size-3" /> {{ t('ruleset.form.positionsHeading') }}
           </label>
           <div class="grid grid-cols-4 gap-2">
             <UFormField
@@ -224,10 +227,10 @@ function handleCancel() {
           </div>
         </div>
 
-        <!-- Eventi validi richiesti -->
+        <!-- Valid events required -->
         <div class="flex flex-col items-center gap-1">
           <label class="flex text-xs font-medium text-muted items-center gap-1.5">
-            <UIcon :name="ICONS.calendarConfirmed" class="size-3" /> Eventi validi richiesti
+            <UIcon :name="ICONS.calendarConfirmed" class="size-3" /> {{ t('ruleset.form.validEventsLabel') }}
           </label>
           <UInputNumber
             id="field-valid-events"

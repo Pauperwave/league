@@ -1,8 +1,8 @@
 /**
- * Recupera dati dalla cache localStorage se non scaduti
- * @param key - Chiave della cache
- * @param ttlMs - Tempo di vita in millisecondi
- * @returns Dati in cache o null se scaduti/non trovati
+ * Retrieves data from the localStorage cache if not expired
+ * @param key - Cache key
+ * @param ttlMs - Time to live in milliseconds
+ * @returns Cached data, or null if expired/not found
  */
 export function getCached<T>(key: string, ttlMs: number): T | null {
   if (typeof window === 'undefined') return null
@@ -26,9 +26,9 @@ export function getCached<T>(key: string, ttlMs: number): T | null {
 }
 
 /**
- * Salva dati in localStorage con timestamp corrente
- * @param key - Chiave della cache
- * @param data - Dati da salvare
+ * Saves data to localStorage with the current timestamp
+ * @param key - Cache key
+ * @param data - Data to save
  */
 export function setCached<T>(key: string, data: T): void {
   if (typeof window === 'undefined') return

@@ -1,5 +1,5 @@
 /**
- * Utility di logging per debugging
+ * Logging utility for debugging
  */
 
 export function logInfo(component: string, message: string, ...args: unknown[]) {

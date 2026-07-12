@@ -11,7 +11,8 @@
   "ignorePatterns": [
     "public/**",
     "docs/**",
-    "shared/utils/types/database.ts"
+    "shared/utils/types/database.ts",
+    "i18n/i18n.config.ts"
   ],
   "ignoreDependencies": [
     "@formkit/auto-animate",

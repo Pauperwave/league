@@ -1,0 +1,698 @@
+{
+  "common": {
+    "cancel": "Annulla",
+    "save": "Salva",
+    "delete": "Elimina",
+    "remove": "Rimuovi",
+    "edit": "Modifica",
+    "view": "Visualizza",
+    "confirm": "Conferma",
+    "close": "Chiudi",
+    "back": "Indietro",
+    "add": "Aggiungi",
+    "search": "Cerca",
+    "loading": "Caricamento...",
+    "today": "Oggi",
+    "home": "Home",
+    "confirmDeleteTitle": "Conferma Eliminazione",
+    "confirmDeleteWarning": "Questa azione non può essere annullata.",
+    "loadError": "Errore nel caricamento",
+    "dateLabel": "Data",
+    "selectDate": "Seleziona una data",
+    "logout": "Esci",
+    "switchToLightMode": "Passa al tema chiaro",
+    "switchToDarkMode": "Passa al tema scuro"
+  },
+  "league": {
+    "breadcrumb": "Leghe",
+    "fallbackName": "Lega",
+    "newLeague": "Nuova Lega",
+    "editLeagueName": "Modifica nome lega",
+    "backAriaLabel": "Torna indietro",
+    "newEvent": "Nuovo Evento",
+    "scoresByEvent": "Punteggi per Evento",
+    "standingsTitle": "Classifica {name}",
+    "emptyTitle": "Nessuna lega creata",
+    "emptyDescription": "Clicca 'Nuova Lega' per iniziare",
+    "confirmDeleteDescription": "Stai per eliminare una lega",
+    "confirmDeleteQuestion": "Sei sicuro di voler eliminare la lega",
+    "confirmDeleteEventDescription": "Stai per eliminare un evento",
+    "confirmDeleteEventQuestion": "Sei sicuro di voler eliminare questo evento?",
+    "status": {
+      "scheduled": "Programmata",
+      "active": "Attiva",
+      "ended": "Terminata"
+    },
+    "table": {
+      "id": "ID",
+      "name": "Nome",
+      "starts": "Inizio",
+      "ends": "Fine",
+      "status": "Status",
+      "ruleset": "Regolamento",
+      "rulesetFallback": "Standard"
+    },
+    "form": {
+      "editTitle": "Modifica Lega",
+      "createTitle": "Crea Nuova Lega",
+      "editDescription": "Modifica i dati della lega",
+      "createDescription": "Compila i campi per creare una nuova lega",
+      "submitCreate": "Crea Lega",
+      "nameLabel": "Nome Lega",
+      "namePlaceholder": "Es. Commander League 2025",
+      "startsLabel": "Data Inizio",
+      "endsLabel": "Data Fine",
+      "rulesetLabel": "Regolamento",
+      "rulesetFallback": "Ruleset {id}"
+    },
+    "ranking": {
+      "rank": "#",
+      "player": "Giocatore",
+      "playerFallback": "Giocatore {id}",
+      "points": "Punti",
+      "pointsAbbrev": "{score} PT",
+      "empty": "Nessun punteggio disponibile"
+    },
+    "usingRulesetModal": {
+      "title": "Leghe che usano il regolamento \"{name}\"",
+      "foundCount": "nessuna lega trovata | {count} lega trovata | {count} leghe trovate",
+      "empty": "Nessuna lega sta usando questo regolamento"
+    },
+    "toast": {
+      "standingsErrorTitle": "Errore caricamento classifica",
+      "standingsErrorFallback": "Impossibile caricare la classifica della lega",
+      "updateErrorTitle": "Errore aggiornamento lega",
+      "updateErrorFallback": "Impossibile aggiornare la lega",
+      "updatedTitle": "Lega aggiornata",
+      "updatedDescription": "Le informazioni della lega sono state aggiornate con successo."
+    }
+  },
+  "ruleset": {
+    "breadcrumb": "Regolamenti",
+    "pageTitle": "Regolamenti e Punteggi",
+    "newRuleset": "Nuovo Regolamento",
+    "editAriaLabel": "Modifica regolamento",
+    "viewLeaguesAriaLabel": "Leghe che usano questo regolamento",
+    "deleteAriaLabel": "Elimina regolamento",
+    "viewLeaguesInUseTooltip": "Vedi leghe che usano questo regolamento",
+    "viewLeaguesNotInUseTooltip": "Nessuna lega usa questo regolamento",
+    "deleteInUseTooltip": "Regolamento in uso da almeno una lega",
+    "deleteTooltip": "Elimina regolamento",
+    "positions": "Posizioni",
+    "actionsHeading": "Azioni",
+    "pointsUnit": "pt",
+    "validEventsRow": "Eventi validi",
+    "validEventsTooltip": "Minimo eventi per la classifica finale",
+    "confirmDeleteDescription": "Stai per eliminare un regolamento",
+    "confirmDeleteQuestion": "Sei sicuro di voler eliminare il regolamento",
+    "actions": {
+      "partecipation": "Partecipazione",
+      "kill": "Kill",
+      "brew": "Brew",
+      "play": "Play"
+    },
+    "actionTooltips": {
+      "partecipation": "Punti per partecipare all'evento",
+      "kill": "Punti per aver eliminato un avversario",
+      "brew": "Punti per originalità del deck",
+      "play": "Punti per la miglior giocata"
+    },
+    "form": {
+      "editTitle": "Modifica Regolamento",
+      "createTitle": "Crea Regolamento",
+      "editDescription": "Modifica il regolamento e i punteggi",
+      "createDescription": "Crea un nuovo regolamento con i relativi punteggi",
+      "submitCreate": "Crea",
+      "nameLabel": "Nome",
+      "namePlaceholder": "Es. Regolamento Standard",
+      "gameActionsHeading": "Punti per azioni di gioco",
+      "positionsHeading": "Punti per posizione",
+      "validEventsLabel": "Eventi validi richiesti"
+    }
+  },
+  "player": {
+    "breadcrumb": "Giocatori",
+    "pageTitle": "Giocatori",
+    "newPlayer": "Crea Giocatore",
+    "fallbackName": "Profilo",
+    "profileFallbackHeading": "Profilo giocatore",
+    "notFound": "Giocatore non trovato",
+    "deckCount": "0 mazzi | 1 mazzo | {count} mazzi",
+    "stats": {
+      "events": "Eventi",
+      "matches": "Match",
+      "wins": "Vittorie",
+      "kills": "Uccisioni",
+      "average": "Media",
+      "decks": "Mazzi",
+      "borrowedSuffix": "prestati"
+    },
+    "matchHistory": {
+      "heading": "Storico Partite",
+      "event": "Evento",
+      "round": "Round",
+      "table": "Tavolo",
+      "commander": "Commander",
+      "position": "Pos",
+      "kills": "Kill",
+      "date": "Data",
+      "unknownEvent": "Evento sconosciuto"
+    },
+    "decksSection": {
+      "heading": "Commander Decks",
+      "addDeck": "Aggiungi Deck",
+      "empty": "Nessun commander deck registrato"
+    },
+    "filterSwitch": {
+      "onlyWithDecks": "Solo con mazzi ({count})",
+      "allPlayers": "Tutti i giocatori ({count})"
+    },
+    "toolbar": {
+      "searchPlaceholder": "Cerca giocatore per nome...",
+      "sortPlaceholder": "Ordina per...",
+      "sortDescAriaLabel": "Ordina decrescente",
+      "sortAscAriaLabel": "Ordina crescente"
+    },
+    "sortOptions": {
+      "name": "Nome",
+      "wins": "Vittorie",
+      "kills": "Uccisioni",
+      "matches": "Partite",
+      "events": "Eventi",
+      "avgScore": "Media punti",
+      "decks": "Mazzi"
+    },
+    "emptyState": {
+      "noResultsTitle": "Nessun risultato per \"{query}\"",
+      "noResultsDescription": "Vuoi creare un nuovo giocatore?",
+      "createPlayer": "Crea Giocatore",
+      "noDecksTitle": "Nessun giocatore ha mazzi associati",
+      "noDecksDescription": "Disattiva il filtro per vedere tutti i giocatori",
+      "showAll": "Mostra tutti",
+      "noPlayersTitle": "Nessun giocatore trovato",
+      "noPlayersDescription": "Inizia creando il primo giocatore"
+    },
+    "searchModal": {
+      "title": "Aggiungi giocatori alla lista d'attesa",
+      "searchPlaceholder": "Cerca giocatori...",
+      "searchInputPlaceholder": "Cerca per nome...",
+      "noPlayersRegistered": "Nessun giocatore registrato",
+      "allInQueue": "Tutti i giocatori sono già nella lista d'attesa",
+      "selectedCount": "{count} giocatore/i selezionato/i",
+      "createNew": "Crea nuovo",
+      "addCount": "Aggiungi ({count})"
+    },
+    "form": {
+      "createTitle": "Crea Nuovo Giocatore",
+      "editTitle": "Modifica Giocatore",
+      "createDescription": "Cerca giocatori esistenti prima di crearne uno nuovo",
+      "editDescription": "Modifica i dati del giocatore",
+      "submitCreate": "Crea Giocatore",
+      "firstNameLabel": "Nome",
+      "firstNamePlaceholder": "Es. Mario",
+      "lastNameLabel": "Cognome",
+      "lastNamePlaceholder": "Es. Rossi",
+      "similarFoundHeading": "Giocatori simili trovati",
+      "similarFoundHint": "Verifica che il giocatore non sia già registrato:",
+      "select": "Seleziona",
+      "similarHelpText": "Se il giocatore è nella lista, clicca \"Seleziona\" per aggiungerlo all'evento.",
+      "noSimilarFound": "Nessun giocatore simile trovato. Puoi procedere con la creazione."
+    },
+    "toast": {
+      "createdTitle": "Giocatore creato",
+      "createdDescription": "{name} creato con successo"
+    }
+  },
+  "deck": {
+    "confirmDeleteTitle": "Elimina Deck",
+    "confirmDeleteDescription": "Conferma eliminazione",
+    "confirmDeleteQuestion": "Sei sicuro di voler eliminare il deck",
+    "breadcrumb": "Deck",
+    "notFound": "Deck non trovato",
+    "fallbackName": "Deck sconosciuto",
+    "viewOnScryfall": "Vedi su Scryfall",
+    "artAlt": "Immagine di {name}",
+    "playersUsingHeading": "Giocatori con questo deck",
+    "unknownPlayer": "Giocatore sconosciuto",
+    "borrowedBadge": "(Prestato)",
+    "statsPlayers": "Giocatori",
+    "usedInEvents": "Usato in {count} evento | Usato in {count} eventi",
+    "notUsedInEvents": "Non usato in eventi",
+    "lentBy": "di {name}",
+    "viewDetails": "Dettagli",
+    "viewStats": "Statistiche",
+    "toast": {
+      "errorTitle": "Errore",
+      "updatedTitle": "Deck aggiornato",
+      "updatedDescription": "Le informazioni di proprietà sono state salvate",
+      "updateErrorFallback": "Impossibile aggiornare il deck",
+      "createdTitle": "Deck creato",
+      "createdDescription": "Il deck è stato aggiunto con successo",
+      "createErrorFallback": "Impossibile creare il deck",
+      "deletedTitle": "Deck eliminato",
+      "deletedDescription": "Il deck è stato rimosso con successo",
+      "deleteErrorFallback": "Impossibile eliminare il deck"
+    },
+    "cardActions": {
+      "editAriaLabel": "Modifica proprietà",
+      "deleteTooltip": "Elimina deck",
+      "deleteAriaLabel": "Elimina deck"
+    },
+    "votes": {
+      "preferredDeck": "Mazzo preferito",
+      "bestPlay": "Miglior giocata"
+    },
+    "newModal": {
+      "title": "Nuovo Deck",
+      "description": "Aggiungi un nuovo commander deck al giocatore",
+      "commanderLabel": "Commander",
+      "commanderPlaceholder": "Es. Atraxa, Praetors' Voice",
+      "partnerLabel": "Partner (opzionale)",
+      "partnerPlaceholder": "Es. Thrasios, Triton Hero",
+      "companionLabel": "Compagno (opzionale)",
+      "companionPlaceholder": "Es. Lutri, the Spellchaser",
+      "submit": "Aggiungi"
+    },
+    "editModal": {
+      "title": "Modifica Deck",
+      "description": "Gestisci la proprietà del deck",
+      "selectLenderWarning": "Seleziona un proprietario per salvare"
+    },
+    "ownership": {
+      "borrowedTitle": "Deck prestato",
+      "borrowedDescription": "Attiva se questo deck non è di proprietà del giocatore",
+      "lenderLabel": "Prestato da",
+      "lenderPlaceholder": "Cerca e seleziona il proprietario",
+      "lenderSearchPlaceholder": "Cerca giocatore..."
+    },
+    "sortOptions": {
+      "alphabetical": "Alfabetico",
+      "popularity": "Popolarita",
+      "frequency": "Frequenza",
+      "color": "Colore",
+      "manaCost": "Costo mana"
+    },
+    "emptyList": "Nessun deck trovato"
+  },
+  "commander": {
+    "label": "Comandante",
+    "loadingLists": "Caricamento liste carte...",
+    "compatibleCards": "{count} carte compatibili",
+    "noSecondCommander": "Questo comandante non supporta un secondo comandante",
+    "searchPlaceholder": "Nome del comandante",
+    "cardLoadError": "Errore nel caricamento dati carta",
+    "partnerTypes": {
+      "commander2Unavailable": "Comandante 2 (non disponibile)",
+      "partner": "Partner",
+      "partnerWith": "Partner With",
+      "background": "Background",
+      "friendsForever": "Friends Forever",
+      "doctorsCompanion": "Doctor's Companion",
+      "companion": "Companion",
+      "commander2": "Comandante 2"
+    }
+  },
+  "event": {
+    "fallbackName": "Evento",
+    "standingsTitleFinal": "Classifica Finale",
+    "standingsTitleRound": "Classifica Round {round}",
+    "standingsTitleDefault": "Classifica",
+    "timerExpiredTitle": "Tempo scaduto!",
+    "timerExpiredDescription": "Il tempo del round {round} è terminato",
+    "viewingPastRound": "Visualizzando il round {round}",
+    "backToCurrentRound": "Torna al round corrente",
+    "notEnoughPlayers": "Servono almeno 3 giocatori",
+    "tooManyForFive": "Non si può giocare con 5 giocatori",
+    "tablesOf4": "{count} tavolo da 4 | {count} tavoli da 4",
+    "tablesOf3": "{count} tavolo da 3 | {count} tavoli da 3",
+    "tableEstimateConjunction": "e",
+    "cancelRound": {
+      "title": "Annulla round",
+      "description": "Tornare al round precedente",
+      "question": "Sei sicuro di voler tornare al round precedente",
+      "warning": "I dati del round corrente andranno persi.",
+      "confirmLabel": "Annulla round"
+    },
+    "endEvent": {
+      "title": "Termina evento",
+      "description": "Conferma la fine dell'evento",
+      "question": "Sei sicuro di voler terminare l'evento",
+      "warning": "Dopo la conferma l'evento verrà contrassegnato come terminato.",
+      "confirmLabel": "Termina"
+    },
+    "editAriaLabel": "Modifica evento",
+    "status": {
+      "registration": "Programmato",
+      "playing": "In Corso",
+      "ended": "Terminato"
+    },
+    "table": {
+      "date": "Data",
+      "round": "Round",
+      "status": "Stato",
+      "registration": "Registrazione",
+      "registrationOpen": "Aperta",
+      "registrationClosed": "Chiusa",
+      "emptyTitle": "Nessun evento creato",
+      "emptyDescription": "Clicca 'Nuovo Evento' per iniziare"
+    },
+    "controlPanel": {
+      "backToPreviousRoundTooltip": "Torna al round precedente",
+      "endEventTooltip": "Termina l'evento",
+      "advanceTooltip": "Procedi al round successivo",
+      "incompleteDataTooltip": "Dati dei tavoli incompleti",
+      "advanceButton": "Avanti"
+    },
+    "stepper": {
+      "registrationTitle": "Registrazione",
+      "registrationDescription": "Iscrizioni aperte",
+      "roundTitle": "Round {n}",
+      "roundCompleted": "Completato",
+      "roundInProgress": "In corso",
+      "roundPending": "In attesa",
+      "endedDescription": "Evento concluso"
+    },
+    "startButton": "Avvia Evento",
+    "endedBadge": "Evento Terminato",
+    "roundTimer": {
+      "expiredTooltip": "Timer scaduto",
+      "startTooltip": "Avvia timer",
+      "pauseTooltip": "Pausa timer",
+      "resetTooltip": "Resetta timer",
+      "add5Tooltip": "Aggiungi 5 minuti",
+      "add10Tooltip": "Aggiungi 10 minuti",
+      "fullscreenTooltip": "Schermo intero",
+      "exitFullscreenTooltip": "Esci da schermo intero"
+    },
+    "waitingList": {
+      "heading": "Lista d'Attesa",
+      "addPlayers": "Aggiungi Giocatori"
+    },
+    "waitingListTable": {
+      "selectAllAriaLabel": "Seleziona tutti",
+      "selectRowAriaLabel": "Seleziona {name}",
+      "companionAriaLabel": "Companion per {name}",
+      "paidAriaLabel": "Pagato per {name}",
+      "playerColumn": "Giocatore",
+      "timeColumn": "Inserito alle",
+      "companionColumn": "Companion",
+      "paidColumn": "Pagato",
+      "actionsColumn": "Azioni",
+      "searchPlaceholder": "Cerca giocatori...",
+      "columnsButton": "Colonne",
+      "selectedCount": "{count} giocatori selezionati",
+      "selectPlayersHint": "Seleziona giocatori per azioni batch",
+      "markPaid": "Marca pagati",
+      "markCompanion": "Marca companion",
+      "removeSelected": "Rimuovi selezionati",
+      "noResultsFor": "Nessun risultato per \"{query}\"",
+      "emptyTitle": "Nessun giocatore in lista d'attesa"
+    },
+    "waitingListStats": {
+      "noPlayers": "Nessun giocatore",
+      "minPlayers": "{count} / 3 giocatori minimi",
+      "invalidFive": "5 giocatori: configurazione non valida",
+      "playersCount": "{count} giocatori"
+    },
+    "playerCreatedTitle": "Giocatore creato",
+    "playerCreatedDescription": "{name} aggiunto alla lista",
+    "playerUpdatedTitle": "Giocatore aggiornato",
+    "playerAddedTitle": "Giocatore aggiunto",
+    "playerAddedDescription": "Giocatore esistente aggiunto alla lista d'attesa",
+    "rankingsSavedTitle": "Classifica salvata",
+    "killsSavedTitle": "Uccisioni salvate",
+    "commandersSavedTitle": "Comandanti salvati",
+    "voteSavedTitle": "Voto salvato",
+    "form": {
+      "editTitle": "Modifica Evento",
+      "createTitle": "Crea Nuovo Evento",
+      "editDescription": "Modifica i dati dell'evento",
+      "createDescription": "Compila i campi per creare un nuovo evento",
+      "submitCreate": "Crea Evento",
+      "nameLabel": "Nome Evento",
+      "namePlaceholder": "Es. Commander Night #1",
+      "dateLabel": "Data",
+      "numRoundLabel": "Numero Round",
+      "roundDurationLabel": "Durata Round (min)"
+    },
+    "scoresModal": {
+      "title": "Punteggi Tavolo"
+    },
+    "votesModal": {
+      "title": "Voti Mazzo e Giocata"
+    },
+    "scoreModal": {
+      "title": "Inserisci classifica",
+      "tableDescription": "Tavolo {n}"
+    },
+    "commanderModal": {
+      "title": "Imposta Comandanti"
+    },
+    "nextRoundModal": {
+      "title": "Prossimo Round",
+      "description": "Procedere al prossimo round?"
+    },
+    "pairing": {
+      "tableHeading": "Tavolo {n}",
+      "tablesHeading": "Tavoli",
+      "noTablesAvailable": "Nessun tavolo disponibile",
+      "scoreLabel": "Punteggio: {score}",
+      "commanderSetTooltip": "Commander inserito",
+      "commanderNotSetTooltip": "Inserisci commander",
+      "commanderAriaLabel": "Imposta comandanti",
+      "voteSetTooltip": "Voto inserito",
+      "voteNotSetTooltip": "Inserisci voto",
+      "voteAriaLabel": "Imposta voti",
+      "rankingSetTooltip": "Classifica inserita",
+      "rankingNotSetTooltip": "Inserisci classifica",
+      "rankingButton": "Classifica",
+      "killsSetTooltip": "Uccisioni confermate",
+      "killsNotSetTooltip": "Inserisci uccisioni",
+      "killsButton": "Uccisioni",
+      "removeKillConfirmTooltip": "Rimuovi conferma uccisioni",
+      "confirmKillsTooltip": "Conferma uccisioni (anche zero)",
+      "confirmKillsAriaLabel": "Conferma uccisioni",
+      "resetConfirm": {
+        "title": "Conferma Reset",
+        "description": "Stai per resettare tutti i valori del tavolo",
+        "question": "Sei sicuro di voler resettare tutti i valori",
+        "confirmLabel": "Reset"
+      },
+      "fillConfirm": {
+        "title": "Compila con dati di test",
+        "description": "Stai per compilare il tavolo con dati di test",
+        "question": "Sei sicuro di voler compilare il tavolo",
+        "warning": "Questa azione sovrascriverà i dati esistenti.",
+        "confirmLabel": "Compila"
+      },
+      "viewScoresTooltip": "Visualizza punteggi",
+      "scoresButtonLabel": "Punteggi",
+      "resetTableTooltip": "Resetta tavolo",
+      "quickFillAriaLabel": "Compila test",
+      "dragPlayerAriaLabel": "Trascina giocatore",
+      "dropHere": "Rilascia qui",
+      "emptySlot": "Slot libero",
+      "complete": "Completato",
+      "inProgress": "In corso"
+    },
+    "pairingSettings": {
+      "title": "Pesi e Vincoli Pairing",
+      "description": "Modifica i pesi dell'algoritmo e le coppie vietate"
+    },
+    "pairingWeights": {
+      "heading": "Pesi dell'algoritmo",
+      "formulaHeading": "Come viene calcolato il punteggio",
+      "formula": "totale = bilanciamento_forza + novità - rematch - rotazione3 + peso_dimensione"
+    },
+    "forbiddenPairs": {
+      "heading": "Coppie Vietate",
+      "playerAPlaceholder": "Giocatore A",
+      "playerBPlaceholder": "Giocatore B",
+      "searchPlaceholder": "Cerca giocatore...",
+      "addPair": "Aggiungi coppia",
+      "resolveConflicts": "Risolvi conflitti",
+      "empty": "Nessuna coppia vietata",
+      "storageNote": "I valori sono salvati nel LocalStorage del browser con chiave"
+    },
+    "pairingPresets": {
+      "social": "Sociale",
+      "balanced": "Bilanciato",
+      "competitive": "Competitivo",
+      "reset": "Reset",
+      "custom": "Personalizzato"
+    },
+    "tablePreview": {
+      "title": "Anteprima Tavoli",
+      "description": "Trascina i giocatori per comporre i tavoli prima di avviare l'evento",
+      "invalidMoveTitle": "Spostamento non valido",
+      "invalidMoveFallback": "Questa disposizione non è consentita",
+      "invalidTableSizes": "Ogni tavolo deve avere tra 3 e 4 giocatori",
+      "duplicatePlayers": "Ci sono giocatori duplicati nei tavoli",
+      "missingPlayers": "Mancano giocatori nella disposizione tavoli",
+      "forbiddenPairsPresent": "Sono presenti coppie vietate nello stesso tavolo",
+      "scoreItems": {
+        "strengthBalance": "Bilanciamento forza",
+        "novelty": "Nuovi incroci",
+        "rematch": "Penalità rematch",
+        "rotateTable3": "Rotazione tavoli da 3",
+        "tableSize4": "Bonus tavoli da 4",
+        "tableSize3": "Peso tavoli da 3"
+      }
+    },
+    "tablePreviewToolbar": {
+      "totalScoreLabel": "Punteggio totale:",
+      "weightsAndConstraints": "Pesi e Vincoli",
+      "optimize": "Ottimizza"
+    },
+    "optimizer": {
+      "noImprovements": "Non sono stati trovati miglioramenti con i vincoli correnti",
+      "optimizationCompleteTitle": "Ottimizzazione completata",
+      "alreadyOptimizedTitle": "Accoppiamenti già ottimizzati",
+      "improvedDescription": "+{delta} punti, tavoli aggiornati: {tables}",
+      "noneFallback": "nessuno",
+      "conflictResolutionFailedTitle": "Risoluzione conflitti non riuscita",
+      "noValidSolutionFallback": "Nessuna soluzione valida trovata",
+      "conflictResolutionCompleteTitle": "Risoluzione conflitti completata"
+    },
+    "scoreBreakdown": {
+      "strengthBalance": "Bilanciamento",
+      "novelty": "Novità",
+      "rematch": "Rematch",
+      "tableSizeWeight": "Peso dimensione tavolo",
+      "tableTotal": "Totale tavolo",
+      "playerTotal": "Totale",
+      "modalTitle": "Dettaglio calcolo tavolo",
+      "noDetails": "Nessun dettaglio disponibile per questo tavolo."
+    },
+    "scoreGrid": {
+      "instructions": "Trascina le chip dei giocatori per definire l'ordine di classifica (da sinistra a destra, dall'alto in basso)",
+      "confirmRanking": "Conferma Classifica"
+    },
+    "tableScoreModal": {
+      "headingTemplate": "Inserisci Punteggi - Tavolo {n}",
+      "team1": "Squadra 1",
+      "team2": "Squadra 2"
+    },
+    "tableScoresModal": {
+      "placementColumn": "Posizionamento",
+      "deckColumn": "Mazzo",
+      "playColumn": "Giocata"
+    },
+    "killModal": {
+      "title": "Sistema Uccisioni",
+      "description": "Trascina dall'handle inferiore di un giocatore verso quello superiore della vittima. Clicca una freccia per rimuoverla.",
+      "registeredKillsLabel": "Uccisioni registrate:",
+      "noKills": "Nessuna uccisione registrata. Trascina tra i giocatori per aggiungerne.",
+      "resetButton": "Azzera",
+      "playerFallback": "#{id}"
+    },
+    "killFlow": {
+      "invalidTitle": "Non valido",
+      "killRemovedTitle": "Uccisione rimossa",
+      "resetTransform": "Reset Vista",
+      "fitView": "Adatta alla vista",
+      "toggleDarkMode": "Modalità scura",
+      "logData": "Log dati"
+    },
+    "standingsCard": {
+      "brewVotesTooltip": "Brew votes",
+      "playVotesTooltip": "Play votes",
+      "submittedBadge": "Inserito",
+      "emptyText": "Nessun punteggio"
+    },
+    "toast": {
+      "createErrorTitle": "Errore creazione evento",
+      "createErrorFallback": "Impossibile creare l'evento",
+      "createdTitle": "Evento creato",
+      "createdDescription": "L'evento \"{name}\" è stato creato con successo.",
+      "updateErrorTitle": "Errore aggiornamento evento",
+      "updateErrorFallback": "Impossibile aggiornare l'evento",
+      "updatedTitle": "Evento aggiornato",
+      "updatedDescription": "L'evento \"{name}\" è stato aggiornato con successo.",
+      "deleteErrorTitle": "Errore eliminazione evento",
+      "deleteErrorFallback": "Impossibile eliminare l'evento",
+      "deletedTitle": "Evento eliminato",
+      "deletedDescription": "L'evento è stato eliminato con successo."
+    }
+  },
+  "store": {
+    "league": {
+      "loadError": "Errore nel caricamento leghe",
+      "noDataInsert": "Nessun dato restituito dall'inserimento",
+      "createError": "Errore nella creazione lega",
+      "noDataUpdate": "Nessun dato restituito dall'aggiornamento",
+      "updateError": "Errore nell'aggiornamento lega",
+      "deleteError": "Errore nell'eliminazione lega"
+    },
+    "ruleset": {
+      "loadError": "Errore nel caricamento regolamenti",
+      "noDataInsert": "Nessun dato restituito dall'inserimento",
+      "createError": "Errore nella creazione regolamento",
+      "noDataUpdate": "Nessun dato restituito dall'aggiornamento",
+      "updateError": "Errore nell'aggiornamento regolamento",
+      "inUseError": "Non è possibile eliminare questo regolamento perché è in uso da una o più leghe",
+      "deleteError": "Errore nell'eliminazione regolamento"
+    },
+    "player": {
+      "loadError": "Errore nel caricamento giocatori",
+      "createError": "Errore nella creazione giocatore",
+      "updateError": "Errore nella modifica giocatore",
+      "alreadyInWaitingList": "Giocatore già nella lista d'attesa"
+    },
+    "deck": {
+      "loadError": "Errore nel caricamento dei deck",
+      "noData": "Nessun dato restituito",
+      "createError": "Errore nella creazione del deck",
+      "updateError": "Errore nella modifica del deck",
+      "notFound": "Deck non trovato",
+      "inUseError": "Non è possibile eliminare questo deck perché è stato usato in un evento",
+      "deleteError": "Errore nella eliminazione del deck"
+    },
+    "kill": {
+      "alreadyRegistered": "Uccisione già registrata",
+      "victimAlreadyKilled": "La vittima ha già ucciso questo giocatore"
+    },
+    "event": {
+      "saveError": "Errore nel salvataggio",
+      "loadError": "Errore nel caricamento eventi",
+      "createError": "Errore nella creazione evento",
+      "deleteError": "Errore nell'eliminazione evento",
+      "updateError": "Errore nell'aggiornamento evento",
+      "invalidPlayerCount": "Numero giocatori non valido (min 3, non 5)",
+      "invalidPlayerOrder": "Ordine giocatori non valido per avvio evento",
+      "startError": "Errore nell'avvio evento",
+      "optimizerFailed": "Impossibile generare pairings validi con i vincoli correnti",
+      "voteSaveError": "Errore nel salvataggio del voto",
+      "commanderSaveError": "Errore nel salvataggio dei comandanti",
+      "rankingsSaveError": "Errore nel salvataggio delle posizioni",
+      "killsSaveError": "Errore nel salvataggio delle uccisioni",
+      "nextRoundError": "Errore nel prossimo round",
+      "turnBackError": "Errore nel tornare indietro",
+      "submissionError": "Errore nella sottomissione dei risultati",
+      "resultsUpdateError": "Errore nell'aggiornamento dei risultati"
+    }
+  },
+  "login": {
+    "title": "Accesso Protetto",
+    "passwordLabel": "Password",
+    "passwordPlaceholder": "Inserisci la password",
+    "clearPasswordAriaLabel": "Cancella password",
+    "showPasswordAriaLabel": "Mostra password",
+    "hidePasswordAriaLabel": "Nascondi password",
+    "submitButton": "Accedi",
+    "wrongPasswordTitle": "Password errata",
+    "wrongPasswordDescription": "Riprova"
+  },
+  "home": {
+    "title": "PauperWave League Manager",
+    "subtitle": "Gestisci le tue leghe e tornei di Commander",
+    "goToLeagues": "Vai alle Leghe",
+    "allPlayers": "Tutti i Giocatori",
+    "allDecks": "Tutti i Deck",
+    "viewRulesets": "Vedi Regolamenti"
+  },
+  "app": {
+    "title": "Gestione Lega",
+    "description": "Gestione leghe Magic: The Gathering Commander: eventi, abbinamenti, punteggi e classifiche."
+  }
+}

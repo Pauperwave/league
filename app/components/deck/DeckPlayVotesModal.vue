@@ -1,5 +1,6 @@
 <!-- app\components\modals\DeckPlayVotesModal.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import type { TournamentPlayer } from '#shared/utils/types'
 
 const props = defineProps<{
@@ -12,6 +13,8 @@ const emit = defineEmits<{
   submit: [deckVotePlayerId: number | null, playVotePlayerId: number | null]
   cancel: []
 }>()
+
+const { t } = useI18n()
 
 const localDeckVotePlayerId = ref(props.deckVotePlayerId)
 const localPlayVotePlayerId = ref(props.playVotePlayerId)
@@ -28,7 +31,7 @@ watch(
 <template>
   <div class="space-y-4">
     <div>
-      <label class="block text-sm font-medium mb-2">Mazzo preferito</label>
+      <label class="block text-sm font-medium mb-2">{{ t('deck.votes.preferredDeck') }}</label>
       <div class="flex gap-2">
         <UButton
           v-for="player in otherPlayers"
@@ -43,7 +46,7 @@ watch(
     </div>
 
     <div>
-      <label class="block text-sm font-medium mb-2">Miglior giocata</label>
+      <label class="block text-sm font-medium mb-2">{{ t('deck.votes.bestPlay') }}</label>
       <div class="flex gap-2">
         <UButton
           v-for="player in otherPlayers"
@@ -58,8 +61,8 @@ watch(
     </div>
 
     <div class="flex justify-end gap-2 pt-4">
-      <UButton label="Annulla" variant="outline" @click="emit('cancel')" />
-      <UButton label="Salva" color="primary" @click="emit('submit', localDeckVotePlayerId, localPlayVotePlayerId)" />
+      <UButton :label="t('common.cancel')" variant="outline" @click="emit('cancel')" />
+      <UButton :label="t('common.save')" color="primary" @click="emit('submit', localDeckVotePlayerId, localPlayVotePlayerId)" />
     </div>
   </div>
 </template>

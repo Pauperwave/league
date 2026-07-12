@@ -1,7 +1,10 @@
 <!-- app\components\events\Pairings\Table\TableSeatItem.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import type { Seat } from '#shared/utils/types'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   seat: Seat
@@ -39,7 +42,7 @@ function handleCommanderClick() {
       <button
         type="button"
         class="drag-handle text-muted hover:text-default transition cursor-grab hover:cursor-grab active:cursor-grabbing"
-        aria-label="Trascina giocatore"
+        :aria-label="t('event.pairing.dragPlayerAriaLabel')"
       >
         <UIcon :name="ICONS.dragHandle" class="size-4 cursor-grab hover:cursor-grab active:cursor-grabbing" />
       </button>
@@ -73,7 +76,7 @@ function handleCommanderClick() {
         variant="ghost"
         :color="hasCommander ? 'success' : 'warning'"
         :icon="hasCommander ? ICONS.commanderSet : ICONS.commanderNotSet"
-        aria-label="Imposta comandanti"
+        :aria-label="t('event.pairing.commanderAriaLabel')"
         @click="handleCommanderClick"
       />
     </div>
@@ -84,7 +87,7 @@ function handleCommanderClick() {
       :class="isDragging ? 'text-amber-700' : 'text-muted'"
     >
       <UIcon :name="ICONS.add" class="size-4" />
-      <span>{{ isDragging ? 'Rilascia qui' : 'Slot libero' }}</span>
+      <span>{{ isDragging ? t('event.pairing.dropHere') : t('event.pairing.emptySlot') }}</span>
     </div>
   </div>
 </template>

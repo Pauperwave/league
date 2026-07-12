@@ -1,8 +1,8 @@
 /*
   app.config.ts
 
-  Configurazione globale per il tema dell'applicazione.
-  Definisce i colori semantic usati in tutta l'app tramite Nuxt UI.
+  Global theme configuration for the application.
+  Defines the semantic colors used throughout the app via Nuxt UI.
 */
 export default defineAppConfig({
   ui: {
@@ -11,14 +11,14 @@ export default defineAppConfig({
         variant: 'outline',
       }
     },
-    // Mappatura dei colori semantic del tema:
-    // - primary: colore principale (indaco) - bottoni principali, link
-    // - secondary: colore secondario (rosa) - accenti secondari
-    // - neutral: colore neutro (zinc) - testo, sfondi neutri
-    // - success: verde lime - stati positivi/completati
-    // - info: ciano - informazioni
-    // - warning: giallo - avvisi
-    // - error: rosa/rosso - errori
+    // Semantic theme color mapping:
+    // - primary: main color (indigo) - primary buttons, links
+    // - secondary: secondary color (pink) - secondary accents
+    // - neutral: neutral color (zinc) - text, neutral backgrounds
+    // - success: lime green - positive/completed states
+    // - info: cyan - informational
+    // - warning: yellow - warnings
+    // - error: pink/red - errors
     colors: {
       primary: 'indigo',
       secondary: 'pink',

@@ -29,7 +29,7 @@ const hasSuicided = computed(() =>
 </script>
 
 <template>
-  <!-- Handle SOURCE: da qui parte la freccia (killer) -->
+  <!-- SOURCE handle: the arrow starts here (killer) -->
   <Handle
     id="source"
     type="source"
@@ -45,7 +45,7 @@ const hasSuicided = computed(() =>
         : 'border-default hover:border-muted',
     ]"
   >
-    <!-- Contatori kill/death -->
+    <!-- Kill/death counters -->
     <div class="flex justify-between px-2 pt-1 min-h-4">
       <div class="flex gap-1">
         <UBadge
@@ -73,7 +73,7 @@ const hasSuicided = computed(() =>
       />
     </div>
 
-    <!-- Contenuto chip -->
+    <!-- Chip content -->
     <div class="flex items-center gap-2 px-2 pb-2 pt-1">
       <UAvatar
         :src="data.player.avatarUrl"
@@ -88,7 +88,7 @@ const hasSuicided = computed(() =>
     </div>
   </div>
 
-  <!-- Handle TARGET: qui arriva la freccia (vittima) -->
+  <!-- TARGET handle: the arrow arrives here (victim) -->
   <Handle
     id="target"
     type="target"

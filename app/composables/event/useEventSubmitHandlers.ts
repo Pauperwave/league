@@ -1,5 +1,6 @@
 // app\composables\event\useEventSubmitHandlers.ts
 
+import { useI18n } from 'vue-i18n'
 import type { Kill } from '#shared/utils/types'
 
 interface SubmitHandlerDeps {
@@ -27,12 +28,14 @@ export function useEventSubmitHandlers(deps: SubmitHandlerDeps) {
     selectedVotesPlayerId, selectedVotesPairingId, pairings,
   } = deps
 
+  const { t } = useI18n()
+
   function handleScoreSubmit(ranking: number[], rankingWithRanks: { playerId: number; rank: number }[]) {
     if (selectedPairingId.value !== null) {
       rankingsStore.setRankingWithRanks(selectedPairingId.value, rankingWithRanks)
-      toast.add({ title: 'Classifica salvata', color: 'success' })
+      toast.add({ title: t('event.rankingsSavedTitle'), color: 'success' })
       eventStore.savePairingRankings(selectedPairingId.value, rankingWithRanks.map(r => ({ playerId: r.playerId, position: r.rank })))
-        .then(result => { if (!result.success) toast.add({ title: 'Errore', description: result.error, color: 'error' }) })
+        .then(result => { if (!result.success) toast.add({ title: t('deck.toast.errorTitle'), description: result.error, color: 'error' }) })
     }
     return true // signal to caller that modal can close
   }
@@ -51,19 +54,19 @@ export function useEventSubmitHandlers(deps: SubmitHandlerDeps) {
       count: kills.filter(k => k.killerId === pid).length,
     }))
 
-    toast.add({ title: 'Uccisioni salvate', color: 'success' })
+    toast.add({ title: t('event.killsSavedTitle'), color: 'success' })
     eventStore.savePairingKills(pairingId, killCounts)
-      .then(result => { if (!result.success) toast.add({ title: 'Errore', description: result.error, color: 'error' }) })
+      .then(result => { if (!result.success) toast.add({ title: t('deck.toast.errorTitle'), description: result.error, color: 'error' }) })
     return true
   }
 
   function handleCommanderSubmit(commander1: string | null, commander2: string | null) {
     if (selectedPlayerId.value !== null && selectedCommanderPairingId.value !== null) {
       commandersStore.setCommanders(selectedPlayerId.value, commander1, commander2)
-      toast.add({ title: 'Comandanti salvati', color: 'success' })
+      toast.add({ title: t('event.commandersSavedTitle'), color: 'success' })
       eventStore.saveCommander(selectedCommanderPairingId.value, selectedPlayerId.value, commander1, commander2)
         .then(result => {
-          if (!result.success) toast.add({ title: 'Errore', description: result.error, color: 'error' })
+          if (!result.success) toast.add({ title: t('deck.toast.errorTitle'), description: result.error, color: 'error' })
         })
     }
     return true
@@ -74,7 +77,7 @@ export function useEventSubmitHandlers(deps: SubmitHandlerDeps) {
       votesStore.setVotes(selectedVotesPlayerId.value, deckVotePlayerId, playVotePlayerId)
       eventStore.saveVote(selectedVotesPairingId.value, selectedVotesPlayerId.value, deckVotePlayerId, playVotePlayerId)
         .then(result => {
-          toast.add({ title: result.success ? 'Voto salvato' : 'Errore', description: result.success ? undefined : result.error, color: result.success ? 'success' : 'error' })
+          toast.add({ title: result.success ? t('event.voteSavedTitle') : t('deck.toast.errorTitle'), description: result.success ? undefined : result.error, color: result.success ? 'success' : 'error' })
         })
     }
     return true

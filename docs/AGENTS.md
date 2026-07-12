@@ -114,7 +114,7 @@ If you have many refs and don't want to list them all, you can use `toRefs()` in
 
 ### Language
 
-- **UI-facing strings**: Italian (e.g., `'Errore nel caricamento leghe'`)
+- **UI-facing strings**: Italian, and routed through `@nuxtjs/i18n` — never hardcode a literal string in a component/composable/store. Add the key to `i18n/locales/it.json` (nested by domain, e.g. `store.league.loadError`) and consume it with `const { t } = useI18n()` / `t('store.league.loadError')`. See `CLAUDE.md`'s "Conventions worth knowing" for the `useI18n()` usage constraints (translated prop defaults, Pinia stores, async callbacks, module-scope consts each behave differently).
 - **Code comments, logs, and internal errors**: English
 
 ### Testing

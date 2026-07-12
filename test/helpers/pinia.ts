@@ -3,8 +3,8 @@ import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach } from 'vitest'
 
 /**
- * Crea e attiva una Pinia fresh.
- * Chiamare nei describe block che usano store.
+ * Creates and activates a fresh Pinia instance.
+ * Call within describe blocks that use stores.
  */
 export function createTestPinia() {
   let pinia: ReturnType<typeof createPinia>

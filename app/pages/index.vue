@@ -1,16 +1,19 @@
 <!-- app\pages\index.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
+
+const { t } = useI18n()
 </script>
 
 <template>
   <div class="min-h-screen bg-default flex flex-col items-center justify-center p-6">
     <div class="text-center">
       <h1 class="text-4xl font-bold mb-4">
-        PauperWave League Manager
+        {{ t('home.title') }}
       </h1>
       <p class="text-lg text-muted mb-8">
-        Gestisci le tue leghe e tornei di Commander
+        {{ t('home.subtitle') }}
       </p>
       <UButton
         to="/leagues"
@@ -18,7 +21,7 @@ import { ICONS } from '~/utils/icons'
         size="lg"
         :icon="ICONS.standings"
       >
-        Vai alle Leghe
+        {{ t('home.goToLeagues') }}
       </UButton>
 
       <div class="mt-4 flex flex-col sm:flex-row gap-2 justify-center">
@@ -28,7 +31,7 @@ import { ICONS } from '~/utils/icons'
           size="md"
           :icon="ICONS.players"
         >
-          Tutti i Giocatori
+          {{ t('home.allPlayers') }}
         </UButton>
         <UButton
           to="/decks"
@@ -36,7 +39,7 @@ import { ICONS } from '~/utils/icons'
           size="md"
           :icon="ICONS.battle"
         >
-          Tutti i Deck
+          {{ t('home.allDecks') }}
         </UButton>
         <UButton
           to="/rulesets"
@@ -44,7 +47,7 @@ import { ICONS } from '~/utils/icons'
           size="md"
           :icon="ICONS.rules"
         >
-          Vedi Regolamenti
+          {{ t('home.viewRulesets') }}
         </UButton>
       </div>
     </div>

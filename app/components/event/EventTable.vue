@@ -1,11 +1,14 @@
 <!-- app\components\Tables\EventTable.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import { h, resolveComponent } from 'vue'
 import type { Component } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import type { Event } from '#shared/utils/types'
 import { sortableHeader, createActionsColumn, type StatusColor } from '~/composables/tables/useTableUtils'
+
+const { t } = useI18n()
 
 defineProps<{
   events: Event[]
@@ -22,14 +25,14 @@ const UBadge = resolveComponent('UBadge') as Component
 const UButton = resolveComponent('UButton') as Component
 const ActionButtons = resolveComponent('ActionButtons') as Component
 
-function getEventStatus(event: Event): { label: string, color: StatusColor, icon: string } {
+function getEventStatus(event: Event): { key: 'ended' | 'playing' | 'registration', label: string, color: StatusColor, icon: string } {
   if ((event.event_current_round || 0) > (event.event_round_number || 0)) {
-    return { label: 'Terminato', color: 'error', icon: ICONS.clear }
+    return { key: 'ended', label: t('event.status.ended'), color: 'error', icon: ICONS.clear }
   }
   if (event.event_playing) {
-    return { label: 'In Corso', color: 'success', icon: ICONS.success }
+    return { key: 'playing', label: t('event.status.playing'), color: 'success', icon: ICONS.success }
   }
-  return { label: 'Programmato', color: 'warning', icon: ICONS.clock }
+  return { key: 'registration', label: t('event.status.registration'), color: 'warning', icon: ICONS.clock }
 }
 
 function getRegistrationStatus(open: boolean | null): {
@@ -38,9 +41,9 @@ function getRegistrationStatus(open: boolean | null): {
   icon: string
 } {
   if (open) {
-    return { label: 'Aperta', color: 'success', icon: ICONS.success }
+    return { label: t('event.table.registrationOpen'), color: 'success', icon: ICONS.success }
   }
-  return { label: 'Chiusa', color: 'error', icon: ICONS.clear }
+  return { label: t('event.table.registrationClosed'), color: 'error', icon: ICONS.clear }
 }
 
 function formatRound(current: number | null, total: number | null): string {
@@ -52,8 +55,8 @@ const tableMeta = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tr: (row: any) => {
       const status = getEventStatus(row.original)
-      if (status.label === 'In Corso') return 'bg-success/10'
-      if (status.label === 'Terminato') return 'bg-error/10'
+      if (status.key === 'playing') return 'bg-success/10'
+      if (status.key === 'ended') return 'bg-error/10'
       return 'bg-info/10'
     }
   }
@@ -62,22 +65,22 @@ const tableMeta = {
 const columns: TableColumn<Event>[] = [
   {
     accessorKey: 'event_id',
-    header: sortableHeader('ID', UButton),
+    header: sortableHeader(t('league.table.id'), UButton),
     meta: { class: { th: 'w-16', td: 'font-mono text-muted' } }
   },
   {
     accessorKey: 'event_name',
-    header: sortableHeader('Nome', UButton),
+    header: sortableHeader(t('league.table.name'), UButton),
     cell: ({ row }) => h('span', { class: 'font-semibold' }, row.getValue('event_name'))
   },
   {
     accessorKey: 'event_datetime',
-    header: sortableHeader('Data', UButton),
+    header: sortableHeader(t('event.table.date'), UButton),
     cell: ({ row }) => formatDate(row.getValue('event_datetime'))
   },
   {
     id: 'round',
-    header: sortableHeader('Round', UButton),
+    header: sortableHeader(t('event.table.round'), UButton),
     cell: ({ row }) => {
       const current = row.original.event_current_round
       const total = row.original.event_round_number
@@ -86,7 +89,7 @@ const columns: TableColumn<Event>[] = [
   },
   {
     accessorKey: 'status',
-    header: sortableHeader('Stato', UButton),
+    header: sortableHeader(t('event.table.status'), UButton),
     cell: ({ row }) => {
       const status = getEventStatus(row.original)
       return h(
@@ -98,7 +101,7 @@ const columns: TableColumn<Event>[] = [
   },
   {
     id: 'registration',
-    header: sortableHeader('Registrazione', UButton),
+    header: sortableHeader(t('event.table.registration'), UButton),
     cell: ({ row }) => {
       const reg = getRegistrationStatus(row.original.event_registration_open)
       return h(UBadge, { color: reg.color, variant: 'subtle', icon: reg.icon }, () => reg.label)
@@ -119,8 +122,8 @@ const columns: TableColumn<Event>[] = [
     :meta="tableMeta"
     :loading="loading"
     :sorting="[{ id: 'event_datetime', desc: false }]"
-    empty-title="Nessun evento creato"
-    empty-description="Clicca 'Nuovo Evento' per iniziare"
+    :empty-title="t('event.table.emptyTitle')"
+    :empty-description="t('event.table.emptyDescription')"
     :empty-icon="ICONS.calendarCancel"
   />
 </template>

@@ -1,8 +1,8 @@
 import type { Event } from '#shared/utils/types'
 
 /**
- * Composable per fetchare eventi.
- * Usa lo store come single source of truth.
+ * Composable for fetching events.
+ * Uses the store as the single source of truth.
  */
 export function useEvents(leagueId?: MaybeRef<number>) {
   const store = useEventStore()

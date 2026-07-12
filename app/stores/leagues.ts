@@ -1,3 +1,4 @@
+import { useI18n } from 'vue-i18n'
 import type { League, LeagueInsert } from '#shared/utils/types'
 import { toErrorMessage } from '~/utils/error'
 
@@ -7,6 +8,7 @@ import { toErrorMessage } from '~/utils/error'
  */
 export const useLeagueStore = defineStore('leagues', () => {
   const supabase = useSupabaseClient()
+  const { t } = useI18n()
 
   /** All leagues fetched from Supabase */
   const leagues = ref<League[]>([])
@@ -65,7 +67,7 @@ export const useLeagueStore = defineStore('leagues', () => {
       leagues.value = data ?? []
       initialized.value = true
     } catch (err) {
-      error.value = toErrorMessage(err, 'Errore nel caricamento leghe')
+      error.value = toErrorMessage(err, t('store.league.loadError'))
       console.error('[useLeagueStore] fetchLeagues error:', err)
     } finally {
       loadingFetch.value = false
@@ -85,13 +87,13 @@ export const useLeagueStore = defineStore('leagues', () => {
         .single()
 
       if (supaError) throw supaError
-      if (!data) throw new Error('Nessun dato restituito dall\'inserimento')
+      if (!data) throw new Error(t('store.league.noDataInsert'))
 
       leagues.value.push(data)
       // sortedLeagues computed will re-sort automatically
       return { success: true, data }
     } catch (err) {
-      error.value = toErrorMessage(err, 'Errore nella creazione lega')
+      error.value = toErrorMessage(err, t('store.league.createError'))
       console.error('[useLeagueStore] createLeague error:', err)
       return { success: false, error: error.value }
     } finally {
@@ -113,7 +115,7 @@ export const useLeagueStore = defineStore('leagues', () => {
         .single()
 
       if (supaError) throw supaError
-      if (!data) throw new Error('Nessun dato restituito dall\'aggiornamento')
+      if (!data) throw new Error(t('store.league.noDataUpdate'))
 
       const index = leagues.value.findIndex(l => l.id === id)
       if (index !== -1) {
@@ -126,7 +128,7 @@ export const useLeagueStore = defineStore('leagues', () => {
 
       return { success: true, data }
     } catch (err) {
-      error.value = toErrorMessage(err, 'Errore nell\'aggiornamento lega')
+      error.value = toErrorMessage(err, t('store.league.updateError'))
       console.error('[useLeagueStore] updateLeague error:', err)
       return { success: false, error: error.value }
     } finally {
@@ -155,7 +157,7 @@ export const useLeagueStore = defineStore('leagues', () => {
 
       return { success: true }
     } catch (err) {
-      error.value = toErrorMessage(err, "Errore nell'eliminazione lega")
+      error.value = toErrorMessage(err, t('store.league.deleteError'))
       console.error('[useLeagueStore] deleteLeague error:', err)
       return { success: false, error: error.value }
     } finally {

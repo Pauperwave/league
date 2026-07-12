@@ -1,6 +1,6 @@
 import { afterEach } from 'vitest'
 
-// Cleanup globale dopo ogni test nel progetto nuxt
+// Global cleanup after each test in the nuxt project
 afterEach(() => {
-  // Resetta eventuali state globali tra un test e l'altro
+  // Reset any global state between tests
 })

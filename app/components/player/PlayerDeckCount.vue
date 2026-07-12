@@ -1,10 +1,13 @@
 <!-- app\components\PlayerDeckCount.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
 const props = defineProps<{
   playerId: number
 }>()
 
 const decksStore = useCommanderDeckStore()
+const { t } = useI18n()
 
 const deckCount = computed(() => {
   return decksStore.getDecksByPlayerId(props.playerId).length
@@ -17,6 +20,6 @@ const deckCount = computed(() => {
     variant="soft"
     class="shrink-0"
   >
-    {{ deckCount }} {{ deckCount === 1 ? 'mazzo' : 'mazzi' }}
+    {{ t('player.deckCount', deckCount, { named: { count: deckCount } }) }}
   </UBadge>
 </template>

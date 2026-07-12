@@ -1,5 +1,6 @@
 <!-- app\components\Modals\CreatePlayerModal.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import type { Player, NewPlayer } from '#shared/utils/types'
 import { findSimilarPlayers } from '#shared/utils/playerSimilarity'
@@ -10,6 +11,8 @@ const props = defineProps<{
   player: Player | null
   existingPlayers: Player[]
 }>()
+
+const { t } = useI18n()
 
 const emit = defineEmits<{
   create: [player: NewPlayer]
@@ -30,10 +33,10 @@ const PlayerFormSchema = v.object({
 
 // — Derived modal state —
 const isEditing = computed(() => !!props.player)
-const modalTitle = computed(() => isEditing.value ? 'Modifica Giocatore' : 'Crea Nuovo Giocatore')
-const modalDescription = computed(() => isEditing.value ? 'Modifica i dati del giocatore' : 'Cerca giocatori esistenti prima di crearne uno nuovo')
+const modalTitle = computed(() => isEditing.value ? t('player.form.editTitle') : t('player.form.createTitle'))
+const modalDescription = computed(() => isEditing.value ? t('player.form.editDescription') : t('player.form.createDescription'))
 const modalIcon = computed(() => isEditing.value ? ICONS.edit : ICONS.addPlayer)
-const submitLabel = computed(() => isEditing.value ? 'Salva' : 'Crea Giocatore')
+const submitLabel = computed(() => isEditing.value ? t('common.save') : t('player.form.submitCreate'))
 
 // — Form —
 const defaultForm = (): { firstName: string, lastName: string } => ({
@@ -45,7 +48,7 @@ const form = shallowReactive(defaultForm())
 
 const isValid = computed(() => !!form.firstName.trim() && !!form.lastName.trim())
 
-// — Similarity check (solo in modalità creazione) —
+// — Similarity check (creation mode only) —
 const similarPlayers = computed(() => {
   if (isEditing.value || !isValid.value) return []
   return findSimilarPlayers(props.existingPlayers, form.firstName, form.lastName)
@@ -55,9 +58,9 @@ const hasSimilarPlayers = computed(() => similarPlayers.value.length > 0)
 
 const canCreate = computed(() => {
   if (!isValid.value) return false
-  // In modifica: sempre valido
+  // When editing: always valid
   if (isEditing.value) return true
-  // In creazione: valido solo se non ci sono giocatori simili
+  // When creating: valid only if there are no similar players
   return !hasSimilarPlayers.value
 })
 
@@ -79,7 +82,7 @@ function handleSubmit() {
 
   const parsed = v.safeParse(PlayerFormSchema, data)
   if (!parsed.success) {
-    logError('CreatePlayerModal', 'Validazione form player fallita', parsed.issues)
+    logError('CreatePlayerModal', 'Player form validation failed', parsed.issues)
     return
   }
 
@@ -125,25 +128,25 @@ function handleCancel() {
     <template #body>
       <form id="player-form" class="space-y-4" @submit.prevent="handleSubmit">
         <div class="grid grid-cols-2 gap-4">
-          <UFormField label="Nome" required>
+          <UFormField :label="t('player.form.firstNameLabel')" required>
             <UInput
               id="field-firstname"
               v-model="form.firstName"
-              placeholder="Es. Mario"
+              :placeholder="t('player.form.firstNamePlaceholder')"
               class="w-full"
             />
           </UFormField>
-          <UFormField label="Cognome" required>
+          <UFormField :label="t('player.form.lastNameLabel')" required>
             <UInput
               id="field-lastname"
               v-model="form.lastName"
-              placeholder="Es. Rossi"
+              :placeholder="t('player.form.lastNamePlaceholder')"
               class="w-full"
             />
           </UFormField>
         </div>
 
-        <!-- Warning: giocatori simili trovati (solo in creazione) -->
+        <!-- Warning: similar players found (creation only) -->
         <UCard
           v-if="!isEditing && hasSimilarPlayers"
           variant="outline"
@@ -152,11 +155,11 @@ function handleCancel() {
           <div class="space-y-3">
             <div class="flex items-center gap-2 text-warning">
               <UIcon :name="ICONS.warning" class="size-5" />
-              <span class="font-medium">Giocatori simili trovati</span>
+              <span class="font-medium">{{ t('player.form.similarFoundHeading') }}</span>
             </div>
 
             <p class="text-sm text-muted">
-              Verifica che il giocatore non sia già registrato:
+              {{ t('player.form.similarFoundHint') }}
             </p>
 
             <ul class="space-y-2">
@@ -178,24 +181,24 @@ function handleCancel() {
                   :icon="ICONS.confirm"
                   @click="handleSelectExisting(similarPlayer.player_id)"
                 >
-                  Seleziona
+                  {{ t('player.form.select') }}
                 </UButton>
               </li>
             </ul>
 
             <p class="text-xs text-muted">
-              Se il giocatore è nella lista, clicca "Seleziona" per aggiungerlo all'evento.
+              {{ t('player.form.similarHelpText') }}
             </p>
           </div>
         </UCard>
 
-        <!-- Messaggio OK quando non ci sono match (solo in creazione) -->
+        <!-- OK message when there are no matches (creation only) -->
         <div
           v-else-if="!isEditing && isValid && !hasSimilarPlayers"
           class="flex items-center gap-2 text-success text-sm"
         >
           <UIcon :name="ICONS.success" />
-          <span>Nessun giocatore simile trovato. Puoi procedere con la creazione.</span>
+          <span>{{ t('player.form.noSimilarFound') }}</span>
         </div>
       </form>
     </template>

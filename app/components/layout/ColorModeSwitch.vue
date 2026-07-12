@@ -2,31 +2,33 @@
 <!--
   ColorModeSwitch.vue
 
-  Componente per alternare tra tema chiaro e scuro.
-  Usa il composable useThemeTransition per gestire il cambio tema con animazione.
+  Toggles between light and dark theme.
+  Uses the useThemeTransition composable to handle the animated theme change.
 -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
-// Recupera lo stato del tema e la funzione di toggle dal composable
+// Get theme state and the toggle function from the composable
 const { isDark, toggleTheme } = useThemeTransition()
+const { t } = useI18n()
 </script>
 
 <template>
-  <!-- ClientOnly per evitare rendering lato server del componente UI -->
+  <!-- ClientOnly to avoid server-side rendering of this UI component -->
   <ClientOnly>
     <!--
-      Pulsante che cambia icona in base al tema:
-      - isDark = true  → sole (tema chiaro)
-      - isDark = false → luna (tema scuro)
+      Button that swaps icon based on theme:
+      - isDark = true  → sun (light theme)
+      - isDark = false → moon (dark theme)
     -->
     <UButton
       :icon="isDark ? ICONS.lightMode : ICONS.darkMode"
       color="neutral"
       variant="ghost"
-      :aria-label="`Switch to ${isDark ? 'light' : 'dark'} mode`"
+      :aria-label="isDark ? t('common.switchToLightMode') : t('common.switchToDarkMode')"
       @click="toggleTheme"
     />
-    <!-- Placeholder durante il caricamento lato server -->
+    <!-- Placeholder while loading server-side -->
     <template #fallback>
       <div class="size-8" />
     </template>

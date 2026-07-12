@@ -1,7 +1,10 @@
 <!-- app\pages\rulesets.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import { useButtonLogging } from '~/composables/ui/useButtonLogging'
+
+const { t } = useI18n()
 
 const {
   rulesets,
@@ -23,10 +26,10 @@ const {
 
 const openLeaguesModalLogging = useButtonLogging('Open Leagues Modal')
 
-const breadcrumbItems = [
-  { label: 'Home', to: '/', icon: ICONS.home },
-  { label: 'Regolamenti' },
-]
+const breadcrumbItems = computed(() => [
+  { label: t('common.home'), to: '/', icon: ICONS.home },
+  { label: t('ruleset.breadcrumb') },
+])
 
 // Avoid flickering the spinner on background refreshes
 const shouldShowLoading = computed(() => loading.value && rulesets.value.length === 0)
@@ -54,10 +57,10 @@ const RANK_STYLES = [
 ] as const
 
 const ACTION_ROWS = [
-  { icon: ICONS.player,           tooltip: "Punti per partecipare all'evento",      label: 'Partecipazione', key: 'rule_set_partecipation' },
-  { icon: ICONS.ruleKill,          tooltip: 'Punti per aver eliminato un avversario', label: 'Kill',           key: 'rule_set_kill' },
-  { icon: ICONS.ruleBrew,           tooltip: 'Punti per originalità del deck',         label: 'Brew',           key: 'rule_set_brew' },
-  { icon: ICONS.play,           tooltip: 'Punti per la miglior giocata',           label: 'Play',           key: 'rule_set_play' },
+  { icon: ICONS.player,   tooltip: t('ruleset.actionTooltips.partecipation'), label: t('ruleset.actions.partecipation'), key: 'rule_set_partecipation' },
+  { icon: ICONS.ruleKill, tooltip: t('ruleset.actionTooltips.kill'),          label: t('ruleset.actions.kill'),          key: 'rule_set_kill' },
+  { icon: ICONS.ruleBrew, tooltip: t('ruleset.actionTooltips.brew'),          label: t('ruleset.actions.brew'),          key: 'rule_set_brew' },
+  { icon: ICONS.play,     tooltip: t('ruleset.actionTooltips.play'),          label: t('ruleset.actions.play'),          key: 'rule_set_play' },
 ] as const
 </script>
 
@@ -69,13 +72,13 @@ const ACTION_ROWS = [
 
     <div class="flex items-center justify-between p-6 pt-4">
       <UButton color="neutral" :icon="ICONS.back" to="/">
-        Home
+        {{ t('common.home') }}
       </UButton>
       <h1 class="text-2xl font-bold">
-        Regolamenti e Punteggi
+        {{ t('ruleset.pageTitle') }}
       </h1>
       <UButton color="primary" :icon="ICONS.add" @click="handleEditClick(null)">
-        Nuovo Regolamento
+        {{ t('ruleset.newRuleset') }}
       </UButton>
     </div>
 
@@ -105,21 +108,21 @@ const ACTION_ROWS = [
                 variant="ghost"
                 :icon="ICONS.edit"
                 size="sm"
-                aria-label="Modifica regolamento"
+                :aria-label="t('ruleset.editAriaLabel')"
                 @click="handleEditClick(ruleset)"
               />
 
               <UTooltip
                 :text="isRulesetInUse(ruleset.ruleset_id)
-                  ? 'Vedi leghe che usano questo regolamento'
-                  : 'Nessuna lega usa questo regolamento'"
+                  ? t('ruleset.viewLeaguesInUseTooltip')
+                  : t('ruleset.viewLeaguesNotInUseTooltip')"
               >
                 <UButton
                   color="primary"
                   variant="ghost"
                   :icon="ICONS.standings"
                   size="sm"
-                  aria-label="Leghe che usano questo regolamento"
+                  :aria-label="t('ruleset.viewLeaguesAriaLabel')"
                   @click="openLeaguesModal(ruleset)"
                 >
                   {{ getLeaguesByRuleset(ruleset.ruleset_id).length }}
@@ -128,15 +131,15 @@ const ACTION_ROWS = [
 
               <UTooltip
                 :text="isRulesetInUse(ruleset.ruleset_id)
-                  ? 'Regolamento in uso da almeno una lega'
-                  : 'Elimina regolamento'"
+                  ? t('ruleset.deleteInUseTooltip')
+                  : t('ruleset.deleteTooltip')"
               >
                 <UButton
                   color="error"
                   variant="ghost"
                   :icon="ICONS.delete"
                   size="sm"
-                  aria-label="Elimina regolamento"
+                  :aria-label="t('ruleset.deleteAriaLabel')"
                   :disabled="isRulesetInUse(ruleset.ruleset_id)"
                   @click="handleDeleteClick(ruleset)"
                 />
@@ -148,7 +151,7 @@ const ACTION_ROWS = [
             <!-- Positions -->
             <div class="w-20 shrink-0">
               <div class="text-sm font-semibold mb-1 text-center text-default">
-                Posizioni
+                {{ t('ruleset.positions') }}
               </div>
               <div class="space-y-1">
                 <div
@@ -159,7 +162,7 @@ const ACTION_ROWS = [
                   <UIcon :name="ICONS.victories" class="size-3 text-primary mx-auto mb-0.5" />
                   <div class="text-sm font-semibold">
                     {{ formatScore(ruleset[`rule_set_rank${i + 1}` as keyof typeof ruleset] as number | null) }}
-                    <span class="text-xs">pt</span>
+                    <span class="text-xs">{{ t('ruleset.pointsUnit') }}</span>
                   </div>
                 </div>
               </div>
@@ -168,7 +171,7 @@ const ACTION_ROWS = [
             <!-- Action Points -->
             <div class="flex-1 flex flex-col">
               <div class="text-sm font-semibold mb-2 text-center text-default">
-                Azioni
+                {{ t('ruleset.actionsHeading') }}
               </div>
               <table class="w-full text-sm">
                 <tbody class="divide-y divide-default/30">
@@ -186,8 +189,8 @@ const ACTION_ROWS = [
                   <tr v-if="ruleset.rule_set_valid_events">
                     <td class="py-2 flex items-center gap-2">
                       <UIcon :name="ICONS.calendarConfirmed" class="size-4 text-default" />
-                      <UTooltip text="Minimo eventi per la classifica finale">
-                        <span class="cursor-help text-default">Eventi validi</span>
+                      <UTooltip :text="t('ruleset.validEventsTooltip')">
+                        <span class="cursor-help text-default">{{ t('ruleset.validEventsRow') }}</span>
                       </UTooltip>
                     </td>
                     <td class="py-2 text-right font-semibold pl-4">
@@ -212,13 +215,9 @@ const ACTION_ROWS = [
 
     <ConfirmModal
       v-model:open="showDeleteConfirm"
-      title="Conferma Eliminazione"
-      description="Stai per eliminare un regolamento"
-      question="Sei sicuro di voler eliminare il regolamento"
+      :description="t('ruleset.confirmDeleteDescription')"
+      :question="t('ruleset.confirmDeleteQuestion')"
       :subject="rulesetToDelete?.name"
-      warning="Questa azione non può essere annullata."
-      confirm-label="Elimina"
-      cancel-label="Annulla"
       :confirm-icon="ICONS.delete"
       confirm-color="error"
       @confirm="confirmDeleteRuleset"

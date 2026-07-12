@@ -1,5 +1,6 @@
 <!-- app\pages\player\[slug]\deck\[deckSlug].vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import { useCommanderCards } from '~/composables/commanders/useCommanderCards'
 import type { CommanderDeck } from '#shared/utils/types'
@@ -7,6 +8,8 @@ import type { CommanderDeck } from '#shared/utils/types'
 const route = useRoute()
 const slug = route.params.slug as string
 const deckSlug = route.params.deckSlug as string
+
+const { t } = useI18n()
 
 const commanderDecksStore = useCommanderDeckStore()
 
@@ -37,7 +40,7 @@ const commanderDisplayName = computed(() => {
   if (deck.value?.commander_2_name) {
     return `${deck.value.commander_1_name} // ${deck.value.commander_2_name}`
   }
-  return deck.value?.commander_1_name ?? 'Deck sconosciuto'
+  return deck.value?.commander_1_name ?? t('deck.fallbackName')
 })
 
 const scryfallSearchUrl = computed(() => {
@@ -46,10 +49,10 @@ const scryfallSearchUrl = computed(() => {
 })
 
 const breadcrumbItems = computed(() => [
-  { label: 'Home', to: '/' },
-  { label: 'Giocatori', to: '/players' },
+  { label: t('common.home'), to: '/' },
+  { label: t('player.breadcrumb'), to: '/players' },
   {
-    label: player.value ? `${player.value.player_name} ${player.value.player_surname}` : 'Profilo',
+    label: player.value ? `${player.value.player_name} ${player.value.player_surname}` : t('player.fallbackName'),
     to: player.value ? `/player/${slug}` : undefined
   },
   { label: commanderDisplayName.value }
@@ -104,7 +107,7 @@ watch(() => deck.value?.commander_1_name, () => {
           <UIcon :name="ICONS.calendarDays" class="size-5 text-primary shrink-0" />
           <div>
             <p class="text-xl font-bold leading-none">{{ deckStats?.events_played ?? 0 }}</p>
-            <p class="text-xs text-muted">Eventi</p>
+            <p class="text-xs text-muted">{{ t('player.stats.events') }}</p>
           </div>
         </div>
 
@@ -112,7 +115,7 @@ watch(() => deck.value?.commander_1_name, () => {
           <UIcon :name="ICONS.battle" class="size-5 text-primary shrink-0" />
           <div>
             <p class="text-xl font-bold leading-none">{{ deckStats?.total_matches ?? 0 }}</p>
-            <p class="text-xs text-muted">Match</p>
+            <p class="text-xs text-muted">{{ t('player.stats.matches') }}</p>
           </div>
         </div>
 
@@ -120,7 +123,7 @@ watch(() => deck.value?.commander_1_name, () => {
           <UIcon :name="ICONS.standings" class="size-5 text-warning shrink-0" />
           <div>
             <p class="text-xl font-bold leading-none">{{ deckStats?.total_wins ?? 0 }}</p>
-            <p class="text-xs text-muted">Vittorie</p>
+            <p class="text-xs text-muted">{{ t('player.stats.wins') }}</p>
           </div>
         </div>
 
@@ -128,7 +131,7 @@ watch(() => deck.value?.commander_1_name, () => {
           <UIcon :name="ICONS.kills" class="size-5 text-error shrink-0" />
           <div>
             <p class="text-xl font-bold leading-none">{{ deckStats?.total_kills ?? 0 }}</p>
-            <p class="text-xs text-muted">Uccisioni</p>
+            <p class="text-xs text-muted">{{ t('player.stats.kills') }}</p>
           </div>
         </div>
 
@@ -136,7 +139,7 @@ watch(() => deck.value?.commander_1_name, () => {
           <UIcon :name="ICONS.vote" class="size-5 text-success shrink-0" />
           <div>
             <p class="text-xl font-bold leading-none">{{ deckStats?.average_score ?? 0 }}</p>
-            <p class="text-xs text-muted">Media</p>
+            <p class="text-xs text-muted">{{ t('player.stats.average') }}</p>
           </div>
         </div>
       </div>
@@ -150,7 +153,7 @@ watch(() => deck.value?.commander_1_name, () => {
           <img
             v-if="commander1Data?.imageUrl"
             :src="commander1Data.imageUrl"
-            :alt="`Card art for ${deck.commander_1_name}`"
+            :alt="t('deck.artAlt', { name: deck.commander_1_name })"
             class="w-full h-full object-cover object-top"
           >
           <div v-else-if="cardLoading" class="flex items-center justify-center h-full">
@@ -164,7 +167,7 @@ watch(() => deck.value?.commander_1_name, () => {
           <img
             v-if="commander2Data?.imageUrl"
             :src="commander2Data.imageUrl"
-            :alt="`Card art for ${deck.commander_2_name}`"
+            :alt="t('deck.artAlt', { name: deck.commander_2_name })"
             class="w-full h-full object-cover object-top"
           >
           <div v-else-if="cardLoading" class="flex items-center justify-center h-full">
@@ -185,14 +188,14 @@ watch(() => deck.value?.commander_1_name, () => {
           color="neutral"
           variant="outline"
         >
-          Vedi su Scryfall
+          {{ t('deck.viewOnScryfall') }}
         </UButton>
       </div>
     </div>
 
     <div v-else class="text-center py-12 text-muted">
       <UIcon :name="ICONS.noCommander" class="text-4xl mb-2 opacity-30" />
-      <p>Deck non trovato</p>
+      <p>{{ t('deck.notFound') }}</p>
     </div>
   </div>
 </template>

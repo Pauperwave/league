@@ -1,12 +1,12 @@
 /**
- * Composable per logging dei click sui bottoni con dati contestuali
+ * Composable for logging button clicks with contextual data
  */
 export function useButtonLogging(buttonName: string, context?: Record<string, unknown>) {
   function logClick() {
     const evaluatedContext: Record<string, unknown> = {}
     if (context) {
       for (const [key, value] of Object.entries(context)) {
-        // Se il valore è una funzione, valutala
+        // If the value is a function, evaluate it
         evaluatedContext[key] = typeof value === 'function' ? value() : value
       }
     }

@@ -1,10 +1,11 @@
 <!-- app\components\ui\DatePicker.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
 
 const {
-  label = 'Data',
+  label,
   required = false,
 } = defineProps<{
   label?: string
@@ -12,6 +13,10 @@ const {
 }>()
 
 const modelValue = defineModel<CalendarDate | null>({ required: true })
+
+const { t } = useI18n()
+
+const displayLabel = computed(() => label ?? t('common.dateLabel'))
 
 const open = ref(false)
 const df = new DateFormatter('it-IT', { dateStyle: 'long' })
@@ -30,12 +35,12 @@ const selectedDate = computed({
 <template>
   <div>
     <label class="block text-sm font-medium mb-1">
-      {{ label }} <span v-if="required" class="text-error">*</span>
+      {{ displayLabel }} <span v-if="required" class="text-error">*</span>
     </label>
     <UPopover v-model:open="open">
       <UButton color="neutral" variant="subtle" :icon="ICONS.calendar" class="w-full justify-between">
         <span class="truncate">
-          {{ modelValue ? df.format(modelValue.toDate(getLocalTimeZone())) : "Seleziona una data" }}
+          {{ modelValue ? df.format(modelValue.toDate(getLocalTimeZone())) : t('common.selectDate') }}
         </span>
         <template #trailing>
           <span
@@ -52,7 +57,7 @@ const selectedDate = computed({
           <UCalendar v-model="selectedDate" prevent-deselect class="p-2" @update:model-value="open = false" />
           <div class="flex justify-center">
             <UButton color="neutral" size="sm" @click="() => { selectedDate = getToday(); open = false }">
-              Oggi
+              {{ t('common.today') }}
             </UButton>
           </div>
         </div>

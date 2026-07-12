@@ -6,11 +6,11 @@ interface RoundResultUsage {
 }
 
 /**
- * Composable per gestire i commander decks di un giocatore.
- * Fetcha i deck + i round_results per determinare quali sono in uso.
- * SSR-friendly wrapper attorno allo store.
+ * Composable for managing a player's commander decks.
+ * Fetches the decks + round_results to determine which are in use.
+ * SSR-friendly wrapper around the store.
  *
- * @param playerId - Ref reattivo al player_id (può essere undefined inizialmente)
+ * @param playerId - Reactive ref to the player_id (may be undefined initially)
  */
 export function useCommanderDecks(playerId: Ref<number | undefined>) {
   const store = useCommanderDeckStore()

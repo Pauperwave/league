@@ -1,5 +1,6 @@
 <!-- app\components\DeckCardActions.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import type { CommanderDeck } from '#shared/utils/types'
 
@@ -12,6 +13,8 @@ const emit = defineEmits<{
   edit: [deck: CommanderDeck]
   delete: [deck: CommanderDeck]
 }>()
+
+const { t } = useI18n()
 </script>
 
 <template>
@@ -22,18 +25,18 @@ const emit = defineEmits<{
       variant="ghost"
       color="neutral"
       :icon="ICONS.edit"
-      aria-label="Modifica proprietà"
+      :aria-label="t('deck.cardActions.editAriaLabel')"
       @click="emit('edit', deck)"
     />
 
     <!-- Delete: only shown when not used -->
-    <UTooltip v-if="!isUsedInEvents" :text="'Elimina deck'">
+    <UTooltip v-if="!isUsedInEvents" :text="t('deck.cardActions.deleteTooltip')">
       <UButton
         size="xs"
         variant="ghost"
         color="error"
         :icon="ICONS.delete"
-        aria-label="Elimina deck"
+        :aria-label="t('deck.cardActions.deleteAriaLabel')"
         @click="emit('delete', deck)"
       />
     </UTooltip>

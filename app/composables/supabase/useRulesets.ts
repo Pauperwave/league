@@ -1,14 +1,16 @@
+import { useI18n } from 'vue-i18n'
 import type { Ruleset } from '#shared/utils/types'
 import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 /**
- * Composable per gestire i dati dei regolamenti.
- * Usa lo store come single source of truth.
- * Il fetching è gestito via useAsyncData per SSR.
+ * Composable for managing ruleset data.
+ * Uses the store as the single source of truth.
+ * Fetching is handled via useAsyncData for SSR.
  */
 export function useRulesets() {
   const store = useRulesetStore()
   const supabase = useSupabaseClient()
+  const { t } = useI18n()
   const editRulesetLogging = useButtonLogging('Edit Ruleset')
 
   // Load both rulesets and leagues data together to prevent SSR mismatch
@@ -41,7 +43,7 @@ export function useRulesets() {
   const rulesetToDelete = ref<Ruleset | null>(null)
 
   const rulesets = computed(() => data.value?.rulesets || [])
-  const errorMessage = computed(() => error.value?.message ?? store.error ?? 'Errore nel caricamento')
+  const errorMessage = computed(() => error.value?.message ?? store.error ?? t('common.loadError'))
 
   // Derived from hydrated data, always in sync on both server and client
   const usedRulesetIds = computed(() => {

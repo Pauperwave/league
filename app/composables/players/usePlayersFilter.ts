@@ -1,18 +1,11 @@
 // app\composables\usePlayersFilter.ts
 
+import { useI18n } from 'vue-i18n'
 import type { Player } from '#shared/utils/types'
 
 export type SortField = 'name' | 'wins' | 'kills' | 'matches' | 'events' | 'avgScore' | 'decks'
 
-export const SORT_OPTIONS: { label: string; value: SortField }[] = [
-  { label: 'Nome', value: 'name' },
-  { label: 'Vittorie', value: 'wins' },
-  { label: 'Uccisioni', value: 'kills' },
-  { label: 'Partite', value: 'matches' },
-  { label: 'Eventi', value: 'events' },
-  { label: 'Media punti', value: 'avgScore' },
-  { label: 'Mazzi', value: 'decks' },
-]
+export const SORT_FIELDS: SortField[] = ['name', 'wins', 'kills', 'matches', 'events', 'avgScore', 'decks']
 
 /**
  * Encapsulates search, filter, and sorting logic for a player list.
@@ -23,6 +16,8 @@ export function usePlayersFilter(
   getPlayerStat: (id: number, key: string) => number,
   getDeckCount: (id: number) => number
 ) {
+  const { t } = useI18n()
+
   const searchQuery = ref('')
   const showOnlyWithDecks = ref(true)
   const sortBy = ref<SortField>('name')
@@ -73,7 +68,7 @@ export function usePlayersFilter(
   })
 
   function getSortLabel(value: string) {
-    return SORT_OPTIONS.find(o => o.value === value)?.label ?? value
+    return t(`player.sortOptions.${value}`, value)
   }
 
   function toggleDirection() {

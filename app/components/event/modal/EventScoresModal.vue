@@ -1,6 +1,9 @@
 <!-- app\components\events\modals\EventScoresModal.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import type { PairingWithResults, TournamentPlayer } from '#shared/utils/types'
+
+const { t } = useI18n()
 
 const {
   showScoresModal,
@@ -35,7 +38,7 @@ const pairing = computed(() =>
 <template>
   <UModal
     v-model:open="open"
-    title="Punteggi Tavolo"
+    :title="t('event.scoresModal.title')"
     :ui="{ content: 'sm:max-w-2xl' }"
   >
     <template #body>

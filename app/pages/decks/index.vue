@@ -1,5 +1,6 @@
 <!-- app\pages\decks\index.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import {
   fetchCommandersByNames,
@@ -7,6 +8,8 @@ import {
 } from '~/composables/commanders/useCommanderCards'
 import { useAllCommanderStats } from '~/composables/supabase/useCommanderStats'
 import type { CommanderDeck } from '#shared/utils/types'
+
+const { t } = useI18n()
 
 const commanderDecksStore = useCommanderDeckStore()
 
@@ -24,11 +27,11 @@ const commanderLoading = ref(false)
 
 // Sort state
 const sortOptions = [
-  { label: 'Alfabetico', value: 'alphabetical', icon: ICONS.sortAlpha },
-  { label: 'Popolarita', value: 'popularity', icon: ICONS.players },
-  { label: 'Frequenza', value: 'frequency', icon: ICONS.battle },
-  { label: 'Colore', value: 'color', icon: ICONS.palette },
-  { label: 'Costo mana', value: 'mana-cost', icon: ICONS.manaCost },
+  { label: t('deck.sortOptions.alphabetical'), value: 'alphabetical', icon: ICONS.sortAlpha },
+  { label: t('deck.sortOptions.popularity'), value: 'popularity', icon: ICONS.players },
+  { label: t('deck.sortOptions.frequency'), value: 'frequency', icon: ICONS.battle },
+  { label: t('deck.sortOptions.color'), value: 'color', icon: ICONS.palette },
+  { label: t('deck.sortOptions.manaCost'), value: 'mana-cost', icon: ICONS.manaCost },
 ]
 
 const selectedSort = ref('alphabetical')
@@ -141,10 +144,10 @@ const uniqueDecks = computed(() => {
   return result
 })
 
-const breadcrumbItems = [
-  { label: 'Home', to: '/' },
-  { label: 'Deck' }
-]
+const breadcrumbItems = computed(() => [
+  { label: t('common.home'), to: '/' },
+  { label: t('deck.breadcrumb') }
+])
 </script>
 
 <template>
@@ -154,10 +157,10 @@ const breadcrumbItems = [
     <!-- Header -->
     <div class="flex items-center justify-between">
       <UButton color="neutral" :icon="ICONS.back" to="/">
-        Home
+        {{ t('common.home') }}
       </UButton>
       <h1 class="text-2xl font-bold">
-        Deck
+        {{ t('deck.breadcrumb') }}
       </h1>
       <div class="flex items-center gap-2">
         <USelectMenu
@@ -166,7 +169,7 @@ const breadcrumbItems = [
           value-key="value"
           label-key="label"
           icon-key="icon"
-          placeholder="Ordina per..."
+          :placeholder="t('player.toolbar.sortPlaceholder')"
           class="w-48"
         />
         <UButton
@@ -187,7 +190,7 @@ const breadcrumbItems = [
     <!-- Empty state -->
     <div v-else-if="uniqueDecks.length === 0" class="text-center py-12 text-muted">
       <UIcon :name="ICONS.battle" class="text-4xl mb-2 opacity-30" />
-      <p>Nessun deck trovato</p>
+      <p>{{ t('deck.emptyList') }}</p>
     </div>
 
     <!-- Deck grid -->

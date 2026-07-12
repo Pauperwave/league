@@ -1,5 +1,7 @@
 <!-- app\components\ui\ConfirmModal.vue -->
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
@@ -8,7 +10,7 @@ const {
   description,
   question,
   subject = '',
-  warning = '',
+  warning,
   confirmLabel,
   cancelLabel,
   confirmIcon = ICONS.confirm,
@@ -16,13 +18,13 @@ const {
   loading = false,
   dismissible = true,
 } = defineProps<{
-  title: string
+  title?: string
   description: string
   question: string
   subject?: string
   warning?: string
-  confirmLabel: string
-  cancelLabel: string
+  confirmLabel?: string
+  cancelLabel?: string
   confirmIcon?: string
   cancelIcon?: string
   loading?: boolean
@@ -37,8 +39,15 @@ const emit = defineEmits<{
 
 const open = defineModel<boolean>('open', { required: true })
 
-const confirmLogging = useButtonLogging('Confirm Modal', { title: () => title, subject: () => subject })
-const cancelLogging = useButtonLogging('Cancel Modal', { title: () => title })
+const { t } = useI18n()
+
+const displayTitle = computed(() => title ?? t('common.confirmDeleteTitle'))
+const displayWarning = computed(() => warning ?? t('common.confirmDeleteWarning'))
+const displayConfirmLabel = computed(() => confirmLabel ?? t('common.delete'))
+const displayCancelLabel = computed(() => cancelLabel ?? t('common.cancel'))
+
+const confirmLogging = useButtonLogging('Confirm Modal', { title: () => displayTitle.value, subject: () => subject })
+const cancelLogging = useButtonLogging('Cancel Modal', { title: () => displayTitle.value })
 
 function onConfirm() {
   confirmLogging.logClick()
@@ -55,7 +64,7 @@ function onCancel() {
 <template>
   <UModal
     v-model:open="open"
-    :title="title"
+    :title="displayTitle"
     :description="description"
     :dismissible="dismissible && !loading"
     :ui="{ footer: 'justify-between' }"
@@ -67,7 +76,7 @@ function onCancel() {
           :name="ICONS.warning"
           class="text-warning"
         />
-        <span>{{ title }}</span>
+        <span>{{ displayTitle }}</span>
       </div>
     </template>
 
@@ -80,10 +89,10 @@ function onCancel() {
         >"{{ subject }}"</span>?
       </p>
       <p
-        v-if="warning"
+        v-if="displayWarning"
         class="text-warning font-semibold mt-2"
       >
-        {{ warning }}
+        {{ displayWarning }}
       </p>
     </template>
 
@@ -94,10 +103,10 @@ function onCancel() {
         :loading="loading"
         @click="onConfirm"
       >
-        {{ confirmLabel }}
+        {{ displayConfirmLabel }}
       </UButton>
       <CancelButton
-        :label="cancelLabel"
+        :label="displayCancelLabel"
         :icon="cancelIcon"
         :disabled="loading"
         @click="onCancel"

@@ -1,7 +1,10 @@
 <!-- app\components\Events\WaitingList.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import { useButtonLogging } from '~/composables/ui/useButtonLogging'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   waitingPlayers: number[]
@@ -37,7 +40,7 @@ const tableData = computed(() => {
   return props.waitingPlayers.map((playerId, index) => ({
     index: index + 1,
     playerId,
-    name: props.playerNames[playerId] ?? `Player ${playerId}`,
+    name: props.playerNames[playerId] ?? t('league.ranking.playerFallback', { id: playerId }),
     time: formatTime(props.waitroomEntries?.get(playerId)),
     paid: false, // Valore iniziale, gestito dalla tabella
     companion: false, // Valore iniziale, gestito dalla tabella
@@ -52,7 +55,7 @@ const tableData = computed(() => {
       <div class="flex items-center gap-2">
         <h2 class="font-semibold text-xl flex items-center gap-2">
           <UIcon :name="ICONS.players" size="lg" class="text-muted" />
-          Lista d'Attesa
+          {{ t('event.waitingList.heading') }}
         </h2>
       </div>
 
@@ -66,7 +69,7 @@ const tableData = computed(() => {
           variant="subtle"
           size="lg"
           :icon="ICONS.addPlayer"
-          label="Aggiungi Giocatori"
+          :label="t('event.waitingList.addPlayers')"
           class="font-semibold"
           @click="handleAddPlayer"
         />

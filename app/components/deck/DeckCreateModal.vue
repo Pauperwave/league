@@ -1,5 +1,6 @@
 <!-- app/components/Modals/DeckCreateModal.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 const emit = defineEmits<{
   create: [deck: {
@@ -16,6 +17,8 @@ const open = defineModel<boolean>('open', { default: false })
 const props = defineProps<{
   playerId: number
 }>()
+
+const { t } = useI18n()
 
 const playersStore = usePlayerStore()
 
@@ -80,41 +83,41 @@ function handleCancel() {
 <template>
   <UModal
     v-model:open="open"
-    description="Aggiungi un nuovo commander deck al giocatore"
+    :description="t('deck.newModal.description')"
     :ui="{ footer: 'justify-between' }"
   >
     <template #title>
       <div class="flex items-center gap-2">
         <UIcon :name="ICONS.add" class="text-primary" />
-        <span>Nuovo Deck</span>
+        <span>{{ t('deck.newModal.title') }}</span>
       </div>
     </template>
 
     <template #body>
       <form id="deck-create-form" class="space-y-4" @submit.prevent="handleSubmit">
         <!-- Commander 1 -->
-        <UFormField label="Commander" required>
+        <UFormField :label="t('deck.newModal.commanderLabel')" required>
           <UInput
             v-model="commander1"
-            placeholder="Es. Atraxa, Praetors' Voice"
+            :placeholder="t('deck.newModal.commanderPlaceholder')"
             class="w-full"
           />
         </UFormField>
 
         <!-- Commander 2 -->
-        <UFormField label="Partner (opzionale)">
+        <UFormField :label="t('deck.newModal.partnerLabel')">
           <UInput
             v-model="commander2"
-            placeholder="Es. Thrasios, Triton Hero"
+            :placeholder="t('deck.newModal.partnerPlaceholder')"
             class="w-full"
           />
         </UFormField>
 
         <!-- Companion -->
-        <UFormField label="Compagno (opzionale)">
+        <UFormField :label="t('deck.newModal.companionLabel')">
           <UInput
             v-model="companion"
-            placeholder="Es. Lutri, the Spellchaser"
+            :placeholder="t('deck.newModal.companionPlaceholder')"
             class="w-full"
           />
         </UFormField>
@@ -124,9 +127,9 @@ function handleCancel() {
           <div class="flex items-center gap-3">
             <USwitch v-model="isBorrowed" />
             <div>
-              <p class="font-medium">Deck prestato</p>
+              <p class="font-medium">{{ t('deck.ownership.borrowedTitle') }}</p>
               <p class="text-sm text-muted">
-                Attiva se questo deck non è di proprietà del giocatore
+                {{ t('deck.ownership.borrowedDescription') }}
               </p>
             </div>
           </div>
@@ -135,15 +138,15 @@ function handleCancel() {
         <!-- Lender -->
         <UFormField
           v-if="isBorrowed"
-          label="Prestato da"
+          :label="t('deck.ownership.lenderLabel')"
           required
         >
           <USelectMenu
             v-model="lenderId"
             :items="lenderOptions"
             value-key="value"
-            placeholder="Cerca e seleziona il proprietario"
-            :search-input="{ placeholder: 'Cerca giocatore...' }"
+            :placeholder="t('deck.ownership.lenderPlaceholder')"
+            :search-input="{ placeholder: t('deck.ownership.lenderSearchPlaceholder') }"
             class="w-full"
           />
         </UFormField>
@@ -159,7 +162,7 @@ function handleCancel() {
         :trailing-icon="ICONS.add"
         :disabled="!canSubmit"
       >
-        Aggiungi
+        {{ t('deck.newModal.submit') }}
       </UButton>
     </template>
   </UModal>

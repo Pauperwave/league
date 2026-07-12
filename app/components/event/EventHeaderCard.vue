@@ -1,5 +1,6 @@
 <!-- app\components\Events\EventHeaderCard.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import type { EventStatus } from '#shared/utils/types'
 import { useButtonLogging } from '~/composables/ui/useButtonLogging'
@@ -14,6 +15,8 @@ const emit = defineEmits<{
   edit: []
 }>()
 
+const { t } = useI18n()
+
 const editLogging = useButtonLogging('Edit Event', { eventName: () => props.eventName })
 
 function handleEdit() {
@@ -22,9 +25,9 @@ function handleEdit() {
 }
 
 const statusBadge = computed(() => {
-  if (props.eventStatus === 'ended') return { color: 'neutral', label: 'Terminato' } as const
-  if (props.eventStatus === 'playing') return { color: 'success', label: 'In Corso' } as const
-  return { color: 'warning', label: 'Programmato' } as const
+  if (props.eventStatus === 'ended') return { color: 'neutral', label: t('event.status.ended') } as const
+  if (props.eventStatus === 'playing') return { color: 'success', label: t('event.status.playing') } as const
+  return { color: 'warning', label: t('event.status.registration') } as const
 })
 </script>
 
@@ -42,7 +45,7 @@ const statusBadge = computed(() => {
                 variant="ghost"
                 :icon="ICONS.edit"
                 size="xs"
-                aria-label="Modifica evento"
+                :aria-label="t('event.editAriaLabel')"
                 @click="handleEdit"
               />
             </div>

@@ -1,9 +1,12 @@
 <!-- app/components/Events/WaitingListTable.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import type { TableColumn } from '@nuxt/ui'
 import { UCheckbox } from '#components'
 import ActionButtons from '~/components/ui/ActionButtons.vue'
+
+const { t } = useI18n()
 
 interface WaitingPlayer {
   index: number
@@ -96,14 +99,14 @@ const columns = computed<TableColumn<WaitingPlayer>[]>(() => [
             ? 'indeterminate'
             : false,
         'onUpdate:modelValue': (value: unknown) => table.toggleAllPageRowsSelected(!!(value as boolean)),
-        'aria-label': 'Select all',
+        'aria-label': t('event.waitingListTable.selectAllAriaLabel'),
       }),
     cell: ({ row }) =>
       h(UCheckbox, {
         modelValue: row.getIsSelected(),
         'onUpdate:modelValue': (value: unknown) => row.toggleSelected(!!(value as boolean)),
         onClick: (e: Event) => e.stopPropagation(),
-        'aria-label': `Seleziona ${row.original.name}`,
+        'aria-label': t('event.waitingListTable.selectRowAriaLabel', { name: row.original.name }),
       }),
   },
   {
@@ -114,23 +117,23 @@ const columns = computed<TableColumn<WaitingPlayer>[]>(() => [
   {
     id: 'playerId',
     accessorKey: 'playerId',
-    header: 'ID',
+    header: t('league.table.id'),
     enableHiding: true,
     meta: { class: { th: 'w-16 text-center', td: 'w-16 text-center font-mono' } },
   },
   {
     accessorKey: 'name',
-    header: 'Giocatore',
+    header: t('event.waitingListTable.playerColumn'),
     meta: { class: { td: 'font-medium' } },
   },
   {
     accessorKey: 'time',
-    header: 'Inserito alle',
+    header: t('event.waitingListTable.timeColumn'),
     meta: { class: { th: 'text-center', td: 'text-center' } },
   },
   {
     id: 'companion',
-    header: 'Companion',
+    header: t('event.waitingListTable.companionColumn'),
     enableHiding: false,
     meta: { class: { th: 'text-center w-20', td: 'text-center' } },
     cell: ({ row }) =>
@@ -138,13 +141,13 @@ const columns = computed<TableColumn<WaitingPlayer>[]>(() => [
         modelValue: playerState[row.original.playerId]?.companion ?? false,
         color: 'warning',
         size: 'sm',
-        'aria-label': `Companion per ${row.original.name}`,
+        'aria-label': t('event.waitingListTable.companionAriaLabel', { name: row.original.name }),
         'onUpdate:modelValue': () => togglePlayer(row.original.playerId, 'companion'),
       }),
   },
   {
     id: 'paid',
-    header: 'Pagato',
+    header: t('event.waitingListTable.paidColumn'),
     enableHiding: false,
     meta: { class: { th: 'text-center w-20', td: 'text-center' } },
     cell: ({ row }) =>
@@ -152,13 +155,13 @@ const columns = computed<TableColumn<WaitingPlayer>[]>(() => [
         modelValue: playerState[row.original.playerId]?.paid ?? false,
         color: 'success',
         size: 'sm',
-        'aria-label': `Pagato per ${row.original.name}`,
+        'aria-label': t('event.waitingListTable.paidAriaLabel', { name: row.original.name }),
         'onUpdate:modelValue': () => togglePlayer(row.original.playerId, 'paid'),
       }),
   },
   {
     id: 'actions',
-    header: 'Azioni',
+    header: t('event.waitingListTable.actionsColumn'),
     enableHiding: false,
     meta: { class: { th: 'text-center', td: 'text-center' } },
     cell: ({ row }) =>
@@ -184,7 +187,7 @@ const filteredData = computed(() => {
 
 const columnVisibilityItems = computed(() => [
   {
-    label: 'ID',
+    label: t('league.table.id'),
     type: 'checkbox' as const,
     checked: columnVisibility.value.playerId !== false,
     onUpdateChecked(checked: boolean) {
@@ -209,9 +212,9 @@ const meta = computed(() => ({
 <template>
   <div class="flex flex-col gap-2">
     <div class="flex items-center justify-between gap-2">
-      <UInput v-model="searchQuery" placeholder="Cerca giocatori..." class="max-w-sm" />
+      <UInput v-model="searchQuery" :placeholder="t('event.waitingListTable.searchPlaceholder')" class="max-w-sm" />
       <UDropdownMenu :items="columnVisibilityItems" :content="{ align: 'end' }">
-        <UButton label="Colonne" color="neutral" :trailing-icon="ICONS.chevronDown" />
+        <UButton :label="t('event.waitingListTable.columnsButton')" color="neutral" :trailing-icon="ICONS.chevronDown" />
       </UDropdownMenu>
     </div>
 
@@ -219,10 +222,10 @@ const meta = computed(() => ({
       <div class="flex items-center gap-2 p-2 bg-muted/50 rounded transition-all duration-200">
         <span class="text-sm text-muted min-w-32">
           <template v-if="hasSelection">
-            {{ selectedPlayerIds.length }} giocatori selezionati
+            {{ t('event.waitingListTable.selectedCount', { count: selectedPlayerIds.length }) }}
           </template>
           <span v-else class="text-muted/50">
-            Seleziona giocatori per azioni batch
+            {{ t('event.waitingListTable.selectPlayersHint') }}
           </span>
         </span>
         <div class="flex items-center gap-1 ml-auto">
@@ -231,21 +234,21 @@ const meta = computed(() => ({
             :disabled="!hasSelection"
             @click="executeBatch(id => setPlayer(id, 'paid', true), ids => emit('batchMarkPaid', ids))"
           >
-            Marca pagati
+            {{ t('event.waitingListTable.markPaid') }}
           </UButton>
           <UButton
             size="xs" color="warning" variant="soft" :icon="ICONS.players"
             :disabled="!hasSelection"
             @click="executeBatch(id => setPlayer(id, 'companion', true), ids => emit('batchMarkCompanion', ids))"
           >
-            Marca companion
+            {{ t('event.waitingListTable.markCompanion') }}
           </UButton>
           <UButton
             size="xs" color="error" variant="soft" :icon="ICONS.delete"
             :disabled="!hasSelection"
             @click="executeBatch(null, ids => emit('batchRemove', ids))"
           >
-            Rimuovi selezionati
+            {{ t('event.waitingListTable.removeSelected') }}
           </UButton>
         </div>
       </div>
@@ -269,9 +272,9 @@ const meta = computed(() => ({
       <template #empty>
         <div v-if="searchQuery" class="flex flex-col items-center gap-1 py-4 text-muted">
           <UIcon :name="ICONS.noResults" class="text-4xl mb-1" />
-          <p>Nessun risultato per "{{ searchQuery }}"</p>
+          <p>{{ t('event.waitingListTable.noResultsFor', { query: searchQuery }) }}</p>
         </div>
-        <UEmpty v-else title="Nessun giocatore in lista d'attesa" :icon="ICONS.players" />
+        <UEmpty v-else :title="t('event.waitingListTable.emptyTitle')" :icon="ICONS.players" />
       </template>
     </UTable>
   </div>

@@ -1,7 +1,10 @@
 <!-- app\components\events\Pairings\Settings\PairingWeightsSection.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import type { PairingWeights } from '#shared/utils/types'
 import type { PairingPresetKind } from './PairingPresetButtons.vue'
+
+const { t } = useI18n()
 
 interface WeightItem {
   key: keyof PairingWeights
@@ -25,7 +28,7 @@ const emit = defineEmits<{
 
 <template>
   <section class="space-y-3">
-    <div class="text-sm font-semibold">Pesi dell'algoritmo</div>
+    <div class="text-sm font-semibold">{{ t('event.pairingWeights.heading') }}</div>
 
     <PairingPresetButtons
       :selected="selectedPreset"
@@ -49,9 +52,9 @@ const emit = defineEmits<{
       </div>
     </div>
 
-    <div class="text-sm font-semibold">Come viene calcolato il punteggio</div>
+    <div class="text-sm font-semibold">{{ t('event.pairingWeights.formulaHeading') }}</div>
     <div class="rounded border border-default/70 bg-muted/20 p-3 font-mono text-xs text-center">
-      totale = bilanciamento_forza + novità - rematch - rotazione3 + peso_dimensione
+      {{ t('event.pairingWeights.formula') }}
     </div>
   </section>
 </template>

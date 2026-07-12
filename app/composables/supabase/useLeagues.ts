@@ -1,13 +1,15 @@
+import { useI18n } from 'vue-i18n'
 import type { League } from '#shared/utils/types'
 
 /**
- * Composable per gestire i dati delle leghe.
- * Usa lo store come single source of truth.
- * Il fetching è gestito via useAsyncData per SSR.
+ * Composable for managing league data.
+ * Uses the store as the single source of truth.
+ * Fetching is handled via useAsyncData for SSR.
  */
 export function useLeagues() {
   const store = useLeagueStore()
   const router = useRouter()
+  const { t } = useI18n()
 
   const { data: rulesetsData, pending: rulesetsLoading } = useRulesets()
 
@@ -20,7 +22,7 @@ export function useLeagues() {
 
   const leagues = computed(() => store.leagues)
   const rulesets = computed(() => rulesetsData.value ?? [])
-  const errorMessage = computed(() => error.value?.message ?? store.error ?? 'Errore nel caricamento')
+  const errorMessage = computed(() => error.value?.message ?? store.error ?? t('common.loadError'))
 
   // UI state — page-level only, not shared
   const showCreateModal = ref(false)

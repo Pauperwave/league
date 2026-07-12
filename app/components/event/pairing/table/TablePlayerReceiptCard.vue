@@ -1,5 +1,6 @@
 <!-- app\components\events\Pairings\Table\TablePlayerReceiptCard.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import type { TournamentPlayer } from '#shared/utils/types'
 import type { PairingPlayerScore } from '~/composables/event-pairing/pairingOptimizer'
 
@@ -7,6 +8,8 @@ defineProps<{
   player: TournamentPlayer
   detail?: PairingPlayerScore
 }>()
+
+const { t } = useI18n()
 
 function formatScore(value: number): string {
   return value.toFixed(2)
@@ -24,27 +27,27 @@ function formatScore(value: number): string {
 
     <div v-if="detail" class="space-y-1 text-xs">
       <div class="flex items-center justify-between gap-2">
-        <span class="text-muted">Bilanciamento</span>
+        <span class="text-muted">{{ t('event.scoreBreakdown.strengthBalance') }}</span>
         <span class="font-mono">{{ formatScore(detail.strengthBalance) }}</span>
       </div>
       <div class="flex items-center justify-between gap-2">
-        <span class="text-muted">Novità</span>
+        <span class="text-muted">{{ t('event.scoreBreakdown.novelty') }}</span>
         <span class="font-mono">{{ formatScore(detail.novelty) }}</span>
       </div>
       <div class="flex items-center justify-between gap-2">
-        <span class="text-muted">Rematch</span>
+        <span class="text-muted">{{ t('event.scoreBreakdown.rematch') }}</span>
         <span class="font-mono">{{ formatScore(detail.rematchPenalty) }}</span>
       </div>
       <div class="flex items-center justify-between gap-2">
-        <span class="text-muted">Rotazione tavoli da 3</span>
+        <span class="text-muted">{{ t('event.tablePreview.scoreItems.rotateTable3') }}</span>
         <span class="font-mono">{{ formatScore(detail.rotateTable3) }}</span>
       </div>
       <div class="flex items-center justify-between gap-2 border-b border-dashed border-default/60 pb-1">
-        <span class="text-muted">Peso dimensione tavolo</span>
+        <span class="text-muted">{{ t('event.scoreBreakdown.tableSizeWeight') }}</span>
         <span class="font-mono">{{ formatScore(detail.tableSizeWeight) }}</span>
       </div>
       <div class="flex items-center justify-between gap-2 font-semibold">
-        <span>Totale</span>
+        <span>{{ t('event.scoreBreakdown.playerTotal') }}</span>
         <span class="font-mono">{{ formatScore(detail.total) }}</span>
       </div>
     </div>

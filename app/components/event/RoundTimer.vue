@@ -1,5 +1,6 @@
 <!-- app/components/Events/RoundTimer.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 /**
  * RoundTimer
@@ -23,6 +24,8 @@ const emit = defineEmits<{
   /** Fired once when the timer naturally reaches zero. */
   expired: []
 }>()
+
+const { t } = useI18n()
 
 // ---------------------------------------------------------------------------
 // State
@@ -193,7 +196,7 @@ onMounted(() => {
     >
       <!-- Play (shown when paused/idle and not expired) -->
       <template v-if="!isRunning">
-        <UTooltip v-if="!isFullscreen" :content="{ side: 'top' }" :text="isExpired ? 'Timer scaduto' : 'Avvia timer'">
+        <UTooltip v-if="!isFullscreen" :content="{ side: 'top' }" :text="isExpired ? t('event.roundTimer.expiredTooltip') : t('event.roundTimer.startTooltip')">
           <UButton
             :icon="ICONS.play"
             color="primary"
@@ -212,14 +215,14 @@ onMounted(() => {
           :disabled="isExpired"
           :size="btnSize"
           :class="btnClass"
-          :title="isExpired ? 'Timer scaduto' : 'Avvia timer'"
+          :title="isExpired ? t('event.roundTimer.expiredTooltip') : t('event.roundTimer.startTooltip')"
           @click="start"
         />
       </template>
 
       <!-- Pause (shown while running) -->
       <template v-else>
-        <UTooltip v-if="!isFullscreen" :content="{ side: 'top' }" text="Pausa timer">
+        <UTooltip v-if="!isFullscreen" :content="{ side: 'top' }" :text="t('event.roundTimer.pauseTooltip')">
           <UButton
             :icon="ICONS.pause"
             color="neutral"
@@ -236,13 +239,13 @@ onMounted(() => {
           variant="soft"
           :size="btnSize"
           :class="btnClass"
-          title="Pausa timer"
+          :title="t('event.roundTimer.pauseTooltip')"
           @click="stop"
         />
       </template>
 
       <!-- Reset -->
-      <UTooltip v-if="!isFullscreen" :content="{ side: 'top' }" text="Resetta timer">
+      <UTooltip v-if="!isFullscreen" :content="{ side: 'top' }" :text="t('event.roundTimer.resetTooltip')">
         <UButton
           :icon="ICONS.reset"
           color="neutral"
@@ -259,12 +262,12 @@ onMounted(() => {
         variant="ghost"
         :size="btnSize"
         :class="btnClass"
-        title="Resetta timer"
+        :title="t('event.roundTimer.resetTooltip')"
         @click="reset"
       />
 
       <!-- Add 5 minutes -->
-      <UTooltip v-if="!isFullscreen" :content="{ side: 'top' }" text="Aggiungi 5 minuti">
+      <UTooltip v-if="!isFullscreen" :content="{ side: 'top' }" :text="t('event.roundTimer.add5Tooltip')">
         <UButton
           :icon="ICONS.add"
           color="success"
@@ -283,14 +286,14 @@ onMounted(() => {
         variant="soft"
         :size="btnSize"
         :class="btnClass"
-        title="Aggiungi 5 minuti"
+        :title="t('event.roundTimer.add5Tooltip')"
         @click="addMinutes(5)"
       >
         <span class="text-4xl">5:00</span>
       </UButton>
 
       <!-- Add 10 minutes -->
-      <UTooltip v-if="!isFullscreen" :content="{ side: 'top' }" text="Aggiungi 10 minuti">
+      <UTooltip v-if="!isFullscreen" :content="{ side: 'top' }" :text="t('event.roundTimer.add10Tooltip')">
         <UButton
           :icon="ICONS.add"
           color="success"
@@ -309,14 +312,14 @@ onMounted(() => {
         variant="soft"
         :size="btnSize"
         :class="btnClass"
-        title="Aggiungi 10 minuti"
+        :title="t('event.roundTimer.add10Tooltip')"
         @click="addMinutes(10)"
       >
         <span class="text-4xl">10:00</span>
       </UButton>
 
       <!-- Fullscreen toggle -->
-      <UTooltip v-if="!isFullscreen" :content="{ side: 'top' }" text="Schermo intero">
+      <UTooltip v-if="!isFullscreen" :content="{ side: 'top' }" :text="t('event.roundTimer.fullscreenTooltip')">
         <UButton
           :icon="ICONS.expand"
           color="neutral"
@@ -333,7 +336,7 @@ onMounted(() => {
         variant="ghost"
         :size="btnSize"
         :class="btnClass"
-        title="Esci da schermo intero"
+        :title="t('event.roundTimer.exitFullscreenTooltip')"
         @click="toggle"
       />
     </div>

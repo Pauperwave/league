@@ -1,5 +1,6 @@
 <!-- app\components\events\Pairings\Kill\KillFlowCanvas.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import { VueFlow, MarkerType, useVueFlow, type Node, type Edge, type Connection, type EdgeMouseEvent } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
@@ -20,14 +21,15 @@ const props = defineProps<{
 // ─── Store & Toast ────────────────────────────────────────────────────────────
 const killsStore = useKillsStore()
 const toast = useToast()
+const { t } = useI18n()
 
-// ─── Registrazione nodi custom ────────────────────────────────────────────────
-// IMPORTANTE: definire fuori dal template, altrimenti Vue Flow
-// ri-renderizza in loop
+// ─── Custom node registration ────────────────────────────────────────────────
+// IMPORTANT: define outside the template, otherwise Vue Flow
+// re-renders in a loop
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const nodeTypes = { player: markRaw(KillPlayerNode) } as any
 
-// ─── Calcolo posizioni circolari ──────────────────────────────────────────────
+// ─── Circular position calculation ────────────────────────────────────────────
 function getCircularPosition(index: number, total: number, radius = 150) {
   const angle = (2 * Math.PI * index) / total - Math.PI / 2
   return {
@@ -36,18 +38,18 @@ function getCircularPosition(index: number, total: number, radius = 150) {
   }
 }
 
-// ─── Nodi (giocatori) ─────────────────────────────────────────────────────────
+// ─── Nodes (players) ─────────────────────────────────────────────────────────
 const nodes = computed<Node[]>(() =>
   props.players.map((player, index) => ({
     id: String(player.id),
-    type: 'player',                    // corrisponde a nodeTypes.player
+    type: 'player',                    // matches nodeTypes.player
     position: getCircularPosition(index, props.players.length),
     data: { player },
-    draggable: false,                  // chip fisse nel canvas
+    draggable: false,                  // fixed chips on the canvas
   })),
 )
 
-// ─── Helper: mappa kills dello store in edge di Vue Flow ──────────────────────
+// ─── Helper: map store kills to Vue Flow edges ──────────────────────
 function mapKillsToEdges(): Edge[] {
   const validPlayerIds = new Set(props.players.map((p) => String(p.id)))
   return killsStore.kills
@@ -74,7 +76,7 @@ function mapKillsToEdges(): Edge[] {
     })
 }
 
-// ─── Sincronizza edges Vue Flow con lo store kills ────────────────────────────
+// ─── Sync Vue Flow edges with the kills store ────────────────────────────
 onInit(() => {
   setEdges(mapKillsToEdges())
 })
@@ -83,7 +85,7 @@ watch(killsStore.kills, () => {
   setEdges(mapKillsToEdges())
 }, { deep: true })
 
-// ─── Opzioni default per nuovi edge durante il drag ───────────────────────────
+// ─── Default options for new edges during drag ───────────────────────────
 const defaultEdgeOptions = {
   style: { stroke: 'var(--ui-color-primary-500)', strokeWidth: 2 },
   markerEnd: {
@@ -94,20 +96,20 @@ const defaultEdgeOptions = {
   },
 }
 
-// ─── Validazione connessioni (impedisce duplicati) ───────────────────────────────
+// ─── Connection validation (prevents duplicates) ───────────────────────────────
 function validateConnection(connection: Connection): boolean {
-  // Verifica che entrambi i giocatori esistano nel tavolo corrente
+  // Check that both players exist at the current table
   const validPlayerIds = new Set(props.players.map((p) => String(p.id)))
   if (!validPlayerIds.has(connection.source) || !validPlayerIds.has(connection.target)) return false
 
-  // No duplicati
+  // No duplicates
   return !killsStore.isKillPresent(
     Number(connection.source),
     Number(connection.target),
   )
 }
 
-// ─── Evento: connessione completata (drag rilasciato su target valido) ─────────
+// ─── Event: connection completed (drag released on a valid target) ─────────
 function onConnect(connection: Connection) {
   const killerId = Number(connection.source)
   const victimId = Number(connection.target)
@@ -115,7 +117,7 @@ function onConnect(connection: Connection) {
   const result = killsStore.addKill(killerId, victimId)
   if (!result.success) {
     toast.add({
-      title: 'Non valido',
+      title: t('event.killFlow.invalidTitle'),
       description: result.error,
       color: 'warning',
       icon: ICONS.warning,
@@ -123,18 +125,18 @@ function onConnect(connection: Connection) {
   }
 }
 
-// ─── Evento: click su freccia esistente → rimuovi ────────────────────────────
+// ─── Event: click on an existing arrow → remove ────────────────────────────
 function onEdgeClick({ edge }: EdgeMouseEvent) {
   killsStore.removeKill(Number(edge.source), Number(edge.target))
   toast.add({
-    title: 'Uccisione rimossa',
+    title: t('event.killFlow.killRemovedTitle'),
     color: 'neutral',
     icon: ICONS.delete,
     duration: 2000,
   })
 }
 
-// ─── Funzioni per i controlli ───────────────────────────────────────────────────
+// ─── Control functions ───────────────────────────────────────────────────
 const dark = ref(false)
 
 function resetTransform() {
@@ -173,25 +175,25 @@ function logToObject() {
       @connect="onConnect"
       @edge-click="onEdgeClick"
     >
-      <!-- Sfondo griglia opzionale -->
+      <!-- Optional grid background -->
       <Background pattern-color="var(--ui-border)" :gap="20" />
 
-      <!-- Controlli in alto a sinistra -->
+      <!-- Top-left controls -->
       <Controls position="top-left">
-        <ControlButton title="Reset Transform" @click="resetTransform">
+        <ControlButton :title="t('event.killFlow.resetTransform')" @click="resetTransform">
           <UIcon :name="ICONS.refresh" />
         </ControlButton>
 
-        <ControlButton title="Fit View" @click="handleFitView">
+        <ControlButton :title="t('event.killFlow.fitView')" @click="handleFitView">
           <UIcon :name="ICONS.fitView" />
         </ControlButton>
 
-        <ControlButton title="Toggle Dark Mode" @click="toggleDarkMode">
+        <ControlButton :title="t('event.killFlow.toggleDarkMode')" @click="toggleDarkMode">
           <UIcon v-if="dark" :name="ICONS.lightMode" />
           <UIcon v-else :name="ICONS.darkMode" />
         </ControlButton>
 
-        <ControlButton title="Log Data" @click="logToObject">
+        <ControlButton :title="t('event.killFlow.logData')" @click="logToObject">
           <UIcon :name="ICONS.terminal" />
         </ControlButton>
       </Controls>

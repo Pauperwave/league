@@ -1,9 +1,12 @@
 <!-- app/pages/players/index.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import type { NewPlayer } from '#shared/utils/types'
 
-useSeoMeta({ title: 'Giocatori' })
+const { t } = useI18n()
+
+useSeoMeta({ title: t('player.pageTitle') })
 
 const playersStore = usePlayerStore()
 const decksStore = useCommanderDeckStore()
@@ -26,8 +29,8 @@ async function handlePlayerCreate(player: NewPlayer) {
   if (result?.success && result.data) {
     showCreatePlayerModal.value = false
     toast.add({
-      title: 'Giocatore creato',
-      description: `${result.data.player_name} ${result.data.player_surname} creato con successo`,
+      title: t('player.toast.createdTitle'),
+      description: t('player.toast.createdDescription', { name: `${result.data.player_name} ${result.data.player_surname}` }),
       color: 'success'
     })
   }

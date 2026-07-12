@@ -1,5 +1,6 @@
 <!-- app\components\events\Pairings\Kill\KillSystemModal.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import type { TournamentPlayer, Kill } from '#shared/utils/types'
 
@@ -13,6 +14,8 @@ const open = defineModel<boolean>('open', { default: false })
 const emit = defineEmits<{
   submit: [kills: Kill[]]
 }>()
+
+const { t } = useI18n()
 
 const killsStore = useKillsStore()
 
@@ -28,12 +31,12 @@ watch(open, (val) => {
 
 function getPlayerName(id: number): string {
   const p = props.players.find((pl) => pl.id === id)
-  return p ? `${p.name} ${p.surname}` : `#${id}`
+  return p ? `${p.name} ${p.surname}` : t('event.killModal.playerFallback', { id })
 }
 
 function handleSubmit() {
-  console.log('Conferma Sistema Uccisioni - Table ID:', props.pairingId)
-  console.log('Uccisioni da confermare:', [...killsStore.kills])
+  console.log('Confirm Kill System - Table ID:', props.pairingId)
+  console.log('Kills to confirm:', [...killsStore.kills])
   emit('submit', [...killsStore.kills])
   open.value = false
 }
@@ -42,13 +45,13 @@ function handleSubmit() {
 <template>
   <UModal
     v-model:open="open"
-    title="Sistema Uccisioni"
-    description="Trascina dall'handle inferiore di un giocatore verso quello superiore della vittima. Clicca una freccia per rimuoverla."
+    :title="t('event.killModal.title')"
+    :description="t('event.killModal.description')"
     :ui="{ content: 'max-w-4xl' }"
   >
     <template #body>
       <div class="flex flex-col gap-4">
-        <!-- Canvas Vue Flow — solo client side per evitare errori SSR -->
+        <!-- Vue Flow canvas — client-only to avoid SSR errors -->
         <ClientOnly>
           <KillFlowCanvas :players="players" />
           <template #fallback>
@@ -58,9 +61,9 @@ function handleSubmit() {
           </template>
         </ClientOnly>
 
-        <!-- Lista testuale delle uccisioni registrate -->
+        <!-- Text list of registered kills -->
         <div v-if="killsStore.kills.length > 0" class="space-y-2">
-          <p class="text-sm font-medium text-muted">Uccisioni registrate:</p>
+          <p class="text-sm font-medium text-muted">{{ t('event.killModal.registeredKillsLabel') }}</p>
           <div class="flex flex-wrap gap-2">
             <UBadge
               v-for="kill in killsStore.kills"
@@ -77,7 +80,7 @@ function handleSubmit() {
         </div>
 
         <p v-else class="text-sm text-muted text-center py-2">
-          Nessuna uccisione registrata. Trascina tra i giocatori per aggiungerne.
+          {{ t('event.killModal.noKills') }}
         </p>
       </div>
     </template>
@@ -85,7 +88,7 @@ function handleSubmit() {
     <template #footer>
       <div class="flex justify-between w-full">
         <UButton
-          label="Azzera"
+          :label="t('event.killModal.resetButton')"
           :icon="ICONS.delete"
           color="neutral"
           variant="ghost"
@@ -94,13 +97,13 @@ function handleSubmit() {
         />
         <div class="flex gap-2">
           <UButton
-            label="Annulla"
+            :label="t('common.cancel')"
             color="neutral"
             variant="outline"
             @click="() => { open = false }"
           />
           <UButton
-            label="Conferma"
+            :label="t('common.confirm')"
             :icon="ICONS.confirm"
             color="primary"
             @click="handleSubmit"

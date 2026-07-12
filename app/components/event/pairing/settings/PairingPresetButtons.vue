@@ -1,5 +1,6 @@
 <!-- app\components\events\Pairings\Settings\PairingPresetButtons.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 export type PairingPresetKind = 'balanced' | 'social' | 'competitive' | 'reset' | 'custom'
 
@@ -11,10 +12,12 @@ const emit = defineEmits<{
   select: [preset: Exclude<PairingPresetKind, 'custom'>]
 }>()
 
+const { t } = useI18n()
+
 const presets: Array<{ key: Exclude<PairingPresetKind, 'custom' | 'reset'>; label: string; icon: string }> = [
-  { key: 'social', label: 'Sociale', icon: ICONS.players },
-  { key: 'balanced', label: 'Bilanciato', icon: ICONS.rules },
-  { key: 'competitive', label: 'Competitivo', icon: ICONS.standings },
+  { key: 'social', label: t('event.pairingPresets.social'), icon: ICONS.players },
+  { key: 'balanced', label: t('event.pairingPresets.balanced'), icon: ICONS.rules },
+  { key: 'competitive', label: t('event.pairingPresets.competitive'), icon: ICONS.standings },
 ]
 </script>
 
@@ -39,7 +42,7 @@ const presets: Array<{ key: Exclude<PairingPresetKind, 'custom' | 'reset'>; labe
       variant="soft"
       @click="emit('select', 'reset')"
     >
-      Reset
+      {{ t('event.pairingPresets.reset') }}
     </UButton>
 
     <UButton
@@ -48,7 +51,7 @@ const presets: Array<{ key: Exclude<PairingPresetKind, 'custom' | 'reset'>; labe
       :variant="selected === 'custom' ? 'soft' : 'outline'"
       class="pointer-events-none select-none"
     >
-      Personalizzato
+      {{ t('event.pairingPresets.custom') }}
     </UButton>
   </div>
 </template>

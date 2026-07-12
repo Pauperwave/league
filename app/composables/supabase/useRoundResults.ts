@@ -1,9 +1,9 @@
 import type { RoundResult } from '#shared/utils/types'
 
 /**
- * Composable per fetchare i risultati dei round.
- * I dati sono inclusi nei pairings via round_results.
- * Usa lo store events come single source of truth.
+ * Composable for fetching round results.
+ * The data is included in the pairings via round_results.
+ * Uses the events store as the single source of truth.
  */
 export function useRoundResults(pairingId?: number) {
   const store = useEventStore()
@@ -11,11 +11,11 @@ export function useRoundResults(pairingId?: number) {
 
   const { data, pending, error } = useAsyncData<RoundResult[]>(key, async () => {
     if (pairingId) {
-      // Trova il pairing con il round_results
+      // Find the pairing with its round_results
       const pairing = store.pairings.find(p => p.pairing_id === pairingId)
       return pairing?.round_results || []
     }
-    // Ritorna tutti i round_results da tutti i pairings
+    // Return all round_results from all pairings
     return store.pairings.flatMap(p => p.round_results || [])
   }, {
     server: true,
@@ -27,6 +27,6 @@ export function useRoundResults(pairingId?: number) {
     data,
     pending,
     error,
-    refresh: () => Promise.resolve() // I round_results vengono fetchati con i pairings
+    refresh: () => Promise.resolve() // round_results are fetched along with the pairings
   }
 }

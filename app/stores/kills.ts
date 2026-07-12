@@ -1,4 +1,5 @@
 // app\stores\kills.ts
+import { useI18n } from 'vue-i18n'
 import type { Kill } from '#shared/utils/types'
 
 /**
@@ -6,6 +7,8 @@ import type { Kill } from '#shared/utils/types'
  * Manages ephemeral kill data and pairing confirmation state.
  */
 export const useKillsStore = defineStore('kills', () => {
+  const { t } = useI18n()
+
   /** All kills registered in the current round */
   const kills = ref<Kill[]>([])
   /** Set of pairing IDs whose kills have been confirmed/submitted */
@@ -41,10 +44,10 @@ export const useKillsStore = defineStore('kills', () => {
    */
   function addKill(killerId: number, victimId: number): { success: boolean; error?: string } {
     if (isKillPresent.value(killerId, victimId))
-      return { success: false, error: 'Uccisione già registrata' }
+      return { success: false, error: t('store.kill.alreadyRegistered') }
 
     if (isReverseKillPresent.value(killerId, victimId))
-      return { success: false, error: 'La vittima ha già ucciso questo giocatore' }
+      return { success: false, error: t('store.kill.victimAlreadyKilled') }
 
     kills.value.push({ killerId, victimId })
 

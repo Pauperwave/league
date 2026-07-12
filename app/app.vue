@@ -1,6 +1,9 @@
 <!-- app\app.vue -->
 <script setup>
+import { useI18n } from 'vue-i18n'
 import { it } from '@nuxt/ui/locale'
+
+const { t } = useI18n()
 
 useHead({
   meta: [{ name: 'viewport', content: 'width=device-width, initial-scale=1' }],
@@ -10,8 +13,8 @@ useHead({
   }
 })
 
-const title = 'Gestione Lega'
-const description = 'Gestione leghe Magic: The Gathering Commander: eventi, abbinamenti, punteggi e classifiche.'
+const title = t('app.title')
+const description = t('app.description')
 
 useSeoMeta({
   title,

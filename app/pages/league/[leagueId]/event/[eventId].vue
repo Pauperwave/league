@@ -1,10 +1,13 @@
 <!-- app\pages\league\[leagueId]\event\[eventId].vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import { getPairingPlayerIds } from '#shared/utils/types'
 import type { Seat, TournamentPlayer, TournamentTable } from '#shared/utils/types'
 import type { PairingHistoryEntry, PairingPlayer } from '~/composables/event-pairing/pairingOptimizer'
 import { buildStandingsSubmissionMap } from '~/utils/standingsSubmission'
+
+const { t } = useI18n()
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -291,9 +294,9 @@ const submittedByPlayerId = computed<Record<number, boolean>>(() => {
 // ── Computed: UI Text ──────────────────────────────────────────────────────
 
   const standingsTitle = computed(() => {
-    if (eventStatus.value === 'ended') return 'Classifica Finale'
-    if (currentRound.value > 0) return `Classifica Round ${currentRound.value}`
-    return 'Classifica'
+    if (eventStatus.value === 'ended') return t('event.standingsTitleFinal')
+    if (currentRound.value > 0) return t('event.standingsTitleRound', { round: currentRound.value })
+    return t('event.standingsTitleDefault')
   })
 
   const roundDuration = computed(() => {
@@ -302,8 +305,8 @@ const submittedByPlayerId = computed<Record<number, boolean>>(() => {
 
   function handleTimerExpired() {
     toast.add({
-      title: 'Tempo scaduto!',
-      description: `Il tempo del round ${currentRound.value} è terminato`,
+      title: t('event.timerExpiredTitle'),
+      description: t('event.timerExpiredDescription', { round: currentRound.value }),
       color: 'warning',
       icon: ICONS.timerOff,
     })
@@ -315,12 +318,12 @@ const formattedDate = computed(() => {
   return new Date(dt).toLocaleDateString('it-IT', { year: 'numeric', month: 'long', day: 'numeric' })
 })
 
-const leagueName = computed(() => currentLeague.value?.name ?? 'Lega')
-const eventName = computed(() => currentEvent.value?.event_name ?? 'Evento')
+const leagueName = computed(() => currentLeague.value?.name ?? t('league.fallbackName'))
+const eventName = computed(() => currentEvent.value?.event_name ?? t('event.fallbackName'))
 
 const breadcrumbItems = computed(() => [
-  { label: 'Home', to: '/', icon: ICONS.home },
-  { label: 'Leghe', to: '/leagues' },
+  { label: t('common.home'), to: '/', icon: ICONS.home },
+  { label: t('league.breadcrumb'), to: '/leagues' },
   { label: leagueName.value, to: `/league/${leagueId}` },
   { label: eventName.value },
 ])
@@ -415,7 +418,7 @@ function handleResetTable(pairingId: number) {
             class="mb-4 p-4 rounded-lg border bg-elevated border-muted flex items-center justify-between"
           >
             <span class="text-sm font-medium">
-              Visualizzando il round {{ viewedRound }}
+              {{ t('event.viewingPastRound', { round: viewedRound }) }}
             </span>
             <UButton
               size="sm"
@@ -424,7 +427,7 @@ function handleResetTable(pairingId: number) {
               :icon="ICONS.reset"
               @click="clearViewedRound"
             >
-              Torna al round corrente
+              {{ t('event.backToCurrentRound') }}
             </UButton>
           </div>
 
@@ -535,24 +538,22 @@ function handleResetTable(pairingId: number) {
 
     <ConfirmModal
       v-model:open="showCancelRoundConfirm"
-      title="Annulla round"
-      description="Tornare al round precedente"
-      question="Sei sicuro di voler tornare al round precedente"
-      warning="I dati del round corrente andranno persi."
-      confirm-label="Annulla round"
-      cancel-label="Annulla"
+      :title="t('event.cancelRound.title')"
+      :description="t('event.cancelRound.description')"
+      :question="t('event.cancelRound.question')"
+      :warning="t('event.cancelRound.warning')"
+      :confirm-label="t('event.cancelRound.confirmLabel')"
       :confirm-icon="ICONS.delete"
       @confirm="lifecycle.confirmCancelRound"
     />
 
     <ConfirmModal
       v-model:open="showEndEventConfirm"
-      title="Termina evento"
-      description="Conferma la fine dell'evento"
-      question="Sei sicuro di voler terminare l'evento"
-      warning="Dopo la conferma l'evento verrà contrassegnato come terminato."
-      confirm-label="Termina"
-      cancel-label="Annulla"
+      :title="t('event.endEvent.title')"
+      :description="t('event.endEvent.description')"
+      :question="t('event.endEvent.question')"
+      :warning="t('event.endEvent.warning')"
+      :confirm-label="t('event.endEvent.confirmLabel')"
       :confirm-icon="ICONS.flag"
       @confirm="lifecycle.confirmEndEvent"
     />

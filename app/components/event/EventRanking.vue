@@ -1,5 +1,6 @@
 <!-- app\components\Rankings\EventRanking.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import type { Player } from '#shared/utils/types'
 
@@ -7,7 +8,9 @@ const props = defineProps<{
   leagueId: number
 }>()
 
-// Usa il composable SSR-friendly per eventi
+const { t } = useI18n()
+
+// Use the SSR-friendly composable for events
 const { data: eventsData, pending: loading } = useEvents(props.leagueId)
 
 const allLeagueEvents = computed(() => {
@@ -89,7 +92,7 @@ function getScore(playerId: number, eventId: number): number | null {
             #
           </th>
           <th class="px-3 py-2 text-left font-semibold">
-            Giocatore
+            {{ t('league.ranking.player') }}
           </th>
           <th
             v-for="event in allLeagueEvents"
@@ -99,7 +102,7 @@ function getScore(playerId: number, eventId: number): number | null {
             {{ event.event_name }}
           </th>
           <th class="px-3 py-2 text-right font-semibold bg-primary/10">
-            Totale
+            {{ t('event.scoreBreakdown.playerTotal') }}
           </th>
         </tr>
       </thead>
@@ -151,7 +154,7 @@ function getScore(playerId: number, eventId: number): number | null {
         :name="ICONS.standings"
         class="text-4xl mb-2 opacity-30"
       />
-      <p>Nessun punteggio disponibile</p>
+      <p>{{ t('league.ranking.empty') }}</p>
     </div>
   </div>
 </template>

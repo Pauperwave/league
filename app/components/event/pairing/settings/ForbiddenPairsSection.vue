@@ -1,8 +1,11 @@
 <!-- app\components\events\Pairings\Settings\ForbiddenPairsSection.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import { getForbiddenPairKey } from '~/composables/event-pairing/pairingOptimizer'
 import { usePlayerOptions } from '~/composables/supabase/usePlayers'
+
+const { t } = useI18n()
 
 interface ForbiddenPair {
   playerA: number
@@ -50,30 +53,30 @@ const forbiddenPairsDisplay = computed(() => {
     key: getForbiddenPairKey(pair.playerA, pair.playerB),
     playerA: pair.playerA,
     playerB: pair.playerB,
-    label: `${playerMap.get(pair.playerA) ?? `Player ${pair.playerA}`} — ${playerMap.get(pair.playerB) ?? `Player ${pair.playerB}`}`,
+    label: `${playerMap.get(pair.playerA) ?? t('league.ranking.playerFallback', { id: pair.playerA })} — ${playerMap.get(pair.playerB) ?? t('league.ranking.playerFallback', { id: pair.playerB })}`,
   }))
 })
 </script>
 
 <template>
   <section class="space-y-3">
-    <div class="text-sm font-semibold">Coppie Vietate</div>
+    <div class="text-sm font-semibold">{{ t('event.forbiddenPairs.heading') }}</div>
 
     <div class="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto_auto] gap-2 items-center">
       <USelectMenu
         v-model="pairPlayerA"
         :items="playerOptions"
         value-key="value"
-        placeholder="Giocatore A"
-        :search-input="{ placeholder: 'Cerca giocatore...' }"
+        :placeholder="t('event.forbiddenPairs.playerAPlaceholder')"
+        :search-input="{ placeholder: t('event.forbiddenPairs.searchPlaceholder') }"
       />
 
       <USelectMenu
         v-model="pairPlayerB"
         :items="playerOptions"
         value-key="value"
-        placeholder="Giocatore B"
-        :search-input="{ placeholder: 'Cerca giocatore...' }"
+        :placeholder="t('event.forbiddenPairs.playerBPlaceholder')"
+        :search-input="{ placeholder: t('event.forbiddenPairs.searchPlaceholder') }"
       />
 
       <UButton
@@ -83,7 +86,7 @@ const forbiddenPairsDisplay = computed(() => {
         :disabled="!canAddForbiddenPair"
         @click="emit('addPair')"
       >
-        Aggiungi coppia
+        {{ t('event.forbiddenPairs.addPair') }}
       </UButton>
 
       <UButton
@@ -92,13 +95,13 @@ const forbiddenPairsDisplay = computed(() => {
         :icon="ICONS.refresh"
         @click="emit('resolveConflicts')"
       >
-        Risolvi conflitti
+        {{ t('event.forbiddenPairs.resolveConflicts') }}
       </UButton>
     </div>
 
     <div class="max-h-48 overflow-auto space-y-1 pr-1">
       <div v-if="!forbiddenPairsDisplay.length" class="text-sm text-muted">
-        Nessuna coppia vietata
+        {{ t('event.forbiddenPairs.empty') }}
       </div>
 
       <div
@@ -118,7 +121,7 @@ const forbiddenPairsDisplay = computed(() => {
     </div>
 
     <div class="text-xs text-muted">
-      I valori sono salvati nel LocalStorage del browser con chiave
+      {{ t('event.forbiddenPairs.storageNote') }}
       <code>{{ pairingStorageKey }}</code>.
     </div>
   </section>

@@ -1,4 +1,5 @@
 // league\app\composables\event\useEventPage.ts
+import { useI18n } from 'vue-i18n'
 import type { Player, PairingWithResults } from '#shared/utils/types'
 import { usePlayerStore } from '~/stores/players'
 import { useEventUrl } from './useEventUrl'
@@ -6,6 +7,7 @@ import { useEventUrl } from './useEventUrl'
 export function useEventPage() {
   const supabase = useSupabaseClient()
   const route = useRoute()
+  const { t } = useI18n()
 
   const leagueId = parseInt(route.params.leagueId as string)
   const eventId = parseInt(route.params.eventId as string)
@@ -76,10 +78,17 @@ export function useEventPage() {
     const result = calculateTables(count)
     if (!result.canPlay) {
       return count < 3
-        ? 'Servono almeno 3 giocatori'
-        : 'Non si può giocare con 5 giocatori'
+        ? t('event.notEnoughPlayers')
+        : t('event.tooManyForFive')
     }
-    return formatTableEstimate(result.tables4, result.tables3)
+    return formatTableEstimate(
+      result.tables4,
+      result.tables3,
+      (n, size) => size === 4
+        ? t('event.tablesOf4', n, { named: { count: n } })
+        : t('event.tablesOf3', n, { named: { count: n } }),
+      t('event.tableEstimateConjunction'),
+    )
   })
 
   const previewTables = computed<number[][]>(() => {
@@ -92,7 +101,7 @@ export function useEventPage() {
 
   function getPlayerName(playerId: number): string {
     const player = players.value?.find((p: Player) => p.player_id === playerId)
-    return player ? `${player.player_name} ${player.player_surname}` : `Player ${playerId}`
+    return player ? `${player.player_name} ${player.player_surname}` : t('league.ranking.playerFallback', { id: playerId })
   }
 
   function isInWaitingList(playerId: number) {

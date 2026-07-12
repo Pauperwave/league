@@ -1,7 +1,10 @@
 <!-- app/components/events/Pairings/PairingsCard.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import type { Pairing, TournamentPlayer, Kill } from '#shared/utils/types'
+
+const { t } = useI18n()
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -232,7 +235,7 @@ function toggleKillConfirmation(pairingId: number) {
     <template #header>
       <div class="flex items-center gap-2">
         <UIcon :name="ICONS.gridView" class="size-5 text-primary" />
-        <h2 class="text-lg font-semibold">Tavoli</h2>
+        <h2 class="text-lg font-semibold">{{ t('event.pairing.tablesHeading') }}</h2>
       </div>
     </template>
 
@@ -272,14 +275,14 @@ function toggleKillConfirmation(pairingId: number) {
               <UTooltip
                 :key="`cmd-${playerId}-${commandersStore?.getCommander1(playerId) ? 1 : 0}`"
                 :content="{ side: 'right' }"
-                :text="commandersStore?.getCommander1(playerId) ? 'Commander inserito' : 'Inserisci commander'"
+                :text="commandersStore?.getCommander1(playerId) ? t('event.pairing.commanderSetTooltip') : t('event.pairing.commanderNotSetTooltip')"
               >
                 <UButton
                   size="xs"
                   variant="outline"
                   :color="commandersStore?.getCommander1(playerId) ? 'neutral' : 'warning'"
                   :icon="commandersStore?.getCommander1(playerId) ? ICONS.commanderSet : ICONS.commanderNotSet"
-                  aria-label="Imposta comandanti"
+                  :aria-label="t('event.pairing.commanderAriaLabel')"
                   @click="emit('openCommanderModal', pairing.pairing_id, playerId)"
                 />
               </UTooltip>
@@ -288,14 +291,14 @@ function toggleKillConfirmation(pairingId: number) {
               <UTooltip
                 :key="`vote-${playerId}-${votesStore?.hasVotes(playerId) ? 1 : 0}`"
                 :content="{ side: 'right' }"
-                :text="votesStore?.hasVotes(playerId) ? 'Voto inserito' : 'Inserisci voto'"
+                :text="votesStore?.hasVotes(playerId) ? t('event.pairing.voteSetTooltip') : t('event.pairing.voteNotSetTooltip')"
               >
                 <UButton
                   size="xs"
                   variant="outline"
                   :color="votesStore?.hasVotes(playerId) ? 'neutral' : 'warning'"
                   :icon="votesStore?.hasVotes(playerId) ? ICONS.confirm : ICONS.vote"
-                  aria-label="Imposta voti"
+                  :aria-label="t('event.pairing.voteAriaLabel')"
                   @click="emit('openVotesModal', pairing.pairing_id, playerId)"
                 />
               </UTooltip>
@@ -306,7 +309,7 @@ function toggleKillConfirmation(pairingId: number) {
         <!-- Table-level action buttons — hidden in readonly mode -->
         <div v-if="!readonly" class="flex gap-2 mt-3">
           <!-- Rankings button -->
-          <UTooltip :content="{ side: 'top' }" :text="hasRanking(pairing.pairing_id) ? 'Classifica inserita' : 'Inserisci classifica'">
+          <UTooltip :content="{ side: 'top' }" :text="hasRanking(pairing.pairing_id) ? t('event.pairing.rankingSetTooltip') : t('event.pairing.rankingNotSetTooltip')">
             <UButton
               :color="hasRanking(pairing.pairing_id) ? 'neutral' : 'warning'"
               class="flex-1"
@@ -314,12 +317,12 @@ function toggleKillConfirmation(pairingId: number) {
               variant="outline"
               @click="handleOpenScoreModal(pairing.pairing_id, index)"
             >
-              Classifica
+              {{ t('event.pairing.rankingButton') }}
             </UButton>
           </UTooltip>
 
           <!-- Kills entry button -->
-          <UTooltip :content="{ side: 'top' }" :text="killsStore?.isPairingConfirmed(pairing.pairing_id) ? 'Uccisioni confermate' : 'Inserisci uccisioni'">
+          <UTooltip :content="{ side: 'top' }" :text="killsStore?.isPairingConfirmed(pairing.pairing_id) ? t('event.pairing.killsSetTooltip') : t('event.pairing.killsNotSetTooltip')">
             <UButton
               :color="killsStore?.isPairingConfirmed(pairing.pairing_id) ? 'neutral' : 'warning'"
               class="flex-1"
@@ -327,21 +330,21 @@ function toggleKillConfirmation(pairingId: number) {
               variant="outline"
               @click="emit('openKillModal', pairing.pairing_id)"
             >
-              Uccisioni
+              {{ t('event.pairing.killsButton') }}
             </UButton>
           </UTooltip>
 
           <!-- Kill confirmation toggle -->
           <UTooltip
             :content="{ side: 'top' }"
-            :text="killsStore?.isPairingConfirmed(pairing.pairing_id) ? 'Rimuovi conferma uccisioni' : 'Conferma uccisioni (anche zero)'"
+            :text="killsStore?.isPairingConfirmed(pairing.pairing_id) ? t('event.pairing.removeKillConfirmTooltip') : t('event.pairing.confirmKillsTooltip')"
           >
             <UButton
               :color="killsStore?.isPairingConfirmed(pairing.pairing_id) ? 'success' : 'warning'"
               :icon="killsStore?.isPairingConfirmed(pairing.pairing_id) ? ICONS.confirm : ICONS.dot"
               variant="outline"
               size="sm"
-              :aria-label="killsStore?.isPairingConfirmed(pairing.pairing_id) ? 'Rimuovi conferma uccisioni' : 'Conferma uccisioni'"
+              :aria-label="killsStore?.isPairingConfirmed(pairing.pairing_id) ? t('event.pairing.removeKillConfirmTooltip') : t('event.pairing.confirmKillsAriaLabel')"
               @click="toggleKillConfirmation(pairing.pairing_id)"
             />
           </UTooltip>
@@ -349,18 +352,16 @@ function toggleKillConfirmation(pairingId: number) {
       </UCard>
     </div>
 
-    <UEmpty v-else :icon="ICONS.players" title="Nessun tavolo disponibile" />
+    <UEmpty v-else :icon="ICONS.players" :title="t('event.pairing.noTablesAvailable')" />
 
     <!-- Reset confirmation dialog -->
     <ConfirmModal
       v-model:open="showResetConfirm"
-      title="Conferma Reset"
-      description="Stai per resettare tutti i valori del tavolo"
-      question="Sei sicuro di voler resettare tutti i valori"
-      :subject="`Tavolo ${pairings.findIndex(p => p.pairing_id === tableToReset) + 1}`"
-      warning="Questa azione non può essere annullata."
-      confirm-label="Reset"
-      cancel-label="Annulla"
+      :title="t('event.pairing.resetConfirm.title')"
+      :description="t('event.pairing.resetConfirm.description')"
+      :question="t('event.pairing.resetConfirm.question')"
+      :subject="t('event.pairing.tableHeading', { n: pairings.findIndex(p => p.pairing_id === tableToReset) + 1 })"
+      :confirm-label="t('event.pairing.resetConfirm.confirmLabel')"
       :confirm-icon="ICONS.reset"
       @confirm="handleConfirm"
     />
@@ -368,13 +369,12 @@ function toggleKillConfirmation(pairingId: number) {
     <!-- Test fill confirmation dialog -->
     <ConfirmModal
       v-model:open="showFillConfirm"
-      title="Compila con dati di test"
-      description="Stai per compilare il tavolo con dati di test"
-      question="Sei sicuro di voler compilare il tavolo"
-      :subject="`Tavolo ${pairings.findIndex(p => p.pairing_id === tableToFill) + 1}`"
-      warning="Questa azione sovrascriverà i dati esistenti."
-      confirm-label="Compila"
-      cancel-label="Annulla"
+      :title="t('event.pairing.fillConfirm.title')"
+      :description="t('event.pairing.fillConfirm.description')"
+      :question="t('event.pairing.fillConfirm.question')"
+      :subject="t('event.pairing.tableHeading', { n: pairings.findIndex(p => p.pairing_id === tableToFill) + 1 })"
+      :warning="t('event.pairing.fillConfirm.warning')"
+      :confirm-label="t('event.pairing.fillConfirm.confirmLabel')"
       :confirm-icon="ICONS.quickAction"
       @confirm="handleConfirm"
     />

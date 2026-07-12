@@ -1,8 +1,8 @@
 import type { WaitroomEntry } from '#shared/utils/types'
 
 /**
- * Composable per fetchare la lista d'attesa.
- * Usa lo store players come single source of truth.
+ * Composable for fetching the waiting list.
+ * Uses the players store as the single source of truth.
  */
 export function useWaitroom(eventId?: number) {
   const store = usePlayerStore()

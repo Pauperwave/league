@@ -467,6 +467,11 @@ function scoreSolution(
   }
 }
 
+/**
+ * Scores an already-built table arrangement without modifying it.
+ * Used to preview/validate a candidate seating (e.g. a manually edited one) using the
+ * same scoring function `optimizePairings` uses internally, so results are comparable.
+ */
 export function scorePairingTables(params: {
   tables: number[][]
   players: PairingPlayer[]
@@ -615,6 +620,20 @@ function improveBySwap(
   return best
 }
 
+/**
+ * Builds a table seating for the round via multi-start greedy construction + local search.
+ *
+ * Runs 3 independent attempts, each seeding player order by a different priority
+ * (rank, table-3 rotation need, score), builds tables greedily table-by-table — at each
+ * seat picking whichever remaining player maximizes the table's running score while
+ * respecting forbidden pairs — then improves that result with a pairwise swap search
+ * within a time budget (default 120ms total, split evenly across the 3 attempts).
+ * The best-scoring result across all 3 attempts is returned.
+ *
+ * Multiple seed orders exist because greedy construction is order-sensitive: a single seed
+ * can get stuck in a local optimum the swap search can't escape from, so trying a few
+ * different starting points and keeping the best materially improves table quality.
+ */
 export function optimizePairings(params: {
   players: PairingPlayer[]
   history: PairingHistoryEntry[]

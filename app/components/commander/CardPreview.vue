@@ -17,7 +17,7 @@ const COLOR_MAP: Record<string, string> = {
 }
 
 /**
- * Estrae i colori dal costo di mana
+ * Extracts colors from a mana cost
  */
 function extractColorsFromManaCost(costString: string): Set<string> {
   const colors = new Set<string>()
@@ -87,7 +87,7 @@ const backImage = computed(() => {
   return props.card?.backLargeImageUrl ?? null
 })
 
-// Logging quando la carta cambia
+// Logging when the card changes
 watch(() => props.card, (newCard) => {
   if (newCard) {
     console.log('[CardPreview] 🖼️ Card displayed:', newCard.name)

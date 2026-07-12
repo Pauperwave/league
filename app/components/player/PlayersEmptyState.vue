@@ -1,5 +1,6 @@
 <!-- app\components\players\PlayersEmptyState.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 const props = defineProps<{
   type: 'no-search-results' | 'no-decks-filter' | 'no-players'
@@ -11,6 +12,8 @@ const emit = defineEmits<{
   clearFilter: []
 }>()
 
+const { t } = useI18n()
+
 function handleAction() {
   const event = config.value.action.event
   if (event === 'createPlayer') emit('createPlayer')
@@ -20,10 +23,10 @@ function handleAction() {
 const config = computed(() => ({
   'no-search-results': {
     icon: ICONS.noResults,
-    title: `Nessun risultato per "${props.searchQuery}"`,
-    description: 'Vuoi creare un nuovo giocatore?',
+    title: t('player.emptyState.noResultsTitle', { query: props.searchQuery ?? '' }),
+    description: t('player.emptyState.noResultsDescription'),
     action: {
-      label: 'Crea Giocatore',
+      label: t('player.emptyState.createPlayer'),
       icon: ICONS.addPlayer,
       color: 'primary' as const,
       event: 'createPlayer' as const
@@ -31,10 +34,10 @@ const config = computed(() => ({
   },
   'no-decks-filter': {
     icon: ICONS.noDecks,
-    title: 'Nessun giocatore ha mazzi associati',
-    description: 'Disattiva il filtro per vedere tutti i giocatori',
+    title: t('player.emptyState.noDecksTitle'),
+    description: t('player.emptyState.noDecksDescription'),
     action: {
-      label: 'Mostra tutti',
+      label: t('player.emptyState.showAll'),
       icon: undefined,
       color: 'neutral' as const,
       event: 'clearFilter' as const
@@ -42,10 +45,10 @@ const config = computed(() => ({
   },
   'no-players': {
     icon: ICONS.players,
-    title: 'Nessun giocatore trovato',
-    description: 'Inizia creando il primo giocatore',
+    title: t('player.emptyState.noPlayersTitle'),
+    description: t('player.emptyState.noPlayersDescription'),
     action: {
-      label: 'Crea Giocatore',
+      label: t('player.emptyState.createPlayer'),
       icon: ICONS.addPlayer,
       color: 'primary' as const,
       event: 'createPlayer' as const

@@ -1,9 +1,12 @@
 # Todos
 
-## Migrate Italian strings into @nuxtjs/i18n
-- `@nuxtjs/i18n@10.4.1` is installed and configured (`nuxt.config.ts`: `locales: [{ code: 'it' }]`, `defaultLocale: 'it'`, `strategy: 'no_prefix'` — no `/it/` URL prefix, single-locale only) with `i18n/i18n.config.ts` as the vue-i18n config (currently `messages: { it: {} }`, empty)
-- Nuxt UI's locale support is wired up in `app/app.vue` (`<UApp :locale="it">` with `import { it } from '@nuxt/ui/locale'`); `htmlAttrs.lang` fixed to `'it'` and the SEO title/description replaced with real app copy (was unedited Nuxt UI starter-template boilerplate)
-- **Not done yet**: the actual string migration. UI strings are still hardcoded Italian literals throughout every component — the module is only in place to centralize them into, nothing has been moved into `messages.it` yet. This is a large, separate migration on the scale of the icon-centralization pass (dozens of files) — populate `messages.it` with real keys and replace literals with `$t()`/`useI18n()` calls
+## Parametrization opportunities found during the i18n migration
+Not urgent, just flagged while migrating strings on 2026-07-13 — worth a look sometime:
+- **Status→color/icon config duplicated per table.** `LeagueTable.vue`'s `statusConfig` and `EventTable.vue`'s equivalent both hardcode their own `Record<string, { color, icon, labelKey }>` mapping a stable status value to a badge color/icon/i18n key. Same shape, two copies. Worth a shared composable (e.g. `useStatusBadge()`) if a third status-bearing entity shows up — not worth abstracting for just two.
+- **Date/number formatting isn't locale-aware.** `formatDate` and friends use hardcoded formatting rather than deriving from the active `vue-i18n` locale. Harmless while `it` is the only locale, but would need revisiting the moment a second locale is added.
+
+## Migrate Italian strings into @nuxtjs/i18n — ✅ Done (2026-07-13)
+Full migration completed and verified (lint/typecheck/test/fallow all clean). See `docs/PROGRESS.md` ADR-010 for the summary and the key `useI18n()` usage patterns/constraints discovered, and `CLAUDE.md`'s "Conventions worth knowing" section for the day-to-day patterns (translated prop defaults, Pinia store usage, async-callback constraints). All messages live in `i18n/locales/it.json`.
 
 ## Add Playwright + Playwright MCP
 - Add `@playwright/test` and a `playwright.config.ts` for E2E tests (`docs/AGENTS.md` already calls for Playwright + `@nuxt/test-utils` E2E coverage on critical flows: event creation, round progression, score submission)

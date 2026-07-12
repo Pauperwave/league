@@ -1,17 +1,20 @@
 <!-- app\pages\player\[slug]\index.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import type { CommanderDeck } from '#shared/utils/types'
 
 const route = useRoute()
 const slug = route.params.slug as string
 
+const { t } = useI18n()
+
 const { player, playerId } = usePlayerBySlug(slug)
 
 const breadcrumbItems = computed(() => [
-  { label: 'Home', to: '/' },
-  { label: 'Giocatori', to: '/players' },
-  { label: player.value ? `${player.value.player_name} ${player.value.player_surname}` : 'Profilo' }
+  { label: t('common.home'), to: '/' },
+  { label: t('player.breadcrumb'), to: '/players' },
+  { label: player.value ? `${player.value.player_name} ${player.value.player_surname}` : t('player.fallbackName') }
 ])
 
 // Fetch commander decks for this player
@@ -43,15 +46,15 @@ async function handleUpdateDeck({ id, updates }: { id: number; updates: Partial<
   const result = await deckStore.updateDeck(id, updates)
   if (result.success) {
     useToast().add({
-      title: 'Deck aggiornato',
-      description: 'Le informazioni di proprietà sono state salvate',
+      title: t('deck.toast.updatedTitle'),
+      description: t('deck.toast.updatedDescription'),
       color: 'success',
       icon: ICONS.confirm
     })
   } else {
     useToast().add({
-      title: 'Errore',
-      description: result.error || 'Impossibile aggiornare il deck',
+      title: t('deck.toast.errorTitle'),
+      description: result.error || t('deck.toast.updateErrorFallback'),
       color: 'error',
       icon: ICONS.close
     })
@@ -69,8 +72,8 @@ async function handleCreateDeck(deckData: {
   const result = await deckStore.createDeck(deckData)
   if (result.success) {
     useToast().add({
-      title: 'Deck creato',
-      description: 'Il deck è stato aggiunto con successo',
+      title: t('deck.toast.createdTitle'),
+      description: t('deck.toast.createdDescription'),
       color: 'success',
       icon: ICONS.confirm
     })
@@ -78,8 +81,8 @@ async function handleCreateDeck(deckData: {
     refreshNuxtData(`commander-decks-usage-by-player-${playerId.value}`)
   } else {
     useToast().add({
-      title: 'Errore',
-      description: result.error || 'Impossibile creare il deck',
+      title: t('deck.toast.errorTitle'),
+      description: result.error || t('deck.toast.createErrorFallback'),
       color: 'error',
       icon: ICONS.close
     })
@@ -104,16 +107,16 @@ async function confirmDeleteDeck() {
 
   if (result.success) {
     useToast().add({
-      title: 'Deck eliminato',
-      description: 'Il deck è stato rimosso con successo',
+      title: t('deck.toast.deletedTitle'),
+      description: t('deck.toast.deletedDescription'),
       color: 'success',
       icon: ICONS.confirm
     })
     refreshNuxtData(`commander-decks-usage-by-player-${playerId.value}`)
   } else {
     useToast().add({
-      title: 'Errore',
-      description: result.error || 'Impossibile eliminare il deck',
+      title: t('deck.toast.errorTitle'),
+      description: result.error || t('deck.toast.deleteErrorFallback'),
       color: 'error',
       icon: ICONS.close
     })
@@ -138,7 +141,7 @@ const { data: matchHistory } = usePlayerMatchHistory(playerId)
         <span class="text-primary">{{ player.player_surname }}</span>
       </template>
       <template v-else>
-        Profilo giocatore
+        {{ t('player.profileFallbackHeading') }}
       </template>
     </h1>
 
@@ -163,7 +166,7 @@ const { data: matchHistory } = usePlayerMatchHistory(playerId)
           <UIcon :name="ICONS.calendarDays" class="size-5 text-primary shrink-0" />
           <div>
             <p class="text-xl font-bold leading-none">{{ playerStats?.events_played ?? 0 }}</p>
-            <p class="text-xs text-muted">Eventi</p>
+            <p class="text-xs text-muted">{{ t('player.stats.events') }}</p>
           </div>
         </div>
 
@@ -171,7 +174,7 @@ const { data: matchHistory } = usePlayerMatchHistory(playerId)
           <UIcon :name="ICONS.battle" class="size-5 text-primary shrink-0" />
           <div>
             <p class="text-xl font-bold leading-none">{{ playerStats?.total_matches ?? 0 }}</p>
-            <p class="text-xs text-muted">Match</p>
+            <p class="text-xs text-muted">{{ t('player.stats.matches') }}</p>
           </div>
         </div>
 
@@ -179,7 +182,7 @@ const { data: matchHistory } = usePlayerMatchHistory(playerId)
           <UIcon :name="ICONS.standings" class="size-5 text-warning shrink-0" />
           <div>
             <p class="text-xl font-bold leading-none">{{ playerStats?.total_wins ?? 0 }}</p>
-            <p class="text-xs text-muted">Vittorie</p>
+            <p class="text-xs text-muted">{{ t('player.stats.wins') }}</p>
           </div>
         </div>
 
@@ -187,7 +190,7 @@ const { data: matchHistory } = usePlayerMatchHistory(playerId)
           <UIcon :name="ICONS.kills" class="size-5 text-error shrink-0" />
           <div>
             <p class="text-xl font-bold leading-none">{{ playerStats?.total_kills ?? 0 }}</p>
-            <p class="text-xs text-muted">Uccisioni</p>
+            <p class="text-xs text-muted">{{ t('player.stats.kills') }}</p>
           </div>
         </div>
 
@@ -195,7 +198,7 @@ const { data: matchHistory } = usePlayerMatchHistory(playerId)
           <UIcon :name="ICONS.vote" class="size-5 text-success shrink-0" />
           <div>
             <p class="text-xl font-bold leading-none">{{ playerStats?.average_score ?? 0 }}</p>
-            <p class="text-xs text-muted">Media</p>
+            <p class="text-xs text-muted">{{ t('player.stats.average') }}</p>
           </div>
         </div>
 
@@ -203,8 +206,8 @@ const { data: matchHistory } = usePlayerMatchHistory(playerId)
           <UIcon :name="ICONS.commander" class="size-5 text-info shrink-0" />
           <div>
             <p class="text-xl font-bold leading-none">{{ ownedDeckCount }}</p>
-            <p class="text-xs text-muted">Mazzi</p>
-            <p v-if="borrowedDeckCount > 0" class="text-xs text-warning">+{{ borrowedDeckCount }} prestati</p>
+            <p class="text-xs text-muted">{{ t('player.stats.decks') }}</p>
+            <p v-if="borrowedDeckCount > 0" class="text-xs text-warning">+{{ borrowedDeckCount }} {{ t('player.stats.borrowedSuffix') }}</p>
           </div>
         </div>
       </div>
@@ -214,20 +217,20 @@ const { data: matchHistory } = usePlayerMatchHistory(playerId)
     <div v-if="player && matchHistory && matchHistory.length > 0" class="bg-elevated rounded-xl p-6 border border-default shadow-lg">
       <div class="flex items-center gap-2 mb-4">
         <UIcon :name="ICONS.battle" class="size-5 text-primary" />
-        <h2 class="text-lg font-bold">Storico Partite</h2>
+        <h2 class="text-lg font-bold">{{ t('player.matchHistory.heading') }}</h2>
       </div>
 
       <div class="overflow-x-auto">
         <table class="w-full text-sm">
           <thead>
             <tr class="border-b border-default">
-              <th class="text-left py-2 px-3 text-muted font-medium">Evento</th>
-              <th class="text-center py-2 px-3 text-muted font-medium">Round</th>
-              <th class="text-center py-2 px-3 text-muted font-medium">Tavolo</th>
-              <th class="text-left py-2 px-3 text-muted font-medium">Commander</th>
-              <th class="text-center py-2 px-3 text-muted font-medium">Pos</th>
-              <th class="text-center py-2 px-3 text-muted font-medium">Kill</th>
-              <th class="text-right py-2 px-3 text-muted font-medium">Data</th>
+              <th class="text-left py-2 px-3 text-muted font-medium">{{ t('player.matchHistory.event') }}</th>
+              <th class="text-center py-2 px-3 text-muted font-medium">{{ t('player.matchHistory.round') }}</th>
+              <th class="text-center py-2 px-3 text-muted font-medium">{{ t('player.matchHistory.table') }}</th>
+              <th class="text-left py-2 px-3 text-muted font-medium">{{ t('player.matchHistory.commander') }}</th>
+              <th class="text-center py-2 px-3 text-muted font-medium">{{ t('player.matchHistory.position') }}</th>
+              <th class="text-center py-2 px-3 text-muted font-medium">{{ t('player.matchHistory.kills') }}</th>
+              <th class="text-right py-2 px-3 text-muted font-medium">{{ t('player.matchHistory.date') }}</th>
             </tr>
           </thead>
           <tbody>
@@ -276,7 +279,7 @@ const { data: matchHistory } = usePlayerMatchHistory(playerId)
       <div class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-2">
           <UIcon :name="ICONS.commander" class="size-5 text-primary" />
-          <h2 class="text-lg font-bold">Commander Decks</h2>
+          <h2 class="text-lg font-bold">{{ t('player.decksSection.heading') }}</h2>
         </div>
         <UButton
           size="sm"
@@ -285,7 +288,7 @@ const { data: matchHistory } = usePlayerMatchHistory(playerId)
           :icon="ICONS.add"
           @click="() => { createModalOpen = true }"
         >
-          Aggiungi Deck
+          {{ t('player.decksSection.addDeck') }}
         </UButton>
       </div>
 
@@ -308,13 +311,13 @@ const { data: matchHistory } = usePlayerMatchHistory(playerId)
 
       <div v-else class="text-center py-8 text-muted">
         <UIcon :name="ICONS.noCommander" class="text-4xl mb-2 opacity-30" />
-        <p>Nessun commander deck registrato</p>
+        <p>{{ t('player.decksSection.empty') }}</p>
       </div>
     </div>
 
     <div v-else class="text-center py-12 text-muted">
       <UIcon :name="ICONS.removePlayer" class="text-4xl mb-2 opacity-30" />
-      <p>Giocatore non trovato</p>
+      <p>{{ t('player.notFound') }}</p>
     </div>
 
     <DeckEditModal
@@ -332,13 +335,10 @@ const { data: matchHistory } = usePlayerMatchHistory(playerId)
 
     <ConfirmModal
       v-model:open="deleteModalOpen"
-      title="Elimina Deck"
-      description="Conferma eliminazione"
+      :title="t('deck.confirmDeleteTitle')"
+      :description="t('deck.confirmDeleteDescription')"
       :subject="deckToDelete?.commander_1_name ?? ''"
-      question="Sei sicuro di voler eliminare il deck"
-      warning="Questa azione non può essere annullata."
-      confirm-label="Elimina"
-      cancel-label="Annulla"
+      :question="t('deck.confirmDeleteQuestion')"
       :confirm-icon="ICONS.delete"
       :loading="deleteLoading"
       @confirm="confirmDeleteDeck"

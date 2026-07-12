@@ -2,8 +2,8 @@ import levenshtein from 'fast-levenshtein'
 import type { Player } from './types'
 
 /**
- * Calcola la similarità tra due stringhe usando Levenshtein.
- * Ritorna un valore tra 0 (diversi) e 1 (identici).
+ * Calculates the similarity between two strings using Levenshtein distance.
+ * Returns a value between 0 (different) and 1 (identical).
  */
 export function calculateNameSimilarity(str1: string, str2: string): number {
   const s1 = str1.trim().toLowerCase()
@@ -24,9 +24,9 @@ interface SimilarPlayer {
 }
 
 /**
- * Trova giocatori simili dati nome e cognome.
- * Usa una soglia combinata ponderata (cognome pesa di più).
- * Ritorna max 3 risultati ordinati per similarità.
+ * Finds similar players given a first and last name.
+ * Uses a weighted combined threshold (surname weighs more).
+ * Returns at most 3 results ordered by similarity.
  */
 export function findSimilarPlayers(
   players: Player[],
@@ -43,7 +43,7 @@ export function findSimilarPlayers(
     .map((player) => {
       const nameSim = calculateNameSimilarity(player.player_name, trimmedFirst)
       const surnameSim = calculateNameSimilarity(player.player_surname, trimmedLast)
-      // Media ponderata: cognome pesa di più (0.6) perché è più discriminante
+      // Weighted average: surname weighs more (0.6) because it's more discriminating
       const combinedSim = nameSim * 0.4 + surnameSim * 0.6
 
       return {
@@ -59,8 +59,8 @@ export function findSimilarPlayers(
 }
 
 /**
- * Verifica se un nome/cognome è abbastanza distinto dai giocatori esistenti.
- * Utile per abilitare/disabilitare il bottone di creazione.
+ * Checks whether a first/last name is distinct enough from existing players.
+ * Useful for enabling/disabling the creation button.
  */
 export function isPlayerNameDistinct(
   players: Player[],

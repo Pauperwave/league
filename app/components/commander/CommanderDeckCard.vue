@@ -1,8 +1,11 @@
  <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import type { CommanderDeck, CommanderAggregate } from '#shared/utils/types'
 import { slugify } from '~/utils/slug'
 import { getArtCrop, useCommanderCards } from '~/composables/commanders/useCommanderCards'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   deck: CommanderDeck
@@ -26,7 +29,7 @@ const isAggregate = computed(() => !props.playerSlug)
 const lenderName = computed(() => {
   if (!props.deck.is_borrowed || !props.deck.lender_id) return null
   const lender = playersStore.players.find(p => p.player_id === props.deck.lender_id)
-  return lender ? `${lender.player_name} ${lender.player_surname}` : null
+  return lender ? t('deck.lentBy', { name: `${lender.player_name} ${lender.player_surname}` }) : null
 })
 
 const hasCompanion = computed(() => !!props.deck.companion_name)
@@ -53,8 +56,8 @@ const art2 = computed(() => getArtCrop(commander2Data.value))
 
 const eventCountLabel = computed(() =>
   isUsedInEvents.value
-    ? `Usato in ${props.eventCount} evento${props.eventCount! > 1 ? 'i' : ''}`
-    : 'Non usato in eventi'
+    ? t('deck.usedInEvents', props.eventCount!, { named: { count: props.eventCount } })
+    : t('deck.notUsedInEvents')
 )
 
 onMounted(fetchAllData)
@@ -139,13 +142,13 @@ onMounted(fetchAllData)
           </div>
           <div v-if="lenderName && !isAggregate" class="text-sm text-warning flex items-center gap-1.5">
             <UIcon :name="ICONS.assist" class="size-3.5" />
-            <span>di {{ lenderName }}</span>
+            <span>{{ lenderName }}</span>
           </div>
         </div>
 
         <div class="flex items-center gap-2">
           <UButton size="xs" variant="soft" color="primary" :icon="ICONS.statsLink" :to="statsPageUrl">
-            {{ isAggregate ? 'Dettagli' : 'Statistiche' }}
+            {{ isAggregate ? t('deck.viewDetails') : t('deck.viewStats') }}
           </UButton>
           <UButton size="xs" variant="ghost" :icon="ICONS.externalLink" :to="scryfallSearchUrl" target="_blank">
             Scryfall

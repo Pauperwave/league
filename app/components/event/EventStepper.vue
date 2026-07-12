@@ -1,8 +1,11 @@
 <!-- app/components/Events/EventStepper.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import type { StepperItem } from '@nuxt/ui'
 import type { EventStatus } from '#shared/utils/types'
+
+const { t } = useI18n()
 
 const props = defineProps<{
   /** Current round number (1-based) */
@@ -27,8 +30,8 @@ defineSlots<{
 const items = computed<StepperItem[]>(() => {
   const steps: StepperItem[] = [
     {
-      title: 'Registrazione',
-      description: 'Iscrizioni aperte',
+      title: t('event.stepper.registrationTitle'),
+      description: t('event.stepper.registrationDescription'),
       icon: ICONS.registration,
       value: 'registration',
     },
@@ -36,20 +39,20 @@ const items = computed<StepperItem[]>(() => {
 
   for (let i = 1; i <= props.totalRounds; i++) {
     steps.push({
-      title: `Round ${i}`,
+      title: t('event.stepper.roundTitle', { n: i }),
       description: i < props.currentRound
-        ? 'Completato'
+        ? t('event.stepper.roundCompleted')
         : i === props.currentRound
-          ? 'In corso'
-          : 'In attesa',
+          ? t('event.stepper.roundInProgress')
+          : t('event.stepper.roundPending'),
       icon: ICONS.battle,
       value: `round-${i}`,
     })
   }
 
   steps.push({
-    title: 'Terminato',
-    description: 'Evento concluso',
+    title: t('event.status.ended'),
+    description: t('event.stepper.endedDescription'),
     icon: ICONS.flag,
     value: 'ended',
   })

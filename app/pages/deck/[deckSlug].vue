@@ -1,5 +1,6 @@
 <!-- app\pages\deck\[deckSlug].vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import { slugify } from '~/utils/slug'
 import { getArtCrop, useCommanderCards } from '~/composables/commanders/useCommanderCards'
@@ -8,6 +9,8 @@ import type { CommanderDeck } from '#shared/utils/types'
 
 const route = useRoute()
 const deckSlug = route.params.deckSlug as string
+
+const { t } = useI18n()
 
 const commanderDecksStore = useCommanderDeckStore()
 const playersStore = usePlayerStore()
@@ -64,7 +67,7 @@ const commanderDisplayName = computed(() => {
   if (firstDeck.value?.commander_2_name) {
     return `${firstDeck.value.commander_1_name} // ${firstDeck.value.commander_2_name}`
   }
-  return firstDeck.value?.commander_1_name ?? 'Deck sconosciuto'
+  return firstDeck.value?.commander_1_name ?? t('deck.fallbackName')
 })
 
 const scryfallSearchUrl = computed(() => {
@@ -73,8 +76,8 @@ const scryfallSearchUrl = computed(() => {
 })
 
 const breadcrumbItems = computed(() => [
-  { label: 'Home', to: '/' },
-  { label: 'Deck', to: '/decks' },
+  { label: t('common.home'), to: '/' },
+  { label: t('deck.breadcrumb'), to: '/decks' },
   { label: commanderDisplayName.value }
 ])
 
@@ -125,7 +128,7 @@ watch(() => firstDeck.value?.commander_1_name, () => {
           <img
             v-if="art1"
             :src="art1"
-            :alt="`Card art for ${firstDeck.commander_1_name}`"
+            :alt="t('deck.artAlt', { name: firstDeck.commander_1_name })"
             class="w-full h-full object-cover object-top"
           >
           <div v-else-if="scryfallLoading" class="flex items-center justify-center h-full">
@@ -139,7 +142,7 @@ watch(() => firstDeck.value?.commander_1_name, () => {
           <img
             v-if="art2"
             :src="art2"
-            :alt="`Card art for ${firstDeck.commander_2_name}`"
+            :alt="t('deck.artAlt', { name: firstDeck.commander_2_name })"
             class="w-full h-full object-cover object-top"
           >
           <div v-else-if="scryfallLoading" class="flex items-center justify-center h-full">
@@ -157,7 +160,7 @@ watch(() => firstDeck.value?.commander_1_name, () => {
           <UIcon :name="ICONS.players" class="size-5 text-primary shrink-0" />
           <div>
             <p class="text-xl font-bold leading-none">{{ commanderStats?.player_count ?? 0 }}</p>
-            <p class="text-xs text-muted">Giocatori</p>
+            <p class="text-xs text-muted">{{ t('deck.statsPlayers') }}</p>
           </div>
         </div>
 
@@ -165,7 +168,7 @@ watch(() => firstDeck.value?.commander_1_name, () => {
           <UIcon :name="ICONS.battle" class="size-5 text-primary shrink-0" />
           <div>
             <p class="text-xl font-bold leading-none">{{ commanderStats?.match_count ?? 0 }}</p>
-            <p class="text-xs text-muted">Match</p>
+            <p class="text-xs text-muted">{{ t('player.stats.matches') }}</p>
           </div>
         </div>
 
@@ -173,7 +176,7 @@ watch(() => firstDeck.value?.commander_1_name, () => {
           <UIcon :name="ICONS.standings" class="size-5 text-warning shrink-0" />
           <div>
             <p class="text-xl font-bold leading-none">{{ commanderStats?.win_count ?? 0 }}</p>
-            <p class="text-xs text-muted">Vittorie</p>
+            <p class="text-xs text-muted">{{ t('player.stats.wins') }}</p>
           </div>
         </div>
 
@@ -181,7 +184,7 @@ watch(() => firstDeck.value?.commander_1_name, () => {
           <UIcon :name="ICONS.kills" class="size-5 text-error shrink-0" />
           <div>
             <p class="text-xl font-bold leading-none">{{ commanderStats?.total_kills ?? 0 }}</p>
-            <p class="text-xs text-muted">Uccisioni</p>
+            <p class="text-xs text-muted">{{ t('player.stats.kills') }}</p>
           </div>
         </div>
 
@@ -189,7 +192,7 @@ watch(() => firstDeck.value?.commander_1_name, () => {
           <UIcon :name="ICONS.vote" class="size-5 text-success shrink-0" />
           <div>
             <p class="text-xl font-bold leading-none">{{ commanderStats?.average_score ?? 0 }}</p>
-            <p class="text-xs text-muted">Media</p>
+            <p class="text-xs text-muted">{{ t('player.stats.average') }}</p>
           </div>
         </div>
       </div>
@@ -198,7 +201,7 @@ watch(() => firstDeck.value?.commander_1_name, () => {
       <div class="space-y-3">
         <h2 class="text-lg font-bold flex items-center gap-2">
           <UIcon :name="ICONS.players" class="size-5 text-primary" />
-          Giocatori con questo deck
+          {{ t('deck.playersUsingHeading') }}
         </h2>
 
         <div class="flex flex-wrap gap-2">
@@ -211,9 +214,9 @@ watch(() => firstDeck.value?.commander_1_name, () => {
             size="sm"
             :icon="ICONS.player"
           >
-            {{ player ? `${player.player_name} ${player.player_surname}` : 'Giocatore sconosciuto' }}
+            {{ player ? `${player.player_name} ${player.player_surname}` : t('deck.unknownPlayer') }}
             <span v-if="deck.is_borrowed" class="ml-1 text-warning">
-              (Prestato)
+              {{ t('deck.borrowedBadge') }}
             </span>
           </UButton>
         </div>
@@ -228,14 +231,14 @@ watch(() => firstDeck.value?.commander_1_name, () => {
           color="neutral"
           variant="outline"
         >
-          Vedi su Scryfall
+          {{ t('deck.viewOnScryfall') }}
         </UButton>
       </div>
     </div>
 
     <div v-else class="text-center py-12 text-muted">
       <UIcon :name="ICONS.noCommander" class="text-4xl mb-2 opacity-30" />
-      <p>Deck non trovato</p>
+      <p>{{ t('deck.notFound') }}</p>
     </div>
   </div>
 </template>

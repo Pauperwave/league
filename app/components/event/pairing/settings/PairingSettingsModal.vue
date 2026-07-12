@@ -1,8 +1,11 @@
 <!-- app\components\events\Pairings\Settings\PairingSettingsModal.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import type { PairingWeights } from '#shared/utils/types'
 import type { PairingPresetKind } from './PairingPresetButtons.vue'
 import ForbiddenPairsSection from './ForbiddenPairsSection.vue'
+
+const { t } = useI18n()
 
 interface WeightItem {
   key: keyof PairingWeights
@@ -39,8 +42,8 @@ const emit = defineEmits<{
 <template>
   <UModal
     v-model:open="open"
-    title="Pesi e Vincoli Pairing"
-    description="Modifica i pesi dell'algoritmo e le coppie vietate"
+    :title="t('event.pairingSettings.title')"
+    :description="t('event.pairingSettings.description')"
     :ui="{ content: 'sm:max-w-3xl' }"
   >
     <template #body>

@@ -1,8 +1,8 @@
 import type { Player } from '#shared/utils/types'
 
 /**
- * Composable per fetchare i giocatori.
- * Usa lo store come single source of truth.
+ * Composable for fetching players.
+ * Uses the store as the single source of truth.
  */
 export function usePlayers() {
   const store = usePlayerStore()
@@ -24,7 +24,7 @@ export function usePlayers() {
 }
 
 /**
- * Trasforma una lista di giocatori in opzioni per USelectMenu
+ * Transforms a list of players into options for USelectMenu
  */
 export function usePlayerOptions(players: MaybeRefOrGetter<Player[]>) {
   return computed(() => {

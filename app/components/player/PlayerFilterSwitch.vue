@@ -1,9 +1,13 @@
 <!-- app/components/PlayerFilterSwitch.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
+
 const playersStore = usePlayerStore()
 const decksStore = useCommanderDeckStore()
 
 const showOnlyWithDecks = defineModel<boolean>('modelValue', { required: true })
+
+const { t } = useI18n()
 
 const playersWithDecksCount = computed(() =>
   playersStore.players.filter(p => decksStore.getDecksByPlayerId(p.player_id).length > 0).length,
@@ -11,8 +15,8 @@ const playersWithDecksCount = computed(() =>
 
 const label = computed(() =>
   showOnlyWithDecks.value
-    ? `Solo con mazzi (${playersWithDecksCount.value})`
-    : `Tutti i giocatori (${playersStore.players.length})`,
+    ? t('player.filterSwitch.onlyWithDecks', { count: playersWithDecksCount.value })
+    : t('player.filterSwitch.allPlayers', { count: playersStore.players.length }),
 )
 </script>
 

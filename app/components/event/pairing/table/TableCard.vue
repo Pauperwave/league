@@ -1,8 +1,11 @@
 <!-- app\components\events\Pairings\Table\TableCard.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import type { Seat, TournamentTable } from '#shared/utils/types'
 import { VueDraggable } from 'vue-draggable-plus'
+
+const { t } = useI18n()
 
 interface TableStatus {
   color: 'success' | 'warning' | 'error'
@@ -45,7 +48,7 @@ const visibleSeats = computed(() => {
       <div class="flex items-center justify-between gap-2">
         <div class="flex items-center gap-2">
           <UIcon :name="ICONS.tableView" class="size-4 text-primary" />
-          <span class="font-semibold text-base">Tavolo {{ table.tableNumber }}</span>
+          <span class="font-semibold text-base">{{ t('event.pairing.tableHeading', { n: table.tableNumber }) }}</span>
         </div>
         <div class="flex items-center gap-1.5">
           <UButton
@@ -55,7 +58,7 @@ const visibleSeats = computed(() => {
             :icon="ICONS.show"
             @click="emit('openBreakdown', tableIndex)"
           >
-            Punteggio: {{ tableScore.toFixed(2) }}
+            {{ t('event.pairing.scoreLabel', { score: tableScore.toFixed(2) }) }}
           </UButton>
           <UBadge :color="tableStatus.color" variant="soft" size="sm" class="text-base font-semibold leading-none">
             {{ tableStatus.label }}

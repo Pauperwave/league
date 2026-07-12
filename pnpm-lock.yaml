@@ -86,6 +86,9 @@ importers:
       vue-draggable-plus:
         specifier: ^0.6.1
         version: 0.6.1(@types/sortablejs@1.15.9)
+      vue-i18n:
+        specifier: ^11.4.0
+        version: 11.4.6(vue@3.5.39(typescript@5.9.3))
     devDependencies:
       '@nuxt/eslint':
         specifier: ^1.15.2

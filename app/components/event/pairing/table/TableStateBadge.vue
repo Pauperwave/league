@@ -1,7 +1,10 @@
 <!-- app\components\events\Pairings\TableStateBadge.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 defineProps<{ isComplete: boolean }>()
+
+const { t } = useI18n()
 </script>
 
 <template>
@@ -10,6 +13,6 @@ defineProps<{ isComplete: boolean }>()
     :leading-icon="isComplete ? ICONS.confirm : ICONS.clock"
     variant="subtle"
   >
-    {{ isComplete ? 'Completato' : 'In corso' }}
+    {{ isComplete ? t('event.pairing.complete') : t('event.pairing.inProgress') }}
   </UBadge>
 </template>

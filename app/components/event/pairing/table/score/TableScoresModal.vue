@@ -1,10 +1,13 @@
 <!-- app\components\events\Pairings\TableScoresModal.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import { h, resolveComponent } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import type { CellContext } from '@tanstack/vue-table'
 import type { Pairing, TournamentPlayer } from '#shared/utils/types'
+
+const { t } = useI18n()
 
 const {
   pairing = null,
@@ -134,14 +137,14 @@ const columns: TableColumn<TableRow>[] = [
     header: () =>
       h('div', { class: 'flex items-center gap-2' }, [
         h(UIcon, { name: ICONS.player, class: 'size-5' }),
-        h('span', 'Giocatore'),
+        h('span', t('league.ranking.player')),
       ]),
   },
-  iconColumn('placementPoints', ICONS.standings, 'Posizionamento'),
-  iconColumn('killPoints', ICONS.kills, 'Uccisioni'),
-  iconColumn('deckPoints', ICONS.generate, 'Mazzo'),
-  iconColumn('playPoints', ICONS.gameplay, 'Giocata'),
-  iconColumn('total', ICONS.total, 'Totale', 'text-center px-3 py-1.5 font-bold'),
+  iconColumn('placementPoints', ICONS.standings, t('event.tableScoresModal.placementColumn')),
+  iconColumn('killPoints', ICONS.kills, t('player.stats.kills')),
+  iconColumn('deckPoints', ICONS.generate, t('event.tableScoresModal.deckColumn')),
+  iconColumn('playPoints', ICONS.gameplay, t('event.tableScoresModal.playColumn')),
+  iconColumn('total', ICONS.total, t('event.scoreBreakdown.playerTotal'), 'text-center px-3 py-1.5 font-bold'),
 ]
 </script>
 

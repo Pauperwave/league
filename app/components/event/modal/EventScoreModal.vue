@@ -1,6 +1,9 @@
 <!-- app\components\events\modals\EventScoreModal.vue -->
 <script setup lang="ts">
+import { useI18n } from 'vue-i18n'
 import type { PairingWithResults, Player } from '#shared/utils/types'
+
+const { t } = useI18n()
 
 const {
   showScoreModal,
@@ -44,8 +47,8 @@ const open = computed({
 <template>
   <UModal
     v-model:open="open"
-    title="Inserisci classifica"
-    :description="`Tavolo ${selectedTableIndex !== null ? selectedTableIndex + 1 : ''}`"
+    :title="t('event.scoreModal.title')"
+    :description="selectedTableIndex !== null ? t('event.scoreModal.tableDescription', { n: selectedTableIndex + 1 }) : ''"
     :ui="{ content: 'sm:max-w-3xl' }"
   >
     <template #body>
