@@ -42,6 +42,10 @@ export default defineNuxtConfig({
 
   compatibilityDate: '2025-01-15',
 
+  alias: {
+    '#test': '../test'
+  },
+
   // Vite configuration to suppress sourcemap warnings
   vite: {
     build: {

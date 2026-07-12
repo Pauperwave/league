@@ -1,3 +1,5 @@
+import { vi } from 'vitest'
+
 /**
  * Stubs per componenti Nuxt UI e globali.
  * Da passare come `global.stubs` in mountSuspended/mount.
