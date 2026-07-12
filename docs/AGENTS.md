@@ -70,7 +70,7 @@ const {
 
 - Use **Setup API** (`defineStore('id', () => { ... })`) exclusively
 - Document state, getters, and actions with JSDoc comments
-- Return an explicit public API from `defineStore`
+- Return an explicit public API from `defineStore`, even for members no current consumer happens to use yet — stores are a complete data-layer abstraction, not a consumer-driven one. `fallow`'s `unused-store-members` check is disabled repo-wide in `.fallowrc.json` for exactly this reason (it would otherwise flag most of every store's `error`/`loading`/`clearError` members as dead).
 - **Session stores** (ephemeral UI state) must implement `reset()` to clear state between rounds
 
 ### State Management Categories

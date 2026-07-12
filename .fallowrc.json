@@ -19,6 +19,10 @@
     "@iconify-json/simple-icons",
     "@nuxt/hints",
     "@vue/test-utils",
-    "@vueuse/core"
-  ]
+    "@vueuse/core",
+    "playwright-core"
+  ],
+  "rules": {
+    "unused-store-members": "off"
+  }
 }

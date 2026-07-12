@@ -26,7 +26,7 @@
 
 ## Add Playwright + Playwright MCP
 - Add `@playwright/test` and a `playwright.config.ts` for E2E tests (`docs/AGENTS.md` already calls for Playwright + `@nuxt/test-utils` E2E coverage on critical flows: event creation, round progression, score submission)
-- Currently only `playwright-core` is installed (transitive), with no config or tests
+- `playwright-core` is a direct devDependency but currently unused (no config or tests) — exempted in `.fallowrc.json`'s `ignoreDependencies` for exactly this reason; remove the exemption once real E2E tests land
 - Set up the Playwright MCP server for browser-driven E2E authoring/debugging
 
 ## Stepper for Event Phases
