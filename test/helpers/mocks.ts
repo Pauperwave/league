@@ -30,6 +30,7 @@ export const defaultStubs = {
  * Mock base per il client Supabase.
  * Ogni test può estendere con vi.fn() custom.
  */
+// fallow-ignore-next-line unused-export -- scaffolding for the composables Supabase tests tracked in docs/PROGRESS.md ("Prossimi passi" #6); not called yet
 export function createSupabaseMock() {
   return {
     from: vi.fn().mockReturnThis(),

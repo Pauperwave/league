@@ -1,3 +1,4 @@
+// fallow-ignore-file unused-file -- test scaffolding for the store unit tests tracked in docs/PROGRESS.md ("Prossimi passi" #6); not wired to any test yet
 import { createPinia, setActivePinia } from 'pinia'
 import { beforeEach } from 'vitest'
 
