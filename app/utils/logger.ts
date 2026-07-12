@@ -2,23 +2,19 @@
  * Utility di logging per debugging
  */
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function logInfo(component: string, message: string, ...args: any[]) {
+export function logInfo(component: string, message: string, ...args: unknown[]) {
   console.log(`[${component}] ${message}`, ...args)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function logError(component: string, message: string, error?: any) {
+export function logError(component: string, message: string, error?: unknown) {
   console.error(`[${component}] ${message}`, error)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function logWarn(component: string, message: string, ...args: any[]) {
+export function logWarn(component: string, message: string, ...args: unknown[]) {
   console.warn(`[${component}] ${message}`, ...args)
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function logDebug(component: string, message: string, ...args: any[]) {
+export function logDebug(component: string, message: string, ...args: unknown[]) {
   if (import.meta.dev) {
     console.log(`[${component}] ${message}`, ...args)
   }
