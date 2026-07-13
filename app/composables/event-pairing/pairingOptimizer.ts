@@ -74,6 +74,18 @@ function pairKey(a: number, b: number): string {
   return a < b ? `${a}-${b}` : `${b}-${a}`
 }
 
+/** Invoke fn for every unique unordered pair of seats in a table. */
+function forEachPair(seats: number[], fn: (left: number, right: number) => void): void {
+  for (let i = 0; i < seats.length; i++) {
+    for (let j = i + 1; j < seats.length; j++) {
+      const left = seats[i]
+      const right = seats[j]
+      if (left === undefined || right === undefined) continue
+      fn(left, right)
+    }
+  }
+}
+
 function buildForbiddenSet(pairs: PairingForbiddenPair[]): Set<string> {
   const set = new Set<string>()
   for (const pair of pairs) {
@@ -87,44 +99,30 @@ function buildRematchMap(history: PairingHistoryEntry[]): Map<string, { count: n
   const map = new Map<string, { count: number, lastRound: number }>()
 
   for (const entry of history) {
-    const players = entry.players
-    for (let i = 0; i < players.length; i++) {
-      for (let j = i + 1; j < players.length; j++) {
-        const left = players[i]
-        const right = players[j]
-        if (left === undefined || right === undefined) continue
-
-        const key = pairKey(left, right)
-        const current = map.get(key)
-        if (!current) {
-          map.set(key, { count: 1, lastRound: entry.round })
-          continue
-        }
-
-        map.set(key, {
-          count: current.count + 1,
-          lastRound: Math.max(current.lastRound, entry.round),
-        })
+    forEachPair(entry.players, (left, right) => {
+      const key = pairKey(left, right)
+      const current = map.get(key)
+      if (!current) {
+        map.set(key, { count: 1, lastRound: entry.round })
+        return
       }
-    }
+
+      map.set(key, {
+        count: current.count + 1,
+        lastRound: Math.max(current.lastRound, entry.round),
+      })
+    })
   }
 
   return map
 }
 
 function hasForbiddenConflict(table: number[], forbiddenSet: Set<string>): boolean {
-  for (let i = 0; i < table.length; i++) {
-    for (let j = i + 1; j < table.length; j++) {
-      const left = table[i]
-      const right = table[j]
-      if (left === undefined || right === undefined) continue
-
-      if (forbiddenSet.has(pairKey(left, right))) {
-        return true
-      }
-    }
-  }
-  return false
+  let hasConflict = false
+  forEachPair(table, (left, right) => {
+    if (forbiddenSet.has(pairKey(left, right))) hasConflict = true
+  })
+  return hasConflict
 }
 
 // ── Scoring primitives (per-table, per-player) ────────────────────────────────
@@ -286,36 +284,30 @@ function calculatePairwiseScore(
   let novelty = 0
   let rematchPenalty = 0
 
-  for (let i = 0; i < table.length; i++) {
-    for (let j = i + 1; j < table.length; j++) {
-      const left = table[i]
-      const right = table[j]
-      if (left === undefined || right === undefined) continue
+  forEachPair(table, (left, right) => {
+    const key = pairKey(left, right)
+    const rematch = rematchMap.get(key)
 
-      const key = pairKey(left, right)
-      const rematch = rematchMap.get(key)
-
-      if (!rematch) {
-        novelty += 1
-        const leftScore = perPlayer.get(left)
-        const rightScore = perPlayer.get(right)
-        if (leftScore) leftScore.novelty += weights.novelty / 2
-        if (rightScore) rightScore.novelty += weights.novelty / 2
-        continue
-      }
-
-      const roundsAgo = Math.max(1, currentRound - rematch.lastRound)
-      const recencyFactor = 1 / roundsAgo
-      const pairPenalty = rematch.count + recencyFactor
-      rematchPenalty += pairPenalty
-
-      const penaltyValue = -pairPenalty * weights.rematch / 2
+    if (!rematch) {
+      novelty += 1
       const leftScore = perPlayer.get(left)
       const rightScore = perPlayer.get(right)
-      if (leftScore) leftScore.rematchPenalty += penaltyValue
-      if (rightScore) rightScore.rematchPenalty += penaltyValue
+      if (leftScore) leftScore.novelty += weights.novelty / 2
+      if (rightScore) rightScore.novelty += weights.novelty / 2
+      return
     }
-  }
+
+    const roundsAgo = Math.max(1, currentRound - rematch.lastRound)
+    const recencyFactor = 1 / roundsAgo
+    const pairPenalty = rematch.count + recencyFactor
+    rematchPenalty += pairPenalty
+
+    const penaltyValue = -pairPenalty * weights.rematch / 2
+    const leftScore = perPlayer.get(left)
+    const rightScore = perPlayer.get(right)
+    if (leftScore) leftScore.rematchPenalty += penaltyValue
+    if (rightScore) rightScore.rematchPenalty += penaltyValue
+  })
 
   return { novelty, rematchPenalty }
 }
