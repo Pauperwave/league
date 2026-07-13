@@ -63,43 +63,18 @@ const team2Players = computed(() => {
       </template>
 
       <div class="space-y-6">
-        <!-- Team 1 -->
-        <div class="space-y-2">
-          <h4 class="font-medium text-sm text-muted-foreground">{{ t('event.tableScoreModal.team1') }}</h4>
-          <div class="flex items-center gap-2 p-3 bg-muted/30 rounded">
-            <div class="flex-1 space-y-1">
-              <div v-for="playerId in team1Players.filter((id): id is number => id !== undefined)" :key="playerId" class="text-sm">
-                {{ getPlayerName(playerId) }}
-              </div>
-            </div>
-            <UInput
-              v-model="team1Score"
-              type="number"
-              min="0"
-              class="w-20"
-              placeholder="0"
-            />
-          </div>
-        </div>
-
-        <!-- Team 2 -->
-        <div class="space-y-2">
-          <h4 class="font-medium text-sm text-muted-foreground">{{ t('event.tableScoreModal.team2') }}</h4>
-          <div class="flex items-center gap-2 p-3 bg-muted/30 rounded">
-            <div class="flex-1 space-y-1">
-              <div v-for="playerId in team2Players.filter((id): id is number => id !== undefined)" :key="playerId" class="text-sm">
-                {{ getPlayerName(playerId) }}
-              </div>
-            </div>
-            <UInput
-              v-model="team2Score"
-              type="number"
-              min="0"
-              class="w-20"
-              placeholder="0"
-            />
-          </div>
-        </div>
+        <TableScoreTeamRow
+          v-model="team1Score"
+          :label="t('event.tableScoreModal.team1')"
+          :players="team1Players.filter((id): id is number => id !== undefined)"
+          :get-player-name="getPlayerName"
+        />
+        <TableScoreTeamRow
+          v-model="team2Score"
+          :label="t('event.tableScoreModal.team2')"
+          :players="team2Players.filter((id): id is number => id !== undefined)"
+          :get-player-name="getPlayerName"
+        />
       </div>
 
       <template #footer>

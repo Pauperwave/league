@@ -14,16 +14,10 @@ const breadcrumbItems = useBreadcrumb(() => [
 <template>
   <div class="space-y-4">
     <UBreadcrumb :items="breadcrumbItems" />
-    <div class="flex items-center justify-between">
-      <UButton color="neutral" :icon="ICONS.back" to="/">
-        {{ t('common.home') }}
-      </UButton>
-      <h1 class="text-2xl font-bold">
-        {{ t('player.pageTitle') }}
-      </h1>
+    <PageHeaderRow :title="t('player.pageTitle')">
       <UButton :icon="ICONS.addPlayer" color="primary" @click="$emit('createPlayer')">
         {{ t('player.newPlayer') }}
       </UButton>
-    </div>
+    </PageHeaderRow>
   </div>
 </template>

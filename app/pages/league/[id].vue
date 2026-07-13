@@ -1,5 +1,6 @@
 <!-- app\pages\league\[leagueId].vue -->
 <script setup lang="ts">
+// fallow-ignore-file code-duplication -- LeagueFormModal/ConfirmModal invocation boilerplate shared with leagues.vue
 import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import type { Event } from '#shared/utils/types'

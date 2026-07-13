@@ -39,7 +39,7 @@ export function useLeagues() {
       name: data.name,
       starts_at: data.startsAt ?? undefined,
       ends_at: data.endsAt ?? undefined,
-      status: 'Programmata',
+      status: 'scheduled',
       ruleset_id: data.rulesetId ?? undefined
     })
 

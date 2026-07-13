@@ -41,22 +41,30 @@ function handleEditDeck(deck: CommanderDeck) {
   editModalOpen.value = true
 }
 
+function notifyDeckSuccess(titleKey: string, descriptionKey: string) {
+  useToast().add({
+    title: t(titleKey),
+    description: t(descriptionKey),
+    color: 'success',
+    icon: ICONS.confirm
+  })
+}
+
+function notifyDeckError(result: { error?: string }, fallbackKey: string) {
+  useToast().add({
+    title: t('deck.toast.errorTitle'),
+    description: result.error || t(fallbackKey),
+    color: 'error',
+    icon: ICONS.close
+  })
+}
+
 async function handleUpdateDeck({ id, updates }: { id: number; updates: Partial<CommanderDeck> }) {
   const result = await deckStore.updateDeck(id, updates)
   if (result.success) {
-    useToast().add({
-      title: t('deck.toast.updatedTitle'),
-      description: t('deck.toast.updatedDescription'),
-      color: 'success',
-      icon: ICONS.confirm
-    })
+    notifyDeckSuccess('deck.toast.updatedTitle', 'deck.toast.updatedDescription')
   } else {
-    useToast().add({
-      title: t('deck.toast.errorTitle'),
-      description: result.error || t('deck.toast.updateErrorFallback'),
-      color: 'error',
-      icon: ICONS.close
-    })
+    notifyDeckError(result, 'deck.toast.updateErrorFallback')
   }
 }
 
@@ -70,21 +78,11 @@ async function handleCreateDeck(deckData: {
 }) {
   const result = await deckStore.createDeck(deckData)
   if (result.success) {
-    useToast().add({
-      title: t('deck.toast.createdTitle'),
-      description: t('deck.toast.createdDescription'),
-      color: 'success',
-      icon: ICONS.confirm
-    })
+    notifyDeckSuccess('deck.toast.createdTitle', 'deck.toast.createdDescription')
     // Refresh the composable data
     refreshNuxtData(`commander-decks-usage-by-player-${playerId.value}`)
   } else {
-    useToast().add({
-      title: t('deck.toast.errorTitle'),
-      description: result.error || t('deck.toast.createErrorFallback'),
-      color: 'error',
-      icon: ICONS.close
-    })
+    notifyDeckError(result, 'deck.toast.createErrorFallback')
   }
 }
 
@@ -105,20 +103,10 @@ async function confirmDeleteDeck() {
   deckToDelete.value = null
 
   if (result.success) {
-    useToast().add({
-      title: t('deck.toast.deletedTitle'),
-      description: t('deck.toast.deletedDescription'),
-      color: 'success',
-      icon: ICONS.confirm
-    })
+    notifyDeckSuccess('deck.toast.deletedTitle', 'deck.toast.deletedDescription')
     refreshNuxtData(`commander-decks-usage-by-player-${playerId.value}`)
   } else {
-    useToast().add({
-      title: t('deck.toast.errorTitle'),
-      description: result.error || t('deck.toast.deleteErrorFallback'),
-      color: 'error',
-      icon: ICONS.close
-    })
+    notifyDeckError(result, 'deck.toast.deleteErrorFallback')
   }
 }
 

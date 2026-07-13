@@ -1,5 +1,7 @@
 <!-- app\components\Tables\LeagueTable.vue -->
 <script setup lang="ts">
+// fallow-ignore-file code-duplication -- id/name column boilerplate shared with EventTable.vue; kept inline rather than
+// extracted into useTableUtils.ts so each table's column list stays fully readable in one place
 import { ICONS } from '~/utils/icons'
 import { h, resolveComponent } from 'vue'
 import { useI18n } from 'vue-i18n'
@@ -27,9 +29,9 @@ const UButton = resolveComponent('UButton') as Component
 const RowActionButtons = resolveComponent('RowActionButtons') as Component
 
 const statusConfig: Record<string, { color: StatusColor, icon: string, labelKey: string }> = {
-  Programmata: { color: 'info', icon: ICONS.clock, labelKey: 'league.status.scheduled' },
-  Attiva: { color: 'success', icon: ICONS.success, labelKey: 'league.status.active' },
-  Terminata: { color: 'neutral', icon: ICONS.clear, labelKey: 'league.status.ended' }
+  scheduled: { color: 'info', icon: ICONS.clock, labelKey: 'league.status.scheduled' },
+  active: { color: 'success', icon: ICONS.success, labelKey: 'league.status.active' },
+  ended: { color: 'neutral', icon: ICONS.clear, labelKey: 'league.status.ended' }
 }
 
 function getStatusConfig(status: string): { color: StatusColor, icon: string, labelKey: string | null } {
@@ -41,9 +43,9 @@ const tableMeta = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     tr: (row: any) => {
       const status = row.original.status
-      if (status === 'Attiva') return 'bg-success/10'
-      if (status === 'Programmata') return 'bg-info/10'
-      if (status === 'Terminata') return 'bg-neutral/10'
+      if (status === 'active') return 'bg-success/10'
+      if (status === 'scheduled') return 'bg-info/10'
+      if (status === 'ended') return 'bg-neutral/10'
       return ''
     }
   }

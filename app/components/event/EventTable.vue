@@ -1,5 +1,7 @@
 <!-- app\components\Tables\EventTable.vue -->
 <script setup lang="ts">
+// fallow-ignore-file code-duplication -- id/name column boilerplate shared with LeagueTable.vue; kept inline rather than
+// extracted into useTableUtils.ts so each table's column list stays fully readable in one place
 import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import { h, resolveComponent } from 'vue'

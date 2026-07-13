@@ -1,6 +1,5 @@
 <!-- app/components/ui/layout/ListPageShell.vue -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 
 interface BreadcrumbItem {
@@ -23,8 +22,6 @@ const { breadcrumbItems, title, addLabel, error = null, errorMessage = '', loadi
 const emit = defineEmits<{
   add: []
 }>()
-
-const { t } = useI18n()
 </script>
 
 <template>
@@ -33,16 +30,12 @@ const { t } = useI18n()
       <UBreadcrumb :items="breadcrumbItems" />
     </div>
 
-    <div class="flex items-center justify-between p-6 pt-4">
-      <UButton color="neutral" :icon="ICONS.back" to="/">
-        {{ t('common.home') }}
-      </UButton>
-      <h1 class="text-2xl font-bold">
-        {{ title }}
-      </h1>
-      <UButton color="primary" :icon="ICONS.add" @click="emit('add')">
-        {{ addLabel }}
-      </UButton>
+    <div class="p-6 pt-4">
+      <PageHeaderRow :title="title">
+        <UButton color="primary" :icon="ICONS.add" @click="emit('add')">
+          {{ addLabel }}
+        </UButton>
+      </PageHeaderRow>
     </div>
 
     <UAlert v-if="error" color="error" :title="errorMessage" class="mx-6 mb-4" />

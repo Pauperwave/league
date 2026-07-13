@@ -153,14 +153,7 @@ const breadcrumbItems = useBreadcrumb(() => [
   <div class="container mx-auto p-6 space-y-6">
     <UBreadcrumb :items="breadcrumbItems" />
 
-    <!-- Header -->
-    <div class="flex items-center justify-between">
-      <UButton color="neutral" :icon="ICONS.back" to="/">
-        {{ t('common.home') }}
-      </UButton>
-      <h1 class="text-2xl font-bold">
-        {{ t('deck.breadcrumb') }}
-      </h1>
+    <PageHeaderRow :title="t('deck.breadcrumb')">
       <div class="flex items-center gap-2">
         <USelectMenu
           v-model="selectedSort"
@@ -179,7 +172,7 @@ const breadcrumbItems = useBreadcrumb(() => [
           @click="toggleDirection"
         />
       </div>
-    </div>
+    </PageHeaderRow>
 
     <!-- Loading -->
     <div v-if="commanderDecksStore.loading || commanderLoading" class="flex items-center justify-center py-12">

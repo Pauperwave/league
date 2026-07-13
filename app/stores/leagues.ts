@@ -1,3 +1,4 @@
+// fallow-ignore-file code-duplication -- intentional store CRUD boilerplate, see app/stores/CLAUDE.md
 import { useI18n } from 'vue-i18n'
 import type { League, LeagueInsert } from '#shared/utils/types'
 import { toErrorMessage } from '~/utils/error'

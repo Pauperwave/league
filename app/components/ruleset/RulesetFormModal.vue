@@ -1,5 +1,6 @@
 <!-- app\components\Modals\RulesetFormModal.vue -->
 <script setup lang="ts">
+// fallow-ignore-file code-duplication -- FormModal invocation boilerplate + props/emit shape coincidence, see app/components/ui/CLAUDE.md
 import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import type { Ruleset } from '#shared/utils/types'
@@ -108,7 +109,16 @@ const gameActionFields = [
   { key: 'play', label: t('ruleset.actions.play'), icon: ICONS.play },
 ] as const
 
-const rankFields = ['rank1', 'rank2', 'rank3', 'rank4'] as const
+const rankFields = [
+  { key: 'rank1', label: '1°', icon: ICONS.victories },
+  { key: 'rank2', label: '2°', icon: ICONS.victories },
+  { key: 'rank3', label: '3°', icon: ICONS.victories },
+  { key: 'rank4', label: '4°', icon: ICONS.victories },
+] as const
+
+function handleFieldUpdate(key: string, value: number | undefined) {
+  (form as unknown as Record<string, number | undefined>)[key] = value
+}
 
 function handleSubmit() {
   const scoreData = {
@@ -167,59 +177,21 @@ function handleSubmit() {
           />
         </UFormField>
 
-        <!-- Points for game actions -->
-        <div>
-          <label class="flex text-xs font-medium mb-2 text-muted items-center justify-center gap-1.5">
-            <UIcon :name="ICONS.battle" class="size-3" /> {{ t('ruleset.form.gameActionsHeading') }}
-          </label>
-          <div class="grid grid-cols-4 gap-3">
-            <UFormField
-              v-for="{ key, label, icon: fieldIcon } in gameActionFields"
-              :key="key"
-              :name="key"
-            >
-              <template #label>
-                <span class="flex items-center justify-center gap-1.5 text-muted">
-                  <UIcon :name="fieldIcon" class="size-3" /> {{ label }}
-                </span>
-              </template>
-              <UInputNumber
-                :id="`field-${key}`"
-                v-model="form[key]"
-                :min="0"
-                placeholder="0"
-                class="w-full"
-              />
-            </UFormField>
-          </div>
-        </div>
+        <RulesetFieldGrid
+          :heading-icon="ICONS.battle"
+          :heading-text="t('ruleset.form.gameActionsHeading')"
+          :items="gameActionFields"
+          :form="form"
+          @update-field="handleFieldUpdate"
+        />
 
-        <!-- Points for position -->
-        <div>
-          <label class="flex text-xs font-medium mb-2 text-muted items-center justify-center gap-1.5">
-            <UIcon :name="ICONS.standings" class="size-3" /> {{ t('ruleset.form.positionsHeading') }}
-          </label>
-          <div class="grid grid-cols-4 gap-2">
-            <UFormField
-              v-for="(rank, index) in rankFields"
-              :key="rank"
-              :name="rank"
-            >
-              <template #label>
-                <span class="flex items-center justify-center gap-1 text-muted">
-                  <UIcon :name="ICONS.victories" class="size-3" /> {{ index + 1 }}°
-                </span>
-              </template>
-              <UInputNumber
-                :id="`field-${rank}`"
-                v-model="form[rank]"
-                :min="0"
-                placeholder="0"
-                class="w-full"
-              />
-            </UFormField>
-          </div>
-        </div>
+        <RulesetFieldGrid
+          :heading-icon="ICONS.standings"
+          :heading-text="t('ruleset.form.positionsHeading')"
+          :items="rankFields"
+          :form="form"
+          @update-field="handleFieldUpdate"
+        />
 
         <!-- Valid events required -->
         <div class="flex flex-col items-center gap-1">

@@ -1,4 +1,5 @@
 // app\stores\events.ts
+// fallow-ignore-file code-duplication -- intentional store CRUD boilerplate, see app/stores/CLAUDE.md
 import { useI18n } from 'vue-i18n'
 import type { Event, EventInsert, StandingWithPlayer, Player, Pairing, PairingWithResults, RoundResult, RoundResultInsert, Ruleset, Standing } from '#shared/utils/types'
 import type { Database } from '#shared/utils/types/database'

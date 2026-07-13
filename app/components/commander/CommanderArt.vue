@@ -1,7 +1,6 @@
 <!-- app\components\CommanderArt.vue -->
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
 
 defineProps<{
   cardName: string
@@ -16,19 +15,11 @@ const { t } = useI18n()
 
 <template>
   <div class="relative h-full w-full overflow-hidden bg-muted">
-    <img
-      v-if="artUrl"
+    <ImageWithFallback
       :src="artUrl"
       :alt="t('deck.artAlt', { name: cardName })"
-      class="w-full h-full object-cover object-top"
-      loading="lazy"
-    >
-    <div v-else-if="loading" class="flex items-center justify-center h-full">
-      <UIcon :name="ICONS.loading" class="animate-spin text-2xl text-muted" />
-    </div>
-    <div v-else class="flex items-center justify-center h-full text-muted">
-      <UIcon :name="ICONS.imageMissing" class="text-4xl opacity-30" />
-    </div>
+      :loading="loading"
+    />
 
     <div v-if="artUrl" class="absolute inset-0 bg-linear-to-b from-transparent to-[#171717]">
       <div

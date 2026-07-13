@@ -87,6 +87,28 @@ function setPlayer(playerId: number, field: 'paid' | 'companion', value: boolean
 
 // --- Columns ---
 
+function createToggleColumn(
+  id: 'companion' | 'paid',
+  color: 'warning' | 'success',
+  headerKey: string,
+  ariaLabelKey: string,
+): TableColumn<WaitingPlayer> {
+  return {
+    id,
+    header: t(headerKey),
+    enableHiding: false,
+    meta: { class: { th: 'text-center w-20', td: 'text-center' } },
+    cell: ({ row }) =>
+      h(UCheckbox, {
+        modelValue: playerState[row.original.playerId]?.[id] ?? false,
+        color,
+        size: 'sm',
+        'aria-label': t(ariaLabelKey, { name: row.original.name }),
+        'onUpdate:modelValue': () => togglePlayer(row.original.playerId, id),
+      }),
+  }
+}
+
 const columns = computed<TableColumn<WaitingPlayer>[]>(() => [
   {
     id: 'select',
@@ -131,34 +153,8 @@ const columns = computed<TableColumn<WaitingPlayer>[]>(() => [
     header: t('event.waitingListTable.timeColumn'),
     meta: { class: { th: 'text-center', td: 'text-center' } },
   },
-  {
-    id: 'companion',
-    header: t('event.waitingListTable.companionColumn'),
-    enableHiding: false,
-    meta: { class: { th: 'text-center w-20', td: 'text-center' } },
-    cell: ({ row }) =>
-      h(UCheckbox, {
-        modelValue: playerState[row.original.playerId]?.companion ?? false,
-        color: 'warning',
-        size: 'sm',
-        'aria-label': t('event.waitingListTable.companionAriaLabel', { name: row.original.name }),
-        'onUpdate:modelValue': () => togglePlayer(row.original.playerId, 'companion'),
-      }),
-  },
-  {
-    id: 'paid',
-    header: t('event.waitingListTable.paidColumn'),
-    enableHiding: false,
-    meta: { class: { th: 'text-center w-20', td: 'text-center' } },
-    cell: ({ row }) =>
-      h(UCheckbox, {
-        modelValue: playerState[row.original.playerId]?.paid ?? false,
-        color: 'success',
-        size: 'sm',
-        'aria-label': t('event.waitingListTable.paidAriaLabel', { name: row.original.name }),
-        'onUpdate:modelValue': () => togglePlayer(row.original.playerId, 'paid'),
-      }),
-  },
+  createToggleColumn('companion', 'warning', 'event.waitingListTable.companionColumn', 'event.waitingListTable.companionAriaLabel'),
+  createToggleColumn('paid', 'success', 'event.waitingListTable.paidColumn', 'event.waitingListTable.paidAriaLabel'),
   {
     id: 'actions',
     header: t('event.waitingListTable.actionsColumn'),
