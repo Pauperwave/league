@@ -11,6 +11,8 @@
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "check:paths": "node scripts/check-file-paths.mjs",
+    "check:paths:fix": "node scripts/check-file-paths.mjs --fix",
     "fallow:dead-code": "fallow dead-code",
     "fallow:dupes": "fallow dupes",
     "fallow:audit": "fallow audit --format json",
