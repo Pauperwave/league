@@ -2,15 +2,11 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-const { public: { appVersion, appEnv } } = useRuntimeConfig()
+const {
+  public: { appVersion, appEnv }
+} = useRuntimeConfig()
 
-const envColor = computed(() => {
-  switch (appEnv) {
-    case 'production': return 'success'
-    case 'staging': return 'warning'
-    default: return 'neutral'
-  }
-})
+const envColor = computed(() => appEnv === 'production' ? 'success' : 'neutral')
 </script>
 
 <template>
@@ -18,6 +14,8 @@ const envColor = computed(() => {
     <UBadge :color="envColor" variant="subtle" size="sm">
       {{ appEnv }}
     </UBadge>
-    <span v-if="appVersion" class="text-xs text-muted">v{{ appVersion }}</span>
+    <span v-if="appVersion" class="text-md font-mono text-muted">
+      v{{ appVersion }}
+    </span>
   </div>
 </template>

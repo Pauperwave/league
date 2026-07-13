@@ -38,7 +38,7 @@ export default defineNuxtConfig({
 
     public: {
       appVersion: process.env.npm_package_version,
-      appEnv: process.env.NUXT_PUBLIC_APP_ENV ?? 'development'
+      appEnv: process.env.NODE_ENV ?? 'development'
     }
   },
 
