@@ -41,5 +41,7 @@ useSeoMeta({
     <UMain class="flex-1 overflow-hidden">
       <NuxtPage />
     </UMain>
+
+    <VersionBadge />
   </UApp>
 </template>

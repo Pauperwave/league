@@ -34,7 +34,12 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     // Private (server-only)
-    sitePassword: process.env.NUXT_SITE_PASSWORD
+    sitePassword: process.env.NUXT_SITE_PASSWORD,
+
+    public: {
+      appVersion: process.env.npm_package_version,
+      appEnv: process.env.NUXT_PUBLIC_APP_ENV ?? 'development'
+    }
   },
 
   routeRules: {
