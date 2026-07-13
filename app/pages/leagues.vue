@@ -24,8 +24,7 @@ const {
   navigateToLeague,
 } = useLeagues()
 
-const breadcrumbItems = computed(() => [
-  { label: t('common.home'), to: '/', icon: ICONS.home },
+const breadcrumbItems = useBreadcrumb(() => [
   { label: t('league.breadcrumb') },
 ])
 
@@ -47,47 +46,49 @@ const { updateLeague } = useLeagueUpdate(() => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-default">
-    <div class="p-6 pb-0">
-      <UBreadcrumb :items="breadcrumbItems" />
-    </div>
+  <ListPageShell
+    :breadcrumb-items="breadcrumbItems"
+    :title="t('league.breadcrumb')"
+    :add-label="t('league.newLeague')"
+    :error="error"
+    :error-message="errorMessage"
+    :loading="rulesetsLoading"
+    @add="showCreateModal = true"
+  >
+    <LeagueTable
+      :leagues="leagues"
+      :rulesets="normalizedRulesets"
+      @view="navigateToLeague"
+      @edit="openEditLeague"
+      @delete="handleDeleteLeague"
+    />
 
-    <div class="flex items-center justify-between p-6 pt-4">
-      <UButton color="neutral" :icon="ICONS.back" to="/">
-        {{ t('common.home') }}
-      </UButton>
-      <h1 class="text-2xl font-bold">
-        {{ t('league.breadcrumb') }}
-      </h1>
-      <UButton color="primary" :icon="ICONS.add" @click="() => { showCreateModal = true }">
-        {{ t('league.newLeague') }}
-      </UButton>
-    </div>
+    <template #extra>
+      <LeagueFormModal
+        v-model:open="showCreateModal"
+        :league="null"
+        :rulesets="normalizedRulesets"
+        :rulesets-loading="rulesetsLoading"
+        @create="handleCreateLeague"
+      />
 
-    <UAlert v-if="error" color="error" :title="errorMessage" class="mx-6 mb-4" />
+      <LeagueFormModal
+        v-model:open="showEditModal"
+        :league="leagueToEdit"
+        :rulesets="normalizedRulesets"
+        :rulesets-loading="rulesetsLoading"
+        @update="updateLeague"
+      />
 
-    <div v-if="rulesetsLoading" class="flex items-center justify-center py-12">
-      <UIcon :name="ICONS.loading" class="animate-spin text-4xl text-primary" />
-    </div>
-
-    <div v-else class="p-6">
-      <LeagueTable
-:leagues="leagues" :rulesets="normalizedRulesets" @view="navigateToLeague" @edit="openEditLeague"
-        @delete="handleDeleteLeague" />
-    </div>
-
-    <!-- Modals -->
-    <LeagueFormModal
-v-model:open="showCreateModal" :league="null" :rulesets="normalizedRulesets"
-      :rulesets-loading="rulesetsLoading" @create="handleCreateLeague" />
-
-    <LeagueFormModal
-v-model:open="showEditModal" :league="leagueToEdit" :rulesets="normalizedRulesets"
-      :rulesets-loading="rulesetsLoading" @update="updateLeague" />
-
-    <ConfirmModal
-v-model:open="showDeleteConfirm" :description="t('league.confirmDeleteDescription')"
-      :question="t('league.confirmDeleteQuestion')" :subject="leagueToDelete?.name" :confirm-icon="ICONS.delete"
-      confirm-color="error" @confirm="confirmDeleteLeague" />
-  </div>
+      <ConfirmModal
+        v-model:open="showDeleteConfirm"
+        :description="t('league.confirmDeleteDescription')"
+        :question="t('league.confirmDeleteQuestion')"
+        :subject="leagueToDelete?.name"
+        :confirm-icon="ICONS.delete"
+        confirm-color="error"
+        @confirm="confirmDeleteLeague"
+      />
+    </template>
+  </ListPageShell>
 </template>

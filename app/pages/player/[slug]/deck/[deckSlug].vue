@@ -36,24 +36,13 @@ const { commander1Data, commander2Data, loading: cardLoading, fetchAllData } = u
   computed(() => deck.value?.commander_2_name ?? null)
 )
 
-const commanderDisplayName = computed(() => {
-  if (deck.value?.commander_2_name) {
-    return `${deck.value.commander_1_name} // ${deck.value.commander_2_name}`
-  }
-  return deck.value?.commander_1_name ?? t('deck.fallbackName')
-})
+const { commanderDisplayName, scryfallSearchUrl } = useDeckDisplay(deck)
 
-const scryfallSearchUrl = computed(() => {
-  if (!deck.value) return '#'
-  return `https://scryfall.com/search?q=!"${encodeURIComponent(deck.value.commander_1_name)}"`
-})
-
-const breadcrumbItems = computed(() => [
-  { label: t('common.home'), to: '/' },
+const breadcrumbItems = useBreadcrumb(() => [
   { label: t('player.breadcrumb'), to: '/players' },
   {
     label: player.value ? `${player.value.player_name} ${player.value.player_surname}` : t('player.fallbackName'),
-    to: player.value ? `/player/${slug}` : undefined
+    to: `/player/${slug}`
   },
   { label: commanderDisplayName.value }
 ])
@@ -75,31 +64,12 @@ watch(() => deck.value?.commander_1_name, () => {
     <UBreadcrumb :items="breadcrumbItems" />
 
     <div v-if="deck" class="bg-elevated rounded-xl p-6 border border-default shadow-lg space-y-6">
-      <!-- Deck Header -->
-      <div class="flex items-center gap-4">
-        <UIcon :name="ICONS.battle" class="size-8 text-primary" />
-        <div class="min-w-0">
-          <h1 class="text-2xl font-bold truncate">
-            {{ commanderDisplayName }}
-          </h1>
-          <div class="flex items-center gap-2 mt-1">
-            <ManaCost
-              v-if="commander1Data?.manaCost"
-              :mana-cost="commander1Data.manaCost"
-              size="md"
-            />
-            <UIcon
-              v-else-if="cardLoading"
-              :name="ICONS.loading"
-              class="animate-spin size-4 text-muted"
-            />
-            <UBadge v-if="deck.companion_name" variant="soft" color="error" class="text-xs">
-              <UIcon :name="ICONS.favorite" class="size-3 mr-1" />
-              {{ deck.companion_name }}
-            </UBadge>
-          </div>
-        </div>
-      </div>
+      <DeckHeader
+        :display-name="commanderDisplayName"
+        :mana-cost="commander1Data?.manaCost"
+        :loading="cardLoading"
+        :companion-name="deck.companion_name"
+      />
 
       <!-- Deck Stats — compact horizontal bar -->
       <div class="grid grid-cols-3 sm:grid-cols-5 gap-3">
@@ -133,53 +103,16 @@ watch(() => deck.value?.commander_1_name, () => {
         />
       </div>
 
-      <!-- Card Art Gallery: same total height for single or partner -->
-      <div
-        class="overflow-hidden rounded-lg bg-muted"
-        :class="deck.commander_2_name ? 'aspect-2/3 flex flex-col gap-1' : 'aspect-2/3'"
-      >
-        <div class="relative h-full w-full">
-          <img
-            v-if="commander1Data?.imageUrl"
-            :src="commander1Data.imageUrl"
-            :alt="t('deck.artAlt', { name: deck.commander_1_name })"
-            class="w-full h-full object-cover object-top"
-          >
-          <div v-else-if="cardLoading" class="flex items-center justify-center h-full">
-            <UIcon :name="ICONS.loading" class="animate-spin text-2xl text-muted" />
-          </div>
-          <div v-else class="flex items-center justify-center h-full text-muted">
-            <UIcon :name="ICONS.imageMissing" class="text-4xl opacity-30" />
-          </div>
-        </div>
-        <div v-if="deck.commander_2_name" class="relative h-full w-full">
-          <img
-            v-if="commander2Data?.imageUrl"
-            :src="commander2Data.imageUrl"
-            :alt="t('deck.artAlt', { name: deck.commander_2_name })"
-            class="w-full h-full object-cover object-top"
-          >
-          <div v-else-if="cardLoading" class="flex items-center justify-center h-full">
-            <UIcon :name="ICONS.loading" class="animate-spin text-2xl text-muted" />
-          </div>
-          <div v-else class="flex items-center justify-center h-full text-muted">
-            <UIcon :name="ICONS.imageMissing" class="text-4xl opacity-30" />
-          </div>
-        </div>
-      </div>
+      <CommanderArtGallery
+        :image1="commander1Data?.imageUrl ?? null"
+        :image1-alt="t('deck.artAlt', { name: deck.commander_1_name })"
+        :has-partner="!!deck.commander_2_name"
+        :image2="commander2Data?.imageUrl ?? null"
+        :image2-alt="deck.commander_2_name ? t('deck.artAlt', { name: deck.commander_2_name }) : ''"
+        :loading="cardLoading"
+      />
 
-      <!-- Actions -->
-      <div class="flex items-center gap-2">
-        <UButton
-          :icon="ICONS.externalLink"
-          :to="scryfallSearchUrl"
-          target="_blank"
-          color="neutral"
-          variant="outline"
-        >
-          {{ t('deck.viewOnScryfall') }}
-        </UButton>
-      </div>
+      <ScryfallLinkButton :url="scryfallSearchUrl" />
     </div>
 
     <div v-else class="text-center py-12 text-muted">

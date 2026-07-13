@@ -63,20 +63,9 @@ const { data: commanderStats } = useCommanderStats(
   commander2Name
 )
 
-const commanderDisplayName = computed(() => {
-  if (firstDeck.value?.commander_2_name) {
-    return `${firstDeck.value.commander_1_name} // ${firstDeck.value.commander_2_name}`
-  }
-  return firstDeck.value?.commander_1_name ?? t('deck.fallbackName')
-})
+const { commanderDisplayName, scryfallSearchUrl } = useDeckDisplay(firstDeck)
 
-const scryfallSearchUrl = computed(() => {
-  if (!firstDeck.value) return '#'
-  return `https://scryfall.com/search?q=!"${encodeURIComponent(firstDeck.value.commander_1_name)}"`
-})
-
-const breadcrumbItems = computed(() => [
-  { label: t('common.home'), to: '/' },
+const breadcrumbItems = useBreadcrumb(() => [
   { label: t('deck.breadcrumb'), to: '/decks' },
   { label: commanderDisplayName.value }
 ])
@@ -93,66 +82,21 @@ watch(() => firstDeck.value?.commander_1_name, () => {
     <UBreadcrumb :items="breadcrumbItems" />
 
     <div v-if="firstDeck" class="bg-elevated rounded-xl p-6 border border-default shadow-lg space-y-6">
-      <!-- Deck Header -->
-      <div class="flex items-center gap-4">
-        <UIcon :name="ICONS.battle" class="size-8 text-primary" />
-        <div class="min-w-0">
-          <h1 class="text-2xl font-bold truncate">
-            {{ commanderDisplayName }}
-          </h1>
-          <div class="flex items-center gap-2 mt-1">
-            <ManaCost
-              v-if="commander1Data?.manaCost"
-              :mana-cost="commander1Data.manaCost"
-              size="md"
-            />
-            <UIcon
-              v-else-if="scryfallLoading"
-              :name="ICONS.loading"
-              class="animate-spin size-4 text-muted"
-            />
-            <UBadge v-if="firstDeck.companion_name" variant="soft" color="error" class="text-xs">
-              <UIcon :name="ICONS.favorite" class="size-3 mr-1" />
-              {{ firstDeck.companion_name }}
-            </UBadge>
-          </div>
-        </div>
-      </div>
+      <DeckHeader
+        :display-name="commanderDisplayName"
+        :mana-cost="commander1Data?.manaCost"
+        :loading="scryfallLoading"
+        :companion-name="firstDeck.companion_name"
+      />
 
-      <!-- Card Art Gallery: same total height for single or partner -->
-      <div
-        class="overflow-hidden rounded-lg bg-muted"
-        :class="firstDeck.commander_2_name ? 'aspect-2/3 flex flex-col gap-1' : 'aspect-2/3'"
-      >
-        <div class="relative h-full w-full">
-          <img
-            v-if="art1"
-            :src="art1"
-            :alt="t('deck.artAlt', { name: firstDeck.commander_1_name })"
-            class="w-full h-full object-cover object-top"
-          >
-          <div v-else-if="scryfallLoading" class="flex items-center justify-center h-full">
-            <UIcon :name="ICONS.loading" class="animate-spin text-2xl text-muted" />
-          </div>
-          <div v-else class="flex items-center justify-center h-full text-muted">
-            <UIcon :name="ICONS.imageMissing" class="text-4xl opacity-30" />
-          </div>
-        </div>
-        <div v-if="firstDeck.commander_2_name" class="relative h-full w-full">
-          <img
-            v-if="art2"
-            :src="art2"
-            :alt="t('deck.artAlt', { name: firstDeck.commander_2_name })"
-            class="w-full h-full object-cover object-top"
-          >
-          <div v-else-if="scryfallLoading" class="flex items-center justify-center h-full">
-            <UIcon :name="ICONS.loading" class="animate-spin text-2xl text-muted" />
-          </div>
-          <div v-else class="flex items-center justify-center h-full text-muted">
-            <UIcon :name="ICONS.imageMissing" class="text-4xl opacity-30" />
-          </div>
-        </div>
-      </div>
+      <CommanderArtGallery
+        :image1="art1"
+        :image1-alt="t('deck.artAlt', { name: firstDeck.commander_1_name })"
+        :has-partner="!!firstDeck.commander_2_name"
+        :image2="art2"
+        :image2-alt="firstDeck.commander_2_name ? t('deck.artAlt', { name: firstDeck.commander_2_name }) : ''"
+        :loading="scryfallLoading"
+      />
 
       <!-- Aggregate Commander Stats -->
       <div class="grid grid-cols-3 sm:grid-cols-5 gap-3">
@@ -211,18 +155,7 @@ watch(() => firstDeck.value?.commander_1_name, () => {
         </div>
       </div>
 
-      <!-- Actions -->
-      <div class="flex items-center gap-2">
-        <UButton
-          :icon="ICONS.externalLink"
-          :to="scryfallSearchUrl"
-          target="_blank"
-          color="neutral"
-          variant="outline"
-        >
-          {{ t('deck.viewOnScryfall') }}
-        </UButton>
-      </div>
+      <ScryfallLinkButton :url="scryfallSearchUrl" />
     </div>
 
     <div v-else class="text-center py-12 text-muted">

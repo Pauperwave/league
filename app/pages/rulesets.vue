@@ -26,8 +26,7 @@ const {
 
 const openLeaguesModalLogging = useButtonLogging('Open Leagues Modal')
 
-const breadcrumbItems = computed(() => [
-  { label: t('common.home'), to: '/', icon: ICONS.home },
+const breadcrumbItems = useBreadcrumb(() => [
   { label: t('ruleset.breadcrumb') },
 ])
 
@@ -65,30 +64,15 @@ const ACTION_ROWS = [
 </script>
 
 <template>
-  <div class="min-h-screen bg-default">
-    <div class="p-6 pb-0">
-      <UBreadcrumb :items="breadcrumbItems" />
-    </div>
-
-    <div class="flex items-center justify-between p-6 pt-4">
-      <UButton color="neutral" :icon="ICONS.back" to="/">
-        {{ t('common.home') }}
-      </UButton>
-      <h1 class="text-2xl font-bold">
-        {{ t('ruleset.pageTitle') }}
-      </h1>
-      <UButton color="primary" :icon="ICONS.add" @click="handleEditClick(null)">
-        {{ t('ruleset.newRuleset') }}
-      </UButton>
-    </div>
-
-    <UAlert v-if="error" color="error" :title="errorMessage" class="mx-6 mb-4" />
-
-    <div v-if="shouldShowLoading" class="flex items-center justify-center py-12">
-      <UIcon :name="ICONS.loading" class="animate-spin text-4xl text-primary" />
-    </div>
-
-    <div v-else class="p-6">
+  <ListPageShell
+    :breadcrumb-items="breadcrumbItems"
+    :title="t('ruleset.pageTitle')"
+    :add-label="t('ruleset.newRuleset')"
+    :error="error"
+    :error-message="errorMessage"
+    :loading="shouldShowLoading"
+    @add="handleEditClick(null)"
+  >
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
         <UCard
           v-for="ruleset in rulesets"
@@ -203,31 +187,31 @@ const ACTION_ROWS = [
           </div>
         </UCard>
       </div>
-    </div>
 
-    <!-- Modals -->
-    <RulesetFormModal
-      v-model:open="showFormModal"
-      :ruleset="rulesetToEdit"
-      @create="handleCreateRuleset"
-      @update="handleUpdateRuleset"
-    />
+    <template #extra>
+      <RulesetFormModal
+        v-model:open="showFormModal"
+        :ruleset="rulesetToEdit"
+        @create="handleCreateRuleset"
+        @update="handleUpdateRuleset"
+      />
 
-    <ConfirmModal
-      v-model:open="showDeleteConfirm"
-      :description="t('ruleset.confirmDeleteDescription')"
-      :question="t('ruleset.confirmDeleteQuestion')"
-      :subject="rulesetToDelete?.name"
-      :confirm-icon="ICONS.delete"
-      confirm-color="error"
-      @confirm="confirmDeleteRuleset"
-    />
+      <ConfirmModal
+        v-model:open="showDeleteConfirm"
+        :description="t('ruleset.confirmDeleteDescription')"
+        :question="t('ruleset.confirmDeleteQuestion')"
+        :subject="rulesetToDelete?.name"
+        :confirm-icon="ICONS.delete"
+        confirm-color="error"
+        @confirm="confirmDeleteRuleset"
+      />
 
-    <LeaguesUsingRulesetModal
-      v-model:open="showLeaguesModal"
-      :ruleset-id="selectedRulesetForLeagues?.id ?? 0"
-      :ruleset-name="selectedRulesetForLeagues?.name ?? ''"
-      :get-leagues-by-ruleset="getLeaguesByRuleset"
-    />
-  </div>
+      <LeaguesUsingRulesetModal
+        v-model:open="showLeaguesModal"
+        :ruleset-id="selectedRulesetForLeagues?.id ?? 0"
+        :ruleset-name="selectedRulesetForLeagues?.name ?? ''"
+        :get-leagues-by-ruleset="getLeaguesByRuleset"
+      />
+    </template>
+  </ListPageShell>
 </template>
