@@ -33,9 +33,9 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // Set cookie (server-only, secure with sameSite)
+  // Set cookie (readable by middleware, secure with sameSite)
   setCookie(event, 'site-auth', 'authenticated', {
-    httpOnly: true,
+    httpOnly: false,
     secure: true,
     sameSite: 'lax',
     maxAge: 60 * 60 * 24 * 7 // 1 week
