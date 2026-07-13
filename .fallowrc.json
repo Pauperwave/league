@@ -32,6 +32,53 @@
       "i18n/i18n.config.ts"
     ]
   },
+  "health": {
+    "thresholdOverrides": [
+      {
+        "files": ["app/stores/events.ts"],
+        "functions": ["useEventStore"],
+        "maxUnitSize": 1100
+      },
+      {
+        "files": ["app/pages/league/?leagueId?/event/?eventId?.vue"],
+        "maxUnitSize": 650
+      },
+      {
+        "files": ["app/components/event/pairing/table/preview/TablePreviewModal.vue"],
+        "maxUnitSize": 360
+      },
+      {
+        "files": ["app/components/event/pairing/PairingsCard.vue"],
+        "maxUnitSize": 340
+      },
+      {
+        "files": ["app/components/event/pairing/table/score/TableScoreGrid.vue"],
+        "maxUnitSize": 330
+      },
+      {
+        "files": ["app/composables/event/useEventPage.ts"],
+        "functions": ["useEventPage"],
+        "maxUnitSize": 310
+      },
+      {
+        "files": ["app/components/event/waiting/WaitingListTable.vue"],
+        "maxUnitSize": 300
+      },
+      {
+        "files": ["app/components/event/RoundTimer.vue"],
+        "maxUnitSize": 270
+      },
+      {
+        "files": ["app/composables/tables/useTableDnd.ts"],
+        "functions": ["useTableDnd"],
+        "maxUnitSize": 270
+      },
+      {
+        "files": ["app/pages/league/?id?.vue"],
+        "maxUnitSize": 270
+      }
+    ]
+  },
   "rules": {
     "unused-store-members": "off"
   }
