@@ -26,18 +26,8 @@ const playersStore = usePlayerStore()
 const commander1 = ref('')
 const commander2 = ref('')
 const companion = ref('')
-const isBorrowed = ref(false)
-const lenderId = ref<string | undefined>(undefined)
 
-const lenderOptions = computed(() =>
-  playersStore.players
-    .filter(p => p.player_id !== props.playerId)
-    .map(p => ({
-      label: `${p.player_name} ${p.player_surname}`,
-      value: String(p.player_id)
-    }))
-    .sort((a, b) => a.label.localeCompare(b.label))
-)
+const { isBorrowed, lenderId, lenderOptions } = useLenderSelection(() => props.playerId)
 
 const canSubmit = computed(() => {
   if (!commander1.value.trim()) return false
@@ -81,20 +71,18 @@ function handleCancel() {
 </script>
 
 <template>
-  <UModal
+  <FormModal
     v-model:open="open"
+    :title="t('deck.newModal.title')"
     :description="t('deck.newModal.description')"
-    :ui="{ footer: 'justify-between' }"
+    :icon="ICONS.add"
+    :submit-label="t('deck.newModal.submit')"
+    :submit-icon="ICONS.add"
+    form-id="deck-create-form"
+    :disabled="!canSubmit"
+    @cancel="handleCancel"
   >
-    <template #title>
-      <div class="flex items-center gap-2">
-        <UIcon :name="ICONS.add" class="text-primary" />
-        <span>{{ t('deck.newModal.title') }}</span>
-      </div>
-    </template>
-
-    <template #body>
-      <form id="deck-create-form" class="space-y-4" @submit.prevent="handleSubmit">
+    <form id="deck-create-form" class="space-y-4" @submit.prevent="handleSubmit">
         <!-- Commander 1 -->
         <UFormField :label="t('deck.newModal.commanderLabel')" required>
           <UInput
@@ -151,19 +139,5 @@ function handleCancel() {
           />
         </UFormField>
       </form>
-    </template>
-
-    <template #footer>
-      <CancelButton @click="handleCancel" />
-      <UButton
-        type="submit"
-        form="deck-create-form"
-        color="primary"
-        :trailing-icon="ICONS.add"
-        :disabled="!canSubmit"
-      >
-        {{ t('deck.newModal.submit') }}
-      </UButton>
-    </template>
-  </UModal>
+  </FormModal>
 </template>

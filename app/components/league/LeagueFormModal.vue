@@ -43,13 +43,15 @@ const emit = defineEmits<{
 const open = defineModel<boolean>('open', { default: false })
 
 const submitLogging = useButtonLogging('Submit League Form', { isEditing: () => isEditing.value, data: () => ({ name: form.name, startsAt: form.startsAt?.toString(), endsAt: form.endsAt?.toString(), rulesetId: form.rulesetId }) })
-const cancelLogging = useButtonLogging('Cancel League Form')
 
 const isEditing = computed(() => !!props.league)
-const title = computed(() => isEditing.value ? t('league.form.editTitle') : t('league.form.createTitle'))
-const description = computed(() => isEditing.value ? t('league.form.editDescription') : t('league.form.createDescription'))
-const icon = computed(() => isEditing.value ? ICONS.edit : ICONS.standings)
-const submitLabel = computed(() => isEditing.value ? t('common.save') : t('league.form.submitCreate'))
+const { title, description, icon, submitLabel, handleCancel } = useFormModalMeta({
+  isEditing,
+  namespace: 'league',
+  createIcon: ICONS.standings,
+  cancelLoggingLabel: 'Cancel League Form',
+  open
+})
 
 const defaultForm = () => ({
   name: '',
@@ -128,70 +130,49 @@ function handleSubmit() {
 
   open.value = false
 }
-
-function handleCancel() {
-  cancelLogging.logClick()
-  open.value = false
-}
 </script>
 
 <template>
-  <UModal
+  <FormModal
     v-model:open="open"
+    :title="title"
     :description="description"
-    :ui="{ footer: 'justify-between' }"
+    :icon="icon"
+    :submit-label="submitLabel"
+    form-id="league-form"
+    :disabled="!isValid"
+    @cancel="handleCancel"
   >
-    <template #title>
-      <div class="flex items-center gap-2">
-        <UIcon :name="icon" class="text-primary" />
-        <span>{{ title }}</span>
+    <form id="league-form" class="space-y-4" @submit.prevent="handleSubmit">
+      <UFormField :label="t('league.form.nameLabel')" required>
+        <UInput
+          id="field-name"
+          v-model="form.name"
+          :placeholder="t('league.form.namePlaceholder')"
+          class="w-full"
+        />
+      </UFormField>
+
+      <div class="grid grid-cols-2 gap-4">
+        <DatePicker
+          v-model="form.startsAt"
+          :label="t('league.form.startsLabel')"
+        />
+        <DatePicker
+          v-model="form.endsAt"
+          :label="t('league.form.endsLabel')"
+        />
       </div>
-    </template>
 
-    <template #body>
-      <form id="league-form" class="space-y-4" @submit.prevent="handleSubmit">
-        <UFormField :label="t('league.form.nameLabel')" required>
-          <UInput
-            id="field-name"
-            v-model="form.name"
-            :placeholder="t('league.form.namePlaceholder')"
-            class="w-full"
-          />
-        </UFormField>
-
-        <div class="grid grid-cols-2 gap-4">
-          <DatePicker
-            v-model="form.startsAt"
-            :label="t('league.form.startsLabel')"
-          />
-          <DatePicker
-            v-model="form.endsAt"
-            :label="t('league.form.endsLabel')"
-          />
-        </div>
-
-        <UFormField :label="t('league.form.rulesetLabel')">
-          <USelect
-            v-model="form.rulesetId"
-            :items="rulesetItems"
-            :loading="rulesetsLoading"
-            class="w-full"
-            :ui="{ base: 'whitespace-normal', item: 'whitespace-normal' }"
-          />
-        </UFormField>
-      </form>
-    </template>
-
-    <template #footer>
-      <CancelButton @click="handleCancel" />
-      <UButton
-        type="submit"
-        form="league-form"
-        color="primary"
-        :disabled="!isValid"
-      >
-        {{ submitLabel }}
-      </UButton>
-    </template>
-  </UModal>
+      <UFormField :label="t('league.form.rulesetLabel')">
+        <USelect
+          v-model="form.rulesetId"
+          :items="rulesetItems"
+          :loading="rulesetsLoading"
+          class="w-full"
+          :ui="{ base: 'whitespace-normal', item: 'whitespace-normal' }"
+        />
+      </UFormField>
+    </form>
+  </FormModal>
 </template>

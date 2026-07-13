@@ -24,7 +24,6 @@ const open = defineModel<boolean>('open', { default: false })
 
 const submitLogging = useButtonLogging('Submit Player Form', { isEditing: () => isEditing.value, data: () => ({ firstName: form.firstName, lastName: form.lastName }) })
 const selectExistingLogging = useButtonLogging('Select Existing Player')
-const cancelLogging = useButtonLogging('Cancel Player Form')
 
 const PlayerFormSchema = v.object({
   player_name: v.pipe(v.string(), v.trim(), v.minLength(1)),
@@ -33,10 +32,13 @@ const PlayerFormSchema = v.object({
 
 // — Derived modal state —
 const isEditing = computed(() => !!props.player)
-const modalTitle = computed(() => isEditing.value ? t('player.form.editTitle') : t('player.form.createTitle'))
-const modalDescription = computed(() => isEditing.value ? t('player.form.editDescription') : t('player.form.createDescription'))
-const modalIcon = computed(() => isEditing.value ? ICONS.edit : ICONS.addPlayer)
-const submitLabel = computed(() => isEditing.value ? t('common.save') : t('player.form.submitCreate'))
+const { title: modalTitle, description: modalDescription, icon: modalIcon, submitLabel, handleCancel } = useFormModalMeta({
+  isEditing,
+  namespace: 'player',
+  createIcon: ICONS.addPlayer,
+  cancelLoggingLabel: 'Cancel Player Form',
+  open
+})
 
 // — Form —
 const defaultForm = (): { firstName: string, lastName: string } => ({
@@ -106,27 +108,21 @@ function handleSelectExisting(playerId: number) {
   open.value = false
 }
 
-function handleCancel() {
-  cancelLogging.logClick()
-  open.value = false
-}
+
 </script>
 
 <template>
-  <UModal
+  <FormModal
     v-model:open="open"
+    :title="modalTitle"
     :description="modalDescription"
-    :ui="{ footer: 'justify-between' }"
+    :icon="modalIcon"
+    :submit-label="submitLabel"
+    form-id="player-form"
+    :disabled="!canCreate"
+    @cancel="handleCancel"
   >
-    <template #title>
-      <div class="flex items-center gap-2">
-        <UIcon :name="modalIcon" class="text-primary" />
-        <span>{{ modalTitle }}</span>
-      </div>
-    </template>
-
-    <template #body>
-      <form id="player-form" class="space-y-4" @submit.prevent="handleSubmit">
+    <form id="player-form" class="space-y-4" @submit.prevent="handleSubmit">
         <div class="grid grid-cols-2 gap-4">
           <UFormField :label="t('player.form.firstNameLabel')" required>
             <UInput
@@ -201,18 +197,5 @@ function handleCancel() {
           <span>{{ t('player.form.noSimilarFound') }}</span>
         </div>
       </form>
-    </template>
-
-    <template #footer>
-      <CancelButton @click="handleCancel" />
-      <UButton
-        type="submit"
-        form="player-form"
-        color="primary"
-        :disabled="!canCreate"
-        >
-        {{ submitLabel }}
-      </UButton>
-    </template>
-  </UModal>
+  </FormModal>
 </template>

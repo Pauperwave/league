@@ -20,7 +20,6 @@ const emit = defineEmits<{
 const open = defineModel<boolean>('open', { default: false })
 
 const submitLogging = useButtonLogging('Submit Ruleset Form', { isEditing: () => isEditing.value, name: () => form.name })
-const cancelLogging = useButtonLogging('Cancel Ruleset Form')
 
 const RulesetCreateSchema = v.object({
   name: v.pipe(v.string(), v.trim(), v.minLength(1)),
@@ -49,10 +48,13 @@ const RulesetUpdateSchema = v.object({
 })
 
 const isEditing = computed(() => !!props.ruleset)
-const title = computed(() => isEditing.value ? t('ruleset.form.editTitle') : t('ruleset.form.createTitle'))
-const description = computed(() => isEditing.value ? t('ruleset.form.editDescription') : t('ruleset.form.createDescription'))
-const icon = computed(() => isEditing.value ? ICONS.edit : ICONS.rules)
-const submitLabel = computed(() => isEditing.value ? t('common.save') : t('ruleset.form.submitCreate'))
+const { title, description, icon, submitLabel, handleCancel } = useFormModalMeta({
+  isEditing,
+  namespace: 'ruleset',
+  createIcon: ICONS.rules,
+  cancelLoggingLabel: 'Cancel Ruleset Form',
+  open
+})
 
 const defaultForm = () => ({
   name: '',
@@ -140,28 +142,20 @@ function handleSubmit() {
 
   open.value = false
 }
-
-function handleCancel() {
-  cancelLogging.logClick()
-  open.value = false
-}
 </script>
 
 <template>
-  <UModal
+  <FormModal
     v-model:open="open"
+    :title="title"
     :description="description"
-    :ui="{ footer: 'justify-between' }"
+    :icon="icon"
+    :submit-label="submitLabel"
+    form-id="ruleset-form"
+    :disabled="!isValid"
+    @cancel="handleCancel"
   >
-    <template #title>
-      <div class="flex items-center gap-2">
-        <UIcon :name="icon" class="text-primary" />
-        <span>{{ title }}</span>
-      </div>
-    </template>
-
-    <template #body>
-      <form id="ruleset-form" class="space-y-4" @submit.prevent="handleSubmit">
+    <form id="ruleset-form" class="space-y-4" @submit.prevent="handleSubmit">
 
         <!-- Name -->
         <UFormField :label="t('ruleset.form.nameLabel')" required>
@@ -241,18 +235,5 @@ function handleCancel() {
         </div>
 
       </form>
-    </template>
-
-    <template #footer>
-      <CancelButton @click="handleCancel" />
-      <UButton
-        type="submit"
-        form="ruleset-form"
-        color="primary"
-        :disabled="!isValid"
-      >
-        {{ submitLabel }}
-      </UButton>
-    </template>
-  </UModal>
+  </FormModal>
 </template>

@@ -56,14 +56,16 @@ const emit = defineEmits<{
 const open = defineModel<boolean>('open', { default: false })
 
 const submitLogging = useButtonLogging('Submit Event Form', { isEditing: () => isEditing.value, eventName: () => form.eventName })
-const cancelLogging = useButtonLogging('Cancel Event Form')
 
 // — Derived modal state —
 const isEditing = computed(() => !!props.event)
-const modalTitle = computed(() => isEditing.value ? t('event.form.editTitle') : t('event.form.createTitle'))
-const modalDescription = computed(() => isEditing.value ? t('event.form.editDescription') : t('event.form.createDescription'))
-const modalIcon = computed(() => isEditing.value ? ICONS.edit : ICONS.calendarAdd)
-const submitLabel = computed(() => isEditing.value ? t('common.save') : t('event.form.submitCreate'))
+const { title: modalTitle, description: modalDescription, icon: modalIcon, submitLabel, handleCancel } = useFormModalMeta({
+  isEditing,
+  namespace: 'event',
+  createIcon: ICONS.calendarAdd,
+  cancelLoggingLabel: 'Cancel Event Form',
+  open
+})
 
 // — Form —
 const defaultForm = (): EventForm => ({
@@ -136,27 +138,21 @@ function handleSubmit() {
   open.value = false
 }
 
-function handleCancel() {
-  cancelLogging.logClick()
-  open.value = false
-}
+
 </script>
 
 <template>
-  <UModal
+  <FormModal
     v-model:open="open"
+    :title="modalTitle"
     :description="modalDescription"
-    :ui="{ footer: 'justify-between' }"
+    :icon="modalIcon"
+    :submit-label="submitLabel"
+    form-id="event-form"
+    :disabled="!isValid"
+    @cancel="handleCancel"
   >
-    <template #title>
-      <div class="flex items-center gap-2">
-        <UIcon :name="modalIcon" class="text-primary" />
-        <span>{{ modalTitle }}</span>
-      </div>
-    </template>
-
-    <template #body>
-      <form id="event-form" class="space-y-4" @submit.prevent="handleSubmit">
+    <form id="event-form" class="space-y-4" @submit.prevent="handleSubmit">
         <div class="grid grid-cols-2 gap-4">
           <UFormField :label="t('event.form.nameLabel')" required>
             <UInput
@@ -191,18 +187,5 @@ function handleCancel() {
           </UFormField>
         </div>
       </form>
-    </template>
-
-    <template #footer>
-      <CancelButton @click="handleCancel" />
-      <UButton
-        type="submit"
-        form="event-form"
-        color="primary"
-        :disabled="!isValid"
-      >
-        {{ submitLabel }}
-      </UButton>
-    </template>
-  </UModal>
+  </FormModal>
 </template>
