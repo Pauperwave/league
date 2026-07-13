@@ -19,7 +19,7 @@
 | 5 | `useId()` (Vue 3.5) | N/A | No hand-rolled ID generation for form/a11y attributes found — nothing to migrate |
 | 6 | `defineModel()` (Vue 3.4, stable going into 3.5) | 🟡 Partial | 18/20 two-way-binding components use it; 2 still use manual `props.modelValue` + `emit('update:modelValue')` |
 | 7 | Nuxt 4 directory structure | ✅ Compliant | `app/` srcDir with all standard subdirs, root-level `shared/`, root-level `server/` — matches the current default layout exactly |
-| 8 | `useAsyncData` key conventions | ✅ Compliant | Consistent `{domain}-{scope}-{id}` keys, documented and inventoried in `docs/async-data-keys.md` |
+| 8 | `useAsyncData` key conventions | ✅ Compliant | Consistent `{domain}-{scope}-{id}` keys, documented and inventoried in `docs/architecture/async-data-keys.md` |
 | 9 | `useState` vs Pinia | ✅ Compliant | `useState` used exactly once, for a small global auth flag (`usePasswordAuth.ts`) — appropriate scope; everything else consistently uses Pinia |
 | 10 | `server/api/` conventions | ✅ Compliant | Modern `defineEventHandler`, `readBody`, `createError`, `setCookie`/`deleteCookie`, `useRuntimeConfig()` — no deprecated H3/Nitro idioms |
 | 11 | `definePageMeta` | N/A | Zero usage, and correctly so — no `layouts/` directory, no per-page middleware (auth is a single global middleware), nothing that would need it |

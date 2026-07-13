@@ -58,7 +58,7 @@ CLAUDE.md               # Guida per Claude Code (comandi, architettura, convenzi
 2. **Composables `use*`** = orchestrazione pagina, `useAsyncData`, helper puri.
 3. **Pagine** = composizione componenti; la pagina evento è la più complessa (`useEventPage` + `useEventUrl`).
 
-Dettaglio completo: [`docs/stores.md`](docs/stores.md) (documentazione parziale, verificare contro `app/stores/` — vedi nota sotto).
+Dettaglio completo: [`docs/architecture/stores.md`](docs/architecture/stores.md).
 
 ---
 
@@ -116,7 +116,7 @@ Gli store di sessione hanno **persistenza ottimistica**: update immediato UI + s
 - **Decisione:** query `phase`, `round`, `scoreModal` sincronizzati con UI (`useEventUrl`, `router.replace`).
 - **Motivo:** deep link, refresh, condivisione link a modale punteggi.
 - **Parametri:** `phase`, `round`, `scoreModal`, `killModal`, `votesModal`, `commanderModal`
-- **Doc:** [`docs/modal-url-sync.md`](docs/modal-url-sync.md)
+- **Doc:** [`docs/architecture/modal-url-sync.md`](docs/architecture/modal-url-sync.md)
 
 ### ADR-004 — Pairing optimizer lato client
 
@@ -137,7 +137,7 @@ Gli store di sessione hanno **persistenza ottimistica**: update immediato UI + s
 - **Pattern:** update immediato UI (ottimistico) → `toast.add({ title: '…', color: 'success' })` → chiamata asincrona a `eventStore.save*()` → toast di errore in caso di fallimento.
 - **Motivo:** UX reattiva senza attendere la risposta del DB, dati non persi su refresh, `nextRound` legge da `round_results` per calcoli punteggi corretti.
 - **Funzioni store:** `saveVote`, `saveCommander`, `savePairingRankings`, `savePairingKills` — tutte con pattern update-or-insert (check esistenza riga → update o insert).
-- **Doc:** flusso documentato in `docs/stores.md`.
+- **Doc:** flusso documentato in `docs/architecture/stores.md`.
 
 ### ADR-006 — Auth semplice a password
 
@@ -275,12 +275,16 @@ Indice completo e aggiornato: [`docs/README.md`](docs/README.md). Voci principal
 |------|-----------|
 | [`CLAUDE.md`](../CLAUDE.md) | Guida per Claude Code: comandi, architettura, convenzioni (radice repo) |
 | [`docs/AGENTS.md`](docs/AGENTS.md) | Regole per agenti e convenzioni codice |
-| [`docs/stores.md`](docs/stores.md) | Store Pinia — 10 store (6 Supabase + 4 sessione), corretto il 2026-07-13 |
-| [`docs/database.md`](docs/database.md) | RLS, trigger, stats denormalizzate |
-| [`docs/event-flow.md`](docs/event-flow.md) | Lifecycle evento, mutazioni DB per fase |
-| [`docs/state-flow.md`](docs/state-flow.md) | Flusso DB → store → composable → componente |
-| [`docs/modal-url-sync.md`](docs/modal-url-sync.md) | Sync query ↔ modali evento |
-| [`docs/TODO.md`](docs/TODO.md) | Idee e snippet storici, incl. Playwright + MCP |
+| [`docs/architecture/stores.md`](docs/architecture/stores.md) | Store Pinia — 10 store (6 Supabase + 4 sessione), corretto il 2026-07-13 |
+| [`docs/architecture/database.md`](docs/architecture/database.md) | RLS, trigger, stats denormalizzate |
+| [`docs/architecture/event-flow.md`](docs/architecture/event-flow.md) | Lifecycle evento, mutazioni DB per fase |
+| [`docs/architecture/state-flow.md`](docs/architecture/state-flow.md) | Flusso DB → store → composable → componente |
+| [`docs/architecture/modal-url-sync.md`](docs/architecture/modal-url-sync.md) | Sync query ↔ modali evento |
+| [`docs/architecture/routes.md`](docs/architecture/routes.md) | Inventario route, parametri nested |
+| [`docs/architecture/component-hierarchy.md`](docs/architecture/component-hierarchy.md) | Albero componenti per pagina |
+| [`docs/architecture/async-data-keys.md`](docs/architecture/async-data-keys.md) | Convenzione naming chiavi `useAsyncData` |
+| [`docs/BACKLOG.md`](docs/BACKLOG.md) | Lavoro committed, ranked per priorità (P1–P3) con stima effort (S/M/L) |
+| [`docs/TODO.md`](docs/TODO.md) | Osservazioni sparse, non ancora committed |
 | [`docs/audits/skills-audit-report.md`](docs/audits/skills-audit-report.md) | Audit best practices |
 | [`docs/audits/skills-audit-checklist.md`](docs/audits/skills-audit-checklist.md) | Checklist convenzioni |
 | [`docs/audits/2026-07-12-vue-nuxt-conventions.md`](docs/audits/2026-07-12-vue-nuxt-conventions.md) | Audit Vue 3.5+/Nuxt 4 conventions |
@@ -291,11 +295,13 @@ Indice completo e aggiornato: [`docs/README.md`](docs/README.md). Voci principal
 
 | Data | Modifica |
 |------|----------|
+| 2026-07-13 | Riorganizzati i doc "come funziona l'app" (`stores`, `database`, `event-flow`, `state-flow`, `modal-url-sync`, `routes`, `component-hierarchy`, `async-data-keys`) sotto `docs/architecture/`, separati dai doc di ingresso (`README.md`, `AGENTS.md`, `TODO.md`, `BACKLOG.md`, `PROGRESS.md`, `bugs.md`) rimasti alla radice di `docs/`. Aggiornati tutti i link incrociati (root `CLAUDE.md`, `app/stores/CLAUDE.md`, `app/composables/CLAUDE.md`, `docs/AGENTS.md`, cross-link interni tra i file spostati) e aggiunta una sezione "Documentation" al `README.md` di root con link a `docs/README.md` |
+| 2026-07-13 | Creato `docs/BACKLOG.md`: lavoro committed/ranked (priorità P1–P3, stima S/M/L), separato da `docs/TODO.md` (ora solo osservazioni sparse non committed). Spostati i 4 item azionabili (Playwright+MCP, alarm sound timer, Valibot `isValid` nei form, DnD nativo in `TableScoreGrid.vue`) da `TODO.md` a `BACKLOG.md`. Aggiornata la sezione "Documentation" di `CLAUDE.md` (radice repo) per riflettere la tripartizione TODO/BACKLOG/PROGRESS |
 | 2026-07-13 | Audit `docs/` completo: `docs/stores.md` corretto (8→10 store, mancavano `useCommanderDeckStore`/`usePlayerStatsStore`); `docs/README.md` indice/albero file aggiornati (mancavano `PROGRESS.md`, `prompts/`, struttura reale `superpowers/plans+specs/`); eliminati `docs/buttons.md` (chat di design superata, vedi `RowActionButton.vue`/`actionButton.ts`), `docs/prompts/decompose-players-page*.md` (piano già implementato in `app/components/player/`), `docs/reinventing-the-wheel.md` + `docs/prompt-for-ai.md` (9/11 findings fatti o superati dalla migrazione Scryfall→Supabase; i 2 ancora aperti — Valibot `isValid` nei form modal, DnD nativo in `TableScoreGrid.vue` — spostati in `docs/TODO.md`) |
 | 2026-07-13 | Sessione duplicazione + tuning `fallow` (ADR-011): `fallow:dupes` da 128 gruppi (17.6%) a 0; `app/components/ui/` riorganizzato in `actions/`, `modal/`, `layout/`, `display/`, `input/`; `BaseButton`/`ActionButtons` rinominati `RowActionButton`/`RowActionButtons`; nuovo `ConfirmButton` gemello di `CancelButton`; `duplicates.mode` assestato su `weak`; `health.thresholdOverrides` per 10 file grandi ma intenzionali; scoperto gotcha glob su cartelle `[param]` (fix: wildcard `?`); `leagues.status` rinominato da italiano a codici inglesi minuscoli (migrazione dati DB da fare manualmente); test da 19/6 file a 61/10 file; `docs/TODO.md` ripulito da contenuto implementato/debris |
 | 2026-07-12 | Sessione lint/typecheck/architettura: `pnpm lint` e `pnpm typecheck` portati a 0/0 (ADR-009); aggiunta `event_round_duration` (migrazione + wiring, non ancora applicata — ADR-008); documentato invariante scoring pairing optimizer (ADR-004); rimossa cartella shim `app/composables/events/` (progetto non pubblicato → niente backward-compat); creato `CLAUDE.md`; TODO Playwright + MCP aggiunto; corrette informazioni datate (store count 8→10, claim falso sul rename `[id]`→`[leagueId]`, valibot "0 uso"); scoperto `pnpm build` rotto (prerender `/`, non correlato a questa sessione) |
 | 2026-05-26 | Preview mostra tavoli prima di avanzare round (non dopo); `playerOrder` propagato a `nextRound` → `createPairings`; URL `phase=previewTables` ora include `round=N`; `previewTables` usa standings durante playing |
-| 2026-05-26 | Documentazione completa dei 6 URL query params in `docs/modal-url-sync.md` |
+| 2026-05-26 | Documentazione completa dei 6 URL query params in `docs/architecture/modal-url-sync.md` |
 | 2026-05-25 | Uniformato il parametro di routing da [id] a [leagueId] per consistenza — **⚠️ non risulta più vero al 2026-07-12**, `league/[id].vue` esiste ancora con `route.params.id` |
-| 2026-05-25 | Aggiornamento `docs/stores.md`: documentazione 8 store (4 Supabase + 4 sessione) e migrazione Setup API |
+| 2026-05-25 | Aggiornamento `docs/architecture/stores.md`: documentazione 8 store (4 Supabase + 4 sessione) e migrazione Setup API |
 | 2026-05-25 | Creazione iniziale `PROGRESS.md` dopo audit skill e batch convenzioni |

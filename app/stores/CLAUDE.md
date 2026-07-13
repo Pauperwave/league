@@ -1,6 +1,6 @@
 # app/stores/CLAUDE.md
 
-Scoped guidance for `app/stores/`. See the root `CLAUDE.md` and `docs/state-flow.md` / `docs/stores.md` for the broader picture — this file only covers what you need to write or modify a store correctly.
+Scoped guidance for `app/stores/`. See the root `CLAUDE.md` and `docs/architecture/state-flow.md` / `docs/architecture/stores.md` for the broader picture — this file only covers what you need to write or modify a store correctly.
 
 ## Two store categories — pick the right template
 

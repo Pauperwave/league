@@ -83,3 +83,12 @@ Check out the [deployment documentation](https://nuxt.com/docs/getting-started/d
 ## Renovate integration
 
 Install [Renovate GitHub app](https://github.com/apps/renovate/installations/select_target) on your repository and you are good to go.
+
+## Documentation
+
+Project documentation lives in [`docs/`](docs/README.md) — start with that index. Notably:
+
+- [`docs/architecture/`](docs/architecture) — how the app works: data flow (`state-flow.md`), routes, Pinia stores, database/RLS, event lifecycle, component hierarchy, `useAsyncData` key conventions, modal URL sync
+- [`CLAUDE.md`](CLAUDE.md) — conventions and guidance for AI coding agents working in this repo
+- [`docs/BACKLOG.md`](docs/BACKLOG.md) — ranked, actionable work items
+- [`docs/PROGRESS.md`](docs/PROGRESS.md) — curated changelog and architectural decisions

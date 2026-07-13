@@ -1,6 +1,6 @@
 # app/composables/CLAUDE.md
 
-Scoped guidance for `app/composables/`. See the root `CLAUDE.md` and `docs/state-flow.md` for the broader DB → store → composable → component picture.
+Scoped guidance for `app/composables/`. See the root `CLAUDE.md` and `docs/architecture/state-flow.md` for the broader DB → store → composable → component picture.
 
 ## Auto-import — don't hand-write import statements for composables
 
@@ -28,14 +28,14 @@ Composables that fetch Supabase data wrap the corresponding store action in `use
 export function useXxx(id: Ref<number | undefined>) {
   const store = useXxxStore() // or supabase directly for a narrow, store-independent query
   return useAsyncData(
-    () => `xxx-scope-${id.value ?? 'none'}`,   // see docs/async-data-keys.md before inventing a new key
+    () => `xxx-scope-${id.value ?? 'none'}`,   // see docs/architecture/async-data-keys.md before inventing a new key
     async () => { /* fetch */ },
     { immediate: true, server: true, watch: [id] }
   )
 }
 ```
 
-Check `docs/async-data-keys.md` for the full key inventory before adding a new `useAsyncData` key — there's a documented collision history, and key format is `{domain}-{scope}-{id}`.
+Check `docs/architecture/async-data-keys.md` for the full key inventory before adding a new `useAsyncData` key — there's a documented collision history, and key format is `{domain}-{scope}-{id}`.
 
 ## Non-SSR composables
 

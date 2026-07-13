@@ -1,6 +1,6 @@
 # Route Map
 
-<!-- docs/routes.md -->
+<!-- docs/architecture/routes.md -->
 
 Complete inventory of all application routes.
 
@@ -35,7 +35,7 @@ The event page supports query parameters for modal state persistence:
 | `votesModal` | `?votesModal=1` | Open votes modal |
 | `commanderModal` | `?commanderModal=1` | Open commander modal |
 
-See `docs/modal-url-sync.md` for full documentation.
+See `docs/architecture/modal-url-sync.md` for full documentation.
 
 ---
 
@@ -146,6 +146,6 @@ All numeric params are parsed via `parseInt()` in composables.
 
 ## Related Docs
 
-- `docs/component-hierarchy.md` — Which components render on each route
-- `docs/event-flow.md` — Event page state transitions
-- `docs/modal-url-sync.md` — Query parameter behavior
+- `docs/architecture/component-hierarchy.md` — Which components render on each route
+- `docs/architecture/event-flow.md` — Event page state transitions
+- `docs/architecture/modal-url-sync.md` — Query parameter behavior

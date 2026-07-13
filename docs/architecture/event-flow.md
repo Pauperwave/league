@@ -1,6 +1,6 @@
 # Event Flow / Lifecycle
 
-<!-- docs/event-flow.md -->
+<!-- docs/architecture/event-flow.md -->
 
 Documentation of the event lifecycle from creation through completion.
 
@@ -14,7 +14,7 @@ An event exists in one of three states, derived from DB columns:
 | **playing** | `true` | `1..N` | `false` | Active rounds. Pairings and standings exist. |
 | **ended** | `false` | `N` | `false` | All rounds completed. Standings are final. |
 
-> The `events.status` column is a **generated column** computed from `event_current_round` vs `event_round_number`. See `docs/database.md` for trigger details.
+> The `events.status` column is a **generated column** computed from `event_current_round` vs `event_round_number`. See `docs/architecture/database.md` for trigger details.
 
 ---
 
@@ -219,6 +219,6 @@ Each round follows this pattern:
 
 ## Related Docs
 
-- `docs/database.md` — Trigger architecture, denormalized stats
-- `docs/modal-url-sync.md` — URL query param sync for modals
-- `docs/async-data-keys.md` — Data fetching keys for event page
+- `docs/architecture/database.md` — Trigger architecture, denormalized stats
+- `docs/architecture/modal-url-sync.md` — URL query param sync for modals
+- `docs/architecture/async-data-keys.md` — Data fetching keys for event page

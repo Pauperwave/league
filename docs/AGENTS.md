@@ -24,9 +24,9 @@
 
 - **ALWAYS ask permission before modifying the database**, even if you have MCP access. Never execute DDL operations (CREATE, ALTER, DROP, etc.) without explicit user approval.
 
-See `docs/database.md` for full database documentation including RLS policies, denormalized stats tables, and migration conventions.
+See `docs/architecture/database.md` for full database documentation including RLS policies, denormalized stats tables, and migration conventions.
 
-See `docs/async-data-keys.md` for the `useAsyncData` key naming convention and full key inventory.
+See `docs/architecture/async-data-keys.md` for the `useAsyncData` key naming convention and full key inventory.
 
 ## Code Style & Conventions
 

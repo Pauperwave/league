@@ -1,6 +1,6 @@
 # State Flow
 
-<!-- docs/state-flow.md -->
+<!-- docs/architecture/state-flow.md -->
 
 How data moves through the application: **Database → Store → Composable → Component**.
 
@@ -61,7 +61,7 @@ round_results INSERT/UPDATE/DELETE
         └──► REFRESH MATERIALIZED VIEW commander_stats
 ```
 
-See `docs/database.md` for full trigger documentation.
+See `docs/architecture/database.md` for full trigger documentation.
 
 ---
 
@@ -117,7 +117,7 @@ export function useXxx(id: Ref<number | undefined>) {
   const store = useXxxStore()
 
   return useAsyncData(
-    `domain-scope-${id.value}`,  // unique key per docs/async-data-keys.md
+    `domain-scope-${id.value}`,  // unique key per docs/architecture/async-data-keys.md
     () => store.fetchXxx(id.value),
     {
       immediate: true,
@@ -260,7 +260,7 @@ async function handleCreateDeck(deckData) {
 
 ### 4. Cross-Page State via URL
 
-Event modals persist state in URL query params (see `docs/modal-url-sync.md`):
+Event modals persist state in URL query params (see `docs/architecture/modal-url-sync.md`):
 - Modal open/close ↔ query param add/remove
 - Enables back-button dismissal and direct linking
 
@@ -280,7 +280,7 @@ Event modals persist state in URL query params (see `docs/modal-url-sync.md`):
 
 ## Related Docs
 
-- `docs/stores.md` — Pinia store patterns and conventions
-- `docs/async-data-keys.md` — useAsyncData key naming convention
-- `docs/database.md` — Trigger architecture and denormalized stats
-- `docs/event-flow.md` — Event lifecycle and DB mutations
+- `docs/architecture/stores.md` — Pinia store patterns and conventions
+- `docs/architecture/async-data-keys.md` — useAsyncData key naming convention
+- `docs/architecture/database.md` — Trigger architecture and denormalized stats
+- `docs/architecture/event-flow.md` — Event lifecycle and DB mutations

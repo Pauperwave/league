@@ -1,6 +1,6 @@
 # Component Hierarchy
 
-<!-- docs/component-hierarchy.md -->
+<!-- docs/architecture/component-hierarchy.md -->
 
 Maps which components compose each page and their nesting structure.
 
