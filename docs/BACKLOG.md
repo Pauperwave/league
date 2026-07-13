@@ -10,9 +10,10 @@ Committed, actionable work items, ranked by priority with a rough effort estimat
 | # | Item | Priority | Effort |
 |---|------|----------|--------|
 | 1 | [E2E testing: Playwright + Playwright MCP](#1-e2e-testing-playwright--playwright-mcp) | P1 | L |
-| 2 | [Round timer alarm sound](#2-round-timer-alarm-sound) | P2 | S |
-| 3 | [Form `isValid` should derive from Valibot schemas](#3-form-isvalid-should-derive-from-valibot-schemas) | P2 | M |
-| 4 | [Replace native HTML5 DnD in `TableScoreGrid.vue`](#4-replace-native-html5-dnd-in-tablescoregridvue) | P3 | M |
+| 2 | [Redesign `TableCard.vue` layout for future player self-entry](#2-redesign-tablecardvue-layout-for-future-player-self-entry) | P1 | M |
+| 3 | [Round timer alarm sound](#3-round-timer-alarm-sound) | P2 | S |
+| 4 | [Form `isValid` should derive from Valibot schemas](#4-form-isvalid-should-derive-from-valibot-schemas) | P2 | M |
+| 5 | [Replace native HTML5 DnD in `TableScoreGrid.vue`](#5-replace-native-html5-dnd-in-tablescoregridvue) | P3 | M |
 
 ---
 
@@ -24,7 +25,18 @@ Committed, actionable work items, ranked by priority with a rough effort estimat
 
 ---
 
-## 2. Round timer alarm sound
+## 2. Redesign `TableCard.vue` layout for future player self-entry
+
+Carried over from a since-deleted `docs/bugs.md` (open design ask, no fixed spec — needs a proposal, not just an implementation).
+
+`app/components/event/pairing/table/TableCard.vue` (used inside `TableScoreGrid.vue`/`TablePreviewGrid.vue`) needs a layout pass:
+- The top-left `UIcon`/`ICONS.tableView` badge (`TableCard.vue:50`) was called out as superfluous — reconsider whether it earns its space.
+- Design with an upcoming feature in mind: **players will eventually enter their own commander(s) and votes directly** (rankings and kills stay admin-entered). The current layout wasn't built with player-facing self-service inputs in mind — figure out what changes (touch targets, input affordances, permission-gated fields) that requires before it's built, not after.
+- No fixed spec yet — propose 1-2 layout options before implementing.
+
+---
+
+## 3. Round timer alarm sound
 
 `RoundTimer.vue` (and `TimerControlButton.vue`) are already implemented and working — this item is only about adding an audible/notification alarm when a round's timer expires, which isn't built yet:
 
@@ -82,7 +94,7 @@ const { pause, resume } = useIntervalFn(() => {
 
 ---
 
-## 3. Form `isValid` should derive from Valibot schemas
+## 4. Form `isValid` should derive from Valibot schemas
 
 Carried over from a since-deleted `docs/reinventing-the-wheel.md` audit (2026-05-27).
 
@@ -90,7 +102,7 @@ Carried over from a since-deleted `docs/reinventing-the-wheel.md` audit (2026-05
 
 ---
 
-## 4. Replace native HTML5 DnD in `TableScoreGrid.vue`
+## 5. Replace native HTML5 DnD in `TableScoreGrid.vue`
 
 Carried over from the same since-deleted `docs/reinventing-the-wheel.md` audit.
 
@@ -98,6 +110,7 @@ Carried over from the same since-deleted `docs/reinventing-the-wheel.md` audit.
 
 ---
 
-## Closed out of the original `reinventing-the-wheel.md` audit (2026-05-27)
+## Closed out / resolved, not carried forward
 
-Not backlog — recorded here only so the "9 of 11 fixed" count in `docs/PROGRESS.md`'s 2026-07-13 changelog entry is traceable. Fixed: `toErrorMessage()` extraction, `useEventUrl.ts`'s generic `setQueryParam`, `app/utils/math.ts`'s `roundToDecimals`/`isCloseTo`, `sanitizePlayer()` consistency, `upperFirst.ts` removed. Went moot: the Scryfall card-search composables it flagged (`useCardWhitelists`/`useCardSearch`) no longer exist — that feature was migrated to Supabase-backed data instead of patched in place.
+- **Reinventing-the-wheel audit (2026-05-27):** recorded here only so the "9 of 11 fixed" count in `docs/PROGRESS.md`'s 2026-07-13 changelog entry is traceable. Fixed: `toErrorMessage()` extraction, `useEventUrl.ts`'s generic `setQueryParam`, `app/utils/math.ts`'s `roundToDecimals`/`isCloseTo`, `sanitizePlayer()` consistency, `upperFirst.ts` removed. Went moot: the Scryfall card-search composables it flagged (`useCardWhitelists`/`useCardSearch`) no longer exist — that feature was migrated to Supabase-backed data instead of patched in place.
+- **`docs/bugs.md`'s table-preview-optimization bug (2026-07-13):** the report was "clicking Conferma runs table optimization and then closes the modal, but optimization should happen before the modal is shown." Checked against current code — `TablePreviewModal.vue`'s `watch(open, ...)` (lines 102-120) already auto-runs the optimizer as soon as the modal opens (gated on `loading`, guarded by `hasAutoOptimized`), and `playerOrder` is propagated through `handleConfirm` → `emit('confirm', playerOrder.value)` → `useEventLifecycle.ts`'s `nextRound(playerOrder)` — matching the fix already logged in `PROGRESS.md`'s 2026-05-26 changelog entry ("Preview mostra tavoli prima di avanzare round"). Not carried forward as a live bug.

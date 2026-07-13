@@ -17,7 +17,6 @@ Master index of all project documentation.
 | `architecture/routes.md` | Complete route inventory, nested route gotchas, navigation patterns | Routing |
 | `architecture/state-flow.md` | DB → store → composable → component data flow, caching strategy | Architecture |
 | `architecture/stores.md` | Pinia store overview, Setup API pattern, state categories, error handling | State management |
-| `bugs.md` | Known bugs (minimal) | Maintenance |
 | `PROGRESS.md` | Backward-looking curated changelog + ADRs; what's actually been done | Architecture history |
 | `BACKLOG.md` | Forward-looking, committed work items ranked by priority (P1–P3) with effort estimates (S/M/L) | Roadmap |
 | `TODO.md` | Forward-looking scratch notes: loose observations, open questions, not yet committed | Roadmap (scratch) |
@@ -86,7 +85,6 @@ docs/
 │   ├── skills-audit-report.md
 │   └── 2026-07-12-vue-nuxt-conventions.md
 ├── BACKLOG.md
-├── bugs.md
 ├── PROGRESS.md
 ├── TODO.md
 └── superpowers/
