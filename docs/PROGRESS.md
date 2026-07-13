@@ -2,7 +2,7 @@
 
 Documento vivo per tracciare avanzamento, architettura e decisioni. Aggiornare quando cambiano scope, stack o convenzioni rilevanti.
 
-**Ultimo aggiornamento:** 2026-07-12
+**Ultimo aggiornamento:** 2026-07-13
 
 ---
 
@@ -165,9 +165,30 @@ Gli store di sessione hanno **persistenza ottimistica**: update immediato UI + s
   - `defineProps()` con default che referenziano `t()` non compilano (hoisting del compiler Vue) — risolto con `computed()` separato (vedi `CancelButton.vue`, `ConfirmModal.vue`, `DatePicker.vue`).
   - `useI18n()` funziona dentro un Pinia store (verificato empiricamente) solo se lo store viene istanziato per la prima volta da dentro il `setup()` sincrono di un componente — pattern universale in questo progetto.
   - Funzioni raggiungibili da un'azione di store o da una callback async (`useAsyncData`) non possono chiamare `useI18n()` direttamente — il `t` va catturato a monte e passato come parametro (vedi `useTableCalculator.ts`, `usePlayerMatchHistory.ts`).
-  - I valori persistiti su DB che sono testo italiano leggibile (es. `leagues.status`) restano stringhe letterali — sono dati, non copy UI.
+  - I valori enum persistiti su DB restano stringhe letterali, non copy UI — tradotti solo a display time via lookup su label-key. **Aggiornamento 2026-07-13:** `leagues.status` è stato rinominato da testo italiano leggibile (`'Programmata'`/`'Attiva'`/`'Terminata'`) a codici inglesi minuscoli (`'scheduled'`/`'active'`/`'ended'`), allineati alle chiavi i18n già esistenti (`league.status.scheduled` ecc.). Codice aggiornato in `LeagueTable.vue` e `useLeagues.ts`; migrazione dati DB da applicare manualmente (utente).
 - **Test infra:** `test/helpers/mocks.ts` esporta `createI18nTestPlugin(messages)` per montare componenti che usano `useI18n()` in `test/nuxt/**` (plain `@vue/test-utils` `mount()` non applica il plugin reale di Nuxt).
 - **Stato:** ✅ completo — verificato con `pnpm lint`/`pnpm typecheck`/`pnpm test`/`pnpm fallow:dead-code` a zero problemi dopo ogni dominio migrato (league, ruleset, player, deck/commander, event — pagina/control-panel/waiting-list/modali/pairing-kill-table/standings —, store, login/home/misc).
+
+### ADR-011 — Eliminazione duplicazione codice + tuning config `fallow`
+
+- **Decisione:** sessione dedicata a ridurre la duplicazione di codice segnalata da `fallow:dupes`, riorganizzare `app/components/ui/` in sottocartelle per famiglia, e configurare `.fallowrc.json` per un segnale duplicazione/complessità accurato invece di rumore.
+- **Duplicazione — da 128 gruppi (17.6%) a 0.** Estrazioni reali (non falsi positivi):
+  - `app/components/ui/modal/FormModal.vue` + `app/composables/ui/useFormModalMeta.ts` — shell modale create/edit condivisa da `LeagueFormModal`, `RulesetFormModal`, `CreatePlayerModal`, `EventFormModal`, `DeckCreateModal`, `DeckEditModal`.
+  - `app/components/ui/modal/{CancelButton,ConfirmButton,ModalFooterActions}.vue` — famiglia bottoni footer modale, separata deliberatamente da `RowActionButton`/`RowActionButtons` (famiglia bottoni azione riga tabella, config-driven via `ACTION_MAP`). Vedi `app/components/ui/CLAUDE.md` per la distinzione.
+  - `app/components/ui/display/{StatTile,ImageWithFallback,BaseTable}.vue`, `app/components/ui/layout/{ListPageShell,PageHeaderRow}.vue` — pattern UI ripetuti (tile statistiche, immagine con fallback caricamento/mancante, header pagina lista).
+  - `app/composables/ui/useBreadcrumb.ts` — prepend home-crumb condiviso, sostituisce un `usePlayerBreadcrumb` troppo specifico.
+  - `app/composables/deck/{useDeckDisplay,useLenderSelection}.ts`, `app/composables/league/useLeagueUpdate.ts`, `app/composables/players/usePlayerBreadcrumb.ts` (poi sostituito da `useBreadcrumb`) — logica dominio condivisa tra pagine/modali dello stesso feature.
+  - `app/components/ruleset/RulesetFieldGrid.vue`, `app/components/event/pairing/table/score/TableScoreTeamRow.vue` — duplicazione interna allo stesso file (due sezioni quasi identiche) risolta con un piccolo componente locale invece di un `v-model` su proprietà annidate (rischio noto di mancato unwrap dei ref in Vue).
+  - `forEachPair` in `pairingOptimizer.ts` — helper privato per il doppio ciclo "ogni coppia di seat in un tavolo", riusato in 3 punti; **la matematica di scoring non è stata toccata** (invariante ADR-004 preservato, verificato contro i test esistenti).
+- **Falsi positivi identificati e sospesi formalmente** (`// fallow-ignore-file code-duplication` o `.fallowrc.json`'s `duplicates.ignore`), non silenziosamente ignorati:
+  - Pattern CRUD store (`leagues.ts`, `rulesets.ts`, `players.ts`, `commander-decks.ts`, `events.ts`) — intenzionale, documentato in `app/stores/CLAUDE.md` ("copiare `leagues.ts` come template").
+  - Boilerplate di invocazione `FormModal`/`LeagueFormModal`/`ConfirmModal` nei call site (title/description/icon/submitLabel + `@cancel`) — residuo minimo e atteso dell'uso coerente di un componente già condiviso.
+  - Markup `<table>`/toolbar generico coincidente tra feature non correlate (`EventRanking` vs `PlayerMatchHistoryTable`; `TablePreviewToolbar` vs `WaitingListTable`).
+  - `EventTable.vue`/`LeagueTable.vue` — colonne id/name boilerplate; lasciato con commento di sospensione invece di estrarre in `useTableUtils.ts`, per mantenere ogni file tabella leggibile in un unico posto (decisione esplicita).
+- **Modalità di duplicate-detection:** `.fallowrc.json`'s `duplicates.mode` provato a `semantic` (troppo rumoroso, penalizza `fallow health` di -10 anche su pattern intenzionali), poi `strict` (troppo permissivo, 0 duplicati anche su vera duplicazione), assestato su **`weak`** (normalizza i valori letterali ma non i nomi identificatore — il compromesso giusto per questo progetto).
+- **`health.thresholdOverrides`** aggiunto in `.fallowrc.json` per 10 file/funzioni grandi ma intenzionalmente coese (`useEventStore` 1039 righe, `useEventPage`, `useTableDnd`, i template grandi di pairing/timer) — ceiling esplicito invece di soppressione binaria, così restano visibili se crescono oltre il nuovo limite. Punteggio `fallow health` invariato (79 B: la penalità "unit size" è basata sulla distribuzione percentuale di tutto il progetto, non sul conteggio dei singoli file) — non è un problema, il punteggio grezzo non è l'obiettivo da inseguire.
+- **Gotcha scoperto:** i glob pattern in `.fallowrc.json` non possono usare `[...]` letterali per le cartelle route dinamiche di Nuxt (`[leagueId]`, `[id]`) — il motore glob li legge come character class, e l'escape con backslash non funziona (probabile conflitto con `\` come separatore path su Windows). Soluzione: sostituire ogni `[`/`]` con un wildcard `?` (es. `league/?leagueId?/event/?eventId?.vue`). Documentato in `CLAUDE.md`.
+- **`leagues.status`** rinominato da italiano leggibile a codici inglesi minuscoli in questa stessa sessione (vedi nota ADR-010 sopra) — cambio non correlato alla duplicazione ma emerso durante l'audit dello stesso file (`LeagueTable.vue`).
 
 ---
 
@@ -187,7 +208,7 @@ Gli store di sessione hanno **persistenza ottimistica**: update immediato UI + s
 | Round timer | 🟡 Presente, durata non ancora persistita | `RoundTimer.vue`; legge `event_round_duration`, ma la migrazione non è ancora applicata (vedi ADR-008) |
 | Validazione form (valibot) | 🟡 Parziale | In uso in `EventFormModal` e altri (5 file); non su tutti i form |
 | Test e2e Playwright | ☐ Non iniziato | Richiesto in `AGENTS.md`; TODO aggiunto in `docs/TODO.md` (Playwright + Playwright MCP) |
-| Test unitari | 🟡 Parziale | 19 test / 6 file (`pairingOptimizer`, `BaseButton`, `StandingsCard`, …) |
+| Test unitari | 🟡 Parziale | 61 test / 10 file (`pairingOptimizer`, `useTableDnd`, `usePlayersFilter`, `useLiveStandings`, `cardColors`, `RowActionButton`, `StandingsCard`, …) |
 
 ---
 
@@ -197,7 +218,8 @@ Gli store di sessione hanno **persistenza ottimistica**: update immediato UI + s
 |---------|--------|
 | `pnpm lint` | ✅ 0 warning, 0 errori (vedi ADR-009) |
 | `pnpm typecheck` | ✅ 0 errori — corretti due bug pre-esistenti non legati a questa sessione: mismatch di casing su `~/components/ui/*` (cartella reale `Ui/`) e alias `#test` mancante in `nuxt.config.ts` (risolveva solo lato vitest, non lato `nuxt typecheck`) |
-| `pnpm test` | ✅ 19 test / 6 file |
+| `pnpm test` | ✅ 61 test / 10 file |
+| `pnpm fallow:dupes` | ✅ 0 clone groups (era 128 gruppi / 17.6% al 2026-07-13 mattina — vedi ADR-011) |
 | `pnpm build` | ❌ **Rotto** — fallisce in prerender di `/` (`routeRules: { '/': { prerender: true } }`): `SyntaxError: The requested module 'vue/index.mjs' does not provide an export named 'default'` (ESM/CJS interop in Nitro). Non causato da questa sessione (nessuna modifica a Vue, `/`, o config di prerender) — probabile drift di dipendenze (Renovate). Da investigare. |
 
 ### Convenzioni codice — batch completati (2026-05-25)
@@ -233,7 +255,7 @@ Audit dettagliato: [`docs/audits/skills-audit-report.md`](docs/audits/skills-aud
 
 ### Media
 
-4. **Refactor pagina evento** — spezzare `[eventId].vue` e SFC > 250 righe (`TablePreviewModal`, `TableScoreGrid`).
+4. **Refactor pagina evento** — `[eventId].vue` e alcuni SFC restano > 250 righe (`TablePreviewModal`, `PairingsCard`, `TableScoreGrid`, `RoundTimer`, `useEventStore`, `useEventPage`, `useTableDnd`). Deciso il 2026-07-13 (ADR-011) di **non** spezzarli forzatamente: sono stati dati ceiling espliciti via `health.thresholdOverrides` in `.fallowrc.json`, restando tracciati se crescono oltre. Riconsiderare uno split reale solo se uno di questi supera il proprio ceiling o diventa davvero difficile da seguire, non per inseguire il punteggio `fallow health`.
 5. **Validazione con valibot** — estendere agli altri form modali oltre a `EventFormModal` (lega, ruleset, player).
 
 ### Bassa
@@ -270,6 +292,7 @@ Indice completo e aggiornato: [`docs/README.md`](docs/README.md). Voci principal
 
 | Data | Modifica |
 |------|----------|
+| 2026-07-13 | Sessione duplicazione + tuning `fallow` (ADR-011): `fallow:dupes` da 128 gruppi (17.6%) a 0; `app/components/ui/` riorganizzato in `actions/`, `modal/`, `layout/`, `display/`, `input/`; `BaseButton`/`ActionButtons` rinominati `RowActionButton`/`RowActionButtons`; nuovo `ConfirmButton` gemello di `CancelButton`; `duplicates.mode` assestato su `weak`; `health.thresholdOverrides` per 10 file grandi ma intenzionali; scoperto gotcha glob su cartelle `[param]` (fix: wildcard `?`); `leagues.status` rinominato da italiano a codici inglesi minuscoli (migrazione dati DB da fare manualmente); test da 19/6 file a 61/10 file; `docs/TODO.md` ripulito da contenuto implementato/debris |
 | 2026-07-12 | Sessione lint/typecheck/architettura: `pnpm lint` e `pnpm typecheck` portati a 0/0 (ADR-009); aggiunta `event_round_duration` (migrazione + wiring, non ancora applicata — ADR-008); documentato invariante scoring pairing optimizer (ADR-004); rimossa cartella shim `app/composables/events/` (progetto non pubblicato → niente backward-compat); creato `CLAUDE.md`; TODO Playwright + MCP aggiunto; corrette informazioni datate (store count 8→10, claim falso sul rename `[id]`→`[leagueId]`, valibot "0 uso"); scoperto `pnpm build` rotto (prerender `/`, non correlato a questa sessione) |
 | 2026-05-26 | Preview mostra tavoli prima di avanzare round (non dopo); `playerOrder` propagato a `nextRound` → `createPairings`; URL `phase=previewTables` ora include `round=N`; `previewTables` usa standings durante playing |
 | 2026-05-26 | Documentazione completa dei 6 URL query params in `docs/modal-url-sync.md` |
