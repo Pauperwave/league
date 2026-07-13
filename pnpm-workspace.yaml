@@ -20,5 +20,7 @@ minimumReleaseAgeExclude:
   - '@fallow-cli/win32-arm64-msvc@2.83.0'
   - '@fallow-cli/win32-x64-msvc@2.83.0'
   - fallow@2.83.0
+  - '@iconify-json/lucide@1.2.117'
+  - '@iconify-json/simple-icons@1.2.90'
 onlyBuiltDependencies:
   - sharp
