@@ -162,45 +162,39 @@ const { data: matchHistory } = usePlayerMatchHistory(playerId)
 
       <!-- Player Stats — compact horizontal bar -->
       <div class="grid grid-cols-3 sm:grid-cols-6 gap-3">
-        <div class="flex items-center gap-3 p-3 bg-elevated rounded-lg">
-          <UIcon :name="ICONS.calendarDays" class="size-5 text-primary shrink-0" />
-          <div>
-            <p class="text-xl font-bold leading-none">{{ playerStats?.events_played ?? 0 }}</p>
-            <p class="text-xs text-muted">{{ t('player.stats.events') }}</p>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-3 p-3 bg-elevated rounded-lg">
-          <UIcon :name="ICONS.battle" class="size-5 text-primary shrink-0" />
-          <div>
-            <p class="text-xl font-bold leading-none">{{ playerStats?.total_matches ?? 0 }}</p>
-            <p class="text-xs text-muted">{{ t('player.stats.matches') }}</p>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-3 p-3 bg-elevated rounded-lg">
-          <UIcon :name="ICONS.standings" class="size-5 text-warning shrink-0" />
-          <div>
-            <p class="text-xl font-bold leading-none">{{ playerStats?.total_wins ?? 0 }}</p>
-            <p class="text-xs text-muted">{{ t('player.stats.wins') }}</p>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-3 p-3 bg-elevated rounded-lg">
-          <UIcon :name="ICONS.kills" class="size-5 text-error shrink-0" />
-          <div>
-            <p class="text-xl font-bold leading-none">{{ playerStats?.total_kills ?? 0 }}</p>
-            <p class="text-xs text-muted">{{ t('player.stats.kills') }}</p>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-3 p-3 bg-elevated rounded-lg">
-          <UIcon :name="ICONS.vote" class="size-5 text-success shrink-0" />
-          <div>
-            <p class="text-xl font-bold leading-none">{{ playerStats?.average_score ?? 0 }}</p>
-            <p class="text-xs text-muted">{{ t('player.stats.average') }}</p>
-          </div>
-        </div>
+        <StatTile
+          background="bg-elevated"
+          :icon="ICONS.calendarDays"
+          :value="playerStats?.events_played ?? 0"
+          :label="t('player.stats.events')"
+        />
+        <StatTile
+          background="bg-elevated"
+          :icon="ICONS.battle"
+          :value="playerStats?.total_matches ?? 0"
+          :label="t('player.stats.matches')"
+        />
+        <StatTile
+          background="bg-elevated"
+          :icon="ICONS.standings"
+          color="text-warning"
+          :value="playerStats?.total_wins ?? 0"
+          :label="t('player.stats.wins')"
+        />
+        <StatTile
+          background="bg-elevated"
+          :icon="ICONS.kills"
+          color="text-error"
+          :value="playerStats?.total_kills ?? 0"
+          :label="t('player.stats.kills')"
+        />
+        <StatTile
+          background="bg-elevated"
+          :icon="ICONS.vote"
+          color="text-success"
+          :value="playerStats?.average_score ?? 0"
+          :label="t('player.stats.average')"
+        />
 
         <div class="flex items-center gap-3 p-3 bg-elevated rounded-lg">
           <UIcon :name="ICONS.commander" class="size-5 text-info shrink-0" />

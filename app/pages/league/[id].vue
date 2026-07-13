@@ -16,11 +16,6 @@ interface UpdateEventData {
   data: { eventName: string; eventDate: string | null; numRound: number; roundDuration: number }
 }
 
-interface UpdateLeagueData {
-  id: number
-  data: { name: string; startsAt: string | null; endsAt: string | null; rulesetId: number | null }
-}
-
 const route = useRoute()
 const router = useRouter()
 const toast = useToast()
@@ -179,31 +174,9 @@ async function confirmDeleteEvent() {
   await refreshEvents()
 }
 
-// — League —
-async function updateLeague({ id, data }: UpdateLeagueData) {
-  const result = await leagueStore.updateLeague(id, {
-    name: data.name,
-    starts_at: data.startsAt,
-    ends_at: data.endsAt,
-    ruleset_id: data.rulesetId,
-  })
-
-  if (!result.success) {
-    toast.add({
-      title: t('league.toast.updateErrorTitle'),
-      description: result.error || t('league.toast.updateErrorFallback'),
-      color: 'error'
-    })
-    return
-  }
-
+const { updateLeague } = useLeagueUpdate(() => {
   showLeagueEditModal.value = false
-  toast.add({
-    title: t('league.toast.updatedTitle'),
-    description: t('league.toast.updatedDescription'),
-    color: 'success'
-  })
-}
+})
 </script>
 
 <template>

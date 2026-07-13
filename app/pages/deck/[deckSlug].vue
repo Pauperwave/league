@@ -156,45 +156,34 @@ watch(() => firstDeck.value?.commander_1_name, () => {
 
       <!-- Aggregate Commander Stats -->
       <div class="grid grid-cols-3 sm:grid-cols-5 gap-3">
-        <div class="flex items-center gap-3 p-3 bg-default rounded-lg">
-          <UIcon :name="ICONS.players" class="size-5 text-primary shrink-0" />
-          <div>
-            <p class="text-xl font-bold leading-none">{{ commanderStats?.player_count ?? 0 }}</p>
-            <p class="text-xs text-muted">{{ t('deck.statsPlayers') }}</p>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-3 p-3 bg-default rounded-lg">
-          <UIcon :name="ICONS.battle" class="size-5 text-primary shrink-0" />
-          <div>
-            <p class="text-xl font-bold leading-none">{{ commanderStats?.match_count ?? 0 }}</p>
-            <p class="text-xs text-muted">{{ t('player.stats.matches') }}</p>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-3 p-3 bg-default rounded-lg">
-          <UIcon :name="ICONS.standings" class="size-5 text-warning shrink-0" />
-          <div>
-            <p class="text-xl font-bold leading-none">{{ commanderStats?.win_count ?? 0 }}</p>
-            <p class="text-xs text-muted">{{ t('player.stats.wins') }}</p>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-3 p-3 bg-default rounded-lg">
-          <UIcon :name="ICONS.kills" class="size-5 text-error shrink-0" />
-          <div>
-            <p class="text-xl font-bold leading-none">{{ commanderStats?.total_kills ?? 0 }}</p>
-            <p class="text-xs text-muted">{{ t('player.stats.kills') }}</p>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-3 p-3 bg-default rounded-lg">
-          <UIcon :name="ICONS.vote" class="size-5 text-success shrink-0" />
-          <div>
-            <p class="text-xl font-bold leading-none">{{ commanderStats?.average_score ?? 0 }}</p>
-            <p class="text-xs text-muted">{{ t('player.stats.average') }}</p>
-          </div>
-        </div>
+        <StatTile
+          :icon="ICONS.players"
+          :value="commanderStats?.player_count ?? 0"
+          :label="t('deck.statsPlayers')"
+        />
+        <StatTile
+          :icon="ICONS.battle"
+          :value="commanderStats?.match_count ?? 0"
+          :label="t('player.stats.matches')"
+        />
+        <StatTile
+          :icon="ICONS.standings"
+          color="text-warning"
+          :value="commanderStats?.win_count ?? 0"
+          :label="t('player.stats.wins')"
+        />
+        <StatTile
+          :icon="ICONS.kills"
+          color="text-error"
+          :value="commanderStats?.total_kills ?? 0"
+          :label="t('player.stats.kills')"
+        />
+        <StatTile
+          :icon="ICONS.vote"
+          color="text-success"
+          :value="commanderStats?.average_score ?? 0"
+          :label="t('player.stats.average')"
+        />
       </div>
 
       <!-- Players with this deck -->

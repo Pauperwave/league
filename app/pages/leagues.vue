@@ -7,11 +7,6 @@ import type { League } from '#shared/utils/types'
 
 const { t } = useI18n()
 
-interface UpdateLeagueData {
-  id: number
-  data: { name: string; startsAt: string | null; endsAt: string | null; rulesetId: number | null }
-}
-
 const editLeagueLogging = useButtonLogging('Edit League')
 
 const {
@@ -29,8 +24,6 @@ const {
   navigateToLeague,
 } = useLeagues()
 
-const leagueStore = useLeagueStore()
-
 const breadcrumbItems = computed(() => [
   { label: t('common.home'), to: '/', icon: ICONS.home },
   { label: t('league.breadcrumb') },
@@ -47,19 +40,10 @@ function openEditLeague(league: League) {
   showEditModal.value = true
 }
 
-async function updateLeague({ id, data }: UpdateLeagueData) {
-  const result = await leagueStore.updateLeague(id, {
-    name: data.name,
-    starts_at: data.startsAt,
-    ends_at: data.endsAt,
-    ruleset_id: data.rulesetId,
-  })
-
-  if (!result.success) return console.error(result.error)
-
+const { updateLeague } = useLeagueUpdate(() => {
   showEditModal.value = false
   leagueToEdit.value = null
-}
+})
 </script>
 
 <template>
@@ -88,39 +72,22 @@ async function updateLeague({ id, data }: UpdateLeagueData) {
 
     <div v-else class="p-6">
       <LeagueTable
-        :leagues="leagues"
-        :rulesets="normalizedRulesets"
-        @view="navigateToLeague"
-        @edit="openEditLeague"
-        @delete="handleDeleteLeague"
-      />
+:leagues="leagues" :rulesets="normalizedRulesets" @view="navigateToLeague" @edit="openEditLeague"
+        @delete="handleDeleteLeague" />
     </div>
 
     <!-- Modals -->
     <LeagueFormModal
-      v-model:open="showCreateModal"
-      :league="null"
-      :rulesets="normalizedRulesets"
-      :rulesets-loading="rulesetsLoading"
-      @create="handleCreateLeague"
-    />
+v-model:open="showCreateModal" :league="null" :rulesets="normalizedRulesets"
+      :rulesets-loading="rulesetsLoading" @create="handleCreateLeague" />
 
     <LeagueFormModal
-      v-model:open="showEditModal"
-      :league="leagueToEdit"
-      :rulesets="normalizedRulesets"
-      :rulesets-loading="rulesetsLoading"
-      @update="updateLeague"
-    />
+v-model:open="showEditModal" :league="leagueToEdit" :rulesets="normalizedRulesets"
+      :rulesets-loading="rulesetsLoading" @update="updateLeague" />
 
     <ConfirmModal
-      v-model:open="showDeleteConfirm"
-      :description="t('league.confirmDeleteDescription')"
-      :question="t('league.confirmDeleteQuestion')"
-      :subject="leagueToDelete?.name"
-      :confirm-icon="ICONS.delete"
-      confirm-color="error"
-      @confirm="confirmDeleteLeague"
-    />
+v-model:open="showDeleteConfirm" :description="t('league.confirmDeleteDescription')"
+      :question="t('league.confirmDeleteQuestion')" :subject="leagueToDelete?.name" :confirm-icon="ICONS.delete"
+      confirm-color="error" @confirm="confirmDeleteLeague" />
   </div>
 </template>

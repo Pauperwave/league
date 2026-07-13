@@ -16,7 +16,7 @@ Scoped guidance for `app/composables/`. See the root `CLAUDE.md` and `docs/state
 | `event/` | Event page orchestration, lifecycle, URL sync, modals, presets |
 | `event-pairing/` | The pairing optimizer (`pairingOptimizer.ts`) and preferences — canonical source, see its file-level comment on the scoring invariant before touching weights |
 | `supabase/` | Thin SSR-friendly fetchers that wrap a store's fetch action in `useAsyncData` |
-| `commanders/`, `players/`, `tables/`, `theme/`, `ui/`, `auth/` | Feature-scoped composables |
+| `commanders/`, `players/`, `tables/`, `theme/`, `ui/`, `auth/`, `league/`, `deck/` | Feature-scoped composables |
 
 A few composables live flat at the top of `app/composables/` (no subfolder) — that's fine for genuinely small one-off helpers, but if a composable grows a sibling (types, a preferences file, a test), give it a subfolder rather than letting the top level accumulate files.
 

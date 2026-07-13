@@ -103,45 +103,34 @@ watch(() => deck.value?.commander_1_name, () => {
 
       <!-- Deck Stats — compact horizontal bar -->
       <div class="grid grid-cols-3 sm:grid-cols-5 gap-3">
-        <div class="flex items-center gap-3 p-3 bg-default rounded-lg">
-          <UIcon :name="ICONS.calendarDays" class="size-5 text-primary shrink-0" />
-          <div>
-            <p class="text-xl font-bold leading-none">{{ deckStats?.events_played ?? 0 }}</p>
-            <p class="text-xs text-muted">{{ t('player.stats.events') }}</p>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-3 p-3 bg-default rounded-lg">
-          <UIcon :name="ICONS.battle" class="size-5 text-primary shrink-0" />
-          <div>
-            <p class="text-xl font-bold leading-none">{{ deckStats?.total_matches ?? 0 }}</p>
-            <p class="text-xs text-muted">{{ t('player.stats.matches') }}</p>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-3 p-3 bg-default rounded-lg">
-          <UIcon :name="ICONS.standings" class="size-5 text-warning shrink-0" />
-          <div>
-            <p class="text-xl font-bold leading-none">{{ deckStats?.total_wins ?? 0 }}</p>
-            <p class="text-xs text-muted">{{ t('player.stats.wins') }}</p>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-3 p-3 bg-default rounded-lg">
-          <UIcon :name="ICONS.kills" class="size-5 text-error shrink-0" />
-          <div>
-            <p class="text-xl font-bold leading-none">{{ deckStats?.total_kills ?? 0 }}</p>
-            <p class="text-xs text-muted">{{ t('player.stats.kills') }}</p>
-          </div>
-        </div>
-
-        <div class="flex items-center gap-3 p-3 bg-default rounded-lg">
-          <UIcon :name="ICONS.vote" class="size-5 text-success shrink-0" />
-          <div>
-            <p class="text-xl font-bold leading-none">{{ deckStats?.average_score ?? 0 }}</p>
-            <p class="text-xs text-muted">{{ t('player.stats.average') }}</p>
-          </div>
-        </div>
+        <StatTile
+          :icon="ICONS.calendarDays"
+          :value="deckStats?.events_played ?? 0"
+          :label="t('player.stats.events')"
+        />
+        <StatTile
+          :icon="ICONS.battle"
+          :value="deckStats?.total_matches ?? 0"
+          :label="t('player.stats.matches')"
+        />
+        <StatTile
+          :icon="ICONS.standings"
+          color="text-warning"
+          :value="deckStats?.total_wins ?? 0"
+          :label="t('player.stats.wins')"
+        />
+        <StatTile
+          :icon="ICONS.kills"
+          color="text-error"
+          :value="deckStats?.total_kills ?? 0"
+          :label="t('player.stats.kills')"
+        />
+        <StatTile
+          :icon="ICONS.vote"
+          color="text-success"
+          :value="deckStats?.average_score ?? 0"
+          :label="t('player.stats.average')"
+        />
       </div>
 
       <!-- Card Art Gallery: same total height for single or partner -->
