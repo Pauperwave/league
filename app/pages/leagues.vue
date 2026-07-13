@@ -38,7 +38,6 @@ const breadcrumbItems = computed(() => [
 
 const normalizedRulesets = computed(() => rulesets.value ?? [])
 
-// — Edit modal —
 const showEditModal = ref(false)
 const leagueToEdit = ref<League | null>(null)
 
