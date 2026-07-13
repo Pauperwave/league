@@ -71,37 +71,15 @@ watch(() => deck.value?.commander_1_name, () => {
         :companion-name="deck.companion_name"
       />
 
-      <!-- Deck Stats — compact horizontal bar -->
-      <div class="grid grid-cols-3 sm:grid-cols-5 gap-3">
-        <StatTile
-          :icon="ICONS.calendarDays"
-          :value="deckStats?.events_played ?? 0"
-          :label="t('player.stats.events')"
-        />
-        <StatTile
-          :icon="ICONS.battle"
-          :value="deckStats?.total_matches ?? 0"
-          :label="t('player.stats.matches')"
-        />
-        <StatTile
-          :icon="ICONS.standings"
-          color="text-warning"
-          :value="deckStats?.total_wins ?? 0"
-          :label="t('player.stats.wins')"
-        />
-        <StatTile
-          :icon="ICONS.kills"
-          color="text-error"
-          :value="deckStats?.total_kills ?? 0"
-          :label="t('player.stats.kills')"
-        />
-        <StatTile
-          :icon="ICONS.vote"
-          color="text-success"
-          :value="deckStats?.average_score ?? 0"
-          :label="t('player.stats.average')"
-        />
-      </div>
+      <DeckStatsRow
+        :first-icon="ICONS.calendarDays"
+        :first-value="deckStats?.events_played ?? 0"
+        :first-label="t('player.stats.events')"
+        :matches="deckStats?.total_matches ?? 0"
+        :wins="deckStats?.total_wins ?? 0"
+        :kills="deckStats?.total_kills ?? 0"
+        :average="deckStats?.average_score ?? 0"
+      />
 
       <CommanderArtGallery
         :image1="commander1Data?.imageUrl ?? null"
@@ -115,9 +93,6 @@ watch(() => deck.value?.commander_1_name, () => {
       <ScryfallLinkButton :url="scryfallSearchUrl" />
     </div>
 
-    <div v-else class="text-center py-12 text-muted">
-      <UIcon :name="ICONS.noCommander" class="text-4xl mb-2 opacity-30" />
-      <p>{{ t('deck.notFound') }}</p>
-    </div>
+    <DeckNotFound v-else />
   </div>
 </template>

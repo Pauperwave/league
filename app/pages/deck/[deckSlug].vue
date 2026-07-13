@@ -98,37 +98,15 @@ watch(() => firstDeck.value?.commander_1_name, () => {
         :loading="scryfallLoading"
       />
 
-      <!-- Aggregate Commander Stats -->
-      <div class="grid grid-cols-3 sm:grid-cols-5 gap-3">
-        <StatTile
-          :icon="ICONS.players"
-          :value="commanderStats?.player_count ?? 0"
-          :label="t('deck.statsPlayers')"
-        />
-        <StatTile
-          :icon="ICONS.battle"
-          :value="commanderStats?.match_count ?? 0"
-          :label="t('player.stats.matches')"
-        />
-        <StatTile
-          :icon="ICONS.standings"
-          color="text-warning"
-          :value="commanderStats?.win_count ?? 0"
-          :label="t('player.stats.wins')"
-        />
-        <StatTile
-          :icon="ICONS.kills"
-          color="text-error"
-          :value="commanderStats?.total_kills ?? 0"
-          :label="t('player.stats.kills')"
-        />
-        <StatTile
-          :icon="ICONS.vote"
-          color="text-success"
-          :value="commanderStats?.average_score ?? 0"
-          :label="t('player.stats.average')"
-        />
-      </div>
+      <DeckStatsRow
+        :first-icon="ICONS.players"
+        :first-value="commanderStats?.player_count ?? 0"
+        :first-label="t('deck.statsPlayers')"
+        :matches="commanderStats?.match_count ?? 0"
+        :wins="commanderStats?.win_count ?? 0"
+        :kills="commanderStats?.total_kills ?? 0"
+        :average="commanderStats?.average_score ?? 0"
+      />
 
       <!-- Players with this deck -->
       <div class="space-y-3">
@@ -158,9 +136,6 @@ watch(() => firstDeck.value?.commander_1_name, () => {
       <ScryfallLinkButton :url="scryfallSearchUrl" />
     </div>
 
-    <div v-else class="text-center py-12 text-muted">
-      <UIcon :name="ICONS.noCommander" class="text-4xl mb-2 opacity-30" />
-      <p>{{ t('deck.notFound') }}</p>
-    </div>
+    <DeckNotFound v-else />
   </div>
 </template>
