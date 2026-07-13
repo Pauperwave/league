@@ -2,6 +2,17 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
+import * as v from 'valibot'
+
+const DeckCreateSchema = v.object({
+  player_id: v.number(),
+  commander_1_name: v.pipe(v.string(), v.trim(), v.minLength(1)),
+  commander_2_name: v.nullable(v.string()),
+  companion_name: v.nullable(v.string()),
+  is_borrowed: v.boolean(),
+  lender_id: v.nullable(v.number()),
+})
+
 const emit = defineEmits<{
   create: [deck: {
     player_id: number
@@ -53,15 +64,22 @@ watch(open, async (isOpen) => {
 function handleSubmit() {
   if (!canSubmit.value) return
 
-  emit('create', {
+  const data = {
     player_id: props.playerId,
     commander_1_name: commander1.value.trim(),
     commander_2_name: commander2.value.trim() || null,
     companion_name: companion.value.trim() || null,
     is_borrowed: isBorrowed.value,
     lender_id: isBorrowed.value ? (lenderId.value ? Number(lenderId.value) : null) : null
-  })
+  }
 
+  const parsed = v.safeParse(DeckCreateSchema, data)
+  if (!parsed.success) {
+    logError('DeckCreateModal', 'Deck form validation failed', parsed.issues)
+    return
+  }
+
+  emit('create', parsed.output)
   open.value = false
 }
 

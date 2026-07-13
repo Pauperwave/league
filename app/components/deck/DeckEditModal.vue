@@ -4,6 +4,12 @@
 import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import type { CommanderDeck } from '#shared/utils/types'
+import * as v from 'valibot'
+
+const DeckUpdateSchema = v.object({
+  is_borrowed: v.boolean(),
+  lender_id: v.nullable(v.number()),
+})
 
 const props = defineProps<{
   deck: CommanderDeck | null
@@ -41,17 +47,18 @@ watch(open, async (isOpen) => {
 function handleSubmit() {
   if (!props.deck) return
 
-  const updates: Partial<CommanderDeck> = {
-    is_borrowed: isBorrowed.value
+  const data = {
+    is_borrowed: isBorrowed.value,
+    lender_id: isBorrowed.value ? (lenderId.value ? Number(lenderId.value) : null) : null,
   }
 
-  if (isBorrowed.value) {
-    updates.lender_id = lenderId.value ? Number(lenderId.value) : null
-  } else {
-    updates.lender_id = null
+  const parsed = v.safeParse(DeckUpdateSchema, data)
+  if (!parsed.success) {
+    logError('DeckEditModal', 'Deck form validation failed', parsed.issues)
+    return
   }
 
-  emit('update', { id: props.deck.id, updates })
+  emit('update', { id: props.deck.id, updates: parsed.output })
   open.value = false
 }
 
