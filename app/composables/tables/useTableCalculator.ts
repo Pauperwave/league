@@ -1,3 +1,4 @@
+// app\composables\tables\useTableCalculator.ts
 // Centralized table sizing and preview helpers used by event flow and pairing logic.
 export function useTableCalculator() {
   function calculateTables(playerCount: number): { canPlay: boolean; tables4: number; tables3: number } {

@@ -1,3 +1,4 @@
+// app\composables\event-pairing\pairingOptimizer.ts
 // Greedy + local-swap pairing optimizer with hard constraints and transparent scoring details.
 //
 // Invariant: for every table, sum(perPlayer[p].total for p in table) === tableScore.total.

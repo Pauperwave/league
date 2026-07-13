@@ -1,3 +1,4 @@
+// app\composables\supabase\useLeagues.ts
 import { useI18n } from 'vue-i18n'
 import type { League } from '#shared/utils/types'
 

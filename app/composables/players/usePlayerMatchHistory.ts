@@ -1,4 +1,4 @@
-// app\composables\supabase\usePlayerMatchHistory.ts
+// app\composables\players\usePlayerMatchHistory.ts
 import { useI18n } from 'vue-i18n'
 import type { Database } from '#shared/utils/types/database'
 

@@ -1,4 +1,4 @@
-<!-- app/components/Events/EventStepper.vue -->
+<!-- app\components\event\EventStepper.vue -->
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'

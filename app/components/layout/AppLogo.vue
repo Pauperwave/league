@@ -1,4 +1,4 @@
-<!-- app\components\Layout\AppLogo.vue -->
+<!-- app\components\layout\AppLogo.vue -->
 <template>
   <!-- In dark mode use the original logo, in light mode use the inverted version -->
   <NuxtImg

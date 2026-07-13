@@ -1,4 +1,4 @@
-<!-- app/components/Events/StartEventButton.vue -->
+<!-- app\components\event\StartEventButton.vue -->
 
 <!--
   StartEventButton

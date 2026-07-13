@@ -1,4 +1,4 @@
-<!-- app\components\DeckCardActions.vue -->
+<!-- app\components\deck\DeckCardActions.vue -->
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'

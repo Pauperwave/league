@@ -1,4 +1,4 @@
-<!-- app\components\players\PlayersHeader.vue -->
+<!-- app\components\player\PlayersHeader.vue -->
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'

@@ -1,4 +1,4 @@
-// app/composables/supabase/useStatsQueryBuilder.ts
+// app\composables\supabase\useStatsQueryBuilder.ts
 
 /**
  * Apply commander_2 filter to a Supabase query.

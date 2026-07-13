@@ -1,4 +1,4 @@
-// app/composables/usePlayerBySlug.ts
+// app\composables\players\usePlayerBySlug.ts
 import { slugify } from '~/utils/slug'
 import type { Player } from '#shared/utils/types'
 

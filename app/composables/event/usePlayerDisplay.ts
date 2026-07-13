@@ -1,3 +1,4 @@
+// app\composables\event\usePlayerDisplay.ts
 import type { TournamentPlayer } from '#shared/utils/types'
 
 export function usePlayerDisplay() {

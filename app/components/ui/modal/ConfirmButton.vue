@@ -1,4 +1,4 @@
-<!-- app/components/ui/modal/ConfirmButton.vue -->
+<!-- app\components\ui\modal\ConfirmButton.vue -->
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'

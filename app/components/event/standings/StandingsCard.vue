@@ -1,4 +1,4 @@
-<!-- app\components\events\Standings\StandingsCard.vue -->
+<!-- app\components\event\standings\StandingsCard.vue -->
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'

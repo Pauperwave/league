@@ -1,3 +1,4 @@
+// app\composables\event-pairing\pairingPreferences.ts
 import type { PairingForbiddenPair, PairingWeights } from '#shared/utils/types'
 import { DEFAULT_PAIRING_WEIGHTS } from './pairingOptimizer'
 

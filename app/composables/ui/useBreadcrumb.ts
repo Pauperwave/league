@@ -1,3 +1,4 @@
+// app\composables\ui\useBreadcrumb.ts
 import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 

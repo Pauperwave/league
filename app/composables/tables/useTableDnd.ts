@@ -1,3 +1,4 @@
+// app\composables\tables\useTableDnd.ts
 // State and validation layer for table drag-and-drop plus pairing constraints/scoring.
 import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'

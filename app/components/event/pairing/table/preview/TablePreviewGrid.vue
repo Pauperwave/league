@@ -1,4 +1,4 @@
-<!-- app\components\events\Pairings\Table\TablePreviewGrid.vue -->
+<!-- app\components\event\pairing\table\preview\TablePreviewGrid.vue -->
 <script setup lang="ts">
 import type { Seat, TournamentTable } from '#shared/utils/types'
 

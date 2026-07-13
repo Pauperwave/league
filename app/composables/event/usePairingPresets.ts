@@ -1,3 +1,4 @@
+// app\composables\event\usePairingPresets.ts
 import type { PairingWeights } from '#shared/utils/types'
 import type { Ref } from 'vue'
 import { isCloseTo } from '~/utils/math'

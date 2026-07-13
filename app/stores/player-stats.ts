@@ -1,4 +1,4 @@
-// app/stores/player-stats.ts
+// app\stores\player-stats.ts
 
 import type { PlayerStat } from '#shared/utils/types'
 

@@ -1,4 +1,4 @@
-<!-- app\components\events\modals\EventScoreModal.vue -->
+<!-- app\components\event\modal\EventScoreModal.vue -->
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import type { PairingWithResults, Player } from '#shared/utils/types'

@@ -1,3 +1,4 @@
+// app\composables\supabase\useWaitroom.ts
 import type { WaitroomEntry } from '#shared/utils/types'
 
 /**

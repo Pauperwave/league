@@ -1,4 +1,4 @@
-<!-- app\components\Rankings\LeagueStandingsCard.vue -->
+<!-- app\components\league\LeagueStandingsCard.vue -->
 <script setup lang="ts">
 import { ICONS } from '~/utils/icons'
 import type { StandingWithPlayer } from '#shared/utils/types'

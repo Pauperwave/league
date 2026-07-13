@@ -1,3 +1,4 @@
+// app\composables\supabase\useTournaments.ts
 export interface Tournament {
   tournament_id: number
   event_id: number

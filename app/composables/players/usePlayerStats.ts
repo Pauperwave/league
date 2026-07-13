@@ -1,4 +1,4 @@
-// app\composables\supabase\usePlayerStats.ts
+// app\composables\players\usePlayerStats.ts
 /** SSR-friendly composable for fetching denormalized player stats from player_stats table */
 export function usePlayerStats(playerId: Ref<number | undefined>) {
   const supabase = useSupabaseClient()

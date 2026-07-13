@@ -1,4 +1,4 @@
-<!-- app/components/Events/EventControlPanel.vue -->
+<!-- app\components\event\EventControlPanel.vue -->
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'

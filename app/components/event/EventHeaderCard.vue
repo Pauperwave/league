@@ -1,4 +1,4 @@
-<!-- app\components\Events\EventHeaderCard.vue -->
+<!-- app\components\event\EventHeaderCard.vue -->
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'

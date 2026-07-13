@@ -1,4 +1,4 @@
-<!-- app\components\events\Pairings\TableScoresModal.vue -->
+<!-- app\components\event\pairing\table\score\TableScoresModal.vue -->
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'

@@ -1,4 +1,4 @@
-// app\composables\supabase\useCommanderStats.ts
+// app\composables\commanders\useCommanderStats.ts
 import type { CommanderAggregate } from '#shared/utils/types'
 import { applyCommander2Filter } from '../supabase/useStatsQueryBuilder'
 

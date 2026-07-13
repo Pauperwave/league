@@ -1,4 +1,4 @@
-<!-- app\components\events\Pairings\Kill\KillPlayerNode.vue -->
+<!-- app\components\event\pairing\kill\KillPlayerNode.vue -->
 <script setup lang="ts">
 import { ICONS } from '~/utils/icons'
 import { Handle, Position } from '@vue-flow/core'

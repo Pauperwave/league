@@ -1,4 +1,4 @@
-<!-- app\components\Modals\DeckEditModal.vue -->
+<!-- app\components\deck\DeckEditModal.vue -->
 <script setup lang="ts">
 // fallow-ignore-file code-duplication -- FormModal invocation boilerplate, see app/components/ui/CLAUDE.md
 import { useI18n } from 'vue-i18n'

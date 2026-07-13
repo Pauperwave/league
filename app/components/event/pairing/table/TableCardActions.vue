@@ -1,4 +1,4 @@
-<!-- app\components\events\Pairings\TableCardActions.vue -->
+<!-- app\components\event\pairing\table\TableCardActions.vue -->
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'

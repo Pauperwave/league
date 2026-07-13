@@ -1,4 +1,4 @@
-<!-- app\components\Rankings\LeagueRanking.vue -->
+<!-- app\components\league\LeagueRanking.vue -->
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'

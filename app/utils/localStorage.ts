@@ -1,3 +1,4 @@
+// app\utils\localStorage.ts
 /**
  * Retrieves data from the localStorage cache if not expired
  * @param key - Cache key

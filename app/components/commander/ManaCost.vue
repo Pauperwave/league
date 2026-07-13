@@ -1,4 +1,4 @@
-<!-- app\components\ManaCost.vue -->
+<!-- app\components\commander\ManaCost.vue -->
 <script setup lang="ts">
 const props = defineProps<{
   manaCost?: string | null

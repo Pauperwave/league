@@ -1,4 +1,4 @@
-<!-- app\\components\\event\\CurrentTime.vue -->
+<!-- app\components\event\CurrentTime.vue -->
 <script setup lang="ts">
 import { ICONS } from '~/utils/icons'
 const now = ref(new Date())

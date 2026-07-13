@@ -1,3 +1,4 @@
+// app\utils\standingsSubmission.ts
 import type { Pairing } from '#shared/utils/types'
 
 type RankingsByPairing = Map<number, number[]>

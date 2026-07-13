@@ -1,3 +1,4 @@
+// app\plugins\route-logger.ts
 export default defineNuxtPlugin((_nuxtApp) => {
   const router = useRouter()
 

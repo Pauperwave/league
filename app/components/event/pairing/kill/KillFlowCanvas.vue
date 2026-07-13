@@ -1,4 +1,4 @@
-<!-- app\components\events\Pairings\Kill\KillFlowCanvas.vue -->
+<!-- app\components\event\pairing\kill\KillFlowCanvas.vue -->
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'

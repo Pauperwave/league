@@ -1,4 +1,4 @@
-<!-- app\components\events\Pairings\Table\TablePlayerReceiptCard.vue -->
+<!-- app\components\event\pairing\table\TablePlayerReceiptCard.vue -->
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import type { TournamentPlayer } from '#shared/utils/types'

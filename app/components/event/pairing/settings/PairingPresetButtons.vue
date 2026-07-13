@@ -1,4 +1,4 @@
-<!-- app\components\events\Pairings\Settings\PairingPresetButtons.vue -->
+<!-- app\components\event\pairing\settings\PairingPresetButtons.vue -->
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'

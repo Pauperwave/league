@@ -1,4 +1,4 @@
-<!-- app\components\players\PlayersGrid.vue -->
+<!-- app\components\player\PlayersGrid.vue -->
 <script setup lang="ts">
 import type { Player } from '#shared/utils/types'
 import type { SortField } from '~/composables/players/usePlayersFilter'

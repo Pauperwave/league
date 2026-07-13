@@ -1,4 +1,4 @@
-// app/composables/useCommanderSearch.ts
+// app\composables\commanders\useCommanderSearch.ts
 import { mapToCommanderCard, type CommanderCard } from './useCommanderCards'
 import type { Database } from '#shared/utils/types/database'
 

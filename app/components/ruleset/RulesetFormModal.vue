@@ -1,4 +1,4 @@
-<!-- app\components\Modals\RulesetFormModal.vue -->
+<!-- app\components\ruleset\RulesetFormModal.vue -->
 <script setup lang="ts">
 // fallow-ignore-file code-duplication -- FormModal invocation boilerplate + props/emit shape coincidence, see app/components/ui/CLAUDE.md
 import { useI18n } from 'vue-i18n'

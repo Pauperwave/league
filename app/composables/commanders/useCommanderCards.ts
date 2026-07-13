@@ -1,4 +1,4 @@
-// app/composables/useCommanderCards.ts
+// app\composables\commanders\useCommanderCards.ts
 import { useI18n } from 'vue-i18n'
 import * as v from 'valibot'
 import type { Database } from '#shared/utils/types/database'

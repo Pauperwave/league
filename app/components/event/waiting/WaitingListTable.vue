@@ -1,4 +1,4 @@
-<!-- app/components/Events/WaitingListTable.vue -->
+<!-- app\components\event\waiting\WaitingListTable.vue -->
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'

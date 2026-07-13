@@ -1,3 +1,4 @@
+// app\composables\supabase\usePairingsQuery.ts
 import type { PairingWithResults } from '#shared/utils/types'
 import type { Database } from '#shared/utils/types/database'
 

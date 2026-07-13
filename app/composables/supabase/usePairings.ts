@@ -1,3 +1,4 @@
+// app\composables\supabase\usePairings.ts
 import type { Pairing } from '#shared/utils/types'
 
 /**

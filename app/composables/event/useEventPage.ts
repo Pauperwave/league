@@ -1,4 +1,4 @@
-// league\app\composables\event\useEventPage.ts
+// app\composables\event\useEventPage.ts
 import { useI18n } from 'vue-i18n'
 import type { Player, PairingWithResults } from '#shared/utils/types'
 import { usePlayerStore } from '~/stores/players'

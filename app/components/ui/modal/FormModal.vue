@@ -1,4 +1,4 @@
-<!-- app/components/ui/modal/FormModal.vue -->
+<!-- app\components\ui\modal\FormModal.vue -->
 <script setup lang="ts">
 interface Props {
   title: string

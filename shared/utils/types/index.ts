@@ -1,3 +1,4 @@
+// shared\utils\types\index.ts
 // Auto-generated database types are in `database.ts` — do not modify that file.
 // This file extends them with project-specific types.
 import type { Tables, TablesInsert } from '#shared/utils/types/database'

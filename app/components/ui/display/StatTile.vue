@@ -1,4 +1,4 @@
-<!-- app/components/ui/display/StatTile.vue -->
+<!-- app\components\ui\display\StatTile.vue -->
 <script setup lang="ts">
 interface Props {
   icon: string

@@ -1,4 +1,4 @@
-// app\composables\supabase\useDeckStats.ts
+// app\composables\commanders\useDeckStats.ts
 import { applyCommander2Filter } from '../supabase/useStatsQueryBuilder'
 
 /** SSR-friendly composable for fetching denormalized deck stats from deck_stats table */

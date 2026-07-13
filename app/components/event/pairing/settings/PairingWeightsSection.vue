@@ -1,4 +1,4 @@
-<!-- app\components\events\Pairings\Settings\PairingWeightsSection.vue -->
+<!-- app\components\event\pairing\settings\PairingWeightsSection.vue -->
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import type { PairingWeights } from '#shared/utils/types'

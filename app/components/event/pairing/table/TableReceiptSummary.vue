@@ -1,4 +1,4 @@
-<!-- app\components\events\Pairings\Table\TableReceiptSummary.vue -->
+<!-- app\components\event\pairing\table\TableReceiptSummary.vue -->
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import type { PairingTableScore } from '~/composables/event-pairing/pairingOptimizer'

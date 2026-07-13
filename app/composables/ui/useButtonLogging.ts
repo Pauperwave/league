@@ -1,3 +1,4 @@
+// app\composables\ui\useButtonLogging.ts
 /**
  * Composable for logging button clicks with contextual data
  */

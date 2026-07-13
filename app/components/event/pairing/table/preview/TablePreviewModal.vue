@@ -1,4 +1,4 @@
-<!-- app\components\events\Pairings\Table\TablePreviewModal.vue -->
+<!-- app\components\event\pairing\table\preview\TablePreviewModal.vue -->
 <script setup lang="ts">
 // Table preview modal with drag-and-drop editing, pairing constraints,
 // optimizer controls, and transparent score breakdown.
@@ -299,17 +299,12 @@ function openTableScoreBreakdown(tableIndex: number) {
     </template>
 
     <template #footer>
-      <UButton color="neutral" variant="ghost" size="sm" @click="handleCancel">
-        {{ t('common.cancel') }}
-      </UButton>
-      <UButton
-        color="primary"
-        :variant="isValid ? 'solid' : 'outline'"
-        :disabled="!isValid"
-        @click="handleConfirm"
-      >
-        {{ t('common.confirm') }}
-      </UButton>
+      <ModalFooterActions
+        :confirm-label="t('common.confirm')"
+        :confirm-disabled="!isValid"
+        @cancel="handleCancel"
+        @confirm="handleConfirm"
+      />
     </template>
   </UModal>
 

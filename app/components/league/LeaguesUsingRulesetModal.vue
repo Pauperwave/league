@@ -1,4 +1,4 @@
-<!-- app\components\Modals\LeaguesUsingRulesetModal.vue -->
+<!-- app\components\league\LeaguesUsingRulesetModal.vue -->
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
@@ -27,7 +27,6 @@ const leagues = computed(() => props.getLeaguesByRuleset(props.rulesetId))
 
 const currentLeagueId = ref<number | null>(null)
 const navigateLogging = useButtonLogging('Navigate to League', { leagueId: () => currentLeagueId.value, rulesetId: () => props.rulesetId })
-const closeLogging = useButtonLogging('Close Leagues Using Ruleset Modal')
 
 function handleNavigate(leagueId: number) {
   currentLeagueId.value = leagueId
@@ -37,7 +36,6 @@ function handleNavigate(leagueId: number) {
 }
 
 function handleClose() {
-  closeLogging.logClick()
   open.value = false
 }
 </script>
@@ -87,9 +85,11 @@ function handleClose() {
     </template>
 
     <template #footer>
-      <UButton color="neutral" @click="handleClose">
-        {{ t('common.close') }}
-      </UButton>
+      <CancelButton
+        :label="t('common.close')"
+        :icon="ICONS.close"
+        @click="handleClose"
+      />
     </template>
   </UModal>
 </template>

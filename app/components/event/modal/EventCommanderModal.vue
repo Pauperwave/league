@@ -1,4 +1,4 @@
-<!-- app\components\events\modals\EventCommanderModal.vue -->
+<!-- app\components\event\modal\EventCommanderModal.vue -->
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 

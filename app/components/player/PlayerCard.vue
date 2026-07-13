@@ -1,4 +1,4 @@
-<!-- app\components\players\PlayerCard.vue -->
+<!-- app\components\player\PlayerCard.vue -->
 <script setup lang="ts">
 import type { Player } from '#shared/utils/types'
 import { slugify } from '~/utils/slug'

@@ -1,3 +1,4 @@
+// app\composables\auth\usePasswordAuth.ts
 const AUTH_COOKIE_NAME = 'site-auth'
 
 export function usePasswordAuth() {

@@ -1,3 +1,4 @@
+// app\middleware\password.global.ts
 export default defineNuxtRouteMiddleware((to) => {
   // Skip login page
   if (to.path === '/login') return

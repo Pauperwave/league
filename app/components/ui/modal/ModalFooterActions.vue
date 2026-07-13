@@ -1,4 +1,4 @@
-<!-- app/components/ui/modal/ModalFooterActions.vue -->
+<!-- app\components\ui\modal\ModalFooterActions.vue -->
 <script setup lang="ts">
 interface Props {
   confirmLabel: string

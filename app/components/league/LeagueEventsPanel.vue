@@ -1,4 +1,4 @@
-<!-- app\components\events\LeagueEventsPanel.vue -->
+<!-- app\components\league\LeagueEventsPanel.vue -->
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'

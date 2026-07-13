@@ -1,4 +1,4 @@
-<!-- app/components/event/TimerControlButton.vue -->
+<!-- app\components\event\TimerControlButton.vue -->
 <script setup lang="ts">
 /**
  * A single RoundTimer control button.

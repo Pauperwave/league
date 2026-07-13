@@ -1,4 +1,4 @@
-<!-- app\components\events\Pairings\TableScoreGrid.vue -->
+<!-- app\components\event\pairing\table\score\TableScoreGrid.vue -->
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import type { Pairing, Seat } from '#shared/utils/types'

@@ -1,3 +1,4 @@
+// app\composables\deck\useLenderSelection.ts
 /** Shared borrowed-deck / lender-picker state used by DeckCreateModal and DeckEditModal. */
 export function useLenderSelection(playerId: () => number) {
   const playersStore = usePlayerStore()

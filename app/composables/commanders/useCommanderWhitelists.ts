@@ -1,4 +1,4 @@
-// app/composables/useCommanderWhitelists.ts
+// app\composables\commanders\useCommanderWhitelists.ts
 
 export function useCommanderWhitelists() {
   const whitelists = ref({

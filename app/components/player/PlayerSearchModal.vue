@@ -1,4 +1,4 @@
-<!-- app\components\Modals\PlayerSearchModal.vue -->
+<!-- app\components\player\PlayerSearchModal.vue -->
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
@@ -22,9 +22,7 @@ const open = defineModel<boolean>('open', { default: false })
 
 const selectedPlayerIds = ref<string[]>([])
 
-const confirmLogging = useButtonLogging('Confirm Player Selection', { selectedCount: () => selectedPlayerIds.value.length })
 const createNewLogging = useButtonLogging('Create New Player')
-const closeLogging = useButtonLogging('Close Player Search Modal')
 
 const hasSelection = computed(() => selectedPlayerIds.value.length > 0)
 
@@ -44,7 +42,6 @@ watch(open, (isOpen) => {
 })
 
 function handleConfirm() {
-  confirmLogging.logClick()
   emit('select', selectedPlayerIds.value.map(Number))
   selectedPlayerIds.value = []
   open.value = false
@@ -57,7 +54,6 @@ function handleCreateNew() {
 }
 
 function handleClose() {
-  closeLogging.logClick()
   open.value = false
 }
 </script>
@@ -97,13 +93,11 @@ function handleClose() {
 
     <template #footer>
       <div class="flex justify-between w-full">
-        <UButton
-          color="neutral"
+        <CancelButton
+          :label="t('common.close')"
           :icon="ICONS.close"
           @click="handleClose"
-        >
-          {{ t('common.close') }}
-        </UButton>
+        />
         <div class="flex items-center gap-2">
           <UButton
             color="neutral"
@@ -113,14 +107,12 @@ function handleClose() {
           >
             {{ t('player.searchModal.createNew') }}
           </UButton>
-          <UButton
-            color="primary"
-            :icon="ICONS.playerConfirmed"
+          <ConfirmButton
+            :label="t('player.searchModal.addCount', { count: selectedPlayerIds.length })"
+            :trailing-icon="ICONS.playerConfirmed"
             :disabled="!hasSelection"
             @click="handleConfirm"
-          >
-            {{ t('player.searchModal.addCount', { count: selectedPlayerIds.length }) }}
-          </UButton>
+          />
         </div>
       </div>
     </template>

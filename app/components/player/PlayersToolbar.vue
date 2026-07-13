@@ -1,4 +1,4 @@
-<!-- app\components\players\PlayersToolbar.vue -->
+<!-- app\components\player\PlayersToolbar.vue -->
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'

@@ -1,4 +1,4 @@
-<!-- app/components/ui/display/ImageWithFallback.vue -->
+<!-- app\components\ui\display\ImageWithFallback.vue -->
 <script setup lang="ts">
 import { ICONS } from '~/utils/icons'
 
