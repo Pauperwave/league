@@ -23,6 +23,14 @@
     "@vueuse/core",
     "playwright-core"
   ],
+  "duplicates": {
+    "ignore": [
+      "public/**",
+      "docs/**",
+      "shared/utils/types/database.ts",
+      "i18n/i18n.config.ts"
+    ]
+  },
   "rules": {
     "unused-store-members": "off"
   }
