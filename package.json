@@ -70,5 +70,8 @@
     "vitest": "^4.1.10",
     "vue-tsc": "^3.3.7"
   },
-  "packageManager": "pnpm@11.4.0"
+  "packageManager": "pnpm@11.4.0",
+  "volta": {
+    "node": "24.18.0"
+  }
 }
