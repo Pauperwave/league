@@ -21,7 +21,6 @@ const emit = defineEmits<{
     <CancelButton
       :label="cancelLabel"
       variant="outline"
-      :show-icon="false"
       :disabled="cancelDisabled"
       @click="emit('cancel')"
     />

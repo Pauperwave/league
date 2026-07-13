@@ -1,4 +1,4 @@
-<!-- app\components\events\modals\EventKillModal.vue -->
+<!-- app\components\event\modal\EventKillModal.vue -->
 <script setup lang="ts">
 import type { Kill, TournamentPlayer } from '#shared/utils/types'
 
@@ -14,11 +14,12 @@ const {
 
 const emit = defineEmits<{
   submit: [kills: Kill[]]
+  cancel: []
 }>()
 
 const open = computed({
   get: () => showKillModal,
-  set: () => {}, // no-op; KillSystemModal handles its own close via v-model
+  set: (val) => { if (!val) emit('cancel') },
 })
 </script>
 

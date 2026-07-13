@@ -60,9 +60,10 @@ watch(
       </div>
     </div>
 
-    <div class="flex justify-end gap-2 pt-4">
-      <UButton :label="t('common.cancel')" variant="outline" @click="emit('cancel')" />
-      <UButton :label="t('common.save')" color="primary" @click="emit('submit', localDeckVotePlayerId, localPlayVotePlayerId)" />
-    </div>
+    <ModalFooterActions
+      :confirm-label="t('common.save')"
+      @cancel="emit('cancel')"
+      @confirm="emit('submit', localDeckVotePlayerId, localPlayVotePlayerId)"
+    />
   </div>
 </template>

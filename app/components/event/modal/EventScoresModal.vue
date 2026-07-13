@@ -1,4 +1,4 @@
-<!-- app\components\events\modals\EventScoresModal.vue -->
+<!-- app\components\event\modal\EventScoresModal.vue -->
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import type { PairingWithResults, TournamentPlayer } from '#shared/utils/types'
@@ -23,9 +23,13 @@ const {
   votesStore: ReturnType<typeof import('~/stores/votes').useVotesStore>
 }>()
 
+const emit = defineEmits<{
+  cancel: []
+}>()
+
 const open = computed({
   get: () => showScoresModal,
-  set: () => {}, // no-op; parent controls via v-model:open binding
+  set: (val) => { if (!val) emit('cancel') },
 })
 
 const pairing = computed(() =>

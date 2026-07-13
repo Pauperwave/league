@@ -1,4 +1,4 @@
-<!-- app\components\events\Pairings\Kill\KillSystemModal.vue -->
+<!-- app\components\event\pairing\kill\KillSystemModal.vue -->
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
@@ -96,16 +96,12 @@ function handleSubmit() {
           @click="killsStore.reset()"
         />
         <div class="flex gap-2">
-          <UButton
-            :label="t('common.cancel')"
-            color="neutral"
+          <CancelButton
             variant="outline"
             @click="() => { open = false }"
           />
-          <UButton
-            :label="t('common.confirm')"
-            :icon="ICONS.confirm"
-            color="primary"
+          <ConfirmButton
+            :trailing-icon="ICONS.confirm"
             @click="handleSubmit"
           />
         </div>

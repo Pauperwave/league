@@ -564,7 +564,10 @@ function handleResetTable(pairingId: number) {
       :pairings="pairings"
       :all-players="players"
       :rankings-store="rankingsStore"
-      @submit="submitHandlers.handleScoreSubmit"
+      @submit="(ranking, rankingWithRanks) => {
+        if (submitHandlers.handleScoreSubmit(ranking, rankingWithRanks))
+          showScoreModal = false
+      }"
       @cancel="showScoreModal = false"
     />
 
@@ -575,7 +578,10 @@ function handleResetTable(pairingId: number) {
       :commander-modal-ref="commanderModalRef"
       :get-player-name="getPlayerName"
       :commanders-store="commandersStore"
-      @submit="submitHandlers.handleCommanderSubmit"
+      @submit="(commander1, commander2) => {
+        if (submitHandlers.handleCommanderSubmit(commander1, commander2))
+          showCommanderModal = false
+      }"
       @cancel="showCommanderModal = false"
     />
 
@@ -587,13 +593,18 @@ function handleResetTable(pairingId: number) {
       :rankings-store="rankingsStore"
       :kills-store="killsStore"
       :votes-store="votesStore"
+      @cancel="showScoresModal = false"
     />
 
     <EventKillModal
       :show-kill-modal="showKillModal"
       :selected-kill-players="selectedKillPlayers"
       :selected-kill-pairing-id="selectedKillPairingId"
-      @submit="(kills) => submitHandlers.handleKillsSubmit(selectedKillPairingId!, kills)"
+      @submit="(kills) => {
+        if (submitHandlers.handleKillsSubmit(selectedKillPairingId!, kills))
+          showKillModal = false
+      }"
+      @cancel="showKillModal = false"
     />
 
     <EventVotesModal
@@ -602,7 +613,10 @@ function handleResetTable(pairingId: number) {
       :get-player-name="getPlayerName"
       :votes-store="votesStore"
       :table-players-for-votes="tablePlayersForVotes"
-      @submit="submitHandlers.handleVotesSubmit"
+      @submit="(deckVotePlayerId, playVotePlayerId) => {
+        if (submitHandlers.handleVotesSubmit(deckVotePlayerId, playVotePlayerId))
+          showVotesModal = false
+      }"
       @cancel="showVotesModal = false"
     />
 

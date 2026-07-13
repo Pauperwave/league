@@ -11,7 +11,7 @@ Scoped guidance for `app/components/ui/`. **Check this list before adding a new 
 
 These two families solve different problems (row action *group* vs. one modal's *footer pair*) and were kept deliberately separate rather than unified into one mega-button-config system — don't try to fold `CancelButton`/`ConfirmButton` into `ACTION_MAP` or vice versa. (`RowActionButton`/`RowActionButtons` were named that way — not `BaseButton`/`ActionButtons` — specifically so the name signals "this is for table row actions," not "this is the generic foundation for all buttons.")
 
-- `CancelButton`: defaults to `t('common.cancel')` + trailing `ICONS.undo`, `color="neutral"`. Pass `variant="outline"` + `:show-icon="false"` to match a plain-text look (e.g. inside `ModalFooterActions`).
+- `CancelButton`: defaults to `t('common.cancel')` + trailing `ICONS.undo`, `color="neutral"`. Every modal footer shows this icon — `ModalFooterActions` used to pass `:show-icon="false"` for a plain-text look but that made its footers inconsistent with `FormModal`/`ConfirmModal`, so it was dropped (2026-07-13). Don't reintroduce `:show-icon="false"` without a specific reason.
 - `ConfirmButton`: defaults to `t('common.confirm')`, `color="primary"`. Supports **two** trigger modes via `type`: `type="button"` (default, fires `@click`) for handler-based modals, or `type="submit"` + `:form="formId"` to trigger a native `<form id="...">` submit (used by `FormModal`) — this is why one component covers both `FormModal` and `ModalFooterActions` instead of needing a third variant.
 
 ## Modal shells (`modal/`) — pick the one matching your modal's shape
