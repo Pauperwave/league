@@ -1,7 +1,9 @@
 -- Migration: add configurable round duration to events
--- Created: 2026-07-12
+-- Created: 2026-07-13
 
-ALTER TABLE events
-  ADD COLUMN IF NOT EXISTS event_round_duration INTEGER;
+alter table public.events
+  alter column event_round_duration set default 75;
 
-COMMENT ON COLUMN events.event_round_duration IS 'Round duration in minutes; app falls back to a default (75) when null';
+update public.events
+set event_round_duration = 75
+where event_round_duration is null;
