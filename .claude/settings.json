@@ -1,0 +1,19 @@
+{
+  "attribution": {
+    "commit": ""
+  },
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node scripts/version-bump-hook.mjs",
+            "timeout": 15,
+            "statusMessage": "Checking package.json version..."
+          }
+        ]
+      }
+    ]
+  }
+}

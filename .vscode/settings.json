@@ -4,5 +4,10 @@
     ],
     "i18n-ally.extract.ignored": [
         "width=device-width, initial-scale=1"
+    ],
+    "github.copilot.chat.commitMessageGeneration.instructions": [
+        {
+            "text": "Format the commit subject line as: <type>(<scope>)?: <emoji> <description> — this repo's .githooks/commit-msg hook rejects anything else. <type> is one of: feat, fix, docs, style, refactor, perf, test, build, chore, ci, revert. <emoji> is any gitmoji from https://gitmoji.dev/ (all 75 are valid — pick whichever best fits the change, it is not tied to a specific type), e.g. ⬆️ for a dependency bump, 🩹 for a minor fix, 🚧 for work in progress. Scope is optional. Description is lowercase, imperative mood, no trailing period. For a breaking change, add ! after the type/scope and the emoji must be 💥 specifically. Examples: 'chore(build): ⬆️ bump dependencies', 'fix: 🩹 patch minor edge case', 'feat!: 💥 rename league status values'."
+        }
     ]
 }
