@@ -144,8 +144,7 @@ const uniqueDecks = computed(() => {
   return result
 })
 
-const breadcrumbItems = computed(() => [
-  { label: t('common.home'), to: '/' },
+const breadcrumbItems = useBreadcrumb(() => [
   { label: t('deck.breadcrumb') }
 ])
 </script>

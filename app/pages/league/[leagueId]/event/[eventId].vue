@@ -321,8 +321,7 @@ const formattedDate = computed(() => {
 const leagueName = computed(() => currentLeague.value?.name ?? t('league.fallbackName'))
 const eventName = computed(() => currentEvent.value?.event_name ?? t('event.fallbackName'))
 
-const breadcrumbItems = computed(() => [
-  { label: t('common.home'), to: '/', icon: ICONS.home },
+const breadcrumbItems = useBreadcrumb(() => [
   { label: t('league.breadcrumb'), to: '/leagues' },
   { label: leagueName.value, to: `/league/${leagueId}` },
   { label: eventName.value },

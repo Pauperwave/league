@@ -11,8 +11,7 @@ const { t } = useI18n()
 
 const { player, playerId } = usePlayerBySlug(slug)
 
-const breadcrumbItems = computed(() => [
-  { label: t('common.home'), to: '/' },
+const breadcrumbItems = useBreadcrumb(() => [
   { label: t('player.breadcrumb'), to: '/players' },
   { label: player.value ? `${player.value.player_name} ${player.value.player_surname}` : t('player.fallbackName') }
 ])

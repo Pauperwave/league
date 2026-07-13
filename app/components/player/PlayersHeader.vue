@@ -6,8 +6,7 @@ defineEmits<{ createPlayer: [] }>()
 
 const { t } = useI18n()
 
-const breadcrumbItems = computed(() => [
-  { label: t('common.home'), to: '/' },
+const breadcrumbItems = useBreadcrumb(() => [
   { label: t('player.breadcrumb') }
 ])
 </script>

@@ -43,8 +43,7 @@ const classificaTitle = computed(() =>
   t('league.standingsTitle', { name: currentLeague.value?.name ?? '' }).trim()
 )
 
-const breadcrumbItems = computed(() => [
-  { label: t('common.home'), to: '/', icon: ICONS.home },
+const breadcrumbItems = useBreadcrumb(() => [
   { label: t('league.breadcrumb'), to: '/leagues' },
   { label: currentLeague.value?.name ?? t('league.fallbackName') },
 ])
