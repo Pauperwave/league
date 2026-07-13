@@ -275,12 +275,11 @@ Indice completo e aggiornato: [`docs/README.md`](docs/README.md). Voci principal
 |------|-----------|
 | [`CLAUDE.md`](../CLAUDE.md) | Guida per Claude Code: comandi, architettura, convenzioni (radice repo) |
 | [`docs/AGENTS.md`](docs/AGENTS.md) | Regole per agenti e convenzioni codice |
-| [`docs/stores.md`](docs/stores.md) | Store Pinia — **verificare contro `app/stores/` (10 store attuali, non 8)** |
+| [`docs/stores.md`](docs/stores.md) | Store Pinia — 10 store (6 Supabase + 4 sessione), corretto il 2026-07-13 |
 | [`docs/database.md`](docs/database.md) | RLS, trigger, stats denormalizzate |
 | [`docs/event-flow.md`](docs/event-flow.md) | Lifecycle evento, mutazioni DB per fase |
 | [`docs/state-flow.md`](docs/state-flow.md) | Flusso DB → store → composable → componente |
 | [`docs/modal-url-sync.md`](docs/modal-url-sync.md) | Sync query ↔ modali evento |
-| [`docs/buttons.md`](docs/buttons.md) | Pattern bottoni / logging |
 | [`docs/TODO.md`](docs/TODO.md) | Idee e snippet storici, incl. Playwright + MCP |
 | [`docs/audits/skills-audit-report.md`](docs/audits/skills-audit-report.md) | Audit best practices |
 | [`docs/audits/skills-audit-checklist.md`](docs/audits/skills-audit-checklist.md) | Checklist convenzioni |
@@ -292,6 +291,7 @@ Indice completo e aggiornato: [`docs/README.md`](docs/README.md). Voci principal
 
 | Data | Modifica |
 |------|----------|
+| 2026-07-13 | Audit `docs/` completo: `docs/stores.md` corretto (8→10 store, mancavano `useCommanderDeckStore`/`usePlayerStatsStore`); `docs/README.md` indice/albero file aggiornati (mancavano `PROGRESS.md`, `prompts/`, struttura reale `superpowers/plans+specs/`); eliminati `docs/buttons.md` (chat di design superata, vedi `RowActionButton.vue`/`actionButton.ts`), `docs/prompts/decompose-players-page*.md` (piano già implementato in `app/components/player/`), `docs/reinventing-the-wheel.md` + `docs/prompt-for-ai.md` (9/11 findings fatti o superati dalla migrazione Scryfall→Supabase; i 2 ancora aperti — Valibot `isValid` nei form modal, DnD nativo in `TableScoreGrid.vue` — spostati in `docs/TODO.md`) |
 | 2026-07-13 | Sessione duplicazione + tuning `fallow` (ADR-011): `fallow:dupes` da 128 gruppi (17.6%) a 0; `app/components/ui/` riorganizzato in `actions/`, `modal/`, `layout/`, `display/`, `input/`; `BaseButton`/`ActionButtons` rinominati `RowActionButton`/`RowActionButtons`; nuovo `ConfirmButton` gemello di `CancelButton`; `duplicates.mode` assestato su `weak`; `health.thresholdOverrides` per 10 file grandi ma intenzionali; scoperto gotcha glob su cartelle `[param]` (fix: wildcard `?`); `leagues.status` rinominato da italiano a codici inglesi minuscoli (migrazione dati DB da fare manualmente); test da 19/6 file a 61/10 file; `docs/TODO.md` ripulito da contenuto implementato/debris |
 | 2026-07-12 | Sessione lint/typecheck/architettura: `pnpm lint` e `pnpm typecheck` portati a 0/0 (ADR-009); aggiunta `event_round_duration` (migrazione + wiring, non ancora applicata — ADR-008); documentato invariante scoring pairing optimizer (ADR-004); rimossa cartella shim `app/composables/events/` (progetto non pubblicato → niente backward-compat); creato `CLAUDE.md`; TODO Playwright + MCP aggiunto; corrette informazioni datate (store count 8→10, claim falso sul rename `[id]`→`[leagueId]`, valibot "0 uso"); scoperto `pnpm build` rotto (prerender `/`, non correlato a questa sessione) |
 | 2026-05-26 | Preview mostra tavoli prima di avanzare round (non dopo); `playerOrder` propagato a `nextRound` → `createPairings`; URL `phase=previewTables` ora include `round=N`; `previewTables` usa standings durante playing |

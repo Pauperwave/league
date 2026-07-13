@@ -14,18 +14,17 @@ Master index of all project documentation.
 | `database.md` | RLS policies, denormalized stats tables, trigger architecture, migration conventions | Database ops |
 | `event-flow.md` | Event lifecycle: creation → registration → playing → ended, DB mutations per phase | Event logic |
 | `modal-url-sync.md` | URL query parameter sync for event page modals | URL state |
-| `reinventing-the-wheel.md` | Audit of 11 patterns that should use libraries | Code quality |
-| `prompt-for-ai.md` | Delegation prompt for fixing reinventing issues | AI delegation |
 | `routes.md` | Complete route inventory, nested route gotchas, navigation patterns | Routing |
 | `state-flow.md` | DB → store → composable → component data flow, caching strategy | Architecture |
 | `stores.md` | Pinia store overview, Setup API pattern, state categories, error handling | State management |
 | `bugs.md` | Known bugs (minimal) | Maintenance |
-| `buttons.md` | ActionButton component pattern discussion | UI patterns |
-| `TODO.md` | Future features: stepper, timer, alarm sound, Vite optimizeDeps | Roadmap |
+| `PROGRESS.md` | Backward-looking curated changelog + ADRs; what's actually been done | Architecture history |
+| `TODO.md` | Forward-looking scratch notes: open ideas, in-progress migration notes | Roadmap |
 | `audits/skills-audit-checklist.md` | Skills audit completion checklist | Process |
 | `audits/skills-audit-report.md` | Full skills audit with scores and recommendations | Process |
 | `audits/2026-07-12-vue-nuxt-conventions.md` | Vue 3.5+/Nuxt 4 convention compliance audit | Process |
-| `superpowers/` | Feature specs and plans (multi-device realtime, event flow) | Planning |
+| `superpowers/plans/` | Dated feature implementation plans (event flow standings, realtime, Scryfall migration, commander search) | Planning (historical) |
+| `superpowers/specs/` | Dated feature design specs (event flow standings, realtime, testing) | Planning (historical) |
 
 ---
 
@@ -53,7 +52,7 @@ Master index of all project documentation.
 
 ### For Code Quality
 
-1. `reinventing-the-wheel.md` — patterns to replace with libraries
+1. `TODO.md` — outstanding "reinventing the wheel" cleanup items
 2. `AGENTS.md` — lint workflow, fallow integration
 3. `audits/skills-audit-report.md` — comprehensive audit results
 4. `audits/2026-07-12-vue-nuxt-conventions.md` — Vue/Nuxt convention compliance
@@ -76,20 +75,26 @@ docs/
 │   ├── skills-audit-report.md
 │   └── 2026-07-12-vue-nuxt-conventions.md
 ├── bugs.md
-├── buttons.md
 ├── component-hierarchy.md
 ├── database.md
 ├── event-flow.md
 ├── modal-url-sync.md
-├── prompt-for-ai.md
-├── reinventing-the-wheel.md
+├── PROGRESS.md
 ├── routes.md
 ├── state-flow.md
 ├── stores.md
 ├── TODO.md
 └── superpowers/
-    ├── multi-device-realtime.md
-    └── event-flow.md
+    ├── plans/
+    │   ├── 2026-05-26-event-flow-standings-plan.md
+    │   ├── 2026-05-27-multi-device-realtime-event-data.md
+    │   ├── 2026-05-29-full-scryfall-to-supabase-migration.md
+    │   ├── 2026-05-29-replace-scryfall-with-supabase.md
+    │   └── 2026-06-01-commander-search-partner-filtering.md
+    └── specs/
+        ├── 2026-05-26-event-flow-standings-design.md
+        ├── 2026-05-27-multi-device-realtime-event-data.md
+        └── 2026-05-31-add-testing-design.md
 ```
 
 ### Conventions

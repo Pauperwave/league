@@ -1,12 +1,14 @@
 # Pinia Stores
 
-8 stores using the **Setup API** pattern: 4 Supabase (persistent) + 4 Session (ephemeral).
+10 stores using the **Setup API** pattern: 6 Supabase (persistent) + 4 Session (ephemeral).
 
 | Store | Type | File | Purpose |
 |-------|------|------|---------|
 | `useLeagueStore` | Supabase | `app/stores/leagues.ts` | League CRUD |
 | `useRulesetStore` | Supabase | `app/stores/rulesets.ts` | Ruleset CRUD |
 | `usePlayerStore` | Supabase | `app/stores/players.ts` | Players + waitroom |
+| `usePlayerStatsStore` | Supabase | `app/stores/player-stats.ts` | Denormalized `player_stats` read cache |
+| `useCommanderDeckStore` | Supabase | `app/stores/commander-decks.ts` | Commander deck CRUD |
 | `useEventStore` | Supabase | `app/stores/events.ts` | Events, standings, pairings, rounds |
 | `useRankingsStore` | Session | `app/stores/rankings.ts` | Player rankings per pairing |
 | `useKillsStore` | Session | `app/stores/kills.ts` | Kill tracking in round |
@@ -66,6 +68,24 @@ Common patterns: `initialized` flag, `loading` state, `error` state, optimistic 
 **Getters**: `getPlayerById(id)`, `getPlayersByIds(ids)`, `searchPlayers(query)`
 
 **Actions**: `fetchPlayers`, `createPlayer`, `updatePlayer`, `fetchWaitingPlayers`, `addToWaitingList`, `removeFromWaitingList`, `clearError`
+
+---
+
+### `usePlayerStatsStore`
+
+**State**: `stats` (`PlayerStat[]`, from denormalized `player_stats` table), `initialized`, `loading`
+
+**Actions**: `fetchStats(force)`, `getStat(playerId, key)` (returns 0 if not found), `reset`
+
+---
+
+### `useCommanderDeckStore`
+
+**State**: `decks` (`CommanderDeck[]`), `loading`, `error`, `initialized`
+
+**Getters**: `getDecksByPlayerId(playerId)`, `getDeckById(id)`
+
+**Actions**: `fetchDecks(force)`, plus standard create/update/delete CRUD (see `app/stores/CLAUDE.md`)
 
 ---
 
