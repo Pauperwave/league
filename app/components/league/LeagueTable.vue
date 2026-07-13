@@ -24,7 +24,7 @@ const emit = defineEmits<{
 
 const UBadge = resolveComponent('UBadge') as Component
 const UButton = resolveComponent('UButton') as Component
-const ActionButtons = resolveComponent('ActionButtons') as Component
+const RowActionButtons = resolveComponent('RowActionButtons') as Component
 
 const statusConfig: Record<string, { color: StatusColor, icon: string, labelKey: string }> = {
   Programmata: { color: 'info', icon: ICONS.clock, labelKey: 'league.status.scheduled' },
@@ -89,7 +89,7 @@ const columns: TableColumn<League>[] = [
       return ruleset?.name || t('league.table.rulesetFallback')
     }
   },
-  createActionsColumn<League>(UButton, ActionButtons, {
+  createActionsColumn<League>(UButton, RowActionButtons, {
     onView: (league) => emit('view', league),
     onEdit: (league) => emit('edit', league),
     onDelete: (league) => emit('delete', league),

@@ -1,4 +1,4 @@
-<!-- app\components\ui\ListPageShell.vue -->
+<!-- app/components/ui/layout/ListPageShell.vue -->
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'

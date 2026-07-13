@@ -1,4 +1,4 @@
-<!-- app\components\ui\FormModal.vue -->
+<!-- app/components/ui/modal/FormModal.vue -->
 <script setup lang="ts">
 interface Props {
   title: string
@@ -38,15 +38,13 @@ const emit = defineEmits<{
 
     <template #footer>
       <CancelButton @click="emit('cancel')" />
-      <UButton
+      <ConfirmButton
+        :label="submitLabel"
         type="submit"
         :form="formId"
-        color="primary"
         :trailing-icon="submitIcon"
         :disabled="disabled"
-      >
-        {{ submitLabel }}
-      </UButton>
+      />
     </template>
   </UModal>
 </template>

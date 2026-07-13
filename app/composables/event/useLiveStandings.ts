@@ -1,4 +1,4 @@
-import type { Ref } from 'vue'
+import { ref, computed, watch, type Ref } from 'vue'
 import { getPairingPlayerIds } from '#shared/utils/types'
 import type { StandingWithPlayer, PairingWithResults, EventStatus } from '#shared/utils/types'
 
@@ -10,6 +10,88 @@ interface RulesetValues {
   rule_set_kill: number
   rule_set_brew: number
   rule_set_play: number
+}
+
+interface StandingWithDefaults extends StandingWithPlayer {
+  standing_player_score: number
+  victories: number
+  kills: number
+  brew_received: number
+  play_received: number
+}
+
+interface PlayerTableScore {
+  totalScore: number
+  position: number
+  numberOfKills: number
+  brewVote: number
+  totalPlayCount: number
+}
+
+export function buildPosValues(r: RulesetValues): number[] {
+  return [0, r.rule_set_rank1 ?? 0, r.rule_set_rank2 ?? 0, r.rule_set_rank3 ?? 0, r.rule_set_rank4 ?? 0]
+}
+
+export function cloneStandings(base: StandingWithPlayer[]): StandingWithDefaults[] {
+  return base.map(s => ({
+    ...s,
+    standing_player_score: s.standing_player_score ?? 0,
+    victories: s.victories ?? 0,
+    kills: s.kills ?? 0,
+    brew_received: s.brew_received ?? 0,
+    play_received: s.play_received ?? 0,
+  }))
+}
+
+export function calculatePlayerTableScore(
+  playerId: number,
+  playerIds: number[],
+  posValues: number[],
+  ranking: { playerId: number; rank: number }[] | null,
+  tableKills: { killerId: number; victimId: number }[],
+  r: RulesetValues,
+  getDeckVote: (playerId: number) => number | null,
+  getPlayVote: (playerId: number) => number | null,
+): PlayerTableScore {
+  const rankEntry = ranking?.find(rk => rk.playerId === playerId)
+  const position = rankEntry?.rank ?? 0
+
+  const numberOfKills = tableKills.filter(k => k.killerId === playerId).length
+
+  const otherPlayerIds = playerIds.filter(id => id !== playerId)
+  const brewVote = otherPlayerIds.filter(id => getDeckVote(id) === playerId).length
+  const totalPlayCount = otherPlayerIds.filter(id => getPlayVote(id) === playerId).length
+
+  let scoreRank = 0
+  if (ranking && position !== 0) {
+    const samePositionCount = ranking.filter(rk => rk.rank === position).length
+    const rankSum = Array.from({ length: samePositionCount }, (_, i) =>
+      posValues[Math.min(position + i, 4)] ?? 0,
+    ).reduce((a, b) => a + b, 0)
+    scoreRank = Math.floor(rankSum / samePositionCount)
+  }
+
+  const totalScore = scoreRank
+    + numberOfKills * (r.rule_set_kill ?? 0)
+    + brewVote * (r.rule_set_brew ?? 0)
+    + totalPlayCount * (r.rule_set_play ?? 0)
+
+  return { totalScore, position, numberOfKills, brewVote, totalPlayCount }
+}
+
+export function updateStanding(
+  result: StandingWithDefaults[],
+  playerId: number,
+  score: PlayerTableScore,
+): void {
+  const standing = result.find(s => s.player_id === playerId)
+  if (!standing) return
+
+  standing.standing_player_score += score.totalScore
+  standing.victories += score.position === 1 ? 1 : 0
+  standing.kills += score.numberOfKills
+  standing.brew_received += score.brewVote
+  standing.play_received += score.totalPlayCount
 }
 
 export function useLiveStandings(
@@ -71,6 +153,8 @@ export function useLiveStandings(
           hasRanking ? ranking : null,
           tableKills,
           r,
+          votesStore.getDeckVote,
+          votesStore.getPlayVote,
         )
 
         updateStanding(result, playerId, score)
@@ -79,78 +163,6 @@ export function useLiveStandings(
 
     return result.sort((a, b) => (b.standing_player_score || 0) - (a.standing_player_score || 0))
   })
-
-  function buildPosValues(r: RulesetValues): number[] {
-    return [0, r.rule_set_rank1 ?? 0, r.rule_set_rank2 ?? 0, r.rule_set_rank3 ?? 0, r.rule_set_rank4 ?? 0]
-  }
-
-  interface StandingWithDefaults extends StandingWithPlayer {
-    standing_player_score: number
-    victories: number
-    kills: number
-    brew_received: number
-    play_received: number
-  }
-
-  function cloneStandings(base: StandingWithPlayer[]): StandingWithDefaults[] {
-    return base.map(s => ({
-      ...s,
-      standing_player_score: s.standing_player_score ?? 0,
-      victories: s.victories ?? 0,
-      kills: s.kills ?? 0,
-      brew_received: s.brew_received ?? 0,
-      play_received: s.play_received ?? 0,
-    }))
-  }
-
-  function calculatePlayerTableScore(
-    playerId: number,
-    playerIds: number[],
-    posValues: number[],
-    ranking: { playerId: number; rank: number }[] | null,
-    tableKills: { killerId: number; victimId: number }[],
-    r: RulesetValues,
-  ): { totalScore: number; position: number; numberOfKills: number; brewVote: number; totalPlayCount: number } {
-    const rankEntry = ranking?.find(rk => rk.playerId === playerId)
-    const position = rankEntry?.rank ?? 0
-
-    const numberOfKills = tableKills.filter(k => k.killerId === playerId).length
-
-    const otherPlayerIds = playerIds.filter(id => id !== playerId)
-    const brewVote = otherPlayerIds.filter(id => votesStore.getDeckVote(id) === playerId).length
-    const totalPlayCount = otherPlayerIds.filter(id => votesStore.getPlayVote(id) === playerId).length
-
-    let scoreRank = 0
-    if (ranking && position !== 0) {
-      const samePositionCount = ranking.filter(rk => rk.rank === position).length
-      const rankSum = Array.from({ length: samePositionCount }, (_, i) =>
-        posValues[Math.min(position + i, 4)] ?? 0,
-      ).reduce((a, b) => a + b, 0)
-      scoreRank = Math.floor(rankSum / samePositionCount)
-    }
-
-    const totalScore = scoreRank
-      + numberOfKills * (r.rule_set_kill ?? 0)
-      + brewVote * (r.rule_set_brew ?? 0)
-      + totalPlayCount * (r.rule_set_play ?? 0)
-
-    return { totalScore, position, numberOfKills, brewVote, totalPlayCount }
-  }
-
-  function updateStanding(
-    result: StandingWithDefaults[],
-    playerId: number,
-    score: { totalScore: number; position: number; numberOfKills: number; brewVote: number; totalPlayCount: number },
-  ) {
-    const standing = result.find(s => s.player_id === playerId)
-    if (!standing) return
-
-    standing.standing_player_score += score.totalScore
-    standing.victories += score.position === 1 ? 1 : 0
-    standing.kills += score.numberOfKills
-    standing.brew_received += score.brewVote
-    standing.play_received += score.totalPlayCount
-  }
 
   return { liveStandings }
 }

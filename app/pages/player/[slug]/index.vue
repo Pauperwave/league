@@ -144,169 +144,29 @@ const { data: matchHistory } = usePlayerMatchHistory(playerId)
       </template>
     </h1>
 
-    <div v-if="player" class="bg-elevated rounded-xl p-6 border border-default shadow-lg space-y-6">
-      <!-- Profile Header -->
-      <div class="flex items-center gap-4">
-        <UAvatar size="lg" :icon="ICONS.player">
-          {{ player.player_name?.charAt(0).toUpperCase() ?? '?' }}
-        </UAvatar>
-        <div>
-          <div class="text-2xl font-bold">
-            {{ player.player_name }}
-            <span class="text-primary">{{ player.player_surname }}</span>
-          </div>
-          <p class="text-muted text-sm">ID: {{ player.player_id }}</p>
-        </div>
-      </div>
+    <PlayerProfileHeader
+      v-if="player"
+      :player="player"
+      :player-stats="playerStats"
+      :owned-deck-count="ownedDeckCount"
+      :borrowed-deck-count="borrowedDeckCount"
+    />
 
-      <!-- Player Stats — compact horizontal bar -->
-      <div class="grid grid-cols-3 sm:grid-cols-6 gap-3">
-        <StatTile
-          background="bg-elevated"
-          :icon="ICONS.calendarDays"
-          :value="playerStats?.events_played ?? 0"
-          :label="t('player.stats.events')"
-        />
-        <StatTile
-          background="bg-elevated"
-          :icon="ICONS.battle"
-          :value="playerStats?.total_matches ?? 0"
-          :label="t('player.stats.matches')"
-        />
-        <StatTile
-          background="bg-elevated"
-          :icon="ICONS.standings"
-          color="text-warning"
-          :value="playerStats?.total_wins ?? 0"
-          :label="t('player.stats.wins')"
-        />
-        <StatTile
-          background="bg-elevated"
-          :icon="ICONS.kills"
-          color="text-error"
-          :value="playerStats?.total_kills ?? 0"
-          :label="t('player.stats.kills')"
-        />
-        <StatTile
-          background="bg-elevated"
-          :icon="ICONS.vote"
-          color="text-success"
-          :value="playerStats?.average_score ?? 0"
-          :label="t('player.stats.average')"
-        />
+    <PlayerMatchHistoryTable
+      v-if="player && matchHistory && matchHistory.length > 0"
+      :match-history="matchHistory"
+    />
 
-        <div class="flex items-center gap-3 p-3 bg-elevated rounded-lg">
-          <UIcon :name="ICONS.commander" class="size-5 text-info shrink-0" />
-          <div>
-            <p class="text-xl font-bold leading-none">{{ ownedDeckCount }}</p>
-            <p class="text-xs text-muted">{{ t('player.stats.decks') }}</p>
-            <p v-if="borrowedDeckCount > 0" class="text-xs text-warning">+{{ borrowedDeckCount }} {{ t('player.stats.borrowedSuffix') }}</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Match History Table -->
-    <div v-if="player && matchHistory && matchHistory.length > 0" class="bg-elevated rounded-xl p-6 border border-default shadow-lg">
-      <div class="flex items-center gap-2 mb-4">
-        <UIcon :name="ICONS.battle" class="size-5 text-primary" />
-        <h2 class="text-lg font-bold">{{ t('player.matchHistory.heading') }}</h2>
-      </div>
-
-      <div class="overflow-x-auto">
-        <table class="w-full text-sm">
-          <thead>
-            <tr class="border-b border-default">
-              <th class="text-left py-2 px-3 text-muted font-medium">{{ t('player.matchHistory.event') }}</th>
-              <th class="text-center py-2 px-3 text-muted font-medium">{{ t('player.matchHistory.round') }}</th>
-              <th class="text-center py-2 px-3 text-muted font-medium">{{ t('player.matchHistory.table') }}</th>
-              <th class="text-left py-2 px-3 text-muted font-medium">{{ t('player.matchHistory.commander') }}</th>
-              <th class="text-center py-2 px-3 text-muted font-medium">{{ t('player.matchHistory.position') }}</th>
-              <th class="text-center py-2 px-3 text-muted font-medium">{{ t('player.matchHistory.kills') }}</th>
-              <th class="text-right py-2 px-3 text-muted font-medium">{{ t('player.matchHistory.date') }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
-              v-for="match in matchHistory"
-              :key="match.pairing_id"
-              class="border-b border-default/50 hover:bg-elevated/50 transition-colors"
-            >
-              <td class="py-2 px-3">
-                <NuxtLink
-                  :to="`/league/${match.league_id}/event/${match.event_id}`"
-                  class="text-primary hover:underline"
-                >
-                  {{ match.event_name }}
-                </NuxtLink>
-              </td>
-              <td class="text-center py-2 px-3">{{ match.pairing_round }}</td>
-              <td class="text-center py-2 px-3">{{ match.table_number }}</td>
-              <td class="py-2 px-3">
-                <div class="flex items-center gap-1">
-                  <span>{{ match.commander_1 ?? '—' }}</span>
-                  <span v-if="match.commander_2" class="text-muted">+ {{ match.commander_2 }}</span>
-                </div>
-              </td>
-              <td class="text-center py-2 px-3">
-                <UBadge
-                  :color="match.position === 1 ? 'warning' : 'neutral'"
-                  variant="soft"
-                  size="xs"
-                >
-                  {{ match.position }}°
-                </UBadge>
-              </td>
-              <td class="text-center py-2 px-3">{{ match.number_of_kills }}</td>
-              <td class="text-right py-2 px-3 text-muted">
-                {{ new Date(match.pairing_datetime).toLocaleDateString('it-IT') }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Commander Decks Section -->
-    <div v-if="player" class="bg-elevated rounded-xl p-6 border border-default shadow-lg">
-      <div class="flex items-center justify-between mb-4">
-        <div class="flex items-center gap-2">
-          <UIcon :name="ICONS.commander" class="size-5 text-primary" />
-          <h2 class="text-lg font-bold">{{ t('player.decksSection.heading') }}</h2>
-        </div>
-        <UButton
-          size="sm"
-          color="primary"
-          variant="soft"
-          :icon="ICONS.add"
-          @click="() => { createModalOpen = true }"
-        >
-          {{ t('player.decksSection.addDeck') }}
-        </UButton>
-      </div>
-
-      <div v-if="decksLoading" class="flex items-center justify-center py-8">
-        <UIcon :name="ICONS.loading" class="animate-spin text-2xl text-primary" />
-      </div>
-
-      <div v-else-if="commanderDecks && commanderDecks.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <CommanderDeckCard
-          v-for="deck in commanderDecks"
-          :key="deck.id"
-          :deck="deck"
-          :player-slug="slug"
-          :event-count="getDeckEventCount(deck)"
-          show-actions
-          @edit="handleEditDeck"
-          @delete="handleDeleteClick"
-        />
-      </div>
-
-      <div v-else class="text-center py-8 text-muted">
-        <UIcon :name="ICONS.noCommander" class="text-4xl mb-2 opacity-30" />
-        <p>{{ t('player.decksSection.empty') }}</p>
-      </div>
-    </div>
+    <PlayerDecksSection
+      v-if="player"
+      :loading="decksLoading"
+      :decks="commanderDecks ?? []"
+      :slug="slug"
+      :get-event-count="getDeckEventCount"
+      @add-deck="createModalOpen = true"
+      @edit="handleEditDeck"
+      @delete="handleDeleteClick"
+    />
 
     <div v-else class="text-center py-12 text-muted">
       <UIcon :name="ICONS.removePlayer" class="text-4xl mb-2 opacity-30" />

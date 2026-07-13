@@ -1,4 +1,4 @@
-<!-- app\components\ui\BaseButton.vue -->
+<!-- app\components\ui\actions\RowActionButton.vue -->
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'

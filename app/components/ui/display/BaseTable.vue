@@ -1,4 +1,4 @@
-<!-- app\components\ui\BaseTable.vue -->
+<!-- app/components/ui/display/BaseTable.vue -->
 <script setup lang="ts" generic="T extends object">
 import { ICONS } from '~/utils/icons'
 import type { TableColumn } from '@nuxt/ui'

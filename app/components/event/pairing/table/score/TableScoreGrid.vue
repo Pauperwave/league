@@ -299,17 +299,11 @@ function getCellClass(row: number, col: number): string {
     </div>
 
     <!-- Actions -->
-    <div class="flex gap-2 justify-end">
-      <UButton color="neutral" variant="outline" @click="handleCancel">
-        {{ t('common.cancel') }}
-      </UButton>
-      <UButton
-        color="primary"
-        :disabled="!isValidFormation"
-        @click="handleSubmit"
-      >
-        {{ t('event.scoreGrid.confirmRanking') }}
-      </UButton>
-    </div>
+    <ModalFooterActions
+      :confirm-label="t('event.scoreGrid.confirmRanking')"
+      :confirm-disabled="!isValidFormation"
+      @cancel="handleCancel"
+      @confirm="handleSubmit"
+    />
   </div>
 </template>

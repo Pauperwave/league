@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import { ICONS } from '~/utils/icons'
 import type { TableColumn } from '@nuxt/ui'
 import { UCheckbox } from '#components'
-import ActionButtons from '~/components/ui/ActionButtons.vue'
+import RowActionButtons from '~/components/ui/actions/RowActionButtons.vue'
 
 const { t } = useI18n()
 
@@ -165,7 +165,7 @@ const columns = computed<TableColumn<WaitingPlayer>[]>(() => [
     enableHiding: false,
     meta: { class: { th: 'text-center', td: 'text-center' } },
     cell: ({ row }) =>
-      h(ActionButtons, {
+      h(RowActionButtons, {
         showView: false,
         showEdit: true,
         showDelete: true,

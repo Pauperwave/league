@@ -1,24 +1,24 @@
-<!-- app/components/ui/modal/CancelButton.vue -->
+<!-- app/components/ui/modal/ConfirmButton.vue -->
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
 import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 const { t } = useI18n()
 
 const {
   label,
-  icon = ICONS.undo,
-  showIcon = true,
-  variant,
+  type = 'button',
+  form,
+  trailingIcon,
   loading = false,
   disabled = false,
 } = defineProps<{
   label?: string
-  icon?: string
-  showIcon?: boolean
-  variant?: 'solid' | 'outline' | 'soft' | 'subtle' | 'ghost' | 'link'
+  /** Use 'submit' + `form` to trigger a native form (e.g. FormModal's body form) instead of relying on @click. */
+  type?: 'button' | 'submit'
+  form?: string
+  trailingIcon?: string
   loading?: boolean
   disabled?: boolean
 }>()
@@ -27,9 +27,9 @@ const emit = defineEmits<{
   click: []
 }>()
 
-const displayLabel = computed(() => label ?? t('common.cancel'))
+const displayLabel = computed(() => label ?? t('common.confirm'))
 
-const clickLogging = useButtonLogging('Cancel Button', { label: () => displayLabel.value })
+const clickLogging = useButtonLogging('Confirm Button', { label: () => displayLabel.value })
 
 function handleClick() {
   clickLogging.logClick()
@@ -39,9 +39,10 @@ function handleClick() {
 
 <template>
   <UButton
-    color="neutral"
-    :variant="variant"
-    :trailing-icon="showIcon ? icon : undefined"
+    color="primary"
+    :type="type"
+    :form="form"
+    :trailing-icon="trailingIcon"
     :loading="loading"
     :disabled="disabled"
     @click="handleClick"

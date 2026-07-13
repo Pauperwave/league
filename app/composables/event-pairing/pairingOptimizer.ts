@@ -571,6 +571,35 @@ function cloneTables(tables: number[][]): number[][] {
   return tables.map(table => [...table])
 }
 
+/** Clones `working`, swaps seat `i` of table `t1` with seat `j` of table `t2`, and scores the result. */
+function trySwapCandidate(
+  working: number[][],
+  t1: number,
+  t2: number,
+  i: number,
+  j: number,
+  playersById: Map<number, PairingPlayer>,
+  rematchMap: Map<string, { count: number, lastRound: number }>,
+  forbiddenSet: Set<string>,
+  currentRound: number,
+  weights: PairingWeights
+): { candidate: number[][]; scored: PairingOptimizerResult } | null {
+  const candidate = cloneTables(working)
+  const c1 = candidate[t1]
+  const c2 = candidate[t2]
+  if (!c1 || !c2) return null
+
+  const left = c1[i]
+  const right = c2[j]
+  if (left === undefined || right === undefined) return null
+
+  c1[i] = right
+  c2[j] = left
+
+  const scored = scoreSolution(candidate, playersById, rematchMap, forbiddenSet, currentRound, weights)
+  return { candidate, scored }
+}
+
 function improveBySwap(
   initialTables: number[][],
   playersById: Map<number, PairingPlayer>,
@@ -597,22 +626,10 @@ function improveBySwap(
             return best
           }
 
-          const candidate = cloneTables(working)
-          const c1 = candidate[t1]
-          const c2 = candidate[t2]
-          if (!c1 || !c2) continue
-
-          const left = c1[i]
-          const right = c2[j]
-          if (left === undefined || right === undefined) continue
-
-          c1[i] = right
-          c2[j] = left
-
-          const scored = scoreSolution(candidate, playersById, rematchMap, forbiddenSet, currentRound, weights)
-          if (scored.totalScore > best.totalScore) {
-            best = scored
-            working = cloneTables(candidate)
+          const attempt = trySwapCandidate(working, t1, t2, i, j, playersById, rematchMap, forbiddenSet, currentRound, weights)
+          if (attempt && attempt.scored.totalScore > best.totalScore) {
+            best = attempt.scored
+            working = cloneTables(attempt.candidate)
           }
         }
       }

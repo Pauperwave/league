@@ -246,8 +246,8 @@ rulesets.vue
 | Component | Purpose | Notes |
 |-----------|---------|-------|
 | `BaseTable` | Generic data table | Used by Rankings |
-| `BaseButton` | Wrapper around UButton | Consistent styling |
-| `ActionButtons` | Button group layout | League/event actions |
+| `RowActionButton` | Wrapper around UButton | Consistent styling |
+| `RowActionButtons` | Button group layout | League/event actions |
 | `CancelButton` | Styled cancel button | Modal dismiss |
 | `DatePicker` | Date selection | Event form |
 | `CardPreview` | Card hover preview | Commander search |
@@ -340,12 +340,22 @@ app/components/
 │   ├── HeaderActions.vue
 │   └── LogoutButton.vue
 └── ui/
-    ├── ActionButtons.vue
-    ├── BaseButton.vue
-    ├── BaseTable.vue
-    ├── CancelButton.vue
-    ├── ConfirmModal.vue
-    └── DatePicker.vue
+    ├── actions/
+    │   ├── RowActionButton.vue
+    │   └── RowActionButtons.vue
+    ├── display/
+    │   ├── BaseTable.vue
+    │   └── StatTile.vue
+    ├── input/
+    │   └── DatePicker.vue
+    ├── layout/
+    │   └── ListPageShell.vue
+    └── modal/
+        ├── CancelButton.vue
+        ├── ConfirmButton.vue
+        ├── ConfirmModal.vue
+        ├── FormModal.vue
+        └── ModalFooterActions.vue
 ```
 
 ---

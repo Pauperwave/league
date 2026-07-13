@@ -103,21 +103,11 @@ const team2Players = computed(() => {
       </div>
 
       <template #footer>
-        <div class="flex gap-2 justify-end">
-          <UButton
-            color="neutral"
-            variant="outline"
-            @click="handleCancel"
-          >
-            {{ t('common.cancel') }}
-          </UButton>
-          <UButton
-            color="primary"
-            @click="handleSubmit"
-          >
-            {{ t('common.confirm') }}
-          </UButton>
-        </div>
+        <ModalFooterActions
+          :confirm-label="t('common.confirm')"
+          @cancel="handleCancel"
+          @confirm="handleSubmit"
+        />
       </template>
     </UCard>
   </UModal>

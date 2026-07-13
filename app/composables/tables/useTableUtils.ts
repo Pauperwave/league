@@ -49,7 +49,7 @@ export function sortableHeader(label: string, UButton: Component) {
 
 export function createActionsColumn<T>(
   UButton: Component,
-  ActionButtons: Component,
+  RowActionButtons: Component,
   handlers: {
     onView: (item: T) => void
     onEdit: (item: T) => void
@@ -62,7 +62,7 @@ export function createActionsColumn<T>(
     enableSorting: false,
     meta: { class: { td: 'text-right' } },
     cell: ({ row }) =>
-      h(ActionButtons, {
+      h(RowActionButtons, {
         showView: true,
         showEdit: true,
         showDelete: true,

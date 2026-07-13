@@ -1,4 +1,5 @@
 // State and validation layer for table drag-and-drop plus pairing constraints/scoring.
+import { ref, computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type {
   PairingForbiddenPair,
@@ -7,14 +8,15 @@ import type {
   Seat,
 } from '#shared/utils/types'
 import {
+  DEFAULT_PAIRING_WEIGHTS,
   getForbiddenPairKey,
   optimizePairings,
   scorePairingTables,
   type PairingPlayer,
   type PairingHistoryEntry,
   type PairingScoreDetails,
-} from '@/composables/event-pairing/pairingOptimizer'
-import { normalizePairingForbiddenPairs } from '@/composables/event-pairing/pairingPreferences'
+} from '~/composables/event-pairing/pairingOptimizer'
+import { normalizePairingForbiddenPairs } from '~/composables/event-pairing/pairingPreferences'
 
 function cloneTables(tables: TournamentTable[]): TournamentTable[] {
   return tables.map(table => ({
@@ -54,6 +56,13 @@ function normalizeSeats(tableId: string, seats: Seat[]): Seat[] {
   }
 
   return normalized
+}
+
+function extractPlayerIds(tables: TournamentTable[]): number[] {
+  return tables
+    .flatMap(table => table.seats)
+    .map(seat => seat.player?.id)
+    .filter((id): id is number => id !== undefined)
 }
 
 function ensureTableSeatShape(tables: TournamentTable[]): TournamentTable[] {
@@ -133,19 +142,9 @@ export function useTableDnd(initialTables: TournamentTable[], params?: {
   const history = computed(() => params?.history ?? [])
   const currentRound = computed(() => params?.currentRound ?? 1)
 
-  const sourcePlayerIds = computed(() =>
-    sourceTables.value
-      .flatMap(table => table.seats)
-      .map(seat => seat.player?.id)
-      .filter((id): id is number => id !== undefined)
-  )
+  const sourcePlayerIds = computed(() => extractPlayerIds(sourceTables.value))
 
-  const localPlayerIds = computed(() =>
-    localTables.value
-      .flatMap(table => table.seats)
-      .map(seat => seat.player?.id)
-      .filter((id): id is number => id !== undefined)
-  )
+  const localPlayerIds = computed(() => extractPlayerIds(localTables.value))
 
   const tableSizesValid = computed(() =>
     localTables.value.every((table) => {
@@ -188,11 +187,7 @@ export function useTableDnd(initialTables: TournamentTable[], params?: {
   )
 
   const playerOrder = computed(() =>
-    [...localTables.value]
-      .sort((a, b) => a.tableNumber - b.tableNumber)
-      .flatMap(table => table.seats)
-      .map(seat => seat.player?.id)
-      .filter((id): id is number => id !== undefined)
+    extractPlayerIds([...localTables.value].sort((a, b) => a.tableNumber - b.tableNumber))
   )
 
   const forbiddenPairMap = computed(() => {

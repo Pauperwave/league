@@ -57,14 +57,11 @@ function onSubmit() {
     </template>
 
     <template #footer>
-      <div class="flex gap-2 justify-end">
-        <UButton color="neutral" variant="outline" @click="emit('cancel')">
-          {{ t('common.cancel') }}
-        </UButton>
-        <UButton color="primary" @click="onSubmit">
-          {{ t('common.save') }}
-        </UButton>
-      </div>
+      <ModalFooterActions
+        :confirm-label="t('common.save')"
+        @cancel="emit('cancel')"
+        @confirm="onSubmit"
+      />
     </template>
   </UModal>
 </template>

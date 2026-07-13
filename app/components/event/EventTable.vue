@@ -23,7 +23,7 @@ const emit = defineEmits<{
 
 const UBadge = resolveComponent('UBadge') as Component
 const UButton = resolveComponent('UButton') as Component
-const ActionButtons = resolveComponent('ActionButtons') as Component
+const RowActionButtons = resolveComponent('RowActionButtons') as Component
 
 function getEventStatus(event: Event): { key: 'ended' | 'playing' | 'registration', label: string, color: StatusColor, icon: string } {
   if ((event.event_current_round || 0) > (event.event_round_number || 0)) {
@@ -107,7 +107,7 @@ const columns: TableColumn<Event>[] = [
       return h(UBadge, { color: reg.color, variant: 'subtle', icon: reg.icon }, () => reg.label)
     }
   },
-  createActionsColumn<Event>(UButton, ActionButtons, {
+  createActionsColumn<Event>(UButton, RowActionButtons, {
     onView: (event) => emit('view', event),
     onEdit: (event) => emit('edit', event),
     onDelete: (event) => emit('delete', event),

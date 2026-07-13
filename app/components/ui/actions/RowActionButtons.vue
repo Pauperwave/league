@@ -1,4 +1,4 @@
-<!-- app\components\ui\ActionButtons.vue -->
+<!-- app\components\ui\actions\RowActionButtons.vue -->
 <script setup lang="ts">
 const {
   showEdit = true,
@@ -27,7 +27,7 @@ const emit = defineEmits<{
 
 <template>
   <div class="flex items-center justify-center gap-1" @click.stop>
-    <BaseButton
+    <RowActionButton
       v-if="showEdit"
       action="edit"
       :size="size"
@@ -36,7 +36,7 @@ const emit = defineEmits<{
       :loading="loading"
       @click="emit('edit')"
     />
-    <BaseButton
+    <RowActionButton
       v-if="showView"
       action="view"
       :size="size"
@@ -45,7 +45,7 @@ const emit = defineEmits<{
       :loading="loading"
       @click="emit('view')"
     />
-    <BaseButton
+    <RowActionButton
       v-if="showDelete"
       action="remove"
       :size="size"
