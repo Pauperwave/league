@@ -55,9 +55,9 @@ export function useRankingGrid(
     const uniqueRanks = [...new Set(formation as number[])].sort((a, b) => a - b)
     const isValid = uniqueRanks.every((rank, i) => rank === i + 1)
 
-    console.log('[VALID FORMATION] Formation:', formation)
-    console.log('[VALID FORMATION] Unique ranks:', uniqueRanks)
-    console.log('[VALID FORMATION] ✅ Is valid:', isValid)
+    logDebug('useRankingGrid', 'Formation:', formation)
+    logDebug('useRankingGrid', 'Unique ranks:', uniqueRanks)
+    logDebug('useRankingGrid', '✅ Is valid:', isValid)
 
     return isValid
   })

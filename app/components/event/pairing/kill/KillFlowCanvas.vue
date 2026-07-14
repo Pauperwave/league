@@ -153,7 +153,7 @@ function toggleDarkMode() {
 }
 
 function logToObject() {
-  console.log('Vue Flow data:', { nodes: nodes.value, edges: mapKillsToEdges() })
+  logDebug('KillFlowCanvas', 'Vue Flow data:', { nodes: nodes.value, edges: mapKillsToEdges() })
 }
 </script>
 

@@ -84,7 +84,7 @@ function handleSubmit() {
 }
 
 function handleCancel() {
-  console.log('Score modal cancelled (Cancel clicked)')
+  logDebug('TableScoreGrid', 'Score modal cancelled (Cancel clicked)')
   emit('cancel')
 }
 

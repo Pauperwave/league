@@ -33,8 +33,8 @@ function getPlayerName(id: number): string {
 }
 
 function handleSubmit() {
-  console.log('Confirm Kill System - Table ID:', props.pairingId)
-  console.log('Kills to confirm:', [...killsStore.kills])
+  logDebug('KillSystemModal', 'Confirm Kill System - Table ID:', props.pairingId)
+  logDebug('KillSystemModal', 'Kills to confirm:', [...killsStore.kills])
   emit('submit', [...killsStore.kills])
   open.value = false
 }

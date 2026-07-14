@@ -23,7 +23,7 @@ const backImage = computed(() => {
 // Logging when the card changes
 watch(() => props.card, (newCard) => {
   if (newCard) {
-    console.log('[CardPreview] 🖼️ Card displayed:', newCard.name)
+    logDebug('CardPreview', '🖼️ Card displayed:', newCard.name)
   }
 }, { immediate: true })
 </script>

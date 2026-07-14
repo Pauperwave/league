@@ -809,7 +809,7 @@ export const useEventStore = defineStore('events', () => {
         .eq('player_id', playerId)
         .maybeSingle()
 
-      console.log('[upsertRoundResult] Existing row?', { pairingId, playerId, existing: !!existing })
+      console.log('[useEventStore] upsertRoundResult Existing row?', { pairingId, playerId, existing: !!existing })
       if (existing) {
         const { error } = await supabase
           .from('round_results')
@@ -817,20 +817,20 @@ export const useEventStore = defineStore('events', () => {
           .eq('pairing_id', pairingId)
           .eq('player_id', playerId)
         if (error) throw error
-        console.log('[upsertRoundResult] Updated existing row', { pairingId, playerId, data })
+        console.log('[useEventStore] upsertRoundResult Updated existing row', { pairingId, playerId, data })
       }
       else {
         const { error } = await supabase
           .from('round_results')
           .insert({ pairing_id: pairingId, player_id: playerId, ...data })
         if (error) throw error
-        console.log('[upsertRoundResult] Inserted new row', { pairingId, playerId, data })
+        console.log('[useEventStore] upsertRoundResult Inserted new row', { pairingId, playerId, data })
       }
 
       return { success: true }
     }
     catch (err) {
-      console.error('[upsertRoundResult] Error', { pairingId, playerId, data, err })
+      console.error('[useEventStore] upsertRoundResult Error', { pairingId, playerId, data, err })
       return { success: false, error: toErrorMessage(err, t('store.event.saveError')) }
     }
   }

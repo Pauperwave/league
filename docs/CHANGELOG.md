@@ -5,6 +5,13 @@ One entry per notable commit, newest first, grouped by date. Each entry: the com
 
 ## 2026-07-14
 
+### `refactor(logging): ♻️ unify console logging through logger utils`
+
+- All component/composable/page debug `console.log`s → `logDebug(component, ...)` (dev-only, `[component]`-prefixed): commander components, `KillFlowCanvas`, `KillSystemModal`, `TableScoreGrid`, `useEventPlayers`, `useRankingGrid`, `LeagueDetailPage`.
+- `useEventPage`'s bare `console.error(result.error)` → `logError('useEventPage', ...)`.
+- `events.ts`'s `[upsertRoundResult]` logs gained the mandated `[useEventStore]` prefix (stores keep raw console per their own convention).
+- Untouched by design: `[BUTTON CLICK]` (`useButtonLogging`) and `[ROUTE CHANGE]` (`route-logger` plugin) — deliberate patterns.
+
 ### `refactor(imports): ♻️ sweep redundant value imports across app/ (124 files)`
 
 - Codemod removed now-redundant value imports (`vue`, `vue-i18n`, `pinia`, `@vueuse/core`, `~/composables/*`, `~/utils/*`, `#imports`) from 124 files; mixed imports collapsed to `import type`.

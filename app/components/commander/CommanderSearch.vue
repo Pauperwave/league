@@ -12,7 +12,7 @@ const { t } = useI18n()
 
 // Logging when the whitelist changes
 watch(() => props.whitelist, (newWhitelist) => {
-  console.log('[CommanderSearch] 🎫 Whitelist changed:', newWhitelist?.length || 0, 'items')
+  logDebug('CommanderSearch', '🎫 Whitelist changed:', newWhitelist?.length || 0, 'items')
 }, { immediate: true })
 
 const {
@@ -74,7 +74,7 @@ function getManaFontClass(token: string): string {
 // Logging when the card changes
 watch(card, (newCard) => {
   if (newCard) {
-    console.log('[CommanderSearch] 🖼️ Card loaded:', newCard.name)
+    logDebug('CommanderSearch', '🖼️ Card loaded:', newCard.name)
   }
 })
 
@@ -84,20 +84,20 @@ const localValue = computed({
 })
 
 watch(modelValue, (newValue) => {
-  console.log('[CommanderSearch] modelValue changed:', newValue)
+  logDebug('CommanderSearch', 'modelValue changed:', newValue)
   query.value = newValue || ''
-  console.log('[CommanderSearch] query set from modelValue:', query.value)
+  logDebug('CommanderSearch', 'query set from modelValue:', query.value)
 })
 
 watch(suggestions, (newSuggestions) => {
-  console.log('[CommanderSearch] suggestions updated:', newSuggestions.length, 'items')
+  logDebug('CommanderSearch', 'suggestions updated:', newSuggestions.length, 'items')
   if (props.whitelist && props.whitelist.length > 0) {
-    console.log('[CommanderSearch] 🎫 Using whitelist filtering,', newSuggestions.length, 'of', props.whitelist.length, 'cards shown')
+    logDebug('CommanderSearch', '🎫 Using whitelist filtering,', newSuggestions.length, 'of', props.whitelist.length, 'cards shown')
   }
 })
 
 watch(showSuggestions, (newValue) => {
-  console.log('[CommanderSearch] showSuggestions changed:', newValue)
+  logDebug('CommanderSearch', 'showSuggestions changed:', newValue)
 })
 
 /**

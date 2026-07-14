@@ -22,9 +22,9 @@ const { whitelists, isLoading, loadAllLists, getPartnerType, getAllowedPartners 
 
 // Load whitelists when the component mounts
 onMounted(() => {
-  console.log('[CommanderModal] 🚀 Component mounted, loading whitelists...')
+  logDebug('CommanderModal', '🚀 Component mounted, loading whitelists...')
   loadAllLists().then(() => {
-    console.log('[CommanderModal] ✅ Whitelists loaded, commander count:', whitelists.value.commander.length)
+    logDebug('CommanderModal', '✅ Whitelists loaded, commander count:', whitelists.value.commander.length)
   })
 })
 
@@ -60,7 +60,7 @@ const commander2Label = computed(() => {
 
 // Watch for debugging
 watch(() => whitelists.value.commander, (newVal) => {
-  console.log('[CommanderModal] 📋 Commander whitelist updated:', newVal.length, 'items')
+  logDebug('CommanderModal', '📋 Commander whitelist updated:', newVal.length, 'items')
 })
 
 // Clear commander2 when commander1 changes

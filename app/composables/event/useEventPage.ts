@@ -177,7 +177,7 @@ export function useEventPage() {
       event_round_duration: data.roundDuration,
     })
     if (!result.success) {
-      console.error(result.error)
+      logError('useEventPage', 'updateEvent failed:', result.error)
       return false
     }
     await eventStore.fetchEvents(leagueId, true)

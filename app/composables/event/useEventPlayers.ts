@@ -69,7 +69,7 @@ export function useEventPlayers(deps: EventPlayersDeps) {
   }
 
   function handlePlayerStatusUpdate(payload: { playerId: number, paid: boolean, companion: boolean }) {
-    console.log('Player status updated:', payload)
+    logDebug('useEventPlayers', 'Player status updated:', payload)
   }
 
   async function handleBatchRemove(playerIds: number[]) {
