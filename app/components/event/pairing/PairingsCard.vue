@@ -13,15 +13,14 @@ const props = defineProps<{
   readonly?: boolean
   /** Full list of tournament players used to resolve player details. */
   allPlayers: TournamentPlayer[]
-  /** Store managing player rankings per pairing. */
-  rankings?: ReturnType<typeof useRankingsStore>
-  /** Store managing commander selections per player. */
-  commandersStore?: ReturnType<typeof useCommandersStore>
-  /** Store managing kill records and pairing confirmation state. */
-  killsStore?: ReturnType<typeof useKillsStore>
-  /** Store managing player votes per pairing. */
-  votesStore?: ReturnType<typeof useVotesStore>
 }>()
+
+// Session stores injected directly (Pinia singletons) — same pattern as the
+// kill/ siblings, instead of the former optional store props.
+const rankingsStore = useRankingsStore()
+const commandersStore = useCommandersStore()
+const killsStore = useKillsStore()
+const votesStore = useVotesStore()
 
 // ─── Emits ────────────────────────────────────────────────────────────────────
 
@@ -114,7 +113,7 @@ const pairingPlayerIds = (pairing: Pairing): number[] =>
  * Returns true if the pairing has at least one ranking entry saved.
  */
 const hasRanking = (pairingId: number): boolean => {
-  const ranking = props.rankings?.getRankingWithRanks(pairingId)
+  const ranking = rankingsStore.getRankingWithRanks(pairingId)
   return !!ranking && ranking.length > 0
 }
 
@@ -129,9 +128,9 @@ const isTableComplete = (pairing: Pairing): boolean => {
   const playerIds = pairingPlayerIds(pairing)
   return (
     hasRanking(pairing.pairing_id) &&
-    !!props.killsStore?.isPairingConfirmed(pairing.pairing_id) &&
-    playerIds.every(id => props.commandersStore?.getCommander1(id) !== null) &&
-    playerIds.every(id => props.votesStore?.hasVotes(id) === true)
+    killsStore.isPairingConfirmed(pairing.pairing_id) &&
+    playerIds.every(id => commandersStore.getCommander1(id) !== null) &&
+    playerIds.every(id => votesStore.hasVotes(id))
   )
 }
 
@@ -188,21 +187,21 @@ function fillTable(pairingId: number) {
   const playerIds = pairingPlayerIds(pairing)
   if (playerIds.length < 2) return
 
-  props.rankings?.setRankingWithRanks(
+  rankingsStore.setRankingWithRanks(
     pairingId,
     playerIds.map((id, i) => ({ playerId: id, rank: i + 1 }))
   )
 
-  props.killsStore?.addKill(playerIds[0]!, playerIds[1]!)
-  props.killsStore?.confirmPairing(pairingId)
+  killsStore.addKill(playerIds[0]!, playerIds[1]!)
+  killsStore.confirmPairing(pairingId)
 
   for (const id of playerIds) {
-    props.commandersStore?.setCommanders(id, 'Test Commander', null)
+    commandersStore.setCommanders(id, 'Test Commander', null)
   }
 
   for (let i = 0; i < playerIds.length; i++) {
     const nextIdx = (i + 1) % playerIds.length
-    props.votesStore?.setVotes(playerIds[i]!, playerIds[nextIdx]!, playerIds[nextIdx]!)
+    votesStore.setVotes(playerIds[i]!, playerIds[nextIdx]!, playerIds[nextIdx]!)
   }
 }
 
@@ -212,18 +211,18 @@ function fillTable(pairingId: number) {
  * - If not confirmed: confirms and persists kills to the DB via the parent's submitKills handler.
  */
 function toggleKillConfirmation(pairingId: number) {
-  if (props.killsStore?.isPairingConfirmed(pairingId)) {
-    props.killsStore?.unconfirmPairing(pairingId)
+  if (killsStore.isPairingConfirmed(pairingId)) {
+    killsStore.unconfirmPairing(pairingId)
     return
   }
 
-  props.killsStore?.confirmPairing(pairingId)
+  killsStore.confirmPairing(pairingId)
 
   const pairing = props.pairings.find(p => p.pairing_id === pairingId)
   if (!pairing) return
 
   const playerIds = pairingPlayerIds(pairing)
-  const pairingKills = props.killsStore?.kills.filter(k => playerIds.includes(k.killerId)) ?? []
+  const pairingKills = killsStore.kills.filter(k => playerIds.includes(k.killerId))
   emit('submitKills', pairingId, pairingKills)
 }
 </script>
@@ -264,8 +263,8 @@ function toggleKillConfirmation(pairingId: number) {
             :name="allPlayers.find(p => p.id === playerId)?.name ?? ''"
             :surname="allPlayers.find(p => p.id === playerId)?.surname ?? ''"
             :readonly="readonly"
-            :has-commander="!!commandersStore?.getCommander1(playerId)"
-            :has-votes="votesStore?.hasVotes(playerId) === true"
+            :has-commander="!!commandersStore.getCommander1(playerId)"
+            :has-votes="votesStore.hasVotes(playerId)"
             @open-commander-modal="(pairingId, pid) => emit('openCommanderModal', pairingId, pid)"
             @open-votes-modal="(pairingId, pid) => emit('openVotesModal', pairingId, pid)"
           />
@@ -277,7 +276,7 @@ function toggleKillConfirmation(pairingId: number) {
           :pairing-id="pairing.pairing_id"
           :table-index="index"
           :has-ranking="hasRanking(pairing.pairing_id)"
-          :kills-confirmed="!!killsStore?.isPairingConfirmed(pairing.pairing_id)"
+          :kills-confirmed="killsStore.isPairingConfirmed(pairing.pairing_id)"
           @open-score-modal="handleOpenScoreModal"
           @open-kill-modal="emit('openKillModal', $event)"
           @toggle-kill-confirmation="toggleKillConfirmation"

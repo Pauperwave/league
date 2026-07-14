@@ -5,6 +5,10 @@ One entry per notable commit, newest first, grouped by date. Each entry: the com
 
 ## 2026-07-14
 
+### `refactor(event): ♻️ inject session stores directly in PairingsCard`
+
+- Dropped the four optional store props (`rankings`, `killsStore`, `commandersStore`, `votesStore`) — Pinia stores are singletons, so the prop indirection bought no isolation and forced `props.killsStore?.` chains everywhere. Now injected via `useXStore()` like the `kill/` siblings; the single usage in the event page lost four bindings.
+
 ### `refactor(logging): ♻️ unify console logging through logger utils`
 
 - All component/composable/page debug `console.log`s → `logDebug(component, ...)` (dev-only, `[component]`-prefixed): commander components, `KillFlowCanvas`, `KillSystemModal`, `TableScoreGrid`, `useEventPlayers`, `useRankingGrid`, `LeagueDetailPage`.
