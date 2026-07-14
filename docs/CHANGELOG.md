@@ -5,6 +5,10 @@ One entry per notable commit, newest first, grouped by date. Each entry: the com
 
 ## 2026-07-14
 
+### `chore(scripts): 🔨 extend check-file-paths to test/ and scripts/; backfill headers`
+
+- `check-file-paths.mjs` now also scans `test/` and `scripts/` (and handles `.mjs`); ran `--fix` to backfill the missing path headers in the pre-existing test files.
+
 ### `docs(routes): 📝 document the deliberate [id] vs [leagueId] param mismatch`
 
 - Verified against the Nuxt pages docs ("named parent routes take priority over nested dynamic routes"): `league/[leagueId].vue` would pair with the `league/[leagueId]/` folder as a nested parent and shadow the event page. Warning comment added at the top of `app/pages/league/[id].vue`; repo-specific explanation added to `docs/architecture/routes.md` § Nested Route Gotchas.

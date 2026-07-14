@@ -1,3 +1,4 @@
+// test\nuxt\components\event\standings\StandingsCard.test.ts
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import StandingsCard from '~/components/event/standings/StandingsCard.vue'

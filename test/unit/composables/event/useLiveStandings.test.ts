@@ -1,3 +1,4 @@
+// test\unit\composables\event\useLiveStandings.test.ts
 import { describe, expect, it } from 'vitest'
 import { buildPosValues, cloneStandings, calculatePlayerTableScore, updateStanding } from '~/composables/event/useLiveStandings'
 import type { StandingWithPlayer } from '#shared/utils/types'

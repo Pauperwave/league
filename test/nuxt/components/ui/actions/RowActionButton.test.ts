@@ -1,3 +1,4 @@
+// test\nuxt\components\ui\actions\RowActionButton.test.ts
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import RowActionButton from '~/components/ui/actions/RowActionButton.vue'

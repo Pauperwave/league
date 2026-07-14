@@ -1,3 +1,4 @@
+// test\unit\composables\event-pairing\pairingOptimizer.test.ts
 import { describe, expect, it } from 'vitest'
 import {
   DEFAULT_PAIRING_WEIGHTS,

@@ -1,7 +1,8 @@
 // scripts\check-file-paths.mjs
-// Verifies that every .vue/.ts source file under app/, server/, shared/ starts with
-// a path comment matching its real location, per the convention in CLAUDE.md
-// ("Add a path comment as the first line of every source file").
+// Verifies that every .vue/.ts source file under app/, server/, shared/, test/,
+// scripts/ starts with a path comment matching its real location, per the
+// convention in CLAUDE.md ("Add a path comment as the first line of every
+// source file").
 //
 // Usage:
 //   node scripts/check-file-paths.mjs         report mismatches/missing headers, exit 1 if any
@@ -12,13 +13,14 @@ import { join, relative, extname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const rootDir = join(fileURLToPath(import.meta.url), '..', '..')
-const scanDirs = ['app', 'server', 'shared']
+const scanDirs = ['app', 'server', 'shared', 'test', 'scripts']
 const skipDirNames = new Set(['node_modules', '.nuxt', '.output', 'dist', 'coverage'])
 // Generated — regenerated via `supabase gen types`, never hand-edited (see CLAUDE.md).
 const skipFiles = new Set(['shared\\utils\\types\\database.ts'])
 const extHandlers = {
   '.vue': { pattern: /^<!--\s*(.+?)\s*-->$/, format: (p) => `<!-- ${p} -->` },
   '.ts': { pattern: /^\/\/\s*(.+?)\s*$/, format: (p) => `// ${p}` },
+  '.mjs': { pattern: /^\/\/\s*(.+?)\s*$/, format: (p) => `// ${p}` },
 }
 
 function walk(dir, files = []) {

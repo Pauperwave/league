@@ -1,3 +1,4 @@
+// test\unit\utils\cardColors.test.ts
 import { describe, it, expect } from 'vitest'
 import { extractColorsFromManaCost, resolveCardColors, buildGradientClass } from '~/utils/cardColors'
 

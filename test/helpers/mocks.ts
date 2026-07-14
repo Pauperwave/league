@@ -1,3 +1,4 @@
+// test\helpers\mocks.ts
 import { vi } from 'vitest'
 import { createI18n } from 'vue-i18n'
 
