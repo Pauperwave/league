@@ -5,6 +5,12 @@ One entry per notable commit, newest first, grouped by date. Each entry: the com
 
 ## 2026-07-14
 
+### `fix(standings): 🐛 surface silently-failing standings score updates`
+
+- Bug: the final "Classifica" showed 0 points for everyone and standings appeared to reset every round. Root cause: `updateStandingsAndRanks` never checked the Supabase `error` of its UPDATEs, **and** an update filtered out by RLS (no UPDATE policy for `anon` on `standings` — the repo migrations only ever created SELECT policies) reports *no error and 0 rows*, so every score write vanished silently.
+- Fix: score updates now `.select()` the affected rows, throw on any error, and throw a descriptive error if fewer rows were updated than expected (turning the silent failure into a visible toast); rank updates also propagate errors.
+- New idempotent migration `20260714000000_add_standings_write_policies.sql` adds `FOR ALL` write policies on `standings` for `anon`+`authenticated` — **not yet applied to the live DB** (needs `supabase db push` or the dashboard SQL editor).
+
 ### `feat(event): ✨ show EndedEventBadge in the event page's ended phase`
 
 - `EndedEventBadge` (previously reserved/unreferenced) now renders above the final `StandingsCard` when `eventStatus === 'ended'`; keep-comment and `TODO.md` entry resolved.

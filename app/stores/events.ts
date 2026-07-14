@@ -207,7 +207,10 @@ function calculateRoundScores(
 
 /** Batch-update standings scores, then update ranks */
 async function updateStandingsAndRanks(supabase: ReturnType<typeof useSupabaseClient<Database>>, eventId: number, standingsMap: Map<number, StandingAccumulator>) {
-  await Promise.all(
+  // .select() makes the update return the affected rows: an update silently
+  // filtered out by RLS (no UPDATE policy for the anon role) reports NO error
+  // and 0 rows — without this check, scores vanish and standings stay 0.
+  const scoreUpdates = await Promise.all(
     Array.from(standingsMap.values()).map(s =>
       supabase
         .from('standings')
@@ -218,15 +221,28 @@ async function updateStandingsAndRanks(supabase: ReturnType<typeof useSupabaseCl
           play_received: s.play_received,
         })
         .eq('event_id', eventId)
-        .eq('player_id', s.player_id),
+        .eq('player_id', s.player_id)
+        .select('player_id'),
     ),
   )
+
+  for (const { error } of scoreUpdates) {
+    if (error) throw error
+  }
+  const affected = scoreUpdates.reduce((count, u) => count + (u.data?.length ?? 0), 0)
+  if (affected < standingsMap.size) {
+    throw new Error(
+      `standings score update affected ${affected}/${standingsMap.size} rows — `
+      + `likely a missing UPDATE RLS policy for the anon role on 'standings' `
+      + `(see supabase/migrations/*_add_standings_write_policies.sql)`,
+    )
+  }
 
   const ranked = Array.from(standingsMap.values()).sort(
     (a, b) => b.standing_player_score - a.standing_player_score,
   )
 
-  await Promise.all(
+  const rankUpdates = await Promise.all(
     ranked.map((s, index) =>
       supabase
         .from('standings')
@@ -235,6 +251,10 @@ async function updateStandingsAndRanks(supabase: ReturnType<typeof useSupabaseCl
         .eq('player_id', s.player_id),
     ),
   )
+
+  for (const { error } of rankUpdates) {
+    if (error) throw error
+  }
 }
 
 // ─── Store ──────────────────────────────────────────────────────────────────
