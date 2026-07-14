@@ -1,7 +1,7 @@
 // app\stores\votes.ts
 
 /** Entry tracking a player's deck and play votes */
-interface VoteEntry {
+export interface VoteEntry {
   playerId: number
   deckVotePlayerId: number | null
   playVotePlayerId: number | null
@@ -35,7 +35,6 @@ export const useVotesStore = defineStore('votes', () => {
   /** Set both deck and play votes for a player */
   function setVotes(playerId: number, deckVotePlayerId: number | null, playVotePlayerId: number | null) {
     votes.value.set(playerId, { playerId, deckVotePlayerId, playVotePlayerId })
-    votes.value = new Map(votes.value)
   }
 
   /** Set only the deck vote for a player (preserves existing play vote) */
@@ -47,7 +46,6 @@ export const useVotesStore = defineStore('votes', () => {
     else {
       votes.value.set(playerId, { playerId, deckVotePlayerId, playVotePlayerId: null })
     }
-    votes.value = new Map(votes.value)
   }
 
   /** Set only the play vote for a player (preserves existing deck vote) */
@@ -59,19 +57,24 @@ export const useVotesStore = defineStore('votes', () => {
     else {
       votes.value.set(playerId, { playerId, deckVotePlayerId: null, playVotePlayerId })
     }
-    votes.value = new Map(votes.value)
   }
 
   /** Remove all votes for a player */
   function removeVotes(playerId: number) {
     votes.value.delete(playerId)
-    votes.value = new Map(votes.value)
+  }
+
+  /**
+   * Replace all state from an external snapshot (localStorage today, a
+   * realtime subscription in the future) — the single rehydration entry point.
+   */
+  function hydrate(entries: VoteEntry[]) {
+    votes.value = new Map(entries.map(entry => [entry.playerId, entry]))
   }
 
   /** Clear all votes */
   function reset() {
     votes.value.clear()
-    votes.value = new Map()
   }
 
   return {
@@ -84,6 +87,7 @@ export const useVotesStore = defineStore('votes', () => {
     setDeckVote,
     setPlayVote,
     removeVotes,
+    hydrate,
     reset,
   }
 })

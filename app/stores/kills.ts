@@ -70,19 +70,26 @@ export const useKillsStore = defineStore('kills', () => {
   /** Mark a pairing's kills as confirmed */
   function confirmPairing(pairingId: number) {
     confirmedPairings.value.add(pairingId)
-    confirmedPairings.value = new Set(confirmedPairings.value)
   }
 
   /** Unconfirm a pairing's kills */
   function unconfirmPairing(pairingId: number) {
     confirmedPairings.value.delete(pairingId)
-    confirmedPairings.value = new Set(confirmedPairings.value)
+  }
+
+  /**
+   * Replace all state from an external snapshot (localStorage today, a
+   * realtime subscription in the future) — the single rehydration entry point.
+   */
+  function hydrate(snapshot: { kills: Kill[]; confirmedPairings: number[] }) {
+    kills.value = [...snapshot.kills]
+    confirmedPairings.value = new Set(snapshot.confirmedPairings)
   }
 
   /** Clear all kills and confirmed pairings */
   function reset() {
     kills.value = []
-    confirmedPairings.value = new Set()
+    confirmedPairings.value.clear()
   }
 
   return {
@@ -98,6 +105,7 @@ export const useKillsStore = defineStore('kills', () => {
     removeKill,
     confirmPairing,
     unconfirmPairing,
+    hydrate,
     reset,
   }
 })

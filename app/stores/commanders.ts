@@ -1,7 +1,7 @@
 // app\stores\commanders.ts
 
 /** Entry tracking a player's commander cards */
-interface CommanderEntry {
+export interface CommanderEntry {
   playerId: number
   commander1: string | null
   commander2: string | null
@@ -58,6 +58,14 @@ export const useCommandersStore = defineStore('commanders', () => {
     commanders.value.delete(playerId)
   }
 
+  /**
+   * Replace all state from an external snapshot (localStorage today, a
+   * realtime subscription in the future) — the single rehydration entry point.
+   */
+  function hydrate(entries: CommanderEntry[]) {
+    commanders.value = new Map(entries.map(entry => [entry.playerId, entry]))
+  }
+
   /** Clear all commanders */
   function reset() {
     commanders.value.clear()
@@ -72,6 +80,7 @@ export const useCommandersStore = defineStore('commanders', () => {
     setCommander1,
     setCommander2,
     removeCommanders,
+    hydrate,
     reset,
   }
 })

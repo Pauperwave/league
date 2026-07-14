@@ -81,7 +81,10 @@ onInit(() => {
   setEdges(mapKillsToEdges())
 })
 
-watch(killsStore.kills, () => {
+// Getter form, not `watch(killsStore.kills, ...)`: removeKill/hydrate/reset
+// replace the array, which would leave a reference-based watcher attached to
+// the old, dead array.
+watch(() => killsStore.kills, () => {
   setEdges(mapKillsToEdges())
 }, { deep: true })
 

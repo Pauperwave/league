@@ -1,7 +1,7 @@
 // app\stores\rankings.ts
 
 /** Entry representing a player's rank within a pairing */
-interface RankingEntry {
+export interface RankingEntry {
   playerId: number
   rank: number
 }
@@ -25,19 +25,24 @@ export const useRankingsStore = defineStore('rankings', () => {
   /** Set or update the ranking for a pairing */
   function setRankingWithRanks(pairingId: number, ranking: RankingEntry[]) {
     rankingsWithRanks.value.set(pairingId, ranking)
-    rankingsWithRanks.value = new Map(rankingsWithRanks.value)
   }
 
   /** Remove the ranking for a pairing */
   function removeRanking(pairingId: number) {
     rankingsWithRanks.value.delete(pairingId)
-    rankingsWithRanks.value = new Map(rankingsWithRanks.value)
+  }
+
+  /**
+   * Replace all state from an external snapshot (localStorage today, a
+   * realtime subscription in the future) — the single rehydration entry point.
+   */
+  function hydrate(entries: [number, RankingEntry[]][]) {
+    rankingsWithRanks.value = new Map(entries)
   }
 
   /** Clear all rankings */
   function reset() {
     rankingsWithRanks.value.clear()
-    rankingsWithRanks.value = new Map()
   }
 
   return {
@@ -46,6 +51,7 @@ export const useRankingsStore = defineStore('rankings', () => {
     hasRanking,
     setRankingWithRanks,
     removeRanking,
+    hydrate,
     reset,
   }
 })

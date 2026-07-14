@@ -1,5 +1,7 @@
 <!-- app\components\event\CurrentTime.vue -->
 <script setup lang="ts">
+import { computed, ref } from 'vue'
+import { useIntervalFn } from '@vueuse/core'
 import { ICONS } from '~/utils/icons'
 const now = ref(new Date())
 

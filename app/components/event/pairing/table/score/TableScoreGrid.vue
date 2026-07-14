@@ -1,9 +1,11 @@
 <!-- app\components\event\pairing\table\score\TableScoreGrid.vue -->
 <script setup lang="ts">
+import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { Pairing, Seat } from '#shared/utils/types'
+import type { Pairing } from '#shared/utils/types'
 import TableSeatItem from '../TableSeatItem.vue'
 import { useButtonLogging } from '~/composables/ui/useButtonLogging'
+import { useRankingGrid, type RankingGridPlayer } from '~/composables/tables/useRankingGrid'
 
 const { t } = useI18n()
 
@@ -38,186 +40,35 @@ const players = computed(() => {
   ).filter((id): id is number => id !== null && id !== undefined)
 })
 
-const gridSize = computed(() => (players.value.length === 3 ? 3 : 4))
-const gridRange = computed(() => Array.from({ length: gridSize.value }, (_, i) => i))
-
-// Formation represents the ranking positions: e.g., 1-2-3-4 means 1st, 2nd, 3rd, 4th place
-// Rule: ranks used must form a consecutive sequence starting from 1 (no gaps)
-const isValidFormation = computed(() => {
-  const size = gridSize.value
-
-  // For each column (player), find which row (rank) it's in
-  const formation: (number | null)[] = Array(size).fill(null)
-  for (let col = 0; col < size; col++) {
-    for (let row = 0; row < size; row++) {
-      if (grid.value[row]?.[col]) {
-        formation[col] = row + 1
-        break
-      }
+const gridPlayers = computed<(RankingGridPlayer | undefined)[]>(() =>
+  players.value.map((playerId) => {
+    const player = props.allPlayers.find((p) => p.player_id === playerId)
+    if (!player) return undefined
+    return {
+      id: player.player_id,
+      name: player.player_name,
+      surname: player.player_surname,
     }
-  }
+  })
+)
 
-  // All players must be placed
-  if (formation.some(r => r === null)) return false
-
-  // Ranks used must be consecutive starting from 1 (no gaps)
-  const uniqueRanks = [...new Set(formation as number[])].sort((a, b) => a - b)
-  const isValid = uniqueRanks.every((rank, i) => rank === i + 1)
-
-  console.log('[VALID FORMATION] Formation:', formation)
-  console.log('[VALID FORMATION] Unique ranks:', uniqueRanks)
-  console.log('[VALID FORMATION] Is valid:', isValid)
-
-  return isValid
-})
-
-const grid = ref<(Seat | null)[][]>([])
-
-const isDragging = ref(false)
-const draggedFromCell = ref<{ row: number; col: number } | null>(null)
-const draggedFromCol = ref<number | null>(null)
-
-function getPlayerById(playerId: number): DatabasePlayer | undefined {
-  return props.allPlayers.find((p) => p.player_id === playerId)
-}
-
-function initializeGrid() {
-  const size = gridSize.value
-  const newGrid: (Seat | null)[][] = Array.from({ length: size }, () =>
-    Array<Seat | null>(size).fill(null)
-  )
-
-  if (props.savedRankingWithRanks && props.savedRankingWithRanks.length > 0) {
-    // Use the saved ranking with actual ranks to place players
-    const savedRanking = props.savedRankingWithRanks
-    players.value.forEach((playerId, colIndex) => {
-      const player = getPlayerById(playerId)
-      if (!player) return
-
-      // Find this player's rank in the saved ranking
-      const savedEntry = savedRanking.find(entry => entry.playerId === playerId)
-      if (!savedEntry) return
-
-      // Place the player in the row matching their rank (rank 1 → row 0)
-      const row = savedEntry.rank - 1
-      if (row >= 0 && row < size && newGrid[row]) {
-        newGrid[row][colIndex] = {
-          id: `grid-seat-${colIndex}`,
-          player: {
-            id: player.player_id,
-            name: player.player_name,
-            surname: player.player_surname,
-            seed: undefined,
-            avatarUrl: undefined,
-          },
-        }
-      }
-    })
-  } else {
-    // Place everyone in the first row (default)
-    const firstRow = newGrid[0]
-    if (!firstRow) return
-
-    players.value.forEach((playerId, i) => {
-      if (i >= size) return
-      const player = getPlayerById(playerId)
-      if (!player) return
-      firstRow[i] = {
-        id: `grid-seat-${i}`,
-        player: {
-          id: player.player_id,
-          name: player.player_name,
-          surname: player.player_surname,
-          seed: undefined,
-          avatarUrl: undefined,
-        },
-      }
-    })
-  }
-
-  grid.value = newGrid
-}
+const {
+  grid,
+  gridSize,
+  gridRange,
+  isDragging,
+  draggedFromCol,
+  isValidFormation,
+  initializeGrid,
+  handleDragStart,
+  handleDragOver,
+  handleDrop,
+  handleDragEnd,
+  getRanking,
+  getRankingWithRanks,
+} = useRankingGrid(() => gridPlayers.value, () => props.savedRankingWithRanks)
 
 watch(() => props.pairing, initializeGrid, { immediate: true })
-
-// Set the dataTransfer so the browser knows a drag is happening
-function handleDragStart(event: DragEvent, row: number, col: number) {
-  isDragging.value = true
-  draggedFromCell.value = { row, col }
-  draggedFromCol.value = col
-  // Required: without this, Firefox won't fire drop at all
-  event.dataTransfer?.setData('text/plain', `${row},${col}`)
-}
-
-function handleDragOver(event: DragEvent) {
-  // Required: prevents the browser's default "no drop" behaviour
-  event.preventDefault()
-  if (event.dataTransfer) event.dataTransfer.dropEffect = 'move'
-}
-
-function handleDrop(event: DragEvent, row: number, col: number) {
-  event.preventDefault()
-  if (!draggedFromCell.value) return
-
-  const { row: fromRow, col: fromCol } = draggedFromCell.value
-  if (fromRow === row && fromCol === col) return
-
-  // Constraint: players can only be dropped in the same column
-  if (fromCol !== col) return
-
-  // ✅ Deep copy → triggers Vue reactivity properly
-  const newGrid = grid.value.map((r) => [...r])
-  const fromSeat = newGrid[fromRow]?.[fromCol] ?? null
-  const toSeat = newGrid[row]?.[col] ?? null
-
-  if (newGrid[row]) newGrid[row]![col] = fromSeat
-  if (newGrid[fromRow]) newGrid[fromRow]![fromCol] = toSeat
-
-  grid.value = newGrid
-
-  isDragging.value = false
-  draggedFromCell.value = null
-}
-
-function handleDragEnd() {
-  isDragging.value = false
-  draggedFromCell.value = null
-  draggedFromCol.value = null
-}
-
-interface RankEntry { playerId: number; rank: number; col: number }
-
-/** Extract ranked players from the grid, sorted by rank then column */
-function extractRankedPlayers(): RankEntry[] {
-  const size = gridSize.value
-  const result: RankEntry[] = []
-
-  for (let col = 0; col < size; col++) {
-    for (let row = 0; row < size; row++) {
-      const seat = grid.value[row]?.[col]
-      if (seat?.player) {
-        result.push({ playerId: seat.player.id, rank: row + 1, col })
-        break
-      }
-    }
-  }
-
-  // Sort by rank, then by column to maintain order for same ranks
-  result.sort((a, b) => {
-    if (a.rank !== b.rank) return a.rank - b.rank
-    return a.col - b.col
-  })
-
-  return result
-}
-
-function getRanking(): number[] {
-  return extractRankedPlayers().map(r => r.playerId)
-}
-
-function getRankingWithRanks(): { playerId: number; rank: number }[] {
-  return extractRankedPlayers().map(r => ({ playerId: r.playerId, rank: r.rank }))
-}
 
 const confirmRankingLogging = useButtonLogging('Conferma classifica', {
   isValidFormation: () => isValidFormation.value,

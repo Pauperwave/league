@@ -14,6 +14,7 @@ Committed, actionable work items, ranked by priority with a rough effort estimat
 | 3 | [Round timer alarm sound](#3-round-timer-alarm-sound) | P2 | S |
 | 4 | [Form `isValid` should derive from Valibot schemas](#4-form-isvalid-should-derive-from-valibot-schemas) | P2 | M |
 | 5 | [Replace native HTML5 DnD in `TableScoreGrid.vue`](#5-replace-native-html5-dnd-in-tablescoregridvue) | P3 | M |
+| 6 | [Slim `useEventStore` by extracting pure logic](#6-slim-useeventstore-by-extracting-pure-logic) | P2 | M |
 
 ---
 
@@ -107,6 +108,12 @@ Carried over from a since-deleted `docs/reinventing-the-wheel.md` audit (2026-05
 Carried over from the same since-deleted `docs/reinventing-the-wheel.md` audit.
 
 `app/components/event/pairing/table/score/TableScoreGrid.vue` hand-rolls native `draggable="true"`/`@dragstart`/`@dragover`/`dataTransfer` handling instead of the already-installed `vue-draggable-plus` (`^0.6.1`, used elsewhere for table card reordering) — more verbose and less cross-browser-consistent than the library.
+
+---
+
+## 6. Slim `useEventStore` by extracting pure logic
+
+From the 2026-07-14 data-flow review. `app/stores/events.ts` (~1300 lines) owns the full event lifecycle, pairing generation, round scoring, and standings — a god store. Per ADR-011, don't force a split of the store itself (its state genuinely is one lifecycle). Instead, continue the pattern already started at the top of the file (`fetchRoundData`, `calculateRoundScores`): whenever an action is touched, extract its **pure logic** (score calculation, round-data assembly, standings math) into module-level functions or `app/utils`, leaving the store action as thin state + DB round-trips. Pure functions get unit tests for free — 1300-line store actions never will. Incremental, opportunistic; no big-bang refactor.
 
 ---
 

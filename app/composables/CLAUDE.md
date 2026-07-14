@@ -37,6 +37,8 @@ export function useXxx(id: Ref<number | undefined>) {
 
 Check `docs/architecture/async-data-keys.md` for the full key inventory before adding a new `useAsyncData` key — there's a documented collision history, and key format is `{domain}-{scope}-{id}`.
 
+**The store, not `useAsyncData`, is the source of truth** — these wrappers exist for SSR orchestration and dedupe only. Components should render from store state; `pending`/`error`/`refresh` from the wrapper are fine to use, but rendering domain data from the wrapper's `data` return invites store/asyncData cache disagreements. See `app/stores/CLAUDE.md`.
+
 ## Non-SSR composables
 
 Orchestration composables (`useEventPage`, `useEventLifecycle`, `useEventModals`, etc.) don't call `useAsyncData` themselves — they compose store state and other composables' return values and are called once per page in `<script setup>`. If a composable's return value will be used in a template, destructure it fully at the call site rather than keeping the composable's return as one nested object (refs won't auto-unwrap through nesting).

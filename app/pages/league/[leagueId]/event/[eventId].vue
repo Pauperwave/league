@@ -66,6 +66,10 @@ const commandersStore = useCommandersStore()
 const killsStore = useKillsStore()
 const votesStore = useVotesStore()
 
+// Crash insurance: mirror in-progress round entry (rankings/kills/votes/
+// commanders) to localStorage and restore it after a refresh mid-round.
+useSessionStorePersistence({ eventId, currentRound, rankingsStore, killsStore, commandersStore, votesStore })
+
 const toast = useToast()
 const { liveStandings } = useLiveStandings(
   computed(() => currentLeague.value?.ruleset_id),

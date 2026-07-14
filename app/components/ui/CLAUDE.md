@@ -1,5 +1,7 @@
 # app/components/ui/CLAUDE.md
 
+> an inventory of reusable pieces whose whole value is "check here before hand-rolling a duplicate."
+
 Scoped guidance for `app/components/ui/`. **Check this list before adding a new generic button/modal/layout piece here** — a near-duplicate (another hand-rolled cancel/confirm footer, another `<UButton color="primary">`) is the signal to reuse or extend one of these instead of hand-rolling. Organized into subfolders by family — component tag names are unaffected by the nesting (`nuxt.config.ts` sets `pathPrefix: false`), so `<CancelButton>` stays `<CancelButton>` regardless of which subfolder it lives in.
 
 ## Two separate button families — don't merge them
