@@ -12,6 +12,8 @@ After **every** round (including the last one), the winner of each table receive
 - **In-room checklist**: a "boosters to hand out" todo list per round — generated from the round's table winners (rank 1 per pairing), with a check-off state so the organizer knows who has already received theirs. Probably an event-page panel or modal shown after round scores are confirmed.
 - **Stat persistence**: record it on player stats as "table wins". Verify what already exists before adding anything: `standings.victories` already accumulates `position === 1` per event, and `player_stats` is trigger-computed from `round_results` — a table win is derivable as `round_results.position = 1`, so this may need **zero new columns**, just a `table_wins` aggregate in the `player_stats` trigger (or even a query). The checklist's check-off state, if it must survive refresh, can live in localStorage like the round timer.
 
+## Deletion UX: 10-second undo + soft delete (2026-07-14)
+
 For destructive actions (delete player/deck/league/event/waiting-list entry): show a 10-second undo toast instead of deleting immediately, and back it with **soft delete** on Supabase (`deleted_at timestamptz` column + filtered SELECTs, or a `deleted` flag) so the undo window is honest (restore = clear the flag) and accidental deletions stay recoverable beyond the toast. Needs: schema migration per table, store delete actions rewritten to soft-delete + delayed hard-confirm (or just soft-delete forever + periodic purge), `useToast` action button wiring.
 
 ## Component granularity audit (2026-07-14)

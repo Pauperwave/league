@@ -49,6 +49,7 @@ export interface PlayerStat {
 export type LeagueInsert      = TablesInsert<'leagues'>
 export type EventInsert       = TablesInsert<'events'>
 export type RoundResultInsert = TablesInsert<'round_results'>
+export type PairingInsert     = TablesInsert<'pairings'>
 export type PlayerInsert      = TablesInsert<'players'>
 
 // Alias for backward compatibility

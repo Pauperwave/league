@@ -5,6 +5,13 @@ One entry per notable commit, newest first, grouped by date. Each entry: the com
 
 ## 2026-07-14
 
+### `feat(api): ✨ BFF slice 2 — atomic advance-round endpoint (ADR-013)`
+
+- New `POST /api/events/:eventId/advance-round`: owns the whole round transition server-side — score the closing round, accumulate standings (with the 0-rows RLS guard), advance or end the event in one update, insert next-round pairings from the confirmed `playerOrder`. Domain guards: playing phase, and a round-mismatch 409 (double-submit/stale-tab protection the client never had).
+- Scoring/pairing helpers moved to `shared/utils/roundScoring.ts` (isomorphic — typed on `SupabaseClient<Database>`); `events.ts` slims by ~200 lines and `nextRound` becomes a thin `$fetch`. The pairing optimizer deliberately stays client-side (device-local localStorage preferences); the preview modal's confirmed order travels in the body.
+- `@supabase/supabase-js` added as a direct dependency pinned to `2.110.3` (the version `@nuxtjs/supabase` resolves) — the `SupabaseClient` class types nominally, so two package instances don't unify; keep the pin in sync when updating the module.
+- Discovered: `NextRoundModal` is never opened (nothing sets `showNextRoundModal = true`) — every real advance goes through the preview (order present) or end-event (no pairings). Left as-is for now.
+
 ### `feat(api): ✨ first BFF slice — register-player endpoint (ADR-013)`
 
 - New `server/api/events/[eventId]/register-player.post.ts`: enforces the `site-auth` cookie server-side, valibot-validates the body, guards the domain rule (registration open, event not playing), skips duplicates, and returns the rows it wrote. Coarse-grained: one call registers N players.
