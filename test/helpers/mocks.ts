@@ -3,8 +3,8 @@ import { vi } from 'vitest'
 import { createI18n } from 'vue-i18n'
 
 /**
- * Stubs per componenti Nuxt UI e globali.
- * Da passare come `global.stubs` in mountSuspended/mount.
+ * Stubs for Nuxt UI and global components.
+ * Pass as `global.stubs` in mountSuspended/mount.
  */
 export const defaultStubs = {
   UButton: {
