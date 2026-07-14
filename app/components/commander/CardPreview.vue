@@ -1,8 +1,6 @@
 <!-- app\components\commander\CardPreview.vue -->
 <script setup lang="ts">
-import { computed, watch } from 'vue'
 import type { CommanderCard } from '~/composables/commanders/useCommanderCards'
-import { resolveCardColors, buildGradientClass } from '~/utils/cardColors'
 
 const props = defineProps<{
   card: CommanderCard | null

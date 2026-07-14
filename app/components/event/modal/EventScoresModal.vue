@@ -1,6 +1,5 @@
 <!-- app\components\event\modal\EventScoresModal.vue -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import type { PairingWithResults, TournamentPlayer } from '#shared/utils/types'
 
 const { t } = useI18n()

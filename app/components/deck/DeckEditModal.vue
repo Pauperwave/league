@@ -1,8 +1,6 @@
 <!-- app\components\deck\DeckEditModal.vue -->
 <script setup lang="ts">
 // fallow-ignore-file code-duplication -- FormModal invocation boilerplate, see app/components/ui/CLAUDE.md
-import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
 import type { CommanderDeck } from '#shared/utils/types'
 import * as v from 'valibot'
 

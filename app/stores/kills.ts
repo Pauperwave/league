@@ -1,5 +1,4 @@
 // app\stores\kills.ts
-import { useI18n } from 'vue-i18n'
 import type { Kill } from '#shared/utils/types'
 
 /**

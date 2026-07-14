@@ -1,7 +1,5 @@
 <!-- app\components\event\pairing\table\TableCard.vue -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
 import type { Seat, TournamentTable } from '#shared/utils/types'
 import { VueDraggable } from 'vue-draggable-plus'
 

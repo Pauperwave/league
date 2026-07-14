@@ -1,23 +1,12 @@
 // app\composables\tables\useTableDnd.ts
 // State and validation layer for table drag-and-drop plus pairing constraints/scoring.
-import { ref, computed } from 'vue'
-import { useI18n } from 'vue-i18n'
 import type {
   PairingForbiddenPair,
   PairingWeights,
   TournamentTable,
   Seat,
 } from '#shared/utils/types'
-import {
-  DEFAULT_PAIRING_WEIGHTS,
-  getForbiddenPairKey,
-  optimizePairings,
-  scorePairingTables,
-  type PairingPlayer,
-  type PairingHistoryEntry,
-  type PairingScoreDetails,
-} from '~/composables/event-pairing/pairingOptimizer'
-import { normalizePairingForbiddenPairs } from '~/composables/event-pairing/pairingPreferences'
+import type { PairingPlayer, PairingHistoryEntry, PairingScoreDetails } from '~/composables/event-pairing/pairingOptimizer'
 
 function cloneTables(tables: TournamentTable[]): TournamentTable[] {
   return tables.map(table => ({

@@ -1,8 +1,5 @@
 <!-- app\components\event\pairing\table\score\TableScoresModal.vue -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
-import { h, resolveComponent } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import type { CellContext } from '@tanstack/vue-table'
 import type { Pairing, TournamentPlayer } from '#shared/utils/types'

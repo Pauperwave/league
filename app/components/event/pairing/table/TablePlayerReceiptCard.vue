@@ -1,6 +1,5 @@
 <!-- app\components\event\pairing\table\TablePlayerReceiptCard.vue -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import type { TournamentPlayer } from '#shared/utils/types'
 import type { PairingPlayerScore } from '~/composables/event-pairing/pairingOptimizer'
 

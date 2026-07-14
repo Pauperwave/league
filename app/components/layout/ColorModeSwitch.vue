@@ -6,8 +6,6 @@
   Uses the useThemeTransition composable to handle the animated theme change.
 -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
 // Get theme state and the toggle function from the composable
 const { isDark, toggleTheme } = useThemeTransition()
 const { t } = useI18n()

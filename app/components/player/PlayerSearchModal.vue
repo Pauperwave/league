@@ -1,10 +1,6 @@
 <!-- app\components\player\PlayerSearchModal.vue -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
 import type { Player } from '#shared/utils/types'
-import { usePlayerOptions } from '~/composables/supabase/usePlayers'
-import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 const props = defineProps<{
   players: Player[]

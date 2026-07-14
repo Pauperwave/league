@@ -1,7 +1,5 @@
 <!-- app\components\player\PlayerMatchHistoryTable.vue -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
 import type { PlayerMatchHistory } from '~/composables/players/usePlayerMatchHistory'
 
 interface Props {

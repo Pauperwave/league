@@ -1,7 +1,5 @@
 <!-- app\components\ui\input\DatePicker.vue -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
 import { CalendarDate, DateFormatter, getLocalTimeZone } from '@internationalized/date'
 
 const {

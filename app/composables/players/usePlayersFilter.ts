@@ -1,7 +1,5 @@
 // app\composables\players\usePlayersFilter.ts
 
-import { ref, computed } from 'vue'
-import { useI18n } from 'vue-i18n'
 import type { Player } from '#shared/utils/types'
 
 export type SortField = 'name' | 'wins' | 'kills' | 'matches' | 'events' | 'avgScore' | 'decks'

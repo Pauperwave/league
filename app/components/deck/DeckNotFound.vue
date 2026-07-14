@@ -1,7 +1,5 @@
 <!-- app\components\deck\DeckNotFound.vue -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
 
 const { t } = useI18n()
 </script>

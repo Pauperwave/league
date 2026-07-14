@@ -1,11 +1,8 @@
 <!-- app\components\ruleset\RulesetFormModal.vue -->
 <script setup lang="ts">
 // fallow-ignore-file code-duplication -- FormModal invocation boilerplate + props/emit shape coincidence, see app/components/ui/CLAUDE.md
-import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
 import type { Ruleset } from '#shared/utils/types'
 import * as v from 'valibot'
-import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 const props = defineProps<{
   ruleset: Ruleset | null

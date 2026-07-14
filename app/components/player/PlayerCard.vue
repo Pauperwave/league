@@ -1,7 +1,6 @@
 <!-- app\components\player\PlayerCard.vue -->
 <script setup lang="ts">
 import type { Player } from '#shared/utils/types'
-import { slugify } from '~/utils/slug'
 
 const props = defineProps<{
   player: Player

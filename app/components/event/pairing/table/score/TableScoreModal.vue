@@ -1,7 +1,5 @@
 <!-- app\components\event\pairing\table\score\TableScoreModal.vue -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
 import { getPairingPlayerIds, type Pairing } from '#shared/utils/types'
 
 const { t } = useI18n()

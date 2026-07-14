@@ -1,7 +1,5 @@
 <!-- app\components\event\waiting\WaitingListTable.vue -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
 import type { TableColumn } from '@nuxt/ui'
 import { UCheckbox } from '#components'
 import RowActionButtons from '~/components/ui/actions/RowActionButtons.vue'

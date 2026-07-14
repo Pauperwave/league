@@ -1,7 +1,5 @@
 <!-- app\components\player\PlayerNameTag.vue -->
 <script setup lang="ts">
-import { ICONS } from '~/utils/icons'
-import { slugify } from '~/utils/slug'
 
 const {
   name,

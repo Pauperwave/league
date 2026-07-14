@@ -1,9 +1,6 @@
 <!-- app\components\event\EventHeaderCard.vue -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
 import type { EventStatus } from '#shared/utils/types'
-import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 const props = defineProps<{
   eventName: string

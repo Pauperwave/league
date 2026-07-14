@@ -1,6 +1,5 @@
 <!-- app\components\player\PlayerFilterSwitch.vue -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 
 const playersStore = usePlayerStore()
 const decksStore = useCommanderDeckStore()

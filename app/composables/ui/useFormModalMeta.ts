@@ -1,6 +1,4 @@
 // app\composables\ui\useFormModalMeta.ts
-import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
 
 interface UseFormModalMetaOptions {
   isEditing: Ref<boolean> | ComputedRef<boolean>

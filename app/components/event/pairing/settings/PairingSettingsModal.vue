@@ -1,6 +1,5 @@
 <!-- app\components\event\pairing\settings\PairingSettingsModal.vue -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import type { PairingWeights } from '#shared/utils/types'
 import type { PairingPresetKind } from './PairingPresetButtons.vue'
 import ForbiddenPairsSection from './ForbiddenPairsSection.vue'

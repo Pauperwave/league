@@ -1,8 +1,5 @@
 <!-- app\components\league\LeaguesUsingRulesetModal.vue -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
-import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 interface LeagueInfo {
   id: number

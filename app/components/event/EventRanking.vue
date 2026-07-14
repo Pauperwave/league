@@ -1,8 +1,6 @@
 <!-- app\components\event\EventRanking.vue -->
 <script setup lang="ts">
 // fallow-ignore-file code-duplication -- coincidental generic <table> markup, unrelated to PlayerMatchHistoryTable's feature
-import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
 import type { Player } from '#shared/utils/types'
 
 const props = defineProps<{

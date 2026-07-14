@@ -1,8 +1,6 @@
 <!-- app\components\ui\actions\RowActionButton.vue -->
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { ACTION_MAP, type ActionType } from '~/utils/actionButton'
+import type { ActionType } from '~/utils/actionButton'
 
 const { t } = useI18n()
 

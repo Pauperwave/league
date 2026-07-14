@@ -1,7 +1,5 @@
 <!-- app\components\deck\DeckCreateModal.vue -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
 import * as v from 'valibot'
 
 const DeckCreateSchema = v.object({

@@ -1,10 +1,6 @@
 <!-- app\components\commander\CommanderDeckCard.vue -->
  <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
 import type { CommanderDeck, CommanderAggregate } from '#shared/utils/types'
-import { slugify } from '~/utils/slug'
-import { getArtCrop, useCommanderCards } from '~/composables/commanders/useCommanderCards'
 
 const { t } = useI18n()
 

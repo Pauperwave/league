@@ -1,6 +1,5 @@
 <!-- app\components\event\modal\NextRoundModal.vue -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 
 const open = defineModel<boolean>('open', { default: false })
 

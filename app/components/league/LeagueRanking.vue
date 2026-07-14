@@ -1,7 +1,5 @@
 <!-- app\components\league\LeagueRanking.vue -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
 import type { TableColumn, TableRow } from '@nuxt/ui'
 import type { StandingWithPlayer } from '#shared/utils/types'
 import PlayerNameTag from '~/components/player/PlayerNameTag.vue'

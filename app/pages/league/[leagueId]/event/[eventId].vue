@@ -1,11 +1,8 @@
 <!-- app\pages\league\[leagueId]\event\[eventId].vue -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
 import { getPairingPlayerIds } from '#shared/utils/types'
 import type { Seat, TournamentPlayer, TournamentTable } from '#shared/utils/types'
 import type { PairingHistoryEntry, PairingPlayer } from '~/composables/event-pairing/pairingOptimizer'
-import { buildStandingsSubmissionMap } from '~/utils/standingsSubmission'
 
 const { t } = useI18n()
 

@@ -5,9 +5,6 @@
   Componente per il logout dell'utente.
 -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
-import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 const { logout } = usePasswordAuth()
 const { t } = useI18n()

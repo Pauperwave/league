@@ -1,5 +1,4 @@
 // app\composables\event\useRoundSubmission.ts
-import { useI18n } from 'vue-i18n'
 import type { RoundResultInsert } from '#shared/utils/types'
 
 /**

@@ -1,8 +1,5 @@
 <!-- app\components\ui\modal\ConfirmButton.vue -->
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 const { t } = useI18n()
 

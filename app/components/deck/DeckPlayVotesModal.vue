@@ -1,6 +1,5 @@
 <!-- app\components\deck\DeckPlayVotesModal.vue -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import type { TournamentPlayer } from '#shared/utils/types'
 
 const props = defineProps<{

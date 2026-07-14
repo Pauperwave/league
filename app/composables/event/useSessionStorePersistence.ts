@@ -1,12 +1,9 @@
 // app\composables\event\useSessionStorePersistence.ts
-import { onMounted, watch } from 'vue'
 import type { Ref, ComputedRef } from 'vue'
 import type { Kill } from '#shared/utils/types'
 import type { RankingEntry } from '~/stores/rankings'
 import type { CommanderEntry } from '~/stores/commanders'
 import type { VoteEntry } from '~/stores/votes'
-import { getCached, setCached } from '~/utils/localStorage'
-import { logInfo } from '~/utils/logger'
 
 /**
  * Crash insurance for in-progress round entry (see ADR discussion 2026-07-14):

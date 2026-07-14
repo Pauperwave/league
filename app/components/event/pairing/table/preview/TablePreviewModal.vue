@@ -8,18 +8,10 @@ import type {
   TournamentPlayer,
   TournamentTable,
 } from '#shared/utils/types'
-import { computed, ref, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
 import type {
   PairingHistoryEntry,
   PairingPlayer,
 } from '~/composables/event-pairing/pairingOptimizer'
-import { useToast } from '#imports'
-import { useTableDnd } from '~/composables/tables/useTableDnd'
-import { usePairingPresets } from '~/composables/event/usePairingPresets'
-import { useOptimizationNotifier } from '~/composables/event/useOptimizationNotifier'
-import { getPairingPreferences, savePairingPreferences } from '~/composables/event-pairing/pairingPreferences'
-import { useButtonLogging } from '~/composables/ui/useButtonLogging'
 
 const open = defineModel<boolean>('open', { default: false })
 

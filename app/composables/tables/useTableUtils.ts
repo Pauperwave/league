@@ -1,9 +1,7 @@
 // app\composables\tables\useTableUtils.ts
 import type { TableColumn } from '@nuxt/ui'
-import { ICONS } from '~/utils/icons'
 import type { CalendarDate } from '@internationalized/date'
 import { parseDate, today, getLocalTimeZone } from '@internationalized/date'
-import { h } from 'vue'
 import type { Component } from 'vue'
 
 export type StatusColor = 'success' | 'warning' | 'error' | 'neutral' | 'info' | 'primary' | 'secondary'

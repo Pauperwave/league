@@ -1,12 +1,6 @@
 <!-- app\pages\decks\index.vue -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
-import {
-  fetchCommandersByNames,
-  type CommanderCard,
-} from '~/composables/commanders/useCommanderCards'
-import { useAllCommanderStats } from '~/composables/supabase/useCommanderStats'
+import type { CommanderCard } from '~/composables/commanders/useCommanderCards'
 import type { CommanderDeck } from '#shared/utils/types'
 
 const { t } = useI18n()

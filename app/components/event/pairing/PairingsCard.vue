@@ -1,7 +1,5 @@
 <!-- app\components\event\pairing\PairingsCard.vue -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
 import type { Pairing, TournamentPlayer, Kill } from '#shared/utils/types'
 
 const { t } = useI18n()

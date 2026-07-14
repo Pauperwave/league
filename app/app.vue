@@ -1,6 +1,5 @@
 <!-- app\app.vue -->
 <script setup>
-import { useI18n } from 'vue-i18n'
 import { it } from '@nuxt/ui/locale'
 
 const { t } = useI18n()

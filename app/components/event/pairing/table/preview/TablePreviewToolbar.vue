@@ -1,8 +1,6 @@
 <!-- app\components\event\pairing\table\preview\TablePreviewToolbar.vue -->
 <script setup lang="ts">
 // fallow-ignore-file code-duplication -- toolbar button markup coincidentally matches WaitingListTable's unrelated bulk-action toolbar
-import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
 const {
   totalScore,
   loading = false,

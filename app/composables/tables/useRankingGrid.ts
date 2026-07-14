@@ -1,5 +1,4 @@
 // app\composables\tables\useRankingGrid.ts
-import { computed, ref } from 'vue'
 import type { Seat } from '#shared/utils/types'
 
 export interface RankingGridPlayer {

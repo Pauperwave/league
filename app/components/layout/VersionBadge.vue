@@ -1,6 +1,5 @@
 <!-- app\components\layout\VersionBadge.vue -->
 <script setup lang="ts">
-import { computed } from 'vue'
 
 const {
   public: { appVersion, appEnv }

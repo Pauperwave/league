@@ -1,7 +1,5 @@
 <!-- app\components\event\pairing\kill\KillSystemModal.vue -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
 import type { TournamentPlayer, Kill } from '#shared/utils/types'
 
 const props = defineProps<{

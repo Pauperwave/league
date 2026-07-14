@@ -1,5 +1,4 @@
 // app\composables\deck\useDeckDisplay.ts
-import { useI18n } from 'vue-i18n'
 
 interface DeckDisplayInfo {
   commander_1_name: string

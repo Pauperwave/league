@@ -1,7 +1,5 @@
 <!-- app\components\event\EventStepper.vue -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
 import type { StepperItem } from '@nuxt/ui'
 import type { EventStatus } from '#shared/utils/types'
 

@@ -1,6 +1,5 @@
 // app\composables\event\useEventPlayers.ts
 
-import { useI18n } from 'vue-i18n'
 import type { Player, NewPlayer } from '#shared/utils/types'
 
 interface EventPlayersDeps {

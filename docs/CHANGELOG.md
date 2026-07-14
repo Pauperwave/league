@@ -5,6 +5,11 @@ One entry per notable commit, newest first, grouped by date. Each entry: the com
 
 ## 2026-07-14
 
+### `refactor(imports): ♻️ sweep redundant value imports across app/ (124 files)`
+
+- Codemod removed now-redundant value imports (`vue`, `vue-i18n`, `pinia`, `@vueuse/core`, `~/composables/*`, `~/utils/*`, `#imports`) from 124 files; mixed imports collapsed to `import type`.
+- Added `vueTemplate: true` to the vitest AutoImport mirror — values referenced only in `<template>` (e.g. `ICONS`) compile to `_ctx` lookups that the script transform alone doesn't cover.
+
 ### `build(test): 🔧 mirror Nuxt auto-imports in vitest; invert explicit-import convention`
 
 - Added `unplugin-auto-import` to `vitest.config.ts` (presets `vue`/`vue-i18n`/`pinia`/`@vueuse/core` + dirs `app/composables/**`, `app/utils`, `app/stores`) so plain `@vue/test-utils` mounts compile like the app; KEEP IN SYNC comments cross-linking both configs.

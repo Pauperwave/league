@@ -1,6 +1,5 @@
 <!-- app\components\ui\display\ImageWithFallback.vue -->
 <script setup lang="ts">
-import { ICONS } from '~/utils/icons'
 
 interface Props {
   src: string | null

@@ -1,8 +1,6 @@
 // app\composables\event\useOptimizationNotifier.ts
 import type { Ref } from 'vue'
-import { useI18n } from 'vue-i18n'
 import type { TournamentTable } from '#shared/utils/types'
-import { isCloseTo } from '~/utils/math'
 import type { PairingScoreDetails } from '~/composables/event-pairing/pairingOptimizer'
 
 interface ToastApi {

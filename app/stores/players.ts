@@ -1,8 +1,6 @@
 // app\stores\players.ts
 // fallow-ignore-file code-duplication -- intentional store CRUD boilerplate, see app/stores/CLAUDE.md
-import { useI18n } from 'vue-i18n'
 import type { Player, NewPlayer } from '#shared/utils/types'
-import { toErrorMessage } from '~/utils/error'
 
 /**
  * Sanitizes player names by replacing underscores with spaces.

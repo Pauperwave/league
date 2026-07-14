@@ -1,6 +1,5 @@
 <!-- app\components\event\modal\EventVotesModal.vue -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
 import type { TournamentPlayer } from '#shared/utils/types'
 
 const { t } = useI18n()

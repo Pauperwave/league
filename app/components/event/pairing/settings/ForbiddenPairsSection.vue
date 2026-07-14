@@ -1,9 +1,5 @@
 <!-- app\components\event\pairing\settings\ForbiddenPairsSection.vue -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
-import { getForbiddenPairKey } from '~/composables/event-pairing/pairingOptimizer'
-import { usePlayerOptions } from '~/composables/supabase/usePlayers'
 
 const { t } = useI18n()
 

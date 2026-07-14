@@ -1,6 +1,5 @@
 <!-- app\components\ui\layout\ListPageShell.vue -->
 <script setup lang="ts">
-import { ICONS } from '~/utils/icons'
 
 interface BreadcrumbItem {
   label: string

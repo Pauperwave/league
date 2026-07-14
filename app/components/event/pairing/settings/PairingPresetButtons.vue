@@ -1,7 +1,5 @@
 <!-- app\components\event\pairing\settings\PairingPresetButtons.vue -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
 export type PairingPresetKind = 'balanced' | 'social' | 'competitive' | 'reset' | 'custom'
 
 defineProps<{

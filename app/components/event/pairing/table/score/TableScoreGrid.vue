@@ -1,11 +1,8 @@
 <!-- app\components\event\pairing\table\score\TableScoreGrid.vue -->
 <script setup lang="ts">
-import { computed, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
 import type { Pairing } from '#shared/utils/types'
 import TableSeatItem from '../TableSeatItem.vue'
-import { useButtonLogging } from '~/composables/ui/useButtonLogging'
-import { useRankingGrid, type RankingGridPlayer } from '~/composables/tables/useRankingGrid'
+import type { RankingGridPlayer } from '~/composables/tables/useRankingGrid'
 
 const { t } = useI18n()
 

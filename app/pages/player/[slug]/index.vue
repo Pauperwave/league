@@ -1,7 +1,5 @@
 <!-- app\pages\player\[slug]\index.vue -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
 import type { CommanderDeck } from '#shared/utils/types'
 
 const route = useRoute()

@@ -1,7 +1,5 @@
 <!-- app\components\event\pairing\table\TableSeatItem.vue -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
 import type { Seat } from '#shared/utils/types'
 
 const { t } = useI18n()

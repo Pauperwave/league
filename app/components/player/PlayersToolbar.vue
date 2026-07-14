@@ -1,8 +1,6 @@
 <!-- app\components\player\PlayersToolbar.vue -->
 <script setup lang="ts">
-import { useI18n } from 'vue-i18n'
-import { ICONS } from '~/utils/icons'
-import { SORT_FIELDS, type SortField } from '~/composables/players/usePlayersFilter'
+import type { SortField } from '~/composables/players/usePlayersFilter'
 
 const searchQuery = defineModel<string>('searchQuery', { required: true })
 const showOnlyWithDecks = defineModel<boolean>('showOnlyWithDecks', { required: true })

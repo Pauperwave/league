@@ -19,6 +19,9 @@ export default defineConfig({
     AutoImport({
       imports: ['vue', 'vue-i18n', 'pinia', '@vueuse/core'],
       dirs: ['./app/composables/**', './app/utils', './app/stores'],
+      // Values referenced only in <template> (e.g. ICONS) compile to _ctx
+      // lookups — vueTemplate covers those too, like Nuxt does.
+      vueTemplate: true,
       dts: false,
     }),
   ],

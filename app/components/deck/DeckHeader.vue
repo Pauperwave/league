@@ -1,6 +1,5 @@
 <!-- app\components\deck\DeckHeader.vue -->
 <script setup lang="ts">
-import { ICONS } from '~/utils/icons'
 
 interface Props {
   displayName: string
