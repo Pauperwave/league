@@ -5,6 +5,14 @@ One entry per notable commit, newest first, grouped by date. Each entry: the com
 
 ## 2026-07-14
 
+### `feat(api): ✨ BFF wave 2 — round-data and unregister endpoints (ADR-013)`
+
+- Four intent endpoints under `POST /api/pairings/:pairingId/` — `rankings`, `kills`, `commander`, `votes` — sharing `server/utils/roundResults.ts` (`requirePairingContext`: auth cookie + pairing existence + **seat-membership validation**, a domain rule the client never enforced; `upsertRoundResult` moved server-side).
+- `POST /api/events/:eventId/unregister-player` — symmetric with register, batch-capable, returns the actually-removed ids.
+- Store actions (`savePairingRankings`, `savePairingKills`, `saveCommander`, `saveVote`, `removeFromWaitingList`) are thin `$fetch` clients; `removeFromWaitingList`'s blank-error flaw fixed in passing.
+- Dead code removed: `useRoundSubmission.ts` (zero callers — and its `prepareRoundResults` would have clobbered saved votes/commanders with nulls), store's `submitRoundResult`/`updateRoundResult`/`upsertRoundResult`.
+- **No client code writes `round_results` or `waitroom` anymore** — with wave 1, every event/round write path is now behind the BFF; all app tables except entity CRUD (`events`/`players`/`leagues`/`rulesets`/`commander_decks` create/update/delete) are ready for the anon-write flip.
+
 ### `chore(release): 🔖 bump version to 0.4.0`
 
 - Minor bump for BFF wave 1: the four event-lifecycle endpoints (`register-player`, `advance-round`, `start`, `turn-back-round`) with server-enforced auth, atomic transitions, structured logging; NextRoundModal confirmation flow; standings-bug fix + migration.

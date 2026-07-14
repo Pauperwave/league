@@ -1,6 +1,6 @@
 // app\stores\events.ts
 // fallow-ignore-file code-duplication -- intentional store CRUD boilerplate, see app/stores/CLAUDE.md
-import type { Event, EventInsert, StandingWithPlayer, Player, Pairing, PairingWithResults, RoundResult, RoundResultInsert } from '#shared/utils/types'
+import type { Event, EventInsert, StandingWithPlayer, Player, Pairing, PairingWithResults } from '#shared/utils/types'
 import type { Database } from '#shared/utils/types/database'
 import { sanitizePlayer } from './players'
 import type { PairingHistoryEntry } from '~/composables/event-pairing/pairingOptimizer'
@@ -361,130 +361,11 @@ export const useEventStore = defineStore('events', () => {
 
   // ── Actions: Round result submission ─────────────────────────────────────────
 
-  /**
-   * Generic upsert helper for the round_results table.
-   * Checks for an existing row by (pairing_id, player_id) and updates or inserts.
-   */
-  async function upsertRoundResult(
-    pairingId: number,
-    playerId: number,
-    data: Partial<Omit<RoundResult, 'id' | 'pairing_id' | 'player_id'>>,
-  ): Promise<{ success: boolean; error?: string }> {
-    try {
-      const { data: existing } = await supabase
-        .from('round_results')
-        .select('id')
-        .eq('pairing_id', pairingId)
-        .eq('player_id', playerId)
-        .maybeSingle()
-
-      console.log('[useEventStore] upsertRoundResult Existing row?', { pairingId, playerId, existing: !!existing })
-      if (existing) {
-        const { error } = await supabase
-          .from('round_results')
-          .update(data)
-          .eq('pairing_id', pairingId)
-          .eq('player_id', playerId)
-        if (error) throw error
-        console.log('[useEventStore] upsertRoundResult Updated existing row', { pairingId, playerId, data })
-      }
-      else {
-        const { error } = await supabase
-          .from('round_results')
-          .insert({ pairing_id: pairingId, player_id: playerId, ...data })
-        if (error) throw error
-        console.log('[useEventStore] upsertRoundResult Inserted new row', { pairingId, playerId, data })
-      }
-
-      return { success: true }
-    }
-    catch (err) {
-      console.error('[useEventStore] upsertRoundResult Error', { pairingId, playerId, data, err })
-      return { success: false, error: toErrorMessage(err, t('store.event.saveError')) }
-    }
-  }
-
-  /** Insert a new round result */
-  async function submitRoundResult(result: RoundResultInsert) {
-    try {
-      const { error: supaError } = await supabase
-        .from('round_results')
-        .insert([{
-          player_id: result.player_id,
-          pairing_id: result.pairing_id,
-          position: result.position,
-          number_of_kills: result.number_of_kills,
-          brew_vote: result.brew_vote,
-          play_vote_1: result.play_vote_1,
-          play_vote_2: result.play_vote_2,
-          commander_1: result.commander_1,
-          commander_2: result.commander_2,
-        }])
-
-      if (supaError) throw supaError
-    }
-    catch (err) {
-      console.error('[useEventStore] submitRoundResult error:', err)
-      throw err
-    }
-  }
-
-  /** Update an existing round result by pairing and player */
-  async function updateRoundResult(pairingId: number, playerId: number, result: RoundResultInsert) {
-    try {
-      const { error: supaError } = await supabase
-        .from('round_results')
-        .update({
-          position: result.position,
-          number_of_kills: result.number_of_kills,
-          brew_vote: result.brew_vote,
-          play_vote_1: result.play_vote_1,
-          play_vote_2: result.play_vote_2,
-          commander_1: result.commander_1,
-          commander_2: result.commander_2,
-        })
-        .eq('pairing_id', pairingId)
-        .eq('player_id', playerId)
-
-      if (supaError) throw supaError
-    }
-    catch (err) {
-      console.error('[useEventStore] updateRoundResult error:', err)
-      throw err
-    }
-  }
-
-  /** Save a player's brew and play votes via the upsert helper */
-  async function saveVote(pairingId: number, playerId: number, brewVote: number | null, playVote: number | null): Promise<{ success: boolean; error?: string }> {
-    console.log('[useEventStore] saveVote called', { pairingId, playerId, brewVote, playVote })
-    const result = await upsertRoundResult(pairingId, playerId, { brew_vote: brewVote, play_vote_1: playVote })
-    if (!result.success) {
-      console.error('[useEventStore] saveVote error:', result.error)
-      return { success: false, error: result.error || t('store.event.voteSaveError') }
-    }
-    console.log('[useEventStore] saveVote success', { pairingId, playerId })
-    return result
-  }
-
-  /** Save a player's commanders via the upsert helper */
-  async function saveCommander(pairingId: number, playerId: number, commander1: string | null, commander2: string | null = null): Promise<{ success: boolean; error?: string }> {
-    console.log('[useEventStore] saveCommander called', { pairingId, playerId, commander1, commander2 })
-    const result = await upsertRoundResult(pairingId, playerId, { commander_1: commander1, commander_2: commander2 })
-    if (!result.success) {
-      console.error('[useEventStore] saveCommander error:', result.error)
-      return { success: false, error: result.error || t('store.event.commanderSaveError') }
-    }
-    console.log('[useEventStore] saveCommander success', { pairingId, playerId })
-    return result
-  }
-
-  /** Save player rankings (positions) for a pairing via the upsert helper */
+  /** Save player rankings (positions) for a pairing via the BFF endpoint (ADR-013) */
   async function savePairingRankings(pairingId: number, rankings: { playerId: number; position: number }[]): Promise<{ success: boolean; error?: string }> {
     try {
-      for (const { playerId, position } of rankings) {
-        const result = await upsertRoundResult(pairingId, playerId, { position })
-        if (!result.success) throw new Error(result.error)
-      }
+      await $fetch(`/api/pairings/${pairingId}/rankings`, { method: 'POST', body: { rankings } })
+      console.log('[useEventStore] rankings saved', { pairingId, players: rankings.length })
       return { success: true }
     }
     catch (err) {
@@ -493,18 +374,42 @@ export const useEventStore = defineStore('events', () => {
     }
   }
 
-  /** Save kill counts for a pairing via the upsert helper */
+  /** Save kill counts for a pairing via the BFF endpoint (ADR-013) */
   async function savePairingKills(pairingId: number, killCounts: { playerId: number; count: number }[]): Promise<{ success: boolean; error?: string }> {
     try {
-      for (const { playerId, count } of killCounts) {
-        const result = await upsertRoundResult(pairingId, playerId, { number_of_kills: count })
-        if (!result.success) throw new Error(result.error)
-      }
+      await $fetch(`/api/pairings/${pairingId}/kills`, { method: 'POST', body: { killCounts } })
+      console.log('[useEventStore] kills saved', { pairingId, players: killCounts.length })
       return { success: true }
     }
     catch (err) {
       console.error('[useEventStore] savePairingKills error:', err)
       return { success: false, error: toErrorMessage(err, t('store.event.killsSaveError')) }
+    }
+  }
+
+  /** Save a player's commanders via the BFF endpoint (ADR-013) */
+  async function saveCommander(pairingId: number, playerId: number, commander1: string | null, commander2: string | null = null): Promise<{ success: boolean; error?: string }> {
+    try {
+      await $fetch(`/api/pairings/${pairingId}/commander`, { method: 'POST', body: { playerId, commander1, commander2 } })
+      console.log('[useEventStore] commander saved', { pairingId, playerId })
+      return { success: true }
+    }
+    catch (err) {
+      console.error('[useEventStore] saveCommander error:', err)
+      return { success: false, error: toErrorMessage(err, t('store.event.commanderSaveError')) }
+    }
+  }
+
+  /** Save a player's brew and play votes via the BFF endpoint (ADR-013) */
+  async function saveVote(pairingId: number, playerId: number, brewVote: number | null, playVote: number | null): Promise<{ success: boolean; error?: string }> {
+    try {
+      await $fetch(`/api/pairings/${pairingId}/votes`, { method: 'POST', body: { playerId, brewVote, playVote } })
+      console.log('[useEventStore] votes saved', { pairingId, playerId })
+      return { success: true }
+    }
+    catch (err) {
+      console.error('[useEventStore] saveVote error:', err)
+      return { success: false, error: toErrorMessage(err, t('store.event.voteSaveError')) }
     }
   }
 
@@ -836,8 +741,6 @@ export const useEventStore = defineStore('events', () => {
     fetchPairingHistory,
 
     // Actions — round result submission
-    submitRoundResult,
-    updateRoundResult,
     saveVote,
     saveCommander,
     savePairingRankings,

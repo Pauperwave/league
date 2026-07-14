@@ -204,19 +204,18 @@ export const usePlayerStore = defineStore('players', () => {
   /** Remove a player from an event's waitroom */
   async function removeFromWaitingList(eventId: number, playerId: number) {
     try {
-      const { error } = await supabase
-        .from('waitroom')
-        .delete()
-        .eq('event_id', eventId)
-        .eq('player_id', playerId)
+      const { removed } = await $fetch(`/api/events/${eventId}/unregister-player`, {
+        method: 'POST',
+        body: { playerIds: [playerId] },
+      })
 
-      if (error) throw error
-      waitingPlayers.value = waitingPlayers.value.filter(id => id !== playerId)
-      waitroomEntries.value.delete(playerId)
+      console.log('[usePlayerStore] unregister-player ok', { eventId, removed })
+      waitingPlayers.value = waitingPlayers.value.filter(id => !removed.includes(id))
+      for (const id of removed) waitroomEntries.value.delete(id)
       return { success: true }
     } catch (err) {
       console.error('[usePlayerStore] removeFromWaitingList error:', err)
-      return { success: false }
+      return { success: false, error: toErrorMessage(err, t('store.player.registerError')) }
     }
   }
 
