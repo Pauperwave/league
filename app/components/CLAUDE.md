@@ -1,6 +1,6 @@
 # app/components/CLAUDE.md
 
-Scoped guidance for the whole `app/components/` tree. Conventions that apply to *every* source file — line-1 path comment, inline `defineProps<{...}>()` with destructure defaults, explicit imports for everything in `<script setup>`, `useButtonLogging` on interactive buttons, i18n keys in `i18n/locales/it.json`, toast patterns — live in the root `CLAUDE.md`; this file doesn't repeat them, it only covers what's specific to organizing components.
+Scoped guidance for the whole `app/components/` tree. Conventions that apply to *every* source file — line-1 path comment, props style, auto-import reliance, `useButtonLogging` on interactive buttons, i18n keys in `i18n/locales/it.json`, toast patterns — live in the root `CLAUDE.md`; this file doesn't repeat them, it only covers what's specific to organizing components.
 
 ## Where does a new component go?
 
@@ -17,7 +17,7 @@ Rule of thumb: if the component imports domain types (`Pairing`, `League`, ...) 
 - `nuxt.config.ts` sets `pathPrefix: false`, so the component tag is just the filename regardless of nesting — `event/pairing/table/TableCard.vue` is `<TableCard>`. Two consequences:
   - **Base filenames must be unique across the entire tree**, even in different folders.
   - Moving a component between folders never breaks consumers — no import paths to update in templates.
-- Auto-import covers **template tags only**. Anything referenced in `<script setup>` (composables, `ICONS`, even `ref`/`computed`) still needs an explicit import — see the root `CLAUDE.md` for why (plain `@vue/test-utils` mounts bypass the auto-import transform).
+- In `<script setup>`, rely on auto-imports for values (`ref`/`computed`, composables, `ICONS`, ...) — `vitest.config.ts` mirrors Nuxt's auto-imports so plain-mount tests compile the same way. Type imports and `#shared/` imports stay explicit; Nuxt runtime composables (`useToast`, ...) need per-test stubs. See the root `CLAUDE.md` for the full rule. Component imports *inside* `<script setup>` (e.g. `TableScoreGrid`'s `import TableSeatItem from '../TableSeatItem.vue'`) are still needed where the component is referenced in the template AND the file is mounted in tests — Nuxt's *component* auto-import resolver is not mirrored in vitest.
 
 ## `event/` substructure
 

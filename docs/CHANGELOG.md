@@ -5,6 +5,11 @@ One entry per notable commit, newest first, grouped by date. Each entry: the com
 
 ## 2026-07-14
 
+### `build(test): 🔧 mirror Nuxt auto-imports in vitest; invert explicit-import convention`
+
+- Added `unplugin-auto-import` to `vitest.config.ts` (presets `vue`/`vue-i18n`/`pinia`/`@vueuse/core` + dirs `app/composables/**`, `app/utils`, `app/stores`) so plain `@vue/test-utils` mounts compile like the app; KEEP IN SYNC comments cross-linking both configs.
+- Convention inverted (root/`components`/`composables`/`utils` CLAUDE.md rewritten): rely on auto-imports for values; type imports, `#shared/`, and SFC component imports stay explicit; Nuxt runtime composables still need per-test stubs.
+
 ### `docs(changelog): 📝 add commit-by-commit changelog`
 
 - Created this file; documented its relationship to `PROGRESS.md` above; indexed it in `docs/README.md`.

@@ -21,6 +21,9 @@ export default defineNuxtConfig({
 
   imports: {
     // scansiona ricorsivamente tutte le sottocartelle
+    // KEEP IN SYNC with vitest.config.ts's AutoImport plugin (it mirrors these
+    // dirs + the vue/vue-i18n/pinia/@vueuse presets so plain-mount tests get
+    // the same auto-imports as the app) — there's a matching comment there.
     dirs: ['~/composables/**']
   },
 

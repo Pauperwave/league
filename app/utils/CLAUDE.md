@@ -2,7 +2,7 @@
 
 **Check this list before writing a new helper function anywhere in the app.** These are small, general-purpose, already exist — a near-duplicate (e.g. another debounced localStorage cache, another duration formatter) is a sign the existing one should be reused or extended instead.
 
-**Import explicitly — don't rely on Nuxt's `utils/` auto-import**, in both `.vue` components and plain `.ts` modules. This project's own established convention (see `RowActionButton.vue`'s `import { ACTION_MAP } from '~/utils/actionButton'`, or any store's `import { toErrorMessage } from '~/utils/error'`) has always used explicit imports, and it's required regardless: this project's component tests (`test/nuxt/**`) mount via plain `@vue/test-utils` `mount()`, which bypasses Nuxt's Vite auto-import transform entirely — an unimported auto-import-only reference renders as `undefined` there. Always add the explicit import, matching the existing `ACTION_MAP`/`toErrorMessage`/`ICONS` usages.
+**Rely on Nuxt's `utils/` auto-import** — don't add explicit value imports for these helpers (`ICONS`, `toErrorMessage`, `ACTION_MAP`, ...) in `.vue` components or `.ts` modules under `app/`. Tests are covered too: `vitest.config.ts`'s AutoImport mirror includes `./app/utils` in its `dirs`, so plain-mount tests compile identically to the app. (This inverts the pre-2026-07-14 explicit-import convention — see the root `CLAUDE.md` "auto-imports" bullet for the rationale and the boundaries: type imports and `#shared/` imports stay explicit.)
 
 | File | Exports | Use for |
 |------|---------|---------|

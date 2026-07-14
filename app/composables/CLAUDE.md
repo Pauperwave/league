@@ -4,7 +4,7 @@ Scoped guidance for `app/composables/`. See the root `CLAUDE.md` and `docs/archi
 
 ## Auto-import — don't hand-write import statements for composables
 
-`nuxt.config.ts` sets `imports: { dirs: ['~/composables/**'] }`, so every exported function here is auto-imported anywhere in `app/`, regardless of subfolder depth. Consequences:
+`nuxt.config.ts` sets `imports: { dirs: ['~/composables/**'] }`, so every exported function here is auto-imported anywhere in `app/`, regardless of subfolder depth — and `vitest.config.ts`'s AutoImport plugin mirrors the same dirs, so plain-mount tests resolve them too (this used to be the reason for explicit imports; resolved 2026-07-14, see root `CLAUDE.md`). Consequences:
 - Don't add an `import { useXxx } from '~/composables/...'` for a value import inside `app/` — it's dead weight and drifts when files move.
 - **Type-only imports still need an explicit `import type { ... } from '~/composables/path/to/file'`** — auto-import doesn't cover types. When you move a composable file, grep for `composables/<old-path>` before deleting the old location; type-only imports won't error until `nuxt typecheck` catches the missing module, and plain value auto-imports won't error at all if the export still exists somewhere in the tree (they'll just silently resolve to a stale/wrong file if there's a naming collision).
 - **Never leave a re-export shim behind after moving a file** (a one-line file that does nothing but `export` everything from the file's new home). This project has no external consumers to stay compatible with — rename/delete cleanly and fix the (usually few, type-only) call sites. Several of these shims accumulated from past reorgs and were removed on 2026-07-12; don't reintroduce the pattern.

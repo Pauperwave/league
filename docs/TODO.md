@@ -18,7 +18,7 @@ Reviewed all of `app/components/` (largest files, `fallow:health`, usage grep) w
 - `event/waiting/WaitingListTable.vue` (277 lines) — cohesive (one table + selection + batch actions); the batch-actions toolbar is the natural first cut if it grows.
 
 **Convention drift spotted in passing:**
-- ~~`event/CurrentTime.vue`~~ — fixed 2026-07-14: explicit `ref`/`computed`/`useIntervalFn` imports added + component test (`test/nuxt/components/event/CurrentTime.test.ts`). Other components may still rely on `<script setup>` auto-imports (works in the app, throws in `test/nuxt/**` mounts) — worth a sweep when adding tests for them.
+- ~~`event/CurrentTime.vue` auto-import reliance~~ — resolved 2026-07-14 by **inverting the convention**: `vitest.config.ts` now mirrors Nuxt's auto-imports (`unplugin-auto-import`), so source files rely on auto-imports everywhere and no sweep toward explicit imports is needed. The redundant explicit value imports that had accumulated were swept out instead. See root `CLAUDE.md`.
 
 ## Parametrization opportunities found during the i18n migration
 Not urgent, just flagged while migrating strings on 2026-07-13:
