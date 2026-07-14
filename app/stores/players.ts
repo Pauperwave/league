@@ -171,25 +171,32 @@ export const usePlayerStore = defineStore('players', () => {
     }
   }
 
-  /** Add a player to an event's waitroom */
-  async function addToWaitingList(eventId: number, playerId: number) {
+  /**
+   * Register players into an event's waitroom via the BFF endpoint (ADR-013).
+   * The endpoint owns the domain rules (registration open, duplicates) and
+   * returns the rows it wrote — local state mirrors server truth.
+   */
+  async function addToWaitingList(eventId: number, playerIds: number[]) {
     try {
-      if (waitingPlayers.value.includes(playerId)) {
-        return { success: false, error: t('store.player.alreadyInWaitingList') }
+      const { registered, alreadyRegistered } = await $fetch(`/api/events/${eventId}/register-player`, {
+        method: 'POST',
+        body: { playerIds },
+      })
+
+      for (const entry of registered) {
+        if (!waitingPlayers.value.includes(entry.player_id)) {
+          waitingPlayers.value.push(entry.player_id)
+        }
+        waitroomEntries.value.set(entry.player_id, entry.inserted_at ?? new Date().toISOString())
       }
 
-      const { error } = await supabase.from('waitroom').insert([{
-        event_id: eventId,
-        player_id: playerId
-      }])
-
-      if (error) throw error
-      waitingPlayers.value.push(playerId)
-      waitroomEntries.value.set(playerId, new Date().toISOString())
+      if (registered.length === 0 && alreadyRegistered.length > 0) {
+        return { success: false, error: t('store.player.alreadyInWaitingList') }
+      }
       return { success: true }
     } catch (err) {
       console.error('[usePlayerStore] addToWaitingList error:', err)
-      return { success: false }
+      return { success: false, error: toErrorMessage(err, t('store.player.registerError')) }
     }
   }
 

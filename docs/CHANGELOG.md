@@ -5,6 +5,12 @@ One entry per notable commit, newest first, grouped by date. Each entry: the com
 
 ## 2026-07-14
 
+### `feat(api): ✨ first BFF slice — register-player endpoint (ADR-013)`
+
+- New `server/api/events/[eventId]/register-player.post.ts`: enforces the `site-auth` cookie server-side, valibot-validates the body, guards the domain rule (registration open, event not playing), skips duplicates, and returns the rows it wrote. Coarse-grained: one call registers N players.
+- `usePlayerStore.addToWaitingList(eventId, playerIds[])` is now a thin `$fetch` client — local state set from the server response (`inserted_at` from the DB, not a client-side guess); its `catch` finally returns a real `error` message (was `{ success: false }` with a blank toast). `useEventPage` drops its per-player loop.
+- Still on the anon key server-side — flipping `waitroom` to deny anon writes (service-role key) completes the slice, per BACKLOG #7.
+
 ### `docs(conventions): 📝 async action buttons — loading-auto + explicit success check`
 
 - Root `CLAUDE.md`: bare `<UButton>`s triggering store mutations use `loading-auto` (spinner/disable driven by the `@click` promise — no double-clicks during atomic transitions) with an explicit `{ success, error }` check and toasts; `ui/CLAUDE.md`: the wrapper buttons (`ConfirmButton`/`CancelButton`) keep the explicit `:loading` prop — their synchronous `click` re-emit breaks the promise chain `loading-auto` needs. Toast `icon`s must come from `ICONS.*`.

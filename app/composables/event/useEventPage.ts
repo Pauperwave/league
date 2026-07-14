@@ -108,9 +108,7 @@ export function useEventPage() {
   }
 
   async function addToWaitingList(playerIds: number[]) {
-    for (const playerId of playerIds) {
-      await playerStore.addToWaitingList(eventId, playerId)
-    }
+    await playerStore.addToWaitingList(eventId, playerIds)
   }
 
   async function removeFromWaitingList(playerId: number) {
