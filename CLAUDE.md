@@ -54,17 +54,20 @@ Read the relevant one before working in that directory — each covers what isn'
 
 ## Conventions worth knowing
 
-- **Props**: inline type in `defineProps<{...}>()`, not a separate `interface Props`. Defaults via reactive destructuring (Vue 3.4+), not `withDefaults`:
-  ```ts
-  const {
-    totalScore,
-    loading = false
-  } = defineProps<{
-    totalScore: number;
-    loading?: boolean
-  }>()
-  ```
-  `vue/require-default-prop` is disabled in `eslint.config.mjs` — it doesn't understand this destructure-default syntax and misfires on every optional prop with no meaningful default. Don't add a dummy `= undefined` to silence it; the rule is off on purpose.
+- **Props — two-branch rule, keyed on whether the component needs default values** (decided 2026-07-14; `withDefaults` is banned in both branches):
+  - **Defaults needed → reactive destructuring** (Vue 3.5+ compiler transform), typically with an inline type:
+    ```ts
+    const {
+      totalScore,
+      loading = false
+    } = defineProps<{
+      totalScore: number;
+      loading?: boolean
+    }>()
+    ```
+  - **No defaults → plain `const props = defineProps<Props>()` with a named `interface Props`** — simpler, and the named type stays reusable/exportable.
+  - Escape hatch: the two combine — a big or reused prop type can be a named `interface Props` *and* be destructured with defaults (`const { size = 'md' } = defineProps<Props>()`). What matters is the predictable rule, not the syntax permutation.
+  - `vue/require-default-prop` is disabled in `eslint.config.mjs` — it doesn't understand the destructure-default syntax and misfires on every optional prop with no meaningful default. Don't add a dummy `= undefined` to silence it; the rule is off on purpose.
 - **Path aliases**: `~/` → `app/`, `#shared/` → `shared/` (e.g. `#shared/utils/types`, `#shared/utils/types/database` for the raw generated types), `#test/` → `test/` (added to `nuxt.config.ts` `alias` so `nuxt typecheck` resolves it, not just vitest), `#components` → Nuxt's auto-generated component registry. When in doubt, check `nuxt.config.ts`'s `alias` block and the `supabase.types` option rather than guessing.
 - Add a path comment as the first line of every source file: `<!-- app\components\X.vue -->` or `// app\stores\x.ts`.
 - Before writing a new small helper function, check [`app/utils/CLAUDE.md`](app/utils/CLAUDE.md) — it's a maintained inventory of existing generic helpers (error formatting, logging, caching, slugs, time formatting, etc.) kept there specifically to avoid reimplementing them.

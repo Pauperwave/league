@@ -5,6 +5,10 @@ One entry per notable commit, newest first, grouped by date. Each entry: the com
 
 ## 2026-07-14
 
+### `docs(conventions): 📝 props two-branch rule (defaults → destructure, no defaults → interface Props)`
+
+- Root `CLAUDE.md` props section rewritten: defaults needed → reactive destructure (Vue 3.5+); no defaults → named `interface Props` + `defineProps<Props>()`; the two may combine; `withDefaults` stays banned. The 15 existing `interface Props` components are compliant under this rule — no code changes.
+
 ### `refactor(event): ♻️ inject session stores directly in PairingsCard`
 
 - Dropped the four optional store props (`rankings`, `killsStore`, `commandersStore`, `votesStore`) — Pinia stores are singletons, so the prop indirection bought no isolation and forced `props.killsStore?.` chains everywhere. Now injected via `useXStore()` like the `kill/` siblings; the single usage in the event page lost four bindings.
