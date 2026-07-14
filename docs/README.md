@@ -18,6 +18,7 @@ Master index of all project documentation.
 | `architecture/state-flow.md` | DB → store → composable → component data flow, caching strategy | Architecture |
 | `architecture/stores.md` | Pinia store overview, Setup API pattern, state categories, error handling | State management |
 | `PROGRESS.md` | Backward-looking curated changelog + ADRs; what's actually been done | Architecture history |
+| `CHANGELOG.md` | Raw commit-by-commit trail, newest first; the play-by-play behind `PROGRESS.md`'s distilled history | Architecture history |
 | `BACKLOG.md` | Forward-looking, committed work items ranked by priority (P1–P3) with effort estimates (S/M/L) | Roadmap |
 | `TODO.md` | Forward-looking scratch notes: loose observations, open questions, not yet committed | Roadmap (scratch) |
 | `audits/skills-audit-checklist.md` | Skills audit completion checklist | Process |
