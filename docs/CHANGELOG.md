@@ -5,6 +5,10 @@ One entry per notable commit, newest first, grouped by date. Each entry: the com
 
 ## 2026-07-14
 
+### `docs(api): 📝 record the API design principles for the write-hardening refactor`
+
+- `BACKLOG.md` #7 completed with the decided design: intent-based endpoints (stable across DB schema changes; no CRUD proxies), stores as thin API clients (same public shape, server response as local truth), orchestration logic relocating server-side, shared valibot schemas, SSR cookie gotcha, slice-by-slice migration, and the rejected alternatives with reasons.
+
 ### `docs(security): 📝 add serverless constraints to the DB-write hardening plan`
 
 - `BACKLOG.md` #7 extended for the serverless deploy (Nitro functions, precedent: `server/api/auth/login.post.ts`): coarse-grained write endpoints (one atomic `advance-round` call, not N proxied updates), cold-start tolerance, reads/Realtime stay client-direct, `supabase-js` over pg pools in functions, and a legitimate hybrid with password-validating RPCs for latency-sensitive in-room writes.
