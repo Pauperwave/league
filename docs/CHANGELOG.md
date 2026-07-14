@@ -5,6 +5,10 @@ One entry per notable commit, newest first, grouped by date. Each entry: the com
 
 ## 2026-07-14
 
+### `chore(release): 🔖 bump version to 0.3.0`
+
+- Minor bump for the consistency-audit batch: auto-import convention inversion + 124-file sweep, logging unification, `PairingsCard` store injection, props two-branch rule, routing/fallow/path-header cleanups.
+
 ### `refactor(types): ♻️ derive TableScoreGrid's DatabasePlayer from the generated Player row`
 
 - `interface DatabasePlayer { ... }` (hand-declared, already drifted: `formats_played: string[]` vs the real enum array) → `Pick<Player, 'player_id' | 'player_name' | 'player_surname'>`, narrowed to the fields actually used. Schema drift now fails at typecheck. (`WaitingListTable`'s `WaitingPlayer` was inspected and left alone — it's a view model built by the parent, not a DB-row duplicate.)
