@@ -1,15 +1,9 @@
 // app\stores\events.ts
 // fallow-ignore-file code-duplication -- intentional store CRUD boilerplate, see app/stores/CLAUDE.md
-import type { Event, EventInsert, StandingWithPlayer, Player, Pairing, PairingWithResults, RoundResult, RoundResultInsert, Standing } from '#shared/utils/types'
+import type { Event, EventInsert, StandingWithPlayer, Player, Pairing, PairingWithResults, RoundResult, RoundResultInsert } from '#shared/utils/types'
 import type { Database } from '#shared/utils/types/database'
-import { buildRoundOneTables, buildPairingRows } from '#shared/utils/roundScoring'
 import { sanitizePlayer } from './players'
-import type {
-  PairingPlayer,
-  PairingHistoryEntry,
-} from '~/composables/event-pairing/pairingOptimizer'
-
-const UNRANKED_FALLBACK = 9999
+import type { PairingHistoryEntry } from '~/composables/event-pairing/pairingOptimizer'
 
 type PairingRoundIds = Pick<Pairing, 'pairing_round' | 'pairing_player1_id' | 'pairing_player2_id' | 'pairing_player3_id' | 'pairing_player4_id'>
 
@@ -236,77 +230,24 @@ export const useEventStore = defineStore('events', () => {
   }
 
   /**
-   * Start an event: create standings, clear waitroom, create first round pairings.
-   * Validates player count (min 3, not 5) and optionally accepts a custom player order.
+   * Start an event via the BFF endpoint (ADR-013): the server owns the atomic
+   * transition (validate waitroom + order → zeroed standings → flip to playing
+   * → clear waitroom → round-1 pairings from the confirmed order).
    */
   async function startEvent(eventId: number, playerOrder?: number[]) {
     beginLoading()
     error.value = null
 
     try {
-      const { data: waitingPlayers, error: waitingError } = await supabase
-        .from('waitroom')
-        .select('player_id')
-        .eq('event_id', eventId)
-        .order('inserted_at', { ascending: true })
+      const { event: updatedEvent } = await $fetch(`/api/events/${eventId}/start`, {
+        method: 'POST',
+        body: { playerOrder },
+      })
 
-      if (waitingError) throw waitingError
+      console.log('[useEventStore] start ok', { eventId })
+      currentEvent.value = updatedEvent
 
-      const count = waitingPlayers?.length ?? 0
-      if (count < 3 || count === 5) {
-        throw new Error(t('store.event.invalidPlayerCount'))
-      }
-
-      const waitroomIds = (waitingPlayers ?? []).map(player => player.player_id)
-      const selectedOrder = playerOrder?.length ? playerOrder : waitroomIds
-
-      const hasSameLength = selectedOrder.length === waitroomIds.length
-      const hasValidIds = selectedOrder.every(id => waitroomIds.includes(id))
-      const hasUniqueIds = new Set(selectedOrder).size === selectedOrder.length
-
-      if (!hasSameLength || !hasValidIds || !hasUniqueIds) {
-        throw new Error(t('store.event.invalidPlayerOrder'))
-      }
-
-      const standingsData = selectedOrder.map((playerId, index) => ({
-        event_id: eventId,
-        player_id: playerId,
-        standing_player_score: 0,
-        standing_player_rank: index + 1,
-        victories: 0,
-        brew_received: 0,
-        play_received: 0,
-      }))
-
-      const { error: standingsError } = await supabase
-        .from('standings')
-        .insert(standingsData)
-
-      if (standingsError) throw standingsError
-
-      const { data, error: updateError } = await supabase
-        .from('events')
-        .update({
-          event_playing: true,
-          event_current_round: 1,
-          event_registration_open: false,
-        })
-        .eq('event_id', eventId)
-        .select()
-        .single()
-
-      if (updateError) throw updateError
-
-      // Clear waitroom and create first round pairings in parallel
-      // Round 1 uses the confirmed player order — no optimizer re-run
-      await Promise.all([
-        supabase.from('waitroom').delete().eq('event_id', eventId),
-        createPairings(eventId, 1, selectedOrder),
-      ])
-
-      if (data) currentEvent.value = data
-
-      return { success: true as const, data }
+      return { success: true as const, data: updatedEvent }
     }
     catch (err) {
       error.value = toErrorMessage(err, t('store.event.startError'))
@@ -352,55 +293,22 @@ export const useEventStore = defineStore('events', () => {
   }
 
   /**
-   * Go back to the previous round, or to registration state if currently in round 1.
-   * When going back from round 1, restores players to the waitroom.
+   * Go back to the previous round (or to registration from round 1) via the
+   * BFF endpoint (ADR-013): the server owns the rollback, including the
+   * waitroom restore when leaving round 1.
    */
   async function turnBackRound(eventId: number, currentRound: number, leagueId: number) {
     beginLoading()
     error.value = null
 
     try {
-      if (currentRound > 1) {
-        // Decrement round and delete current pairings in parallel
-        await Promise.all([
-          supabase
-            .from('events')
-            .update({ event_current_round: currentRound - 1, event_playing: true })
-            .eq('event_id', eventId),
-          supabase
-            .from('pairings')
-            .delete()
-            .eq('event_id', eventId)
-            .eq('pairing_round', currentRound),
-        ])
-      }
-      else {
-        // Round 1 → back to registration: fetch players from standings before wiping
-        const { data: standingsData } = await supabase
-          .from('standings')
-          .select('player_id')
-          .eq('event_id', eventId)
+      const { event: updatedEvent } = await $fetch(`/api/events/${eventId}/turn-back-round`, {
+        method: 'POST',
+        body: { currentRound },
+      })
 
-        const playerIds = standingsData?.map(s => s.player_id) ?? []
-
-        // Reset event + wipe standings + wipe pairings + restore waitroom in parallel
-        await Promise.all([
-          supabase
-            .from('events')
-            .update({
-              event_current_round: 0,
-              event_playing: false,
-              event_registration_open: true,
-            })
-            .eq('event_id', eventId),
-          supabase.from('standings').delete().eq('event_id', eventId),
-          supabase.from('pairings').delete().eq('event_id', eventId),
-          // Restore players to waitroom
-          ...playerIds.map(playerId =>
-            supabase.from('waitroom').insert({ event_id: eventId, player_id: playerId })
-          ),
-        ])
-      }
+      console.log('[useEventStore] turn-back-round ok', { eventId, newRound: updatedEvent.event_current_round })
+      currentEvent.value = updatedEvent
 
       await fetchEvents(leagueId, true)
       return { success: true as const }
@@ -420,125 +328,6 @@ export const useEventStore = defineStore('events', () => {
     currentEvent.value = event
   }
 
-  // ── Actions: Pairing generation & optimization ───────────────────────────────
-
-  /**
-   * Generates and saves pairings for a given round.
-   *
-   * When a `playerOrder` is provided (round 1), tables are built by sequentially
-   * slicing the array according to table sizes — no optimization is performed.
-   * This ensures the pairings match exactly what the user confirmed in the preview.
-   *
-   * Without `playerOrder` (rounds 2+), the function fetches standings and historical
-   * pairings, then runs the full pairing optimizer (greedy seed + local swap) to
-   * produce balanced tables based on scores, ranks, and forbidden pairs.
-   */
-  async function createPairings(eventId: number, round: number, playerOrder?: number[]) {
-    try {
-      if (playerOrder !== undefined) {
-        await insertRoundOnePairings(supabase, eventId, round, playerOrder)
-        return
-      }
-
-      await insertOptimizedPairings(supabase, eventId, round)
-    }
-    catch (err) {
-      console.error('[useEventStore] createPairings error:', err)
-      throw err  // re-throw so callers (startEvent, nextRound) can catch it
-    }
-  }
-
-  /** Build round-1 pairings from a fixed player order (no optimizer). */
-  async function insertRoundOnePairings(
-    supabaseClient: ReturnType<typeof useSupabaseClient<Database>>,
-    eventId: number,
-    round: number,
-    playerOrder: number[],
-  ) {
-    const tables = buildRoundOneTables(playerOrder)
-    const rows = buildPairingRows(eventId, round, tables)
-
-    if (!rows.length) {
-      console.warn('[useEventStore] createPairings: playerOrder produced no valid tables')
-      return
-    }
-
-    const { error } = await supabaseClient.from('pairings').insert(rows)
-    if (error) throw error
-  }
-
-  /** Fetch standings + history and run the pairing optimizer for round 2+. */
-  async function insertOptimizedPairings(supabaseClient: ReturnType<typeof useSupabaseClient<Database>>, eventId: number, round: number) {
-    const { data: standingsData, error: standingsError } = await supabaseClient
-      .from('standings')
-      .select('player_id, standing_player_rank, standing_player_score')
-      .eq('event_id', eventId)
-      .order('standing_player_rank', { ascending: true })
-
-    if (standingsError) throw standingsError
-    if (!standingsData?.length) {
-      console.warn('[useEventStore] createPairings: no standings found for event', eventId)
-      return
-    }
-
-    const history = await fetchPairingHistoryForOptimizer(supabaseClient, eventId, round)
-    const scoringPlayers = buildScoringPlayers(standingsData, history)
-
-    const preferences = getPairingPreferences(eventId)
-    const optimized = optimizePairings({
-      players: scoringPlayers,
-      history,
-      forbiddenPairs: preferences.forbiddenPairs,
-      weights: preferences.weights,
-      currentRound: round,
-    })
-
-    if (!optimized.tables.length || !Number.isFinite(optimized.totalScore)) {
-      throw new Error(t('store.event.optimizerFailed'))
-    }
-
-    const rows = buildPairingRows(eventId, round, optimized.tables)
-    if (!rows.length) {
-      console.warn('[useEventStore] createPairings: optimizer produced no valid tables')
-      return
-    }
-
-    const { error: insertError } = await supabaseClient.from('pairings').insert(rows)
-    if (insertError) throw insertError
-  }
-
-  /** Fetch historical pairings for an event and map them to history entries. */
-  async function fetchPairingHistoryForOptimizer(supabaseClient: ReturnType<typeof useSupabaseClient<Database>>, eventId: number, round: number): Promise<PairingHistoryEntry[]> {
-    const { data, error } = await supabaseClient
-      .from('pairings')
-      .select('pairing_round, pairing_player1_id, pairing_player2_id, pairing_player3_id, pairing_player4_id')
-      .eq('event_id', eventId)
-      .lt('pairing_round', round)
-
-    if (error) throw error
-    return mapPairingsToHistory(data)
-  }
-
-  /** Build scoring players from standings + historical table-3 counts. */
-  function buildScoringPlayers(
-    standingsData: Pick<Standing, 'player_id' | 'standing_player_rank' | 'standing_player_score'>[],
-    history: PairingHistoryEntry[],
-  ): PairingPlayer[] {
-    const table3Counter = new Map<number, number>()
-    for (const entry of history) {
-      if (entry.players.length !== 3) continue
-      for (const playerId of entry.players) {
-        table3Counter.set(playerId, (table3Counter.get(playerId) ?? 0) + 1)
-      }
-    }
-
-    return standingsData.map((standing) => ({
-      id: standing.player_id,
-      rank: standing.standing_player_rank ?? UNRANKED_FALLBACK,
-      score: standing.standing_player_score ?? 0,
-      table3Count: table3Counter.get(standing.player_id) ?? 0,
-    }))
-  }
 
   /** Load pairings with round results for a specific event and round */
   async function fetchPairings(eventId: number, round: number) {
@@ -1042,8 +831,7 @@ export const useEventStore = defineStore('events', () => {
     turnBackRound,
     setCurrentEvent,
 
-    // Actions — pairing generation & optimization
-    createPairings,
+    // Actions — pairings
     fetchPairings,
     fetchPairingHistory,
 

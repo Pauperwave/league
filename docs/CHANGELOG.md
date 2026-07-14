@@ -5,6 +5,13 @@ One entry per notable commit, newest first, grouped by date. Each entry: the com
 
 ## 2026-07-14
 
+### `feat(api): ✨ BFF slices 3+4 — start and turn-back-round endpoints (ADR-013)`
+
+- `POST /api/events/:id/start`: validates waitroom (count ≥3, ≠5) and the confirmed `playerOrder` against it server-side, creates zeroed standings, flips the event to playing, clears the waitroom, inserts round-1 pairings. 409 if already started.
+- `POST /api/events/:id/turn-back-round`: round 2+ (or ended) → reopen previous round + delete current pairings; round 1 → back to registration (wipe standings/pairings, restore waitroom — now one bulk insert instead of N). Round-mismatch 409 guard.
+- `startEvent`/`turnBackRound` in the store are thin `$fetch` clients. Dead code removed: `createPairings`, `insertRoundOnePairings`, `insertOptimizedPairings`, `fetchPairingHistoryForOptimizer`, `buildScoringPlayers`, `UNRANKED_FALLBACK` — the optimizer fallback path became unreachable once endpoints require a confirmed order (the preview supplies it). `events.ts` is now ~840 lines (was 1287 this morning).
+- **Wave 1 complete: no client code writes `standings` or `pairings` anymore** — their anon write policies can flip to deny as soon as the service-role key is configured.
+
 ### `feat(api): 🔊 structured logging in the BFF endpoints`
 
 - `[api/advance-round]` and `[api/register-player]` prefixed logs at every step (request received, scoring input sizes, per-player updated scores, event advanced/ended, pairings created, and every failure with its context) — visible in the `pnpm dev` terminal (or serverless function logs in production). Client side, the stores log `[useEventStore] advance-round ok` / `[usePlayerStore] register-player ok` with the server's response, so the browser console tells the same story.
