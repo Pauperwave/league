@@ -1,18 +1,14 @@
 <!-- app\components\event\pairing\table\score\TableScoreGrid.vue -->
 <script setup lang="ts">
-import type { Pairing } from '#shared/utils/types'
+import type { Pairing, Player } from '#shared/utils/types'
 import TableSeatItem from '../TableSeatItem.vue'
 import type { RankingGridPlayer } from '~/composables/tables/useRankingGrid'
 
 const { t } = useI18n()
 
-interface DatabasePlayer {
-  player_id: number
-  player_name: string
-  player_surname: string
-  formats_played: string[] | null
-  is_active: boolean
-}
+// Derived from the generated DB row type, not hand-declared — schema drift
+// then fails at typecheck instead of surfacing as runtime undefined.
+type DatabasePlayer = Pick<Player, 'player_id' | 'player_name' | 'player_surname'>
 
 const props = defineProps<{
   pairing: Pairing | null

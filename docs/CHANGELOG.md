@@ -5,6 +5,10 @@ One entry per notable commit, newest first, grouped by date. Each entry: the com
 
 ## 2026-07-14
 
+### `refactor(types): ♻️ derive TableScoreGrid's DatabasePlayer from the generated Player row`
+
+- `interface DatabasePlayer { ... }` (hand-declared, already drifted: `formats_played: string[]` vs the real enum array) → `Pick<Player, 'player_id' | 'player_name' | 'player_surname'>`, narrowed to the fields actually used. Schema drift now fails at typecheck. (`WaitingListTable`'s `WaitingPlayer` was inspected and left alone — it's a view model built by the parent, not a DB-row duplicate.)
+
 ### `chore(fallow): 🔨 clean up dead-code false positives`
 
 - `version-bump-hook.mjs` marked `fallow-ignore-file unused-file` (it's the Claude Code Stop hook, not an importable module).
