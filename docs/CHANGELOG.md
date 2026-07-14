@@ -5,6 +5,10 @@ One entry per notable commit, newest first, grouped by date. Each entry: the com
 
 ## 2026-07-14
 
+### `docs(conventions): 📝 async action buttons — loading-auto + explicit success check`
+
+- Root `CLAUDE.md`: bare `<UButton>`s triggering store mutations use `loading-auto` (spinner/disable driven by the `@click` promise — no double-clicks during atomic transitions) with an explicit `{ success, error }` check and toasts; `ui/CLAUDE.md`: the wrapper buttons (`ConfirmButton`/`CancelButton`) keep the explicit `:loading` prop — their synchronous `click` re-emit breaks the promise chain `loading-auto` needs. Toast `icon`s must come from `ICONS.*`.
+
 ### `docs(adr): 📝 ADR-013 — Backend-For-Frontend for DB writes`
 
 - New ADR in `PROGRESS.md`: BFF pattern decided (intent-based Nitro endpoints own write orchestration; stores become thin API clients; reads stay client-direct). Supabase Auth with per-player accounts recorded as the **planned future** (complements the BFF for self-entry authorization, doesn't replace it) — upgraded from hypothetical in `BACKLOG.md` #7, which now cross-references the ADR.

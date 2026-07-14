@@ -76,7 +76,22 @@ Read the relevant one before working in that directory — each covers what isn'
 - `useAsyncData` keys follow `{domain}-{scope}-{id}` — see `docs/architecture/async-data-keys.md` for the full inventory before adding a new one (collisions have happened).
 - Composables returning refs used in templates: destructure at the top of `<script setup>`, don't keep the composable's return value as a single nested object (refs won't auto-unwrap in the template).
 - **Button click logging**: interactive buttons pair with `useButtonLogging(label, context?)` (`app/composables/ui/useButtonLogging.ts`) → `.logClick()` on click, logging `{ button, timestamp, ...context }` via `console.log('[BUTTON CLICK]', ...)`. `context` values can be getter functions, evaluated lazily at click time — used ~16 places, mainly form submit/cancel buttons. Follow this pattern for new form/modal actions rather than a bare `@click` handler with no logging.
-- **Toasts**: `useToast().add({ title, description?, color })` with Italian `title`/`description` and `color: 'success' | 'error' | 'warning'`. Success toast right after a store mutation succeeds; on failure, `color: 'error'` with `description: result.error`.
+- **Toasts**: `useToast().add({ title, description?, color })` with Italian `title`/`description` and `color: 'success' | 'error' | 'warning'`. Success toast right after a store mutation succeeds; on failure, `color: 'error'` with `description: result.error`. Any `icon` comes from `ICONS.*`, never an inline `'i-lucide-*'` literal.
+- **Async action buttons** (decided 2026-07-14, pairs with ADR-013's intent-based writes): a bare `<UButton>` that triggers a store mutation uses **`loading-auto`** — Nuxt UI drives the spinner/disable from the promise returned by `@click`, preventing double-clicks and UI races during the transition:
+  ```vue
+  <UButton :label="t('event.advanceRound')" loading-auto @click="onAdvanceRound" />
+  ```
+  ```ts
+  async function onAdvanceRound() {
+    const { success, error } = await eventStore.nextRound()
+    if (!success) {
+      toast.add({ title: t('event.advanceRoundError'), description: error, color: 'error' })
+      return
+    }
+    toast.add({ title: t('event.advanceRoundSuccess'), color: 'success' })
+  }
+  ```
+  Always check `success` explicitly — never a silent `try/catch`, and never ignore the return (the "Classifica a 0" bug was exactly an unchecked write). **Boundary:** `loading-auto` only works when the async handler is bound *directly* on a `UButton` — wrapper components that re-emit `click` synchronously (`ConfirmButton`, `CancelButton`, `ModalFooterActions`) break the promise chain, so they keep the explicit `:loading` prop (see `app/components/ui/CLAUDE.md`). Interactive buttons still pair with `useButtonLogging` as above.
 - **Rely on Nuxt auto-imports for values** (Vue reactivity APIs, `useI18n`, pinia helpers, `@vueuse/core`, own composables, `app/utils/` exports, stores) — **don't add explicit value imports for them.** Tests get the same treatment: `vitest.config.ts` runs `unplugin-auto-import` mirroring Nuxt's presets and dirs (matching KEEP IN SYNC comments in both configs), so plain `@vue/test-utils` mounts compile identically to the app. Decided 2026-07-14, *inverting* the previous "always import explicitly" rule — that rule existed only to work around the test environment, and fixing the environment once beats defeating Nuxt's auto-import feature in ~200 files. Three boundaries to know:
   - **Type imports are always explicit** (`import type { ... } from '~/composables/...'`) — auto-import never covered types.
   - **Nuxt *runtime* composables (`useToast`, `useSupabaseClient`, `useAsyncData`, `useRoute`, ...) are not importable at all outside Nuxt** — in plain-mount tests they must be stubbed/mocked per test (as with `createI18nTestPlugin`). This was equally true under the old rule; nothing regressed.

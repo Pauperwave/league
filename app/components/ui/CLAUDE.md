@@ -15,6 +15,7 @@ These two families solve different problems (row action *group* vs. one modal's 
 
 - `CancelButton`: defaults to `t('common.cancel')` + trailing `ICONS.undo`, `color="neutral"`. Every modal footer shows this icon — `ModalFooterActions` used to pass `:show-icon="false"` for a plain-text look but that made its footers inconsistent with `FormModal`/`ConfirmModal`, so it was dropped (2026-07-13). Don't reintroduce `:show-icon="false"` without a specific reason.
 - `ConfirmButton`: defaults to `t('common.confirm')`, `color="primary"`. Supports **two** trigger modes via `type`: `type="button"` (default, fires `@click`) for handler-based modals, or `type="submit"` + `:form="formId"` to trigger a native `<form id="...">` submit (used by `FormModal`) — this is why one component covers both `FormModal` and `ModalFooterActions` instead of needing a third variant.
+- **Loading state on these wrappers is the explicit `:loading` prop, NOT `loading-auto`**: `ConfirmButton`/`CancelButton` re-emit `click` synchronously (for `useButtonLogging`), which breaks the promise chain `loading-auto` relies on — the inner `UButton` would see a void handler and never show the spinner. `loading-auto` is for bare `<UButton>`s with the async handler bound directly (see root `CLAUDE.md` "Async action buttons").
 
 ## Modal shells (`modal/`) — pick the one matching your modal's shape
 
