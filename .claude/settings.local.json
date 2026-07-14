@@ -3,7 +3,8 @@
     "allow": [
       "Bash(pnpm lint *)",
       "Bash(pnpm typecheck *)",
-      "Bash(xargs wc -l)"
+      "Bash(xargs wc -l)",
+      "WebFetch(domain:nuxt.com)"
     ]
   }
 }
