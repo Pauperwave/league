@@ -2,6 +2,10 @@
 
 Loose observations and open questions — not yet committed, ranked work. For that, see `docs/BACKLOG.md`.
 
+## Deletion UX: 10-second undo + soft delete (2026-07-14)
+
+For destructive actions (delete player/deck/league/event/waiting-list entry): show a 10-second undo toast instead of deleting immediately, and back it with **soft delete** on Supabase (`deleted_at timestamptz` column + filtered SELECTs, or a `deleted` flag) so the undo window is honest (restore = clear the flag) and accidental deletions stay recoverable beyond the toast. Needs: schema migration per table, store delete actions rewritten to soft-delete + delayed hard-confirm (or just soft-delete forever + periodic purge), `useToast` action button wiring.
+
 ## Component granularity audit (2026-07-14)
 
 Reviewed all of `app/components/` (largest files, `fallow:health`, usage grep) while writing `app/components/CLAUDE.md`. Overall verdict: healthy — no component is a complexity hotspot, and the biggest ones (`TablePreviewModal`, `PairingsCard`) already delegate their logic to composables/subcomponents. Remaining observations:

@@ -5,6 +5,11 @@ One entry per notable commit, newest first, grouped by date. Each entry: the com
 
 ## 2026-07-14
 
+### `docs(security): 📝 record DB-write exposure honestly; deletion-undo TODO`
+
+- `BACKLOG.md` #7: the site password is app-layer only — every app table is anon-writable via the Data API. Real fixes are server routes + service-role key (preferred, pairs with player self-entry) or SECURITY DEFINER RPCs; per-row `WITH CHECK` scoping is security theater without auth claims. Security note added to the standings migration.
+- `TODO.md`: 10-second undo toast for deletions backed by Supabase soft delete.
+
 ### `fix(standings): 🐛 surface silently-failing standings score updates`
 
 - Bug: the final "Classifica" showed 0 points for everyone and standings appeared to reset every round. Root cause: `updateStandingsAndRanks` never checked the Supabase `error` of its UPDATEs, **and** an update filtered out by RLS (no UPDATE policy for `anon` on `standings` — the repo migrations only ever created SELECT policies) reports *no error and 0 rows*, so every score write vanished silently.

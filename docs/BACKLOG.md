@@ -15,6 +15,7 @@ Committed, actionable work items, ranked by priority with a rough effort estimat
 | 4 | [Form `isValid` should derive from Valibot schemas](#4-form-isvalid-should-derive-from-valibot-schemas) | P2 | M |
 | 5 | [Replace native HTML5 DnD in `TableScoreGrid.vue`](#5-replace-native-html5-dnd-in-tablescoregridvue) | P3 | M |
 | 6 | [Slim `useEventStore` by extracting pure logic](#6-slim-useeventstore-by-extracting-pure-logic) | P2 | M |
+| 7 | [DB-layer write security: stop trusting the anon key](#7-db-layer-write-security-stop-trusting-the-anon-key) | P2 | L |
 
 ---
 
@@ -117,7 +118,16 @@ From the 2026-07-14 data-flow review. `app/stores/events.ts` (~1300 lines) owns 
 
 ---
 
-## Closed out / resolved, not carried forward
+## 7. DB-layer write security: stop trusting the anon key
+
+From external security feedback on the 2026-07-14 standings-write-policies migration. Current posture, stated honestly: **every app table is anon-writable and the site password is enforced only in Nuxt middleware (a cookie check) — not at the database layer.** The anon key ships in the browser bundle, so anyone who extracts it can write to the Data API directly, bypassing the password gate entirely. The standings policy added on 2026-07-14 merely matches this pre-existing posture; it didn't create the exposure.
+
+Scoping policies per-row (e.g. `WITH CHECK (event_id = ...)`) does **not** help here — without Supabase Auth there is no JWT claim to scope against; an attacker can pass any `event_id`. The two real options:
+
+- **(a) Preferred: move all writes behind Nuxt server routes** (`server/api/*`) using the service-role key (server-only env var), then set every app table's write policies to deny `anon`. Stores keep their public shape but call `$fetch('/api/...')` instead of `supabase.from(...)`. The password gate becomes server-enforced for writes. Big but mechanical refactor; pairs naturally with the future multi-player self-entry (BACKLOG #2), which needs a server arbiter anyway.
+- **(b) Lighter: SECURITY DEFINER Postgres functions (RPCs)** that validate the site password server-side (stored in Vault/a config table, never compared client-side) and perform the writes; deny direct table writes to `anon`. Less infra, but every write path still needs rewriting to `.rpc()` calls and the password travels on every request.
+
+Until one of these lands, the exposure is accepted (friends-league app, data recoverable from `round_results`/backups) but **known** — don't present the RLS policies as a security boundary in docs.
 
 - **Reinventing-the-wheel audit (2026-05-27):** recorded here only so the "9 of 11 fixed" count in `docs/PROGRESS.md`'s 2026-07-13 changelog entry is traceable. Fixed: `toErrorMessage()` extraction, `useEventUrl.ts`'s generic `setQueryParam`, `app/utils/math.ts`'s `roundToDecimals`/`isCloseTo`, `sanitizePlayer()` consistency, `upperFirst.ts` removed. Went moot: the Scryfall card-search composables it flagged (`useCardWhitelists`/`useCardSearch`) no longer exist — that feature was migrated to Supabase-backed data instead of patched in place.
 - **`docs/bugs.md`'s table-preview-optimization bug (2026-07-13):** the report was "clicking Conferma runs table optimization and then closes the modal, but optimization should happen before the modal is shown." Checked against current code — `TablePreviewModal.vue`'s `watch(open, ...)` (lines 102-120) already auto-runs the optimizer as soon as the modal opens (gated on `loading`, guarded by `hasAutoOptimized`), and `playerOrder` is propagated through `handleConfirm` → `emit('confirm', playerOrder.value)` → `useEventLifecycle.ts`'s `nextRound(playerOrder)` — matching the fix already logged in `PROGRESS.md`'s 2026-05-26 changelog entry ("Preview mostra tavoli prima di avanzare round"). Not carried forward as a live bug.

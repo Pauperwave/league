@@ -13,6 +13,13 @@
 -- Idempotent: drops and recreates only the policies named here. FOR ALL covers
 -- INSERT/UPDATE/DELETE (turnBackRound also deletes standings rows) and is
 -- permissive alongside any existing dashboard policies.
+--
+-- SECURITY NOTE: USING (true) is deliberate and matches the pre-existing
+-- posture of every other app table — with no Supabase Auth there is no JWT
+-- claim to scope these policies against, so a per-row WITH CHECK would be
+-- security theater. The RLS policies here are NOT a security boundary; the
+-- real hardening (server routes with the service-role key, deny anon writes)
+-- is tracked as docs/BACKLOG.md #7.
 
 DROP POLICY IF EXISTS "Allow anon write standings" ON standings;
 CREATE POLICY "Allow anon write standings"
