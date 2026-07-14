@@ -5,6 +5,10 @@ One entry per notable commit, newest first, grouped by date. Each entry: the com
 
 ## 2026-07-14
 
+### `feat(api): 🔊 structured logging in the BFF endpoints`
+
+- `[api/advance-round]` and `[api/register-player]` prefixed logs at every step (request received, scoring input sizes, per-player updated scores, event advanced/ended, pairings created, and every failure with its context) — visible in the `pnpm dev` terminal (or serverless function logs in production). Client side, the stores log `[useEventStore] advance-round ok` / `[usePlayerStore] register-player ok` with the server's response, so the browser console tells the same story.
+
 ### `feat(event): ✨ wire NextRoundModal into the advance flow`
 
 - The advance button (relabeled "Avanti" → "Procedi al prossimo round") now opens `NextRoundModal` as the action confirmation; confirming hands over to the table preview, which runs the optimizer and supplies the `playerOrder` the advance-round endpoint requires. This also removes the dead path where `confirmNextRound` called `nextRound()` bare — which the endpoint now rejects (400, `playerOrder` required) unless the event is ending. Last-round flow (end-event confirm) unchanged.

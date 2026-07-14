@@ -32,6 +32,8 @@ export default defineEventHandler(async (event) => {
   }
   const { playerIds } = parsed.output
 
+  console.log('[api/register-player] request', { eventId, playerIds })
+
   // Still the anon key for now — same DB privileges the client already has.
   // Switching to serverSupabaseServiceRole + denying anon writes on `waitroom`
   // completes this slice (needs SUPABASE_SERVICE_KEY in the deployment env) —
@@ -73,10 +75,12 @@ export default defineEventHandler(async (event) => {
       .select('player_id, inserted_at')
 
     if (insertError) {
+      console.error('[api/register-player] insert failed', { eventId, toInsert, insertError })
       throw createError({ statusCode: 500, statusMessage: insertError.message })
     }
     registered = inserted ?? []
   }
 
+  console.log('[api/register-player] done', { eventId, registered: registered.map(r => r.player_id), alreadyRegistered })
   return { registered, alreadyRegistered }
 })

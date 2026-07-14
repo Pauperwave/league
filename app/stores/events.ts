@@ -330,11 +330,12 @@ export const useEventStore = defineStore('events', () => {
     error.value = null
 
     try {
-      const { event: updatedEvent } = await $fetch(`/api/events/${eventId}/advance-round`, {
+      const { event: updatedEvent, hasEnded } = await $fetch(`/api/events/${eventId}/advance-round`, {
         method: 'POST',
         body: { currentRound, playerOrder },
       })
 
+      console.log('[useEventStore] advance-round ok', { eventId, newRound: updatedEvent.event_current_round, hasEnded })
       currentEvent.value = updatedEvent
       await fetchStandings(eventId)
 

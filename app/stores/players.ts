@@ -183,6 +183,7 @@ export const usePlayerStore = defineStore('players', () => {
         body: { playerIds },
       })
 
+      console.log('[usePlayerStore] register-player ok', { eventId, registered: registered.map(r => r.player_id), alreadyRegistered })
       for (const entry of registered) {
         if (!waitingPlayers.value.includes(entry.player_id)) {
           waitingPlayers.value.push(entry.player_id)

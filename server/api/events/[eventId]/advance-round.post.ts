@@ -41,6 +41,8 @@ export default defineEventHandler(async (event) => {
   }
   const { currentRound, playerOrder } = parsed.output
 
+  console.log('[api/advance-round] request', { eventId, currentRound, playerOrderLength: playerOrder?.length ?? 0 })
+
   // Still the anon key for now — see docs/BACKLOG.md #7 for the service-role flip.
   const supabase = await serverSupabaseClient<Database>(event)
 
@@ -76,9 +78,15 @@ export default defineEventHandler(async (event) => {
   try {
     const { ruleset, posValues } = await resolveEventRuleset(supabase, eventId)
     const { pairings, results, standingsMap } = await fetchRoundData(supabase, eventId, currentRound)
+    console.log('[api/advance-round] scoring round', { eventId, currentRound, pairings: pairings.length, results: results.length, players: standingsMap.size })
     calculateRoundScores(pairings, results, standingsMap, posValues, ruleset)
     await updateStandingsAndRanks(supabase, eventId, standingsMap)
+    console.log('[api/advance-round] standings updated', {
+      eventId,
+      scores: Array.from(standingsMap.values()).map(s => ({ player: s.player_id, score: s.standing_player_score })),
+    })
   } catch (err) {
+    console.error('[api/advance-round] scoring failed', { eventId, currentRound, err })
     throw createError({
       statusCode: 500,
       statusMessage: err instanceof Error ? err.message : 'Round scoring failed',
@@ -94,8 +102,10 @@ export default defineEventHandler(async (event) => {
     .single()
 
   if (updateError || !updatedEvent) {
+    console.error('[api/advance-round] event update failed', { eventId, newRound, updateError })
     throw createError({ statusCode: 500, statusMessage: updateError?.message ?? 'Event update failed' })
   }
+  console.log('[api/advance-round] event advanced', { eventId, newRound, hasEnded })
 
   // Insert the next round's pairings from the confirmed order.
   if (!hasEnded && playerOrder) {
@@ -105,8 +115,10 @@ export default defineEventHandler(async (event) => {
     }
     const { error: pairingsError } = await supabase.from('pairings').insert(rows)
     if (pairingsError) {
+      console.error('[api/advance-round] pairings insert failed', { eventId, newRound, pairingsError })
       throw createError({ statusCode: 500, statusMessage: pairingsError.message })
     }
+    console.log('[api/advance-round] pairings created', { eventId, newRound, tables: rows.length })
   }
 
   return { event: updatedEvent, hasEnded }
