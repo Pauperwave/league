@@ -110,6 +110,19 @@ pages/player/[slug]/deck/[deckSlug].vue  ← child
 
 See the player profile refactor in git history for the full context.
 
+### Why the league detail page is `[id].vue`, not `[leagueId].vue` (deliberate — don't "fix" it)
+
+The league routes solve the same problem with the *other* available trick: a **mismatched param name**. Per the [Nuxt pages docs](https://nuxt.com/docs/4.x/directory-structure/app/pages), *"named parent routes will take priority over nested dynamic routes"* — translated to this repo:
+
+```
+pages/league/[leagueId].vue                    ← if it existed, it would pair with…
+pages/league/[leagueId]/event/[eventId].vue    ← …this folder as parent → child
+```
+
+For `/league/7/event/12`, `league/[leagueId].vue` would take priority over `league/[leagueId]/event/[eventId].vue` — the **league page would render instead of the event page**, unless the league page embedded `<NuxtPage>`. Naming the file `league/[id].vue` breaks the file/folder pairing, so `/league/7` (league detail) and `/league/7/event/12` (event page) stay flat, independent routes. There's a matching warning comment at the top of `app/pages/league/[id].vue`.
+
+(The `index.vue` solution used for the player routes above would work here too — `league/[leagueId]/index.vue` — but the `[id]` rename predates it and works; pick either pattern for future cases, just never a same-named file + folder without `<NuxtPage>`.)
+
 ---
 
 ## Dynamic Parameters

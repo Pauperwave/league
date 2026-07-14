@@ -5,6 +5,10 @@ One entry per notable commit, newest first, grouped by date. Each entry: the com
 
 ## 2026-07-14
 
+### `docs(routes): 📝 document the deliberate [id] vs [leagueId] param mismatch`
+
+- Verified against the Nuxt pages docs ("named parent routes take priority over nested dynamic routes"): `league/[leagueId].vue` would pair with the `league/[leagueId]/` folder as a nested parent and shadow the event page. Warning comment added at the top of `app/pages/league/[id].vue`; repo-specific explanation added to `docs/architecture/routes.md` § Nested Route Gotchas.
+
 ### `docs(conventions): 📝 props two-branch rule (defaults → destructure, no defaults → interface Props)`
 
 - Root `CLAUDE.md` props section rewritten: defaults needed → reactive destructure (Vue 3.5+); no defaults → named `interface Props` + `defineProps<Props>()`; the two may combine; `withDefaults` stays banned. The 15 existing `interface Props` components are compliant under this rule — no code changes.

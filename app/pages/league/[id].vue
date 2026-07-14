@@ -1,4 +1,14 @@
 <!-- app\pages\league\[id].vue -->
+<!--
+  The param is [id], NOT [leagueId], ON PURPOSE — do not "fix" it.
+  If this file were league/[leagueId].vue, it would pair with the sibling
+  league/[leagueId]/ folder as a NESTED route: named parent routes take
+  priority over nested dynamic routes (Nuxt pages docs), so navigating to
+  /league/7/event/12 would render THIS page instead of the event page unless
+  this page embedded <NuxtPage>. The mismatched param name keeps the two
+  routes flat and independent. See docs/architecture/routes.md § "Nested
+  route gotcha".
+-->
 <script setup lang="ts">
 // fallow-ignore-file code-duplication -- LeagueFormModal/ConfirmModal invocation boilerplate shared with leagues.vue
 import type { Event } from '#shared/utils/types'
