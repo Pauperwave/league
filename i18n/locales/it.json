@@ -361,7 +361,7 @@
       "endEventTooltip": "Termina l'evento",
       "advanceTooltip": "Procedi al round successivo",
       "incompleteDataTooltip": "Dati dei tavoli incompleti",
-      "advanceButton": "Avanti"
+      "advanceButton": "Procedi al prossimo round"
     },
     "stepper": {
       "registrationTitle": "Registrazione",

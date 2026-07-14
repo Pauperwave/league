@@ -5,6 +5,10 @@ One entry per notable commit, newest first, grouped by date. Each entry: the com
 
 ## 2026-07-14
 
+### `feat(event): ✨ wire NextRoundModal into the advance flow`
+
+- The advance button (relabeled "Avanti" → "Procedi al prossimo round") now opens `NextRoundModal` as the action confirmation; confirming hands over to the table preview, which runs the optimizer and supplies the `playerOrder` the advance-round endpoint requires. This also removes the dead path where `confirmNextRound` called `nextRound()` bare — which the endpoint now rejects (400, `playerOrder` required) unless the event is ending. Last-round flow (end-event confirm) unchanged.
+
 ### `feat(api): ✨ BFF slice 2 — atomic advance-round endpoint (ADR-013)`
 
 - New `POST /api/events/:eventId/advance-round`: owns the whole round transition server-side — score the closing round, accumulate standings (with the 0-rows RLS guard), advance or end the event in one update, insert next-round pairings from the confirmed `playerOrder`. Domain guards: playing phase, and a round-mismatch 409 (double-submit/stale-tab protection the client never had).

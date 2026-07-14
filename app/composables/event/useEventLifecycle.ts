@@ -48,10 +48,15 @@ export function useEventLifecycle(deps: LifecycleDeps) {
     votesStore.reset()
   }
 
-  async function confirmNextRound() {
+  /**
+   * NextRoundModal confirm: hand over to the table preview, which runs the
+   * optimizer and supplies the confirmed playerOrder that the advance-round
+   * endpoint requires — never call nextRound() directly from here (the
+   * endpoint rejects a missing playerOrder unless the event is ending).
+   */
+  function confirmNextRound() {
     showNextRoundModal.value = false
-    const ok = await nextRound()
-    if (ok) resetSessionStores()
+    showStartPreviewModal.value = true
   }
 
   async function confirmEndEvent() {
@@ -78,7 +83,8 @@ export function useEventLifecycle(deps: LifecycleDeps) {
       showEndEventConfirm.value = true
       return
     }
-    showStartPreviewModal.value = true
+    // Confirmation first (NextRoundModal), then the table preview.
+    showNextRoundModal.value = true
   }
 
   async function handleUpdateEvent(payload: Parameters<typeof updateEvent>[0]) {
