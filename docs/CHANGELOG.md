@@ -5,6 +5,10 @@ One entry per notable commit, newest first, grouped by date. Each entry: the com
 
 ## 2026-07-14
 
+### `chore(release): 🔖 bump version to 0.4.0`
+
+- Minor bump for BFF wave 1: the four event-lifecycle endpoints (`register-player`, `advance-round`, `start`, `turn-back-round`) with server-enforced auth, atomic transitions, structured logging; NextRoundModal confirmation flow; standings-bug fix + migration.
+
 ### `feat(api): ✨ BFF slices 3+4 — start and turn-back-round endpoints (ADR-013)`
 
 - `POST /api/events/:id/start`: validates waitroom (count ≥3, ≠5) and the confirmed `playerOrder` against it server-side, creates zeroed standings, flips the event to playing, clears the waitroom, inserts round-1 pairings. 409 if already started.
