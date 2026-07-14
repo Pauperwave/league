@@ -5,6 +5,10 @@ One entry per notable commit, newest first, grouped by date. Each entry: the com
 
 ## 2026-07-14
 
+### `docs(security): 📝 add serverless constraints to the DB-write hardening plan`
+
+- `BACKLOG.md` #7 extended for the serverless deploy (Nitro functions, precedent: `server/api/auth/login.post.ts`): coarse-grained write endpoints (one atomic `advance-round` call, not N proxied updates), cold-start tolerance, reads/Realtime stay client-direct, `supabase-js` over pg pools in functions, and a legitimate hybrid with password-validating RPCs for latency-sensitive in-room writes.
+
 ### `docs(security): 📝 record DB-write exposure honestly; deletion-undo TODO`
 
 - `BACKLOG.md` #7: the site password is app-layer only — every app table is anon-writable via the Data API. Real fixes are server routes + service-role key (preferred, pairs with player self-entry) or SECURITY DEFINER RPCs; per-row `WITH CHECK` scoping is security theater without auth claims. Security note added to the standings migration.
