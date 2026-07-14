@@ -120,6 +120,8 @@ From the 2026-07-14 data-flow review. `app/stores/events.ts` (~1300 lines) owns 
 
 ## 7. DB-layer write security: stop trusting the anon key
 
+**Architecture decided: Backend-For-Frontend — see ADR-013 in `docs/PROGRESS.md`.** This entry keeps the operational detail.
+
 From external security feedback on the 2026-07-14 standings-write-policies migration. Current posture, stated honestly: **every app table is anon-writable and the site password is enforced only in Nuxt middleware (a cookie check) — not at the database layer.** The anon key ships in the browser bundle, so anyone who extracts it can write to the Data API directly, bypassing the password gate entirely. The standings policy added on 2026-07-14 merely matches this pre-existing posture; it didn't create the exposure.
 
 Scoping policies per-row (e.g. `WITH CHECK (event_id = ...)`) does **not** help here — without Supabase Auth there is no JWT claim to scope against; an attacker can pass any `event_id`. The two real options:
@@ -143,7 +145,8 @@ Scoping policies per-row (e.g. `WITH CHECK (event_id = ...)`) does **not** help 
 - **Shared valibot schemas** (`shared/`) validate the form client-side and the request body server-side (`login.post.ts` precedent) — overlaps with BACKLOG #4.
 - **SSR gotcha for the eventual CLAUDE.md rule:** writes are client-initiated; an SSR-time internal `$fetch` doesn't forward the `site-auth` cookie — use `useRequestFetch()` if that ever comes up.
 - **Migrate in slices, not big-bang**: standings/round-lifecycle writes first (where atomicity matters most); the security win completes only when the anon write policies flip to deny, table by table.
-- Rejected alternatives, for the record: Supabase Edge Functions (second runtime/deploy pipeline for zero gain over the existing Nitro functions); RPC-first (logic in SQL couples schema and logic migrations — kept only as the in-room latency escape hatch); Supabase Auth + strict RLS (only meaningful if players get real accounts; even then multi-step transitions still want a server arbiter — would complement, not replace).
+- Rejected alternatives, for the record: Supabase Edge Functions (second runtime/deploy pipeline for zero gain over the existing Nitro functions); RPC-first (logic in SQL couples schema and logic migrations — kept only as the in-room latency escape hatch).
+- **Planned future (decided 2026-07-14, not hypothetical): Supabase Auth with per-player accounts.** When player self-entry (BACKLOG #2) gives players real identities, RLS with JWT claims becomes meaningful and completes the picture — it *complements* the BFF (per-row authorization on self-service writes), it does not replace it: multi-step transitions still want the server arbiter. Design new endpoints with this in mind (e.g. don't bake "there is only one admin caller" assumptions into request bodies).
 
 Until one of these lands, the exposure is accepted (friends-league app, data recoverable from `round_results`/backups) but **known** — don't present the RLS policies as a security boundary in docs.
 

@@ -5,6 +5,10 @@ One entry per notable commit, newest first, grouped by date. Each entry: the com
 
 ## 2026-07-14
 
+### `docs(adr): 📝 ADR-013 — Backend-For-Frontend for DB writes`
+
+- New ADR in `PROGRESS.md`: BFF pattern decided (intent-based Nitro endpoints own write orchestration; stores become thin API clients; reads stay client-direct). Supabase Auth with per-player accounts recorded as the **planned future** (complements the BFF for self-entry authorization, doesn't replace it) — upgraded from hypothetical in `BACKLOG.md` #7, which now cross-references the ADR.
+
 ### `docs(api): 📝 record the API design principles for the write-hardening refactor`
 
 - `BACKLOG.md` #7 completed with the decided design: intent-based endpoints (stable across DB schema changes; no CRUD proxies), stores as thin API clients (same public shape, server response as local truth), orchestration logic relocating server-side, shared valibot schemas, SSR cookie gotcha, slice-by-slice migration, and the rejected alternatives with reasons.
