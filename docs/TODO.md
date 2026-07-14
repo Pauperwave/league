@@ -7,7 +7,7 @@ Loose observations and open questions — not yet committed, ranked work. For th
 Reviewed all of `app/components/` (largest files, `fallow:health`, usage grep) while writing `app/components/CLAUDE.md`. Overall verdict: healthy — no component is a complexity hotspot, and the biggest ones (`TablePreviewModal`, `PairingsCard`) already delegate their logic to composables/subcomponents. Remaining observations:
 
 **Intentionally unreferenced (do NOT delete):**
-- `event/EndedEventBadge.vue` has zero references today, but it's reserved for the ended-event flow, which hasn't been built yet (decision 2026-07-14). Marked with a keep-comment in the component itself. Expect it in `fallow:dead-code` output until the flow lands.
+- ~~`event/EndedEventBadge.vue`~~ — resolved 2026-07-14: now rendered in the event page's ended phase, above the final `StandingsCard`.
 
 **Merge candidates (over-decomposed):**
 - ~~`layout/HeaderActions.vue`~~ — flagged as a logic-free wrapper inlinable into `app.vue`; decided 2026-07-14 to **keep it as-is** (preferred for readability of `app.vue`). Closed.

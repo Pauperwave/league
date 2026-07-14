@@ -470,11 +470,13 @@ function handleResetTable(pairingId: number) {
               />
             </div>
 
-            <StandingsCard
-              v-else-if="eventStatus === 'ended'"
-              :standings="liveStandings"
-              :loading="loading"
-            />
+            <div v-else-if="eventStatus === 'ended'" class="space-y-2">
+              <EndedEventBadge />
+              <StandingsCard
+                :standings="liveStandings"
+                :loading="loading"
+              />
+            </div>
           </EventHeaderCard>
 
           <!-- Playing Phase -->

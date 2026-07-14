@@ -5,6 +5,14 @@ One entry per notable commit, newest first, grouped by date. Each entry: the com
 
 ## 2026-07-14
 
+### `feat(event): ✨ show EndedEventBadge in the event page's ended phase`
+
+- `EndedEventBadge` (previously reserved/unreferenced) now renders above the final `StandingsCard` when `eventStatus === 'ended'`; keep-comment and `TODO.md` entry resolved.
+
+### `style(comments): ✏️ translate remaining Italian comments to English`
+
+- `nuxt.config.ts` and `test/helpers/mocks.ts` — repo-wide grep found no other Italian code comments.
+
 ### `chore(release): 🔖 bump version to 0.3.0`
 
 - Minor bump for the consistency-audit batch: auto-import convention inversion + 124-file sweep, logging unification, `PairingsCard` store injection, props two-branch rule, routing/fallow/path-header cleanups.

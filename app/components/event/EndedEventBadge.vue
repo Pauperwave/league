@@ -1,8 +1,6 @@
 <!-- app\components\event\EndedEventBadge.vue -->
 <!--
-  Currently unreferenced ON PURPOSE — do not delete.
-  Reserved for the ended-event flow, which hasn't been built yet: this badge
-  will mark the event page once the event reaches the `ended` state
+  Marks the event page's ended phase, above the final standings
   (see docs/architecture/event-flow.md).
 -->
 <script setup lang="ts">
