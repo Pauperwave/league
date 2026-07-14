@@ -13,17 +13,26 @@ const bodySchema = v.object({
 
 export default defineEventHandler(async (event) => {
   if (getCookie(event, 'site-auth') !== 'authenticated') {
-    throw createError({ statusCode: 401, statusMessage: 'Not authenticated' })
+    throw createError({
+      statusCode: 401,
+      statusMessage: 'Not authenticated'
+    })
   }
 
   const eventId = Number(getRouterParam(event, 'eventId'))
   if (!Number.isInteger(eventId) || eventId < 1) {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid event id' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid event id'
+    })
   }
 
   const parsed = v.safeParse(bodySchema, await readBody(event))
   if (!parsed.success) {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid request body' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid request body'
+    })
   }
   const { playerOrder } = parsed.output
 
@@ -40,10 +49,16 @@ export default defineEventHandler(async (event) => {
     .single()
 
   if (eventError || !eventRow) {
-    throw createError({ statusCode: 404, statusMessage: 'Event not found' })
+    throw createError({
+      statusCode: 404,
+      statusMessage: 'Event not found'
+    })
   }
   if (eventRow.event_playing || (eventRow.event_current_round ?? 0) > 0) {
-    throw createError({ statusCode: 409, statusMessage: 'Event has already started' })
+    throw createError({
+      statusCode: 409,
+      statusMessage: 'Event has already started'
+    })
   }
 
   // Validate the waitroom and the confirmed player order against it.
@@ -54,13 +69,19 @@ export default defineEventHandler(async (event) => {
     .order('inserted_at', { ascending: true })
 
   if (waitingError) {
-    throw createError({ statusCode: 500, statusMessage: waitingError.message })
+    throw createError({
+      statusCode: 500,
+      statusMessage: waitingError.message
+    })
   }
 
   const waitroomIds = (waitingPlayers ?? []).map(player => player.player_id)
   const count = waitroomIds.length
   if (count < 3 || count === 5) {
-    throw createError({ statusCode: 409, statusMessage: `Invalid player count: ${count} (needs at least 3, and 5 cannot be seated)` })
+    throw createError({
+      statusCode: 409,
+      statusMessage: `Invalid player count: ${count} (needs at least 3, and 5 cannot be seated)`
+    })
   }
 
   const selectedOrder = playerOrder?.length ? playerOrder : waitroomIds
@@ -68,7 +89,10 @@ export default defineEventHandler(async (event) => {
   const hasValidIds = selectedOrder.every(id => waitroomIds.includes(id))
   const hasUniqueIds = new Set(selectedOrder).size === selectedOrder.length
   if (!hasSameLength || !hasValidIds || !hasUniqueIds) {
-    throw createError({ statusCode: 400, statusMessage: 'playerOrder does not match the waitroom players' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'playerOrder does not match the waitroom players'
+    })
   }
 
   // Zeroed standings for every player, ranked by the confirmed order.
@@ -85,7 +109,10 @@ export default defineEventHandler(async (event) => {
   const { error: standingsError } = await supabase.from('standings').insert(standingsData)
   if (standingsError) {
     console.error('[api/start] standings insert failed', { eventId, standingsError })
-    throw createError({ statusCode: 500, statusMessage: standingsError.message })
+    throw createError({
+      statusCode: 500,
+      statusMessage: standingsError.message
+    })
   }
   console.log('[api/start] standings created', { eventId, players: standingsData.length })
 
@@ -98,13 +125,19 @@ export default defineEventHandler(async (event) => {
 
   if (updateError || !updatedEvent) {
     console.error('[api/start] event update failed', { eventId, updateError })
-    throw createError({ statusCode: 500, statusMessage: updateError?.message ?? 'Event update failed' })
+    throw createError({
+      statusCode: 500,
+      statusMessage: updateError?.message ?? 'Event update failed'
+    })
   }
 
   // Round 1 uses the confirmed player order — no optimizer re-run.
   const rows = buildPairingRows(eventId, 1, buildRoundOneTables(selectedOrder))
   if (!rows.length) {
-    throw createError({ statusCode: 400, statusMessage: 'playerOrder produced no valid tables' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'playerOrder produced no valid tables'
+    })
   }
 
   const [{ error: waitroomError }, { error: pairingsError }] = await Promise.all([
@@ -113,11 +146,17 @@ export default defineEventHandler(async (event) => {
   ])
   if (waitroomError) {
     console.error('[api/start] waitroom clear failed', { eventId, waitroomError })
-    throw createError({ statusCode: 500, statusMessage: waitroomError.message })
+    throw createError({
+      statusCode: 500,
+      statusMessage: waitroomError.message
+    })
   }
   if (pairingsError) {
     console.error('[api/start] pairings insert failed', { eventId, pairingsError })
-    throw createError({ statusCode: 500, statusMessage: pairingsError.message })
+    throw createError({
+      statusCode: 500,
+      statusMessage: pairingsError.message
+    })
   }
 
   console.log('[api/start] event started', { eventId, tables: rows.length })

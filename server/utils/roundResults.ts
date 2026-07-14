@@ -75,12 +75,18 @@ export async function upsertRoundResult(
  */
 export async function requirePairingContext(event: H3Event) {
   if (getCookie(event, 'site-auth') !== 'authenticated') {
-    throw createError({ statusCode: 401, statusMessage: 'Not authenticated' })
+    throw createError({
+      statusCode: 401,
+      statusMessage: 'Not authenticated'
+    })
   }
 
   const pairingId = Number(getRouterParam(event, 'pairingId'))
   if (!Number.isInteger(pairingId) || pairingId < 1) {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid pairing id' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid pairing id'
+    })
   }
 
   // Still the anon key for now — see docs/BACKLOG.md #7 for the service-role flip.
@@ -88,7 +94,10 @@ export async function requirePairingContext(event: H3Event) {
 
   const playerIds = await fetchPairingPlayerIds(supabase, pairingId)
   if (playerIds === null) {
-    throw createError({ statusCode: 404, statusMessage: 'Pairing not found' })
+    throw createError({
+      statusCode: 404,
+      statusMessage: 'Pairing not found'
+    })
   }
 
   return { pairingId, supabase, playerIds }

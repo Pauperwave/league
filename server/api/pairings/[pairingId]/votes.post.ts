@@ -13,12 +13,18 @@ export default defineEventHandler(async (event) => {
 
   const parsed = v.safeParse(bodySchema, await readBody(event))
   if (!parsed.success) {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid request body' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid request body'
+    })
   }
   const { playerId, brewVote, playVote } = parsed.output
 
   if (!playerIds.includes(playerId)) {
-    throw createError({ statusCode: 400, statusMessage: 'Player is not seated at this pairing' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Player is not seated at this pairing'
+    })
   }
 
   console.log('[api/pairings/votes] request', { pairingId, playerId, brewVote, playVote })
@@ -27,7 +33,10 @@ export default defineEventHandler(async (event) => {
     await upsertRoundResult(supabase, pairingId, playerId, { brew_vote: brewVote, play_vote_1: playVote })
   } catch (err) {
     console.error('[api/pairings/votes] upsert failed', { pairingId, playerId, err })
-    throw createError({ statusCode: 500, statusMessage: err instanceof Error ? err.message : 'Votes save failed' })
+    throw createError({
+      statusCode: 500,
+      statusMessage: err instanceof Error ? err.message : 'Votes save failed'
+    })
   }
 
   console.log('[api/pairings/votes] done', { pairingId, playerId })

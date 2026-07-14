@@ -27,17 +27,26 @@ const bodySchema = v.object({
 
 export default defineEventHandler(async (event) => {
   if (getCookie(event, 'site-auth') !== 'authenticated') {
-    throw createError({ statusCode: 401, statusMessage: 'Not authenticated' })
+    throw createError({
+      statusCode: 401,
+      statusMessage: 'Not authenticated'
+    })
   }
 
   const eventId = Number(getRouterParam(event, 'eventId'))
   if (!Number.isInteger(eventId) || eventId < 1) {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid event id' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid event id'
+    })
   }
 
   const parsed = v.safeParse(bodySchema, await readBody(event))
   if (!parsed.success) {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid request body' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid request body'
+    })
   }
   const { currentRound, playerOrder } = parsed.output
 
@@ -56,22 +65,31 @@ export default defineEventHandler(async (event) => {
     .single()
 
   if (eventError || !eventRow) {
-    throw createError({ statusCode: 404, statusMessage: 'Event not found' })
+    throw createError({
+      statusCode: 404,
+      statusMessage: 'Event not found'
+    })
   }
   if (!eventRow.event_playing) {
-    throw createError({ statusCode: 409, statusMessage: 'Event is not in the playing phase' })
+    throw createError({
+      statusCode: 409,
+      statusMessage: 'Event is not in the playing phase'
+    })
   }
   if (eventRow.event_current_round !== currentRound) {
     throw createError({
       statusCode: 409,
-      statusMessage: `Round mismatch: event is at round ${eventRow.event_current_round}, request is closing round ${currentRound}`,
+      statusMessage: `Round mismatch: event is at round ${eventRow.event_current_round}, request is closing round ${currentRound}`
     })
   }
 
   const newRound = currentRound + 1
   const hasEnded = newRound > (eventRow.event_round_number ?? 0)
   if (!hasEnded && !playerOrder?.length) {
-    throw createError({ statusCode: 400, statusMessage: 'playerOrder is required to create the next round pairings' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'playerOrder is required to create the next round pairings'
+    })
   }
 
   // Score the closing round and accumulate into standings.
@@ -89,7 +107,7 @@ export default defineEventHandler(async (event) => {
     console.error('[api/advance-round] scoring failed', { eventId, currentRound, err })
     throw createError({
       statusCode: 500,
-      statusMessage: err instanceof Error ? err.message : 'Round scoring failed',
+      statusMessage: err instanceof Error ? err.message : 'Round scoring failed'
     })
   }
 
@@ -103,7 +121,10 @@ export default defineEventHandler(async (event) => {
 
   if (updateError || !updatedEvent) {
     console.error('[api/advance-round] event update failed', { eventId, newRound, updateError })
-    throw createError({ statusCode: 500, statusMessage: updateError?.message ?? 'Event update failed' })
+    throw createError({
+      statusCode: 500,
+      statusMessage: updateError?.message ?? 'Event update failed'
+    })
   }
   console.log('[api/advance-round] event advanced', { eventId, newRound, hasEnded })
 
@@ -111,12 +132,18 @@ export default defineEventHandler(async (event) => {
   if (!hasEnded && playerOrder) {
     const rows = buildPairingRows(eventId, newRound, buildRoundOneTables(playerOrder))
     if (!rows.length) {
-      throw createError({ statusCode: 400, statusMessage: 'playerOrder produced no valid tables' })
+      throw createError({
+        statusCode: 400,
+        statusMessage: 'playerOrder produced no valid tables'
+      })
     }
     const { error: pairingsError } = await supabase.from('pairings').insert(rows)
     if (pairingsError) {
       console.error('[api/advance-round] pairings insert failed', { eventId, newRound, pairingsError })
-      throw createError({ statusCode: 500, statusMessage: pairingsError.message })
+      throw createError({
+        statusCode: 500,
+        statusMessage: pairingsError.message
+      })
     }
     console.log('[api/advance-round] pairings created', { eventId, newRound, tables: rows.length })
   }

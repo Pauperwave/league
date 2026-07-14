@@ -13,17 +13,26 @@ const bodySchema = v.object({
 
 export default defineEventHandler(async (event) => {
   if (getCookie(event, 'site-auth') !== 'authenticated') {
-    throw createError({ statusCode: 401, statusMessage: 'Not authenticated' })
+    throw createError({
+      statusCode: 401,
+      statusMessage: 'Not authenticated'
+    })
   }
 
   const eventId = Number(getRouterParam(event, 'eventId'))
   if (!Number.isInteger(eventId) || eventId < 1) {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid event id' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid event id'
+    })
   }
 
   const parsed = v.safeParse(bodySchema, await readBody(event))
   if (!parsed.success) {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid request body' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid request body'
+    })
   }
   const { currentRound } = parsed.output
 
@@ -41,12 +50,15 @@ export default defineEventHandler(async (event) => {
     .single()
 
   if (eventError || !eventRow) {
-    throw createError({ statusCode: 404, statusMessage: 'Event not found' })
+    throw createError({
+      statusCode: 404,
+      statusMessage: 'Event not found'
+    })
   }
   if (eventRow.event_current_round !== currentRound) {
     throw createError({
       statusCode: 409,
-      statusMessage: `Round mismatch: event is at round ${eventRow.event_current_round}, request is rolling back round ${currentRound}`,
+      statusMessage: `Round mismatch: event is at round ${eventRow.event_current_round}, request is rolling back round ${currentRound}`
     })
   }
 
@@ -68,11 +80,17 @@ export default defineEventHandler(async (event) => {
 
     if (updateError || !updatedEvent) {
       console.error('[api/turn-back-round] event update failed', { eventId, updateError })
-      throw createError({ statusCode: 500, statusMessage: updateError?.message ?? 'Event update failed' })
+      throw createError({
+        statusCode: 500,
+        statusMessage: updateError?.message ?? 'Event update failed'
+      })
     }
     if (pairingsError) {
       console.error('[api/turn-back-round] pairings delete failed', { eventId, currentRound, pairingsError })
-      throw createError({ statusCode: 500, statusMessage: pairingsError.message })
+      throw createError({
+        statusCode: 500,
+        statusMessage: pairingsError.message
+      })
     }
 
     console.log('[api/turn-back-round] reopened previous round', { eventId, newRound: currentRound - 1 })
@@ -86,7 +104,10 @@ export default defineEventHandler(async (event) => {
     .eq('event_id', eventId)
 
   if (standingsError) {
-    throw createError({ statusCode: 500, statusMessage: standingsError.message })
+    throw createError({
+      statusCode: 500,
+      statusMessage: standingsError.message
+    })
   }
   const playerIds = (standingsData ?? []).map(s => s.player_id)
 
@@ -109,19 +130,31 @@ export default defineEventHandler(async (event) => {
 
   if (updateError || !updatedEvent) {
     console.error('[api/turn-back-round] event reset failed', { eventId, updateError })
-    throw createError({ statusCode: 500, statusMessage: updateError?.message ?? 'Event reset failed' })
+    throw createError({
+      statusCode: 500,
+      statusMessage: updateError?.message ?? 'Event reset failed'
+    })
   }
   if (wipeStandingsError) {
     console.error('[api/turn-back-round] standings wipe failed', { eventId, wipeStandingsError })
-    throw createError({ statusCode: 500, statusMessage: wipeStandingsError.message })
+    throw createError({
+      statusCode: 500,
+      statusMessage: wipeStandingsError.message
+    })
   }
   if (wipePairingsError) {
     console.error('[api/turn-back-round] pairings wipe failed', { eventId, wipePairingsError })
-    throw createError({ statusCode: 500, statusMessage: wipePairingsError.message })
+    throw createError({
+      statusCode: 500,
+      statusMessage: wipePairingsError.message
+    })
   }
   if (waitroomError) {
     console.error('[api/turn-back-round] waitroom restore failed', { eventId, playerIds, waitroomError })
-    throw createError({ statusCode: 500, statusMessage: waitroomError.message })
+    throw createError({
+      statusCode: 500,
+      statusMessage: waitroomError.message
+    })
   }
 
   console.log('[api/turn-back-round] back to registration', { eventId, restoredPlayers: playerIds.length })

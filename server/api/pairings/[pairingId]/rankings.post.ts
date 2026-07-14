@@ -18,12 +18,18 @@ export default defineEventHandler(async (event) => {
 
   const parsed = v.safeParse(bodySchema, await readBody(event))
   if (!parsed.success) {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid request body' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid request body'
+    })
   }
   const { rankings } = parsed.output
 
   if (!rankings.every(r => playerIds.includes(r.playerId))) {
-    throw createError({ statusCode: 400, statusMessage: 'A ranked player is not seated at this pairing' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'A ranked player is not seated at this pairing'
+    })
   }
 
   console.log('[api/pairings/rankings] request', { pairingId, rankings })
@@ -34,7 +40,10 @@ export default defineEventHandler(async (event) => {
     }
   } catch (err) {
     console.error('[api/pairings/rankings] upsert failed', { pairingId, err })
-    throw createError({ statusCode: 500, statusMessage: err instanceof Error ? err.message : 'Rankings save failed' })
+    throw createError({
+      statusCode: 500,
+      statusMessage: err instanceof Error ? err.message : 'Rankings save failed'
+    })
   }
 
   console.log('[api/pairings/rankings] done', { pairingId, updated: rankings.length })

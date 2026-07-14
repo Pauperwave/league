@@ -5,6 +5,10 @@ One entry per notable commit, newest first, grouped by date. Each entry: the com
 
 ## 2026-07-14
 
+### `style(api): 🎨 multi-line createError format across all server routes`
+
+- Every `throw createError({...})` in `server/` is now multi-line (one property per line, no trailing comma) — readability first; convention documented in root `CLAUDE.md`.
+
 ### `feat(api): ✨ BFF wave 2 — round-data and unregister endpoints (ADR-013)`
 
 - Four intent endpoints under `POST /api/pairings/:pairingId/` — `rankings`, `kills`, `commander`, `votes` — sharing `server/utils/roundResults.ts` (`requirePairingContext`: auth cookie + pairing existence + **seat-membership validation**, a domain rule the client never enforced; `upsertRoundResult` moved server-side).

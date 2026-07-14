@@ -13,12 +13,18 @@ export default defineEventHandler(async (event) => {
 
   const parsed = v.safeParse(bodySchema, await readBody(event))
   if (!parsed.success) {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid request body' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid request body'
+    })
   }
   const { playerId, commander1, commander2 } = parsed.output
 
   if (!playerIds.includes(playerId)) {
-    throw createError({ statusCode: 400, statusMessage: 'Player is not seated at this pairing' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Player is not seated at this pairing'
+    })
   }
 
   console.log('[api/pairings/commander] request', { pairingId, playerId, commander1, commander2 })
@@ -27,7 +33,10 @@ export default defineEventHandler(async (event) => {
     await upsertRoundResult(supabase, pairingId, playerId, { commander_1: commander1, commander_2: commander2 })
   } catch (err) {
     console.error('[api/pairings/commander] upsert failed', { pairingId, playerId, err })
-    throw createError({ statusCode: 500, statusMessage: err instanceof Error ? err.message : 'Commander save failed' })
+    throw createError({
+      statusCode: 500,
+      statusMessage: err instanceof Error ? err.message : 'Commander save failed'
+    })
   }
 
   console.log('[api/pairings/commander] done', { pairingId, playerId })

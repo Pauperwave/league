@@ -14,17 +14,26 @@ const bodySchema = v.object({
 
 export default defineEventHandler(async (event) => {
   if (getCookie(event, 'site-auth') !== 'authenticated') {
-    throw createError({ statusCode: 401, statusMessage: 'Not authenticated' })
+    throw createError({
+      statusCode: 401,
+      statusMessage: 'Not authenticated'
+    })
   }
 
   const eventId = Number(getRouterParam(event, 'eventId'))
   if (!Number.isInteger(eventId) || eventId < 1) {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid event id' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid event id'
+    })
   }
 
   const parsed = v.safeParse(bodySchema, await readBody(event))
   if (!parsed.success) {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid request body' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid request body'
+    })
   }
   const { playerIds } = parsed.output
 
@@ -42,7 +51,10 @@ export default defineEventHandler(async (event) => {
 
   if (deleteError) {
     console.error('[api/unregister-player] delete failed', { eventId, playerIds, deleteError })
-    throw createError({ statusCode: 500, statusMessage: deleteError.message })
+    throw createError({
+      statusCode: 500,
+      statusMessage: deleteError.message
+    })
   }
 
   const removedIds = (removed ?? []).map(row => row.player_id)

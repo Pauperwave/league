@@ -17,12 +17,18 @@ export default defineEventHandler(async (event) => {
 
   const parsed = v.safeParse(bodySchema, await readBody(event))
   if (!parsed.success) {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid request body' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid request body'
+    })
   }
   const { killCounts } = parsed.output
 
   if (!killCounts.every(k => playerIds.includes(k.playerId))) {
-    throw createError({ statusCode: 400, statusMessage: 'A player is not seated at this pairing' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'A player is not seated at this pairing'
+    })
   }
 
   console.log('[api/pairings/kills] request', { pairingId, killCounts })
@@ -33,7 +39,10 @@ export default defineEventHandler(async (event) => {
     }
   } catch (err) {
     console.error('[api/pairings/kills] upsert failed', { pairingId, err })
-    throw createError({ statusCode: 500, statusMessage: err instanceof Error ? err.message : 'Kills save failed' })
+    throw createError({
+      statusCode: 500,
+      statusMessage: err instanceof Error ? err.message : 'Kills save failed'
+    })
   }
 
   console.log('[api/pairings/kills] done', { pairingId, updated: killCounts.length })

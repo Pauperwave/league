@@ -18,17 +18,26 @@ export default defineEventHandler(async (event) => {
   // The password gate, enforced at the API layer (the route middleware only
   // guards page navigation, not direct calls).
   if (getCookie(event, 'site-auth') !== 'authenticated') {
-    throw createError({ statusCode: 401, statusMessage: 'Not authenticated' })
+    throw createError({
+      statusCode: 401,
+      statusMessage: 'Not authenticated'
+    })
   }
 
   const eventId = Number(getRouterParam(event, 'eventId'))
   if (!Number.isInteger(eventId) || eventId < 1) {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid event id' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid event id'
+    })
   }
 
   const parsed = v.safeParse(bodySchema, await readBody(event))
   if (!parsed.success) {
-    throw createError({ statusCode: 400, statusMessage: 'Invalid request body' })
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid request body'
+    })
   }
   const { playerIds } = parsed.output
 
@@ -48,10 +57,16 @@ export default defineEventHandler(async (event) => {
     .single()
 
   if (eventError || !eventRow) {
-    throw createError({ statusCode: 404, statusMessage: 'Event not found' })
+    throw createError({
+      statusCode: 404,
+      statusMessage: 'Event not found'
+    })
   }
   if (!eventRow.event_registration_open || eventRow.event_playing) {
-    throw createError({ statusCode: 409, statusMessage: 'Registration is closed for this event' })
+    throw createError({
+      statusCode: 409,
+      statusMessage: 'Registration is closed for this event'
+    })
   }
 
   const { data: existing, error: existingError } = await supabase
@@ -61,7 +76,10 @@ export default defineEventHandler(async (event) => {
     .in('player_id', playerIds)
 
   if (existingError) {
-    throw createError({ statusCode: 500, statusMessage: existingError.message })
+    throw createError({
+      statusCode: 500,
+      statusMessage: existingError.message
+    })
   }
 
   const alreadyRegistered = (existing ?? []).map(row => row.player_id)
@@ -76,7 +94,10 @@ export default defineEventHandler(async (event) => {
 
     if (insertError) {
       console.error('[api/register-player] insert failed', { eventId, toInsert, insertError })
-      throw createError({ statusCode: 500, statusMessage: insertError.message })
+      throw createError({
+        statusCode: 500,
+        statusMessage: insertError.message
+      })
     }
     registered = inserted ?? []
   }

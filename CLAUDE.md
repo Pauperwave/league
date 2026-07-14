@@ -73,6 +73,13 @@ Read the relevant one before working in that directory — each covers what isn'
 - Before writing a new small helper function, check [`app/utils/CLAUDE.md`](app/utils/CLAUDE.md) — it's a maintained inventory of existing generic helpers (error formatting, logging, caching, slugs, time formatting, etc.) kept there specifically to avoid reimplementing them.
 - No backward-compatibility shims — this project is unpublished with no external consumers. Rename/delete cleanly and update call sites rather than leaving a re-export behind.
 - **Refactor freely.** Same reason: zero consumers means zero repercussions. When a review or a change surfaces an inconsistency (mixed patterns across sibling files, a style used in 3 of 4 stores, etc.), apply the consistency refactor immediately and as deep as needed — with lint/typecheck/tests as the safety net — instead of deferring it to `TODO.md`/`BACKLOG.md` as debt. Record notable ones as ADRs in `docs/PROGRESS.md` (e.g. ADR-012).
+- **Server routes (`server/api/*`)**: `throw createError({...})` is always written multi-line, one property per line, no trailing comma — readability first; error sites are what you read under pressure:
+  ```ts
+  throw createError({
+    statusCode: 400,
+    statusMessage: 'A player is not seated at this pairing'
+  })
+  ```
 - `useAsyncData` keys follow `{domain}-{scope}-{id}` — see `docs/architecture/async-data-keys.md` for the full inventory before adding a new one (collisions have happened).
 - Composables returning refs used in templates: destructure at the top of `<script setup>`, don't keep the composable's return value as a single nested object (refs won't auto-unwrap in the template).
 - **Button click logging**: interactive buttons pair with `useButtonLogging(label, context?)` (`app/composables/ui/useButtonLogging.ts`) → `.logClick()` on click, logging `{ button, timestamp, ...context }` via `console.log('[BUTTON CLICK]', ...)`. `context` values can be getter functions, evaluated lazily at click time — used ~16 places, mainly form submit/cancel buttons. Follow this pattern for new form/modal actions rather than a bare `@click` handler with no logging.
