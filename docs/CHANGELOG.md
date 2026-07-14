@@ -5,6 +5,12 @@ One entry per notable commit, newest first, grouped by date. Each entry: the com
 
 ## 2026-07-14
 
+### `chore(fallow): 🔨 clean up dead-code false positives`
+
+- `version-bump-hook.mjs` marked `fallow-ignore-file unused-file` (it's the Claude Code Stop hook, not an importable module).
+- `vue-i18n` added to `.fallowrc.json` `ignoreDependencies` — after the import sweep it *looks* test-only, but it's deliberately a direct dependency so the vitest AutoImport preset resolves (see root `CLAUDE.md`).
+- `pnpm fallow:dead-code` now exits clean.
+
 ### `chore(scripts): 🔨 extend check-file-paths to test/ and scripts/; backfill headers`
 
 - `check-file-paths.mjs` now also scans `test/` and `scripts/` (and handles `.mjs`); ran `--fix` to backfill the missing path headers in the pre-existing test files.

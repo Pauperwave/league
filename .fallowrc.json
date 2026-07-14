@@ -21,7 +21,8 @@
     "@nuxt/hints",
     "@vue/test-utils",
     "@vueuse/core",
-    "playwright-core"
+    "playwright-core",
+    "vue-i18n"
   ],
   "duplicates": {
     "mode": "weak",

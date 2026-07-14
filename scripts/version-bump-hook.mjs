@@ -1,4 +1,5 @@
 // scripts\version-bump-hook.mjs
+// fallow-ignore-file unused-file -- invoked by the Claude Code Stop hook (.claude/settings.json), not imported from any entry point
 // Stop hook: auto-bumps package.json's version when Claude finishes a turn that touched
 // app/server/shared/i18n/nuxt.config.ts — so VersionBadge never shows a stale version.
 // Runs once per Stop event, not per edit. Also usable manually:
