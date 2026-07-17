@@ -208,6 +208,13 @@ Gli store di sessione hanno **persistenza ottimistica**: update immediato UI + s
 - **Alternative respinte:** Supabase Edge Functions (secondo runtime/pipeline per zero guadagno rispetto a Nitro già deployato); RPC-first (logica in SQL accoppia migrazioni di schema e di logica — tenuta solo come scappatoia di latenza per le scritture in-room); policy RLS scoped per riga senza auth (teatro di sicurezza: nessun claim da verificare).
 - Dettaglio operativo completo (vincoli serverless, piano a slice, gotcha SSR): `docs/BACKLOG.md` #7.
 
+### ADR-014 — Sessioni firmate (nuxt-auth-utils) al posto del cookie statico
+
+- **Contesto:** il gate a password impostava un cookie `site-auth=authenticated` — valore fisso e noto, `httpOnly: false`. Chiunque poteva forgiarlo dai DevTools senza conoscere la password: il check (middleware di rotta + endpoint BFF) era decorativo, e sarebbe diventato l'unica barriera dopo il flip service-role di BACKLOG #7. Un tentativo precedente di passare a `httpOnly` era fallito perché `password.global.ts` leggeva il cookie via `useCookie` anche client-side, dove un cookie httpOnly è invisibile per definizione → redirect loop su `/login`.
+- **Decisione:** modulo `nuxt-auth-utils` — cookie di sessione *sealed* (cifrato+firmato con `NUXT_SESSION_PASSWORD`, env server-only, 32+ caratteri) e `httpOnly`. Login: `setUserSession(event, { user: { admin: true } })` + `deleteCookie` del cookie legacy. Il client non legge mai il cookie: `useUserSession().loggedIn` (idratato SSR dal plugin del modulo) guida `password.global.ts`, e `getUserSession(event)` guida la guardia centralizzata `server/middleware/api-auth.ts` (che protegge tutto `/api/**` tranne `/api/auth/*` e gli interni Nuxt `/api/_*`).
+- **Forma pubblica invariata:** `usePasswordAuth` espone ancora `isAuthenticated`/`login`/`logout`; il logout usa `clear()` del modulo (route interna `/api/_auth/session`, già esclusa dalla guardia via prefisso `/api/_`), quindi `server/api/auth/logout.post.ts` è stato eliminato. Payload di sessione tipizzato in `shared/types/auth-utils.d.ts` (augmentation di `#auth-utils`), pronto a crescere quando arriverà la Supabase Auth per giocatore (evoluzione futura di ADR-013).
+- **Vincolo di deploy:** `NUXT_SESSION_PASSWORD` deve esistere in ogni ambiente (generata in `.env` locale; **da aggiungere su Vercel prima del prossimo deploy**, pena 500 sulle operazioni di sessione). `maxAge` 1 settimana in `runtimeConfig.session`, come il cookie precedente.
+
 ---
 
 ## Funzionalità per area
