@@ -92,25 +92,19 @@ export const useCommanderDeckStore = defineStore('commanderDecks', () => {
     }
   }
 
-  /** Create a new commander deck */
+  /** Create a new commander deck via the BFF endpoint (ADR-013) */
   async function createDeck(deck: Omit<CommanderDeck, 'id' | 'uuid' | 'created_at' | 'updated_at'>) {
     loading.value = true
     error.value = null
 
     try {
-      const { data, error: supaError } = await supabase
-        .from('commander_decks')
-        .insert([deck])
-        .select()
-        .single()
+      const { deck: created } = await $fetch('/api/decks/create', {
+        method: 'POST',
+        body: deck,
+      })
 
-      if (supaError) throw supaError
-
-      if (data) {
-        decks.value.push(data)
-        return { success: true as const, data }
-      }
-      return { success: false as const, error: t('store.deck.noData') }
+      decks.value.push(created)
+      return { success: true as const, data: created }
     } catch (err) {
       error.value = toErrorMessage(err, t('store.deck.createError'))
       console.error('[useCommanderDeckStore] createDeck error:', err)
@@ -120,29 +114,22 @@ export const useCommanderDeckStore = defineStore('commanderDecks', () => {
     }
   }
 
-  /** Update an existing commander deck */
+  /** Update an existing commander deck via the BFF endpoint (ADR-013) */
   async function updateDeck(id: number, updates: Partial<CommanderDeck>) {
     loading.value = true
     error.value = null
 
     try {
-      const { data, error: supaError } = await supabase
-        .from('commander_decks')
-        .update(updates)
-        .eq('id', id)
-        .select()
-        .single()
+      const { deck: updated } = await $fetch<{ deck: CommanderDeck }>(`/api/decks/${id}/update` as string, {
+        method: 'POST',
+        body: updates,
+      })
 
-      if (supaError) throw supaError
-
-      if (data) {
-        const index = decks.value.findIndex((d: CommanderDeck) => d.id === id)
-        if (index !== -1) {
-          decks.value[index] = data as CommanderDeck
-        }
-        return { success: true as const, data }
+      const index = decks.value.findIndex((d: CommanderDeck) => d.id === id)
+      if (index !== -1) {
+        decks.value[index] = updated
       }
-      return { success: false as const, error: t('store.deck.noData') }
+      return { success: true as const, data: updated }
     } catch (err) {
       error.value = toErrorMessage(err, t('store.deck.updateError'))
       console.error('[useCommanderDeckStore] updateDeck error:', err)
@@ -153,60 +140,25 @@ export const useCommanderDeckStore = defineStore('commanderDecks', () => {
   }
 
   /**
-   * Check if a deck is used in any event (round_results).
-   * Decks are matched by player_id + commander names.
-   */
-  async function isDeckInUse(deck: CommanderDeck): Promise<boolean> {
-    try {
-      const query = applyCommander2Filter(
-        supabase
-          .from('round_results')
-          .select('id', { count: 'exact', head: true })
-          .eq('player_id', deck.player_id)
-          .eq('commander_1', deck.commander_1_name),
-        deck.commander_2_name
-      )
-      const { data, error: supaError } = await query.limit(1)
-
-      if (supaError) throw supaError
-      return (data && data.length > 0) || false
-    } catch (err) {
-      console.error('[useCommanderDeckStore] isDeckInUse error:', err)
-      return true // Safer to assume in use on error
-    }
-  }
-
-  /**
-   * Delete a commander deck if it is not used in any event.
-   * @returns Error if the deck is in use.
+   * Delete a commander deck via the BFF endpoint (ADR-013). The "deck was
+   * played in an event" guard is server-side now — the endpoint answers 409
+   * for that case, mapped here onto the existing Italian copy.
    */
   async function deleteDeck(id: number) {
     loading.value = true
     error.value = null
 
     try {
-      const deck = decks.value.find((d: CommanderDeck) => d.id === id)
-      if (!deck) {
-        return { success: false as const, error: t('store.deck.notFound') }
-      }
-
-      // Check if deck is used in any event
-      const inUse = await isDeckInUse(deck)
-      if (inUse) {
-        return { success: false, error: t('store.deck.inUseError') }
-      }
-
-      const { error: supaError } = await supabase
-        .from('commander_decks')
-        .delete()
-        .eq('id', id)
-
-      if (supaError) throw supaError
+      await $fetch<{ deleted: boolean }>(`/api/decks/${id}/delete` as string, { method: 'POST' })
 
       decks.value = decks.value.filter((d: CommanderDeck) => d.id !== id)
       return { success: true }
     } catch (err) {
-      error.value = toErrorMessage(err, t('store.deck.deleteError'))
+      const inUse = typeof err === 'object' && err !== null
+        && 'statusCode' in err && (err as { statusCode?: number }).statusCode === 409
+      error.value = inUse
+        ? t('store.deck.inUseError')
+        : toErrorMessage(err, t('store.deck.deleteError'))
       console.error('[useCommanderDeckStore] deleteDeck error:', err)
       return { success: false, error: error.value }
     } finally {
@@ -231,7 +183,6 @@ export const useCommanderDeckStore = defineStore('commanderDecks', () => {
     createDeck,
     updateDeck,
     deleteDeck,
-    isDeckInUse,
     clearError
   }
 })

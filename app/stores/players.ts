@@ -85,28 +85,23 @@ export const usePlayerStore = defineStore('players', () => {
     }
   }
 
-  /** Create a new player and add to local state */
+  /** Create a new player via the BFF endpoint (ADR-013) and add to local state */
   async function createPlayer(player: NewPlayer) {
     loading.value = true
     error.value = null
 
     try {
-      const { data, error: supaError } = await supabase
-        .from('players')
-        .insert([{
+      const { player: created } = await $fetch('/api/players/create', {
+        method: 'POST',
+        body: {
           player_name: player.player_name,
           player_surname: player.player_surname
-        }])
-        .select()
-        .single()
+        },
+      })
 
-      if (supaError) throw supaError
-
-      if (data) {
-        const sanitized = sanitizePlayer(data)
-        players.value.push(sanitized)
-        return { success: true, data: sanitized }
-      }
+      const sanitized = sanitizePlayer(created)
+      players.value.push(sanitized)
+      return { success: true, data: sanitized }
     } catch (err) {
       error.value = toErrorMessage(err, t('store.player.createError'))
       console.error('[usePlayerStore] createPlayer error:', err)
@@ -116,32 +111,26 @@ export const usePlayerStore = defineStore('players', () => {
     }
   }
 
-  /** Update an existing player */
+  /** Update an existing player via the BFF endpoint (ADR-013) */
   async function updatePlayer(playerId: number, player: NewPlayer) {
     loading.value = true
     error.value = null
 
     try {
-      const { data, error: supaError } = await supabase
-        .from('players')
-        .update({
+      const { player: updated } = await $fetch<{ player: Player }>(`/api/players/${playerId}/update` as string, {
+        method: 'POST',
+        body: {
           player_name: player.player_name,
           player_surname: player.player_surname
-        })
-        .eq('player_id', playerId)
-        .select()
-        .single()
+        },
+      })
 
-      if (supaError) throw supaError
-
-      if (data) {
-        const sanitized = sanitizePlayer(data)
-        const index = players.value.findIndex(p => p.player_id === playerId)
-        if (index !== -1) {
-          players.value[index] = sanitized
-        }
-        return { success: true, data: sanitized }
+      const sanitized = sanitizePlayer(updated)
+      const index = players.value.findIndex(p => p.player_id === playerId)
+      if (index !== -1) {
+        players.value[index] = sanitized
       }
+      return { success: true, data: sanitized }
     } catch (err) {
       error.value = toErrorMessage(err, t('store.player.updateError'))
       console.error('[usePlayerStore] updatePlayer error:', err)

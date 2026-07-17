@@ -142,17 +142,13 @@ export const useEventStore = defineStore('events', () => {
     error.value = null
 
     try {
-      const { data, error: supaError } = await supabase
-        .from('events')
-        .insert([event])
-        .select()
-        .single()
+      const { event: created } = await $fetch('/api/events/create', {
+        method: 'POST',
+        body: event,
+      })
 
-      if (supaError) throw supaError
-      if (!data) return { success: false as const, error: 'No data returned' }
-
-      events.value.unshift(data)
-      return { success: true as const, data }
+      events.value.unshift(created)
+      return { success: true as const, data: created }
     }
     catch (err) {
       error.value = toErrorMessage(err, t('store.event.createError'))
@@ -164,32 +160,27 @@ export const useEventStore = defineStore('events', () => {
     }
   }
 
-  /** Update an existing event */
+  /** Update an existing event via the BFF endpoint (ADR-013) */
   async function updateEvent(eventId: number, updates: Partial<Event>): Promise<{ success: boolean; data?: Event; error?: string }> {
     beginLoading()
     error.value = null
 
     try {
-      const { data, error: supaError } = await supabase
-        .from('events')
-        .update(updates)
-        .eq('event_id', eventId)
-        .select()
-        .single()
-
-      if (supaError) throw supaError
-      if (!data) return { success: false as const, error: 'No data returned' }
+      const { event: updated } = await $fetch<{ event: Event }>(`/api/events/${eventId}/update` as string, {
+        method: 'POST',
+        body: updates,
+      })
 
       const index = events.value.findIndex(e => e.event_id === eventId)
       if (index !== -1) {
-        events.value[index] = data
+        events.value[index] = updated
       }
 
       if (currentEvent.value?.event_id === eventId) {
-        currentEvent.value = data
+        currentEvent.value = updated
       }
 
-      return { success: true as const, data }
+      return { success: true as const, data: updated }
     }
     catch (err) {
       error.value = toErrorMessage(err, t('store.event.updateError'))
@@ -201,18 +192,13 @@ export const useEventStore = defineStore('events', () => {
     }
   }
 
-  /** Delete an event by ID */
+  /** Delete an event via the BFF endpoint (ADR-013) */
   async function deleteEvent(eventId: number) {
     beginLoading()
     error.value = null
 
     try {
-      const { error: supaError } = await supabase
-        .from('events')
-        .delete()
-        .eq('event_id', eventId)
-
-      if (supaError) throw supaError
+      await $fetch<{ deleted: boolean }>(`/api/events/${eventId}/delete` as string, { method: 'POST' })
 
       events.value = events.value.filter(e => e.event_id !== eventId)
       if (currentEvent.value?.event_id === eventId) currentEvent.value = null

@@ -652,10 +652,8 @@
     },
     "deck": {
       "loadError": "Errore nel caricamento dei deck",
-      "noData": "Nessun dato restituito",
       "createError": "Errore nella creazione del deck",
       "updateError": "Errore nella modifica del deck",
-      "notFound": "Deck non trovato",
       "inUseError": "Non è possibile eliminare questo deck perché è stato usato in un evento",
       "deleteError": "Errore nella eliminazione del deck"
     },

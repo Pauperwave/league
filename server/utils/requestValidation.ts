@@ -60,6 +60,40 @@ export const rulesetFormBodySchema = v.object({
 })
 
 /**
+ * Body schema shared by the player create/update endpoints.
+ */
+export const playerFormBodySchema = v.object({
+  player_name: v.pipe(v.string(), v.trim(), v.minLength(1)),
+  player_surname: v.pipe(v.string(), v.trim(), v.minLength(1)),
+})
+
+/**
+ * Body schema shared by the deck create/update endpoints (update validates
+ * against its partial).
+ */
+export const deckFormBodySchema = v.object({
+  player_id: v.pipe(v.number(), v.integer(), v.minValue(1)),
+  commander_1_name: v.pipe(v.string(), v.trim(), v.minLength(1)),
+  commander_2_name: v.nullish(v.string()),
+  companion_name: v.nullish(v.string()),
+  is_borrowed: v.optional(v.boolean(), false),
+  lender_id: v.nullish(v.pipe(v.number(), v.integer(), v.minValue(1))),
+})
+
+/**
+ * Body schema shared by the event create/update endpoints (update validates
+ * against its partial).
+ */
+export const eventFormBodySchema = v.object({
+  event_name: v.pipe(v.string(), v.trim(), v.minLength(1)),
+  league_id: v.pipe(v.number(), v.integer(), v.minValue(1)),
+  event_datetime: v.nullish(v.string()),
+  event_round_number: v.pipe(v.number(), v.integer(), v.minValue(1)),
+  event_round_duration: v.pipe(v.number(), v.integer(), v.minValue(1)),
+  event_registration_open: v.optional(v.boolean(), true),
+})
+
+/**
  * Read the request body and validate it against a valibot schema, throwing
  * the uniform 400 on malformed input.
  */
