@@ -43,6 +43,23 @@ export const leagueFormBodySchema = v.object({
 })
 
 /**
+ * Body schema shared by the ruleset create/update endpoints — the form
+ * payload emitted by RulesetFormModal (DB column names, scores nullable).
+ */
+export const rulesetFormBodySchema = v.object({
+  name: v.pipe(v.string(), v.trim(), v.minLength(1)),
+  rule_set_partecipation: v.nullable(v.number()),
+  rule_set_kill: v.nullable(v.number()),
+  rule_set_brew: v.nullable(v.number()),
+  rule_set_play: v.nullable(v.number()),
+  rule_set_rank1: v.nullable(v.number()),
+  rule_set_rank2: v.nullable(v.number()),
+  rule_set_rank3: v.nullable(v.number()),
+  rule_set_rank4: v.nullable(v.number()),
+  rule_set_valid_events: v.nullable(v.number()),
+})
+
+/**
  * Read the request body and validate it against a valibot schema, throwing
  * the uniform 400 on malformed input.
  */

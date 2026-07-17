@@ -19,7 +19,7 @@ const {
   handleUpdateRuleset,
   handleDeleteClick,
   confirmDeleteRuleset,
-} = useRulesets()
+} = useRulesetsPage()
 
 const openLeaguesModalLogging = useButtonLogging('Open Leagues Modal')
 

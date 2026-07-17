@@ -13,7 +13,7 @@ export function useLeaguesPage() {
   const { data, error, isLoading: loading } = useLeaguesQuery()
   const leagues = computed(() => data.value ?? [])
 
-  const { data: rulesetsData, pending: rulesetsLoading } = useRulesets()
+  const { data: rulesetsData, isLoading: rulesetsLoading } = useRulesetsQuery()
   const rulesets = computed(() => rulesetsData.value ?? [])
 
   const errorMessage = computed(() =>

@@ -122,6 +122,15 @@
       "brew": "Punti per originalità del deck",
       "play": "Punti per la miglior giocata"
     },
+    "toast": {
+      "createdTitle": "Regolamento creato",
+      "createdDescription": "Il regolamento {name} è stato creato con successo.",
+      "createErrorTitle": "Errore creazione regolamento",
+      "updatedTitle": "Regolamento aggiornato",
+      "updateErrorTitle": "Errore aggiornamento regolamento",
+      "deletedTitle": "Regolamento eliminato",
+      "deleteErrorTitle": "Errore eliminazione regolamento"
+    },
     "form": {
       "editTitle": "Modifica Regolamento",
       "createTitle": "Crea Regolamento",
@@ -629,9 +638,7 @@
     },
     "ruleset": {
       "loadError": "Errore nel caricamento regolamenti",
-      "noDataInsert": "Nessun dato restituito dall'inserimento",
       "createError": "Errore nella creazione regolamento",
-      "noDataUpdate": "Nessun dato restituito dall'aggiornamento",
       "updateError": "Errore nell'aggiornamento regolamento",
       "inUseError": "Non è possibile eliminare questo regolamento perché è in uso da una o più leghe",
       "deleteError": "Errore nell'eliminazione regolamento"

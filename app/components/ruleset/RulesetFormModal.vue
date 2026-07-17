@@ -12,7 +12,9 @@ const { t } = useI18n()
 
 const emit = defineEmits<{
   create: [Omit<Ruleset, 'ruleset_id'>]
-  update: [{ id: number; data: Partial<Ruleset> }]
+  // Both schemas emit the full form shape (nullable scores) — never a
+  // sparse patch, so the payload type says so.
+  update: [{ id: number; data: Omit<Ruleset, 'ruleset_id'> }]
 }>()
 
 const open = defineModel<boolean>('open', { default: false })

@@ -36,7 +36,7 @@ const eventsStore = useEventStore()
 
 const { standings } = storeToRefs(eventsStore)
 
-const { data: rulesetsData, pending: rulesetsLoading } = useRulesets()
+const { data: rulesetsData, isLoading: rulesetsLoading } = useRulesetsQuery()
 const rulesets = computed(() => rulesetsData.value ?? [])
 
 const { data: events, pending: eventsLoading, refresh: refreshEvents } = useEvents(leagueId)
