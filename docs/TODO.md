@@ -2,10 +2,6 @@
 
 Loose observations and open questions — not yet committed, ranked work. For that, see `docs/BACKLOG.md`.
 
-## Pinia Colada to collapse the store + useAsyncData dual cache (2026-07-17)
-
-From the 2026-07-17 architecture review. Pinia Colada is the ecosystem's current direction for exactly the dual-cache tension `app/stores/CLAUDE.md` documents (store `items`/`initialized` flags + the `useAsyncData` key cache, kept from disagreeing only by discipline): one query cache with SSR support, key-based invalidation, dedupe, and optimistic updates — and it pairs naturally with the BFF ($fetch mutations + invalidation) and a future Realtime feed. **Deliberately not adopted now**: migrating 6 Supabase stores + ~10 wrapper composables is real work for a problem the documented discipline already contains. Reconsider when multi-player self-entry (BACKLOG #2) starts — that's when cache invalidation gets hard enough to pay for the migration.
-
 ## Waiting list paid/companion flags: persist to localStorage (2026-07-14)
 
 The paid/companion checkboxes in `WaitingListTable` are deliberately ephemeral ("just for remembering right in that moment" — confirmed 2026-07-14, NOT a bug); they currently vanish on page refresh, though. Persist them to **localStorage** (not the DB), keyed by event — same pattern as `useSessionStorePersistence`/`RoundTimer`: hydrate on mount, write through on change, clear when the event starts (waitroom is cleared then anyway).

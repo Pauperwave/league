@@ -4,8 +4,10 @@ Scoped guidance for `app/stores/`. See the root `CLAUDE.md` and `docs/architectu
 
 ## Two store categories — pick the right template
 
-- **Supabase stores** (`leagues.ts`, `rulesets.ts`, `players.ts`, `player-stats.ts`, `events.ts`, `commander-decks.ts`): persistent data, own the DB round-trip.
+- **Supabase stores** (`rulesets.ts`, `players.ts`, `player-stats.ts`, `events.ts`, `commander-decks.ts`): persistent data, own the DB round-trip.
 - **Session stores** (`rankings.ts`, `kills.ts`, `votes.ts`, `commanders.ts`): ephemeral per-round UI state, no `supabase` calls, no `initialized`/`loading`. Must implement `reset()` (called between rounds — see `useEventLifecycle.ts`'s `resetSessionStores`).
+
+**CRUD domains are migrating OFF Supabase stores entirely (ADR-015):** reads move to a per-domain Pinia Colada query composable (`app/composables/<domain>/use*Query.ts`), writes to `useMutation` + BFF endpoints, and the entity's store is deleted — no hybrids. `leagues` is already migrated (template); when touching one of the remaining CRUD stores, prefer completing its slice over extending the store. Session stores are NOT affected — ephemeral UI state is not server state.
 
 ## The store is the source of truth — `useAsyncData` is only an SSR bridge
 
