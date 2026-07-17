@@ -18,7 +18,6 @@
     "@formkit/auto-animate",
     "@iconify-json/lucide",
     "@iconify-json/simple-icons",
-    "@nuxt/hints",
     "@vue/test-utils",
     "@vueuse/core",
     "playwright-core",

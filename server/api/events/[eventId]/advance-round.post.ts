@@ -1,4 +1,5 @@
 // server\api\events\[eventId]\advance-round.post.ts
+// fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
 // BFF slice (ADR-013): atomic round transition. Owns the whole sequence that
 // the client used to orchestrate — score the closing round, accumulate
 // standings, advance (or end) the event, insert the next round's pairings —
@@ -26,29 +27,8 @@ const bodySchema = v.object({
 })
 
 export default defineEventHandler(async (event) => {
-  if (getCookie(event, 'site-auth') !== 'authenticated') {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Not authenticated'
-    })
-  }
-
-  const eventId = Number(getRouterParam(event, 'eventId'))
-  if (!Number.isInteger(eventId) || eventId < 1) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Invalid event id'
-    })
-  }
-
-  const parsed = v.safeParse(bodySchema, await readBody(event))
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Invalid request body'
-    })
-  }
-  const { currentRound, playerOrder } = parsed.output
+  const eventId = requireIdParam(event, 'eventId')
+  const { currentRound, playerOrder } = await requireValidBody(event, bodySchema)
 
   console.log('[api/advance-round] request', { eventId, currentRound, playerOrderLength: playerOrder?.length ?? 0 })
 
@@ -58,18 +38,7 @@ export default defineEventHandler(async (event) => {
   // Domain guards: playing phase, and the round the client thinks it is
   // closing must be the round the event is actually at (double-submit/stale
   // tab protection).
-  const { data: eventRow, error: eventError } = await supabase
-    .from('events')
-    .select('event_playing, event_current_round, event_round_number')
-    .eq('event_id', eventId)
-    .single()
-
-  if (eventError || !eventRow) {
-    throw createError({
-      statusCode: 404,
-      statusMessage: 'Event not found'
-    })
-  }
+  const eventRow = await requireEventRow(supabase, eventId)
   if (!eventRow.event_playing) {
     throw createError({
       statusCode: 409,

@@ -1,41 +1,13 @@
 // server\api\events\[eventId]\unregister-player.post.ts
+// fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
 // BFF slice (ADR-013): remove players from an event's waiting list —
 // symmetric with register-player.
-import * as v from 'valibot'
 import { serverSupabaseClient } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 
-const bodySchema = v.object({
-  playerIds: v.pipe(
-    v.array(v.pipe(v.number(), v.integer(), v.minValue(1))),
-    v.minLength(1),
-  ),
-})
-
 export default defineEventHandler(async (event) => {
-  if (getCookie(event, 'site-auth') !== 'authenticated') {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Not authenticated'
-    })
-  }
-
-  const eventId = Number(getRouterParam(event, 'eventId'))
-  if (!Number.isInteger(eventId) || eventId < 1) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Invalid event id'
-    })
-  }
-
-  const parsed = v.safeParse(bodySchema, await readBody(event))
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Invalid request body'
-    })
-  }
-  const { playerIds } = parsed.output
+  const eventId = requireIdParam(event, 'eventId')
+  const { playerIds } = await requireValidBody(event, playerIdsBodySchema)
 
   console.log('[api/unregister-player] request', { eventId, playerIds })
 

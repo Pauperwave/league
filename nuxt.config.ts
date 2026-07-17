@@ -11,7 +11,9 @@ export default defineNuxtConfig({
     '@nuxt/image',
     'motion-v/nuxt',
     '@nuxt/test-utils/module',
-    '@nuxtjs/i18n'
+    '@nuxtjs/i18n',
+    '@nuxt/hints',
+    'nuxt-auth-utils'
   ],
 
   components: [
@@ -36,8 +38,16 @@ export default defineNuxtConfig({
   site: { indexable: false },
 
   runtimeConfig: {
-    // Private (server-only)
-    sitePassword: process.env.NUXT_SITE_PASSWORD,
+    // Private (server-only). Empty default so the value is read from the
+    // NUXT_SITE_PASSWORD env var at runtime (boot), not baked in at build time.
+    sitePassword: '',
+
+    // nuxt-auth-utils sealed sessions: the seal secret comes from the
+    // NUXT_SESSION_PASSWORD env var (32+ chars, server-only, required in every
+    // deploy environment). maxAge matches the old site-auth cookie (1 week).
+    session: {
+      maxAge: 60 * 60 * 24 * 7
+    },
 
     public: {
       appVersion: process.env.npm_package_version,
@@ -45,11 +55,7 @@ export default defineNuxtConfig({
     }
   },
 
-  routeRules: {
-    '/': { prerender: true }
-  },
-
-  compatibilityDate: '2025-01-15',
+  compatibilityDate: '2026-07-17',
 
   alias: {
     '#test': '../test'

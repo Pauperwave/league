@@ -1,4 +1,5 @@
 // server\api\pairings\[pairingId]\kills.post.ts
+// fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
 // BFF slice (ADR-013): save a table's confirmed kill counts into round_results.
 import * as v from 'valibot'
 
@@ -15,14 +16,7 @@ const bodySchema = v.object({
 export default defineEventHandler(async (event) => {
   const { pairingId, supabase, playerIds } = await requirePairingContext(event)
 
-  const parsed = v.safeParse(bodySchema, await readBody(event))
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Invalid request body'
-    })
-  }
-  const { killCounts } = parsed.output
+  const { killCounts } = await requireValidBody(event, bodySchema)
 
   if (!killCounts.every(k => playerIds.includes(k.playerId))) {
     throw createError({

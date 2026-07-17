@@ -1,0 +1,50 @@
+// server\utils\requestValidation.ts
+// Generic request scaffolding shared by the BFF endpoints (ADR-013): route id
+// params and body validation with the uniform 400 error shape. Auth is not
+// handled here — server/middleware/api-auth.ts guards every /api route.
+import * as v from 'valibot'
+import type { H3Event } from 'h3'
+
+/**
+ * Parse a positive-integer id from the route params, throwing the uniform
+ * 400 on anything else ("eventId" → "Invalid event id").
+ */
+export function requireIdParam(event: H3Event, name: string): number {
+  const id = Number(getRouterParam(event, name))
+  if (!Number.isInteger(id) || id < 1) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: `Invalid ${name.replace(/Id$/, '')} id`
+    })
+  }
+  return id
+}
+
+/**
+ * Body schema shared by the register/unregister endpoints: a non-empty list
+ * of player ids.
+ */
+export const playerIdsBodySchema = v.object({
+  playerIds: v.pipe(
+    v.array(v.pipe(v.number(), v.integer(), v.minValue(1))),
+    v.minLength(1),
+  ),
+})
+
+/**
+ * Read the request body and validate it against a valibot schema, throwing
+ * the uniform 400 on malformed input.
+ */
+export async function requireValidBody<TSchema extends v.GenericSchema>(
+  event: H3Event,
+  schema: TSchema,
+): Promise<v.InferOutput<TSchema>> {
+  const parsed = v.safeParse(schema, await readBody(event))
+  if (!parsed.success) {
+    throw createError({
+      statusCode: 400,
+      statusMessage: 'Invalid request body'
+    })
+  }
+  return parsed.output
+}

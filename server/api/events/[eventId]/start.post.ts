@@ -1,4 +1,5 @@
 // server\api\events\[eventId]\start.post.ts
+// fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
 // BFF slice (ADR-013): atomic event start. Owns the whole transition —
 // validate the waitroom, create zeroed standings, flip the event to playing,
 // clear the waitroom, insert round-1 pairings from the confirmed playerOrder.
@@ -12,29 +13,8 @@ const bodySchema = v.object({
 })
 
 export default defineEventHandler(async (event) => {
-  if (getCookie(event, 'site-auth') !== 'authenticated') {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Not authenticated'
-    })
-  }
-
-  const eventId = Number(getRouterParam(event, 'eventId'))
-  if (!Number.isInteger(eventId) || eventId < 1) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Invalid event id'
-    })
-  }
-
-  const parsed = v.safeParse(bodySchema, await readBody(event))
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Invalid request body'
-    })
-  }
-  const { playerOrder } = parsed.output
+  const eventId = requireIdParam(event, 'eventId')
+  const { playerOrder } = await requireValidBody(event, bodySchema)
 
   console.log('[api/start] request', { eventId, playerOrderLength: playerOrder?.length ?? 0 })
 
@@ -42,18 +22,7 @@ export default defineEventHandler(async (event) => {
   const supabase = await serverSupabaseClient<Database>(event)
 
   // Domain guards: the event must exist and not be running already.
-  const { data: eventRow, error: eventError } = await supabase
-    .from('events')
-    .select('event_playing, event_current_round')
-    .eq('event_id', eventId)
-    .single()
-
-  if (eventError || !eventRow) {
-    throw createError({
-      statusCode: 404,
-      statusMessage: 'Event not found'
-    })
-  }
+  const eventRow = await requireEventRow(supabase, eventId)
   if (eventRow.event_playing || (eventRow.event_current_round ?? 0) > 0) {
     throw createError({
       statusCode: 409,

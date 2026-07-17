@@ -70,24 +70,12 @@ export async function upsertRoundResult(
 
 /**
  * Common request scaffolding for the /api/pairings/:pairingId/* endpoints:
- * auth cookie, pairing id param, pairing existence, and the anon supabase
- * client. Returns the pairing's player ids for membership validation.
+ * pairing id param, pairing existence, and the anon supabase client (auth is
+ * enforced upstream by server/middleware/api-auth.ts). Returns the pairing's
+ * player ids for membership validation.
  */
 export async function requirePairingContext(event: H3Event) {
-  if (getCookie(event, 'site-auth') !== 'authenticated') {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Not authenticated'
-    })
-  }
-
-  const pairingId = Number(getRouterParam(event, 'pairingId'))
-  if (!Number.isInteger(pairingId) || pairingId < 1) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Invalid pairing id'
-    })
-  }
+  const pairingId = requireIdParam(event, 'pairingId')
 
   // Still the anon key for now — see docs/BACKLOG.md #7 for the service-role flip.
   const supabase = await serverSupabaseClient<Database>(event)

@@ -3,10 +3,12 @@ export default defineNuxtRouteMiddleware((to) => {
   // Skip login page
   if (to.path === '/login') return
 
-  // Check for auth cookie (works on both server and client)
-  const authCookie = useCookie('site-auth')
+  // Sealed-session state (nuxt-auth-utils), hydrated server-side by the
+  // module's plugin — works on SSR and client navigations even though the
+  // session cookie itself is httpOnly (invisible to document.cookie).
+  const { loggedIn } = useUserSession()
 
-  if (!authCookie.value || authCookie.value !== 'authenticated') {
+  if (!loggedIn.value) {
     return navigateTo({
       path: '/login',
       query: { redirect: to.fullPath }

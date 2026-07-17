@@ -12,29 +12,8 @@ const bodySchema = v.object({
 })
 
 export default defineEventHandler(async (event) => {
-  if (getCookie(event, 'site-auth') !== 'authenticated') {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Not authenticated'
-    })
-  }
-
-  const eventId = Number(getRouterParam(event, 'eventId'))
-  if (!Number.isInteger(eventId) || eventId < 1) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Invalid event id'
-    })
-  }
-
-  const parsed = v.safeParse(bodySchema, await readBody(event))
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Invalid request body'
-    })
-  }
-  const { currentRound } = parsed.output
+  const eventId = requireIdParam(event, 'eventId')
+  const { currentRound } = await requireValidBody(event, bodySchema)
 
   console.log('[api/turn-back-round] request', { eventId, currentRound })
 
@@ -43,18 +22,7 @@ export default defineEventHandler(async (event) => {
 
   // Domain guard: the round the client wants to roll back must be the round
   // the event is actually at (double-submit/stale-tab protection).
-  const { data: eventRow, error: eventError } = await supabase
-    .from('events')
-    .select('event_current_round')
-    .eq('event_id', eventId)
-    .single()
-
-  if (eventError || !eventRow) {
-    throw createError({
-      statusCode: 404,
-      statusMessage: 'Event not found'
-    })
-  }
+  const eventRow = await requireEventRow(supabase, eventId)
   if (eventRow.event_current_round !== currentRound) {
     throw createError({
       statusCode: 409,

@@ -1,45 +1,15 @@
 // server\api\events\[eventId]\register-player.post.ts
+// fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
 // BFF slice 1 (ADR-013): intent-based endpoint for registering players into an
 // event's waiting list. Enforces the site-password gate server-side and owns
 // the domain rules (registration must be open, no duplicates), returning the
 // rows it actually wrote so the store mirrors server truth.
-import * as v from 'valibot'
 import { serverSupabaseClient } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 
-const bodySchema = v.object({
-  playerIds: v.pipe(
-    v.array(v.pipe(v.number(), v.integer(), v.minValue(1))),
-    v.minLength(1),
-  ),
-})
-
 export default defineEventHandler(async (event) => {
-  // The password gate, enforced at the API layer (the route middleware only
-  // guards page navigation, not direct calls).
-  if (getCookie(event, 'site-auth') !== 'authenticated') {
-    throw createError({
-      statusCode: 401,
-      statusMessage: 'Not authenticated'
-    })
-  }
-
-  const eventId = Number(getRouterParam(event, 'eventId'))
-  if (!Number.isInteger(eventId) || eventId < 1) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Invalid event id'
-    })
-  }
-
-  const parsed = v.safeParse(bodySchema, await readBody(event))
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Invalid request body'
-    })
-  }
-  const { playerIds } = parsed.output
+  const eventId = requireIdParam(event, 'eventId')
+  const { playerIds } = await requireValidBody(event, playerIdsBodySchema)
 
   console.log('[api/register-player] request', { eventId, playerIds })
 
@@ -50,18 +20,7 @@ export default defineEventHandler(async (event) => {
   const supabase = await serverSupabaseClient<Database>(event)
 
   // Domain guard: the event must exist and registration must be open.
-  const { data: eventRow, error: eventError } = await supabase
-    .from('events')
-    .select('event_registration_open, event_playing')
-    .eq('event_id', eventId)
-    .single()
-
-  if (eventError || !eventRow) {
-    throw createError({
-      statusCode: 404,
-      statusMessage: 'Event not found'
-    })
-  }
+  const eventRow = await requireEventRow(supabase, eventId)
   if (!eventRow.event_registration_open || eventRow.event_playing) {
     throw createError({
       statusCode: 409,

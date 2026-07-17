@@ -1,4 +1,5 @@
 // server\api\pairings\[pairingId]\rankings.post.ts
+// fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
 // BFF slice (ADR-013): save a table's confirmed rankings (positions) into
 // round_results. Rejects players not seated at the pairing.
 import * as v from 'valibot'
@@ -16,14 +17,7 @@ const bodySchema = v.object({
 export default defineEventHandler(async (event) => {
   const { pairingId, supabase, playerIds } = await requirePairingContext(event)
 
-  const parsed = v.safeParse(bodySchema, await readBody(event))
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Invalid request body'
-    })
-  }
-  const { rankings } = parsed.output
+  const { rankings } = await requireValidBody(event, bodySchema)
 
   if (!rankings.every(r => playerIds.includes(r.playerId))) {
     throw createError({

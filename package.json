@@ -47,6 +47,7 @@
     "mana-font": "^1.18.0",
     "motion-v": "^2.3.0",
     "nuxt": "^4.4.8",
+    "nuxt-auth-utils": "0.5.29",
     "slugify": "^1.6.9",
     "tailwindcss": "^4.3.2",
     "valibot": "^1.4.2",

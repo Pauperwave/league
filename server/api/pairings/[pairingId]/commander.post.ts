@@ -1,4 +1,5 @@
 // server\api\pairings\[pairingId]\commander.post.ts
+// fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
 // BFF slice (ADR-013): save a player's commander(s) into round_results.
 import * as v from 'valibot'
 
@@ -11,14 +12,7 @@ const bodySchema = v.object({
 export default defineEventHandler(async (event) => {
   const { pairingId, supabase, playerIds } = await requirePairingContext(event)
 
-  const parsed = v.safeParse(bodySchema, await readBody(event))
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Invalid request body'
-    })
-  }
-  const { playerId, commander1, commander2 } = parsed.output
+  const { playerId, commander1, commander2 } = await requireValidBody(event, bodySchema)
 
   if (!playerIds.includes(playerId)) {
     throw createError({

@@ -1,13 +1,8 @@
 // app\composables\auth\usePasswordAuth.ts
-const AUTH_COOKIE_NAME = 'site-auth'
-
 export function usePasswordAuth() {
-  const isAuthenticated = useState('site-auth-state', () => false)
-
-  // Check cookie on client side (for UI state)
-  onMounted(() => {
-    isAuthenticated.value = document.cookie.includes(`${AUTH_COOKIE_NAME}=authenticated`)
-  })
+  // Sealed-session state from nuxt-auth-utils; the cookie is httpOnly, so the
+  // client never reads it directly — it tracks the module's session state.
+  const { loggedIn, fetch: refreshSession, clear } = useUserSession()
 
   async function login(password: string): Promise<boolean> {
     try {
@@ -15,7 +10,10 @@ export function usePasswordAuth() {
         method: 'POST',
         body: { password }
       })
-      isAuthenticated.value = true
+      // The login response set the sealed cookie; sync the client-side
+      // session state before navigating, or the route middleware still
+      // sees loggedIn=false and bounces back to /login.
+      await refreshSession()
       return true
     } catch {
       return false
@@ -23,13 +21,14 @@ export function usePasswordAuth() {
   }
 
   async function logout() {
-    await $fetch('/api/auth/logout', { method: 'POST' })
-    isAuthenticated.value = false
+    // Clears the session server-side (module's own /api/_auth/session route)
+    // and resets the client state in one call.
+    await clear()
     navigateTo('/login')
   }
 
   return {
-    isAuthenticated,
+    isAuthenticated: loggedIn,
     login,
     logout
   }

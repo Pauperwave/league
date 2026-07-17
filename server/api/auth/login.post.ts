@@ -7,18 +7,7 @@ const bodySchema = v.object({
 
 export default defineEventHandler(async (event) => {
   const config = useRuntimeConfig()
-  const body = await readBody(event)
-
-  // Validate with valibot
-  const parsed = v.safeParse(bodySchema, body)
-  if (!parsed.success) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Invalid request body'
-    })
-  }
-
-  const { password } = parsed.output
+  const { password } = await requireValidBody(event, bodySchema)
 
   if (!config.sitePassword) {
     throw createError({
@@ -34,13 +23,12 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // Set cookie (readable by middleware, secure with sameSite)
-  setCookie(event, 'site-auth', 'authenticated', {
-    httpOnly: false,
-    secure: true,
-    sameSite: 'lax',
-    maxAge: 60 * 60 * 24 * 7 // 1 week
-  })
+  // Sealed httpOnly session cookie (nuxt-auth-utils) — unforgeable, unlike the
+  // old static site-auth cookie. maxAge lives in nuxt.config runtimeConfig.session.
+  await setUserSession(event, { user: { admin: true } })
+
+  // Drop the legacy cookie from browsers that still carry it.
+  deleteCookie(event, 'site-auth')
 
   return { success: true }
 })
