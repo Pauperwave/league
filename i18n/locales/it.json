@@ -692,6 +692,13 @@
     "allDecks": "Tutti i Deck",
     "viewRulesets": "Vedi Regolamenti"
   },
+  "error": {
+    "title404": "Pagina non trovata",
+    "titleGeneric": "Si è verificato un errore",
+    "description404": "La pagina che cerchi non esiste o è stata spostata.",
+    "descriptionGeneric": "Qualcosa è andato storto. Riprova o torna alla home.",
+    "backHome": "Torna alla home"
+  },
   "app": {
     "title": "Gestione Lega",
     "description": "Gestione leghe Magic: The Gathering Commander: eventi, abbinamenti, punteggi e classifiche."
