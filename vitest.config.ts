@@ -17,7 +17,15 @@ export default defineConfig({
     // useRoute, ...) are NOT covered — they need a running Nuxt app; tests
     // must stub/mock those per test.
     AutoImport({
-      imports: ['vue', 'vue-i18n', 'pinia', '@vueuse/core'],
+      imports: [
+        'vue',
+        'vue-i18n',
+        'pinia',
+        '@vueuse/core',
+        // @pinia/colada has no unimport preset — mirror the names the Nuxt
+        // module auto-imports (the ones this codebase uses).
+        { '@pinia/colada': ['useQuery', 'useMutation', 'useQueryCache'] },
+      ],
       dirs: ['./app/composables/**', './app/utils', './app/stores'],
       // Values referenced only in <template> (e.g. ICONS) compile to _ctx
       // lookups — vueTemplate covers those too, like Nuxt does.

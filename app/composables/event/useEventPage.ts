@@ -14,25 +14,15 @@ export function useEventPage() {
   // URL management
   const { phaseFromQuery, roundFromQuery, syncUrl } = useEventUrl()
 
-  const leagueStore = useLeagueStore()
   const eventStore = useEventStore()
   const playerStore = usePlayerStore()
   const { calculateTables, buildPreviewTables, formatTableEstimate } = useTableCalculator()
 
   const { data: players } = usePlayers()
 
-  const currentLeague = computed(() => leagueStore.getLeagueById(leagueId))
-
-  // Fetch league data if not already in store (e.g., on direct page reload)
-  watch(
-    () => currentLeague.value,
-    async (league) => {
-      if (!league && !leagueStore.loadingFetch) {
-        await leagueStore.fetchLeagues()
-      }
-    },
-    { immediate: true },
-  )
+  // Colada resolves the league from the cached list (SSR-prefetched) — no
+  // store, no manual fetch fallback (ADR-015).
+  const { league: currentLeague } = useLeagueById(leagueId)
 
   // Use eventStore for current event
   const currentEvent = computed(() => {

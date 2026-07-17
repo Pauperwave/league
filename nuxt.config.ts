@@ -13,7 +13,8 @@ export default defineNuxtConfig({
     '@nuxt/test-utils/module',
     '@nuxtjs/i18n',
     '@nuxt/hints',
-    'nuxt-auth-utils'
+    'nuxt-auth-utils',
+    '@pinia/colada-nuxt'
   ],
 
   components: [

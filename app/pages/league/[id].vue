@@ -32,7 +32,6 @@ const { t } = useI18n()
 
 const leagueId = Number(route.params.id)
 
-const leagueStore = useLeagueStore()
 const eventsStore = useEventStore()
 
 const { standings } = storeToRefs(eventsStore)
@@ -42,12 +41,9 @@ const rulesets = computed(() => rulesetsData.value ?? [])
 
 const { data: events, pending: eventsLoading, refresh: refreshEvents } = useEvents(leagueId)
 
-const currentLeague = computed(() => leagueStore.getLeagueById(leagueId))
-
-// Fetch league data if not already in store (e.g., on direct page reload)
-if (!currentLeague.value) {
-  await leagueStore.fetchLeagues()
-}
+// Colada resolves the league from the cached list (SSR-prefetched) — no
+// store, no manual fetch fallback (ADR-015).
+const { league: currentLeague } = useLeagueById(leagueId)
 const classificaTitle = computed(() =>
   t('league.standingsTitle', { name: currentLeague.value?.name ?? '' }).trim()
 )

@@ -32,6 +32,17 @@ export const playerIdsBodySchema = v.object({
 })
 
 /**
+ * Body schema shared by the league create/update endpoints — the form
+ * payload emitted by LeagueFormModal.
+ */
+export const leagueFormBodySchema = v.object({
+  name: v.pipe(v.string(), v.trim(), v.minLength(1)),
+  startsAt: v.nullable(v.string()),
+  endsAt: v.nullable(v.string()),
+  rulesetId: v.nullable(v.pipe(v.number(), v.integer(), v.minValue(1))),
+})
+
+/**
  * Read the request body and validate it against a valibot schema, throwing
  * the uniform 400 on malformed input.
  */

@@ -18,6 +18,7 @@
     "@formkit/auto-animate",
     "@iconify-json/lucide",
     "@iconify-json/simple-icons",
+    "@pinia/colada",
     "@vue/test-utils",
     "@vueuse/core",
     "playwright-core",

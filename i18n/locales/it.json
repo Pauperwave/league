@@ -81,10 +81,15 @@
     "toast": {
       "standingsErrorTitle": "Errore caricamento classifica",
       "standingsErrorFallback": "Impossibile caricare la classifica della lega",
+      "createdTitle": "Lega creata",
+      "createdDescription": "La lega {name} è stata creata con successo.",
+      "createErrorTitle": "Errore creazione lega",
       "updateErrorTitle": "Errore aggiornamento lega",
       "updateErrorFallback": "Impossibile aggiornare la lega",
       "updatedTitle": "Lega aggiornata",
-      "updatedDescription": "Le informazioni della lega sono state aggiornate con successo."
+      "updatedDescription": "Le informazioni della lega sono state aggiornate con successo.",
+      "deletedTitle": "Lega eliminata",
+      "deleteErrorTitle": "Errore eliminazione lega"
     }
   },
   "ruleset": {
@@ -618,9 +623,7 @@
   "store": {
     "league": {
       "loadError": "Errore nel caricamento leghe",
-      "noDataInsert": "Nessun dato restituito dall'inserimento",
       "createError": "Errore nella creazione lega",
-      "noDataUpdate": "Nessun dato restituito dall'aggiornamento",
       "updateError": "Errore nell'aggiornamento lega",
       "deleteError": "Errore nell'eliminazione lega"
     },

@@ -19,7 +19,7 @@ const {
   handleDeleteLeague,
   confirmDeleteLeague,
   navigateToLeague,
-} = useLeagues()
+} = useLeaguesPage()
 
 const breadcrumbItems = useBreadcrumb(() => [
   { label: t('league.breadcrumb') },
