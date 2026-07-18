@@ -27,6 +27,7 @@ export function useEventPage() {
     refetch: refreshWaitroom,
   } = useWaitroom(eventId)
   const { registerPlayers, unregisterPlayers } = useWaitroomMutations(eventId)
+  const { updateEvent: updateEventMutation } = useEventMutations()
   const { data: eventsData, isLoading: eventsLoading, refetch: refreshEventsQuery } = useEventsQuery(leagueId)
   const { data: standingsData, refetch: refreshStandingsQuery } = useEventStandingsQuery(eventId)
   const { data: pairingHistoryData } = usePairingHistoryQuery(eventId)
@@ -168,18 +169,21 @@ export function useEventPage() {
   }
 
   async function updateEvent({ id, data }: { id: number; data: { eventName: string; eventDate: string | null; numRound: number; roundDuration: number } }) {
-    const result = await eventStore.updateEvent(id, {
-      event_name: data.eventName,
-      event_datetime: data.eventDate ?? undefined,
-      event_round_number: data.numRound,
-      event_round_duration: data.roundDuration,
-    })
-    if (!result.success) {
-      logError('useEventPage', 'updateEvent failed:', result.error)
+    try {
+      await updateEventMutation.mutateAsync({
+        id,
+        data: {
+          event_name: data.eventName,
+          event_datetime: data.eventDate ?? undefined,
+          event_round_number: data.numRound,
+          event_round_duration: data.roundDuration,
+        },
+      })
+      return true
+    } catch (err) {
+      logError('useEventPage', 'updateEvent failed:', err)
       return false
     }
-    await refreshEventsQuery()
-    return true
   }
 
   async function navigateToScore(pairingId: number, playerId: number, tableId: number) {

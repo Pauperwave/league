@@ -1,6 +1,6 @@
 // app\stores\events.ts
 // fallow-ignore-file code-duplication -- intentional store CRUD boilerplate, see app/stores/CLAUDE.md
-import type { Event, EventInsert } from '#shared/utils/types'
+import type { Event } from '#shared/utils/types'
 
 /**
  * The event lifecycle state machine (ADR-015 carve-out): currentEvent plus
@@ -37,79 +37,10 @@ export const useEventStore = defineStore('events', () => {
     return (currentEvent.value.event_current_round ?? 0) > (currentEvent.value.event_round_number ?? 0)
   })
 
-  // ── Actions: Event CRUD & lifecycle ──────────────────────────────────────────
-
-  /** Create a new event */
-  async function createEvent(event: EventInsert) {
-    beginLoading()
-    error.value = null
-
-    try {
-      const { event: created } = await $fetch('/api/events/create', {
-        method: 'POST',
-        body: event,
-      })
-
-      return { success: true as const, data: created }
-    }
-    catch (err) {
-      error.value = toErrorMessage(err, t('store.event.createError'))
-      console.error('[useEventStore] createEvent error:', err)
-      return { success: false as const, error: error.value }
-    }
-    finally {
-      endLoading()
-    }
-  }
-
-  /** Update an existing event via the BFF endpoint (ADR-013) */
-  async function updateEvent(eventId: number, updates: Partial<Event>): Promise<{ success: boolean; data?: Event; error?: string }> {
-    beginLoading()
-    error.value = null
-
-    try {
-      const { event: updated } = await $fetch<{ event: Event }>(`/api/events/${eventId}/update` as string, {
-        method: 'POST',
-        body: updates,
-      })
-
-      if (currentEvent.value?.event_id === eventId) {
-        currentEvent.value = updated
-      }
-
-      return { success: true as const, data: updated }
-    }
-    catch (err) {
-      error.value = toErrorMessage(err, t('store.event.updateError'))
-      console.error('[useEventStore] updateEvent error:', err)
-      return { success: false as const, error: error.value }
-    }
-    finally {
-      endLoading()
-    }
-  }
-
-  /** Delete an event via the BFF endpoint (ADR-013) */
-  async function deleteEvent(eventId: number) {
-    beginLoading()
-    error.value = null
-
-    try {
-      await $fetch<{ deleted: boolean }>(`/api/events/${eventId}/delete` as string, { method: 'POST' })
-
-      if (currentEvent.value?.event_id === eventId) currentEvent.value = null
-
-      return { success: true as const }
-    }
-    catch (err) {
-      error.value = toErrorMessage(err, t('store.event.deleteError'))
-      console.error('[useEventStore] deleteEvent error:', err)
-      return { success: false as const, error: error.value }
-    }
-    finally {
-      endLoading()
-    }
-  }
+  // ── Actions: Event lifecycle ─────────────────────────────────────────────────
+  // Plain CRUD (create/update/delete) lives in useEventMutations (ADR-015) —
+  // a Colada useMutation per action, invalidating ['events']/['league-standings']
+  // automatically. What stays here is genuine multi-step orchestration.
 
   /**
    * Start an event via the BFF endpoint (ADR-013): the server owns the atomic
@@ -272,10 +203,7 @@ export const useEventStore = defineStore('events', () => {
     // Getters
     isEventEnded,
 
-    // Actions — event CRUD & lifecycle
-    createEvent,
-    updateEvent,
-    deleteEvent,
+    // Actions — event lifecycle
     startEvent,
     nextRound,
     turnBackRound,

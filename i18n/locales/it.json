@@ -656,9 +656,6 @@
       "victimAlreadyKilled": "La vittima ha già ucciso questo giocatore"
     },
     "event": {
-      "createError": "Errore nella creazione evento",
-      "deleteError": "Errore nell'eliminazione evento",
-      "updateError": "Errore nell'aggiornamento evento",
       "startError": "Errore nell'avvio evento",
       "voteSaveError": "Errore nel salvataggio del voto",
       "commanderSaveError": "Errore nel salvataggio dei comandanti",

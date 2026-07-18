@@ -32,7 +32,7 @@ const { t } = useI18n()
 
 const leagueId = Number(route.params.id)
 
-const eventsStore = useEventStore()
+const { createEvent: createEventMutation, updateEvent: updateEventMutation, deleteEvent: deleteEventMutation } = useEventMutations()
 
 const { data: rulesetsData, isLoading: rulesetsLoading } = useRulesetsQuery()
 const rulesets = computed(() => rulesetsData.value ?? [])
@@ -40,7 +40,7 @@ const rulesets = computed(() => rulesetsData.value ?? [])
 // Colada caches (ADR-015): the league's events and its summed standings
 // (the latter finally on its own key, no longer sharing the event store's
 // standings slot with the per-event standings).
-const { data: events, isLoading: eventsLoading, refetch: refreshEvents } = useEventsQuery(leagueId)
+const { data: events, isLoading: eventsLoading } = useEventsQuery(leagueId)
 const { data: leagueStandings, error: standingsError } = useLeagueStandingsQuery(leagueId)
 const standings = computed(() => leagueStandings.value ?? [])
 
@@ -91,19 +91,19 @@ function navigateToEvent(event: Event) {
 
 // — Event CRUD —
 async function createEvent(data: CreateEventData) {
-  const result = await eventsStore.createEvent({
-    event_name: data.eventName,
-    league_id: leagueId,
-    event_datetime: data.eventDate,
-    event_round_number: data.numRound,
-    event_round_duration: data.roundDuration,
-    event_registration_open: true,
-  })
-
-  if (!result.success) {
+  try {
+    await createEventMutation.mutateAsync({
+      event_name: data.eventName,
+      league_id: leagueId,
+      event_datetime: data.eventDate,
+      event_round_number: data.numRound,
+      event_round_duration: data.roundDuration,
+      event_registration_open: true,
+    })
+  } catch (err) {
     toast.add({
       title: t('event.toast.createErrorTitle'),
-      description: result.error || t('event.toast.createErrorFallback'),
+      description: toErrorMessage(err, t('event.toast.createErrorFallback')),
       color: 'error'
     })
     return
@@ -115,21 +115,23 @@ async function createEvent(data: CreateEventData) {
     description: t('event.toast.createdDescription', { name: data.eventName }),
     color: 'success'
   })
-  await refreshEvents()
 }
 
 async function updateEvent({ id, data }: UpdateEventData) {
-  const result = await eventsStore.updateEvent(id, {
-    event_name: data.eventName,
-    event_datetime: data.eventDate ?? undefined,
-    event_round_number: data.numRound,
-    event_round_duration: data.roundDuration,
-  })
-
-  if (!result.success) {
+  try {
+    await updateEventMutation.mutateAsync({
+      id,
+      data: {
+        event_name: data.eventName,
+        event_datetime: data.eventDate ?? undefined,
+        event_round_number: data.numRound,
+        event_round_duration: data.roundDuration,
+      },
+    })
+  } catch (err) {
     toast.add({
       title: t('event.toast.updateErrorTitle'),
-      description: result.error || t('event.toast.updateErrorFallback'),
+      description: toErrorMessage(err, t('event.toast.updateErrorFallback')),
       color: 'error'
     })
     return
@@ -142,7 +144,6 @@ async function updateEvent({ id, data }: UpdateEventData) {
     description: t('event.toast.updatedDescription', { name: data.eventName }),
     color: 'success'
   })
-  await refreshEvents()
 }
 
 function openEditEvent(event: Event) {
@@ -158,12 +159,12 @@ function openDeleteEvent(event: Event) {
 async function confirmDeleteEvent() {
   if (!eventToDelete.value) return
 
-  const result = await eventsStore.deleteEvent(eventToDelete.value.event_id)
-
-  if (!result.success) {
+  try {
+    await deleteEventMutation.mutateAsync(eventToDelete.value.event_id)
+  } catch (err) {
     toast.add({
       title: t('event.toast.deleteErrorTitle'),
-      description: result.error || t('event.toast.deleteErrorFallback'),
+      description: toErrorMessage(err, t('event.toast.deleteErrorFallback')),
       color: 'error'
     })
     return
@@ -176,7 +177,6 @@ async function confirmDeleteEvent() {
     description: t('event.toast.deletedDescription'),
     color: 'success'
   })
-  await refreshEvents()
 }
 
 const { updateLeague } = useLeagueUpdate(() => {
