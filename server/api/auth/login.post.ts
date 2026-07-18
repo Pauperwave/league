@@ -27,8 +27,5 @@ export default defineEventHandler(async (event) => {
   // old static site-auth cookie. maxAge lives in nuxt.config runtimeConfig.session.
   await setUserSession(event, { user: { admin: true } })
 
-  // Drop the legacy cookie from browsers that still carry it.
-  deleteCookie(event, 'site-auth')
-
   return { success: true }
 })
