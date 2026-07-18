@@ -40,7 +40,7 @@ The event lifecycle state machine — `currentEvent` + BFF `$fetch` actions + th
 
 **Getters**: `isEventEnded`
 
-**Event Lifecycle**: `createEvent`, `updateEvent`, `deleteEvent`, `startEvent` (validates 3+ players, not 5), `nextRound` (server scores the round, advances or ends the event, inserts next pairings), `turnBackRound` (rolls back a round or to registration), `setCurrentEvent`
+**Event Lifecycle**: `startEvent` (validates 3+ players, not 5), `nextRound` (server scores the round, advances or ends the event, inserts next pairings), `turnBackRound` (rolls back a round or to registration), `setCurrentEvent`. Plain CRUD (`createEvent`/`updateEvent`/`deleteEvent`) lives in `event/useEventMutations.ts` instead — a Colada `useMutation` per action, same template as leagues/rulesets/decks/players.
 
 **Round writes** (ADR-007 `save*` seam, each a direct BFF `$fetch`): `saveVote`, `saveCommander`, `savePairingRankings`, `savePairingKills`
 

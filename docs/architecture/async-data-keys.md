@@ -40,11 +40,11 @@ Domains migrated to Pinia Colada use array query keys instead of `useAsyncData` 
 | `commanders/useCommanderDecks.ts` | `['deck-usage', playerId]` | `useDeckMutations` |
 | `players/usePlayersQuery.ts` | `['players']` | `usePlayerMutations` |
 | `event/useWaitroom.ts` | `['waitroom', eventId]` | `useWaitroomMutations` (+ manual refresh on start/turn-back) |
-| `event/useEventQueries.ts` | `['events', leagueId]` | refresh after event CRUD/lifecycle (useEventPage / league page) |
+| `event/useEventQueries.ts` | `['events', leagueId]` | `event/useEventMutations` (CRUD, auto) + refresh after lifecycle transitions (useEventPage) |
 | `event/useEventQueries.ts` | `['event-standings', eventId]` | refresh after round transitions (useEventPage) |
 | `event/useEventQueries.ts` | `['pairings', eventId, round]` | invalidated after lifecycle transitions (useEventPage) |
 | `event/useEventQueries.ts` | `['pairing-history', eventId]` | invalidated after lifecycle transitions (useEventPage) |
-| `league/useLeagueStandingsQuery.ts` | `['league-standings', leagueId]` | read-only aggregate |
+| `league/useLeagueStandingsQuery.ts` | `['league-standings', leagueId]` | `event/useEventMutations` (event delete changes the summed aggregate) |
 | `league/useLeagueStandingsQuery.ts` | `['event-standings-multi', ids]` | read-only aggregate (EventRanking) |
 | `players/usePlayerStats.ts` | `['player-stats', playerId]` | read-only |
 | `players/usePlayerStats.ts` (all) | `['all-player-stats']` | read-only (players list page) |
