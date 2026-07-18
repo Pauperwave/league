@@ -34,12 +34,15 @@ const leagueId = Number(route.params.id)
 
 const eventsStore = useEventStore()
 
-const { standings } = storeToRefs(eventsStore)
-
 const { data: rulesetsData, isLoading: rulesetsLoading } = useRulesetsQuery()
 const rulesets = computed(() => rulesetsData.value ?? [])
 
-const { data: events, pending: eventsLoading, refresh: refreshEvents } = useEvents(leagueId)
+// Colada caches (ADR-015): the league's events and its summed standings
+// (the latter finally on its own key, no longer sharing the event store's
+// standings slot with the per-event standings).
+const { data: events, isLoading: eventsLoading, refresh: refreshEvents } = useEventsQuery(leagueId)
+const { data: leagueStandings, error: standingsError } = useLeagueStandingsQuery(leagueId)
+const standings = computed(() => leagueStandings.value ?? [])
 
 // Colada resolves the league from the cached list (SSR-prefetched) — no
 // store, no manual fetch fallback (ADR-015).
@@ -52,8 +55,6 @@ const breadcrumbItems = useBreadcrumb(() => [
   { label: t('league.breadcrumb'), to: '/leagues' },
   { label: currentLeague.value?.name ?? t('league.fallbackName') },
 ])
-
-const { error: standingsError } = await useAsyncData(`league-standings-${leagueId}`, () => eventsStore.fetchLeagueStandings(leagueId))
 
 onMounted(() => {
   if (standingsError.value) {

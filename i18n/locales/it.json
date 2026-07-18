@@ -656,15 +656,10 @@
       "victimAlreadyKilled": "La vittima ha già ucciso questo giocatore"
     },
     "event": {
-      "saveError": "Errore nel salvataggio",
-      "loadError": "Errore nel caricamento eventi",
       "createError": "Errore nella creazione evento",
       "deleteError": "Errore nell'eliminazione evento",
       "updateError": "Errore nell'aggiornamento evento",
-      "invalidPlayerCount": "Numero giocatori non valido (min 3, non 5)",
-      "invalidPlayerOrder": "Ordine giocatori non valido per avvio evento",
       "startError": "Errore nell'avvio evento",
-      "optimizerFailed": "Impossibile generare pairings validi con i vincoli correnti",
       "voteSaveError": "Errore nel salvataggio del voto",
       "commanderSaveError": "Errore nel salvataggio dei comandanti",
       "rankingsSaveError": "Errore nel salvataggio delle posizioni",

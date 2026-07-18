@@ -1,9 +1,8 @@
 // app\composables\event\useEventPage.ts
-import type { Player, PairingWithResults } from '#shared/utils/types'
+import type { Player } from '#shared/utils/types'
 import { useEventUrl } from './useEventUrl'
 
 export function useEventPage() {
-  const supabase = useSupabaseClient()
   const route = useRoute()
   const toast = useToast()
   const { t } = useI18n()
@@ -16,8 +15,10 @@ export function useEventPage() {
 
   const eventStore = useEventStore()
   const { calculateTables, buildPreviewTables, formatTableEstimate } = useTableCalculator()
+  const queryCache = useQueryCache()
 
-  // Colada caches (ADR-015): players list + this event's waitroom
+  // Colada caches (ADR-015): players, waitroom, events list, standings,
+  // pairing history — all SSR-prefetched, refreshed after lifecycle writes.
   const { data: players } = usePlayersQuery()
   const {
     waitingPlayers,
@@ -26,22 +27,23 @@ export function useEventPage() {
     refresh: refreshWaitroom,
   } = useWaitroom(eventId)
   const { registerPlayers, unregisterPlayers } = useWaitroomMutations(eventId)
+  const { data: eventsData, isLoading: eventsLoading, refresh: refreshEventsQuery } = useEventsQuery(leagueId)
+  const { data: standingsData, refresh: refreshStandingsQuery } = useEventStandingsQuery(eventId)
+  const { data: pairingHistoryData } = usePairingHistoryQuery(eventId)
 
   // Colada resolves the league from the cached list (SSR-prefetched) — no
   // store, no manual fetch fallback (ADR-015).
   const { league: currentLeague } = useLeagueById(leagueId)
 
-  // Use eventStore for current event
-  const currentEvent = computed(() => {
-    // Set current event in store if not already set
-    if (!eventStore.currentEvent || eventStore.currentEvent.event_id !== eventId) {
-      const event = eventStore.events.find(e => e.event_id === eventId)
-      if (event) {
-        eventStore.setCurrentEvent(event)
-      }
-    }
-    return eventStore.currentEvent
-  })
+  // Keep the lifecycle store's currentEvent in sync with the events list —
+  // successor of the sync the store's fetchEvents used to do. Lifecycle
+  // actions overwrite it with their (fresher) server response right after.
+  watch(eventsData, (list) => {
+    const found = list?.find(e => e.event_id === eventId)
+    if (found) eventStore.setCurrentEvent(found)
+  }, { immediate: true })
+
+  const currentEvent = computed(() => eventStore.currentEvent)
   const currentRound = computed(() => currentEvent.value?.event_current_round ?? 0)
   const totalRounds = computed(() => currentEvent.value?.event_round_number ?? 0)
 
@@ -91,7 +93,7 @@ export function useEventPage() {
     if (eventStatus.value === 'registration') {
       return buildPreviewTables([...waitingPlayers.value])
     }
-    const activePlayers = eventStore.standings.map(s => s.player_id)
+    const activePlayers = (standingsData.value ?? []).map(s => s.player_id)
     return buildPreviewTables(activePlayers)
   })
 
@@ -128,19 +130,24 @@ export function useEventPage() {
     }
   }
 
+  /** Refetch the read caches a lifecycle transition touches (ADR-015). */
+  async function refreshAfterLifecycle() {
+    await Promise.all([
+      refreshEventsQuery(),
+      refreshStandingsQuery(),
+      refreshWaitroom(),
+      queryCache.invalidateQueries({ key: [...PAIRINGS_KEY, eventId] }),
+      queryCache.invalidateQueries({ key: [...PAIRING_HISTORY_KEY, eventId] }),
+    ])
+  }
+
   async function startEvent(playerOrder?: number[]) {
     if (!canStartEvent.value) return false
 
     const result = await eventStore.startEvent(eventId, playerOrder)
     if (!result.success) return false
 
-    await Promise.all([
-      eventStore.fetchEvents(leagueId, true),
-      eventStore.fetchPairings(eventId, 1),
-      eventStore.fetchStandings(eventId),
-      refreshWaitroom(),
-    ])
-
+    await refreshAfterLifecycle()
     return true
   }
 
@@ -148,35 +155,15 @@ export function useEventPage() {
     const result = await eventStore.nextRound(eventId, currentRound.value, playerOrder)
     if (!result.success) return false
 
-    await Promise.all([
-      eventStore.fetchEvents(leagueId, true),
-      eventStore.fetchStandings(eventId),
-    ])
-
-    const roundToFetch = Math.min(currentRound.value, totalRounds.value)
-    if (roundToFetch > 0) {
-      await eventStore.fetchPairings(eventId, roundToFetch)
-    }
-
+    await refreshAfterLifecycle()
     return true
   }
 
   async function turnBackRound() {
-    const result = await eventStore.turnBackRound(eventId, currentRound.value, leagueId)
+    const result = await eventStore.turnBackRound(eventId, currentRound.value)
     if (!result.success) return false
 
-    await Promise.all([
-      eventStore.fetchEvents(leagueId, true),
-      eventStore.fetchStandings(eventId),
-      refreshWaitroom(),
-    ])
-
-    // Only fetch pairings if we're still in playing phase (not back to registration)
-    if (eventStatus.value === 'playing' && currentRound.value > 0) {
-      const roundToFetch = Math.min(currentRound.value, totalRounds.value)
-      await eventStore.fetchPairings(eventId, roundToFetch)
-    }
-
+    await refreshAfterLifecycle()
     return true
   }
 
@@ -191,7 +178,7 @@ export function useEventPage() {
       logError('useEventPage', 'updateEvent failed:', result.error)
       return false
     }
-    await eventStore.fetchEvents(leagueId, true)
+    await refreshEventsQuery()
     return true
   }
 
@@ -206,60 +193,29 @@ export function useEventPage() {
     })
   }
 
-  async function refreshWaiting() {
-    await refreshWaitroom()
-    return waitingPlayers.value
-  }
-
-  async function refreshStandings() {
-    await eventStore.fetchStandings(eventId)
-    return eventStore.standings
-  }
-
-  async function refreshPairingHistory() {
-    await eventStore.fetchPairingHistory(eventId)
-    return eventStore.pairingHistory
-  }
-
-  async function refreshEvents() {
-    await eventStore.fetchEvents(leagueId)
-    return eventStore.events
-  }
-
   // ── Viewed round state (for viewing past round results without changing event state) ──
   const viewedRound = ref<number | null>(null)
-  const viewedPairings = ref<PairingWithResults[]>([])
 
   const isViewingPastRound = computed(() => viewedRound.value !== null && viewedRound.value < currentRound.value)
 
-  async function viewRound(round: number) {
-    if (round === currentRound.value) {
-      clearViewedRound()
-      return
-    }
-    try {
-      const data = await fetchPairingsWithResults(supabase, eventId, round)
-      viewedRound.value = round
-      viewedPairings.value = data
-    }
-    catch (err) {
-      console.error('[useEventPage] viewRound error:', err)
-    }
+  // Two instances of the pairings query: the current round (live-standings
+  // input) and the displayed round (past-round viewing). When the keys match
+  // they share one cache entry; setting viewedRound refetches by key change.
+  const { data: pairingsData } = usePairingsQuery(eventId, () => currentRound.value)
+  const { data: displayedPairingsData } = usePairingsQuery(eventId, () => viewedRound.value ?? currentRound.value)
+
+  function viewRound(round: number) {
+    viewedRound.value = round === currentRound.value ? null : round
   }
 
   function clearViewedRound() {
     viewedRound.value = null
-    viewedPairings.value = []
   }
 
-  const effectivePairings = computed(() => {
-    if (isViewingPastRound.value) {
-      return viewedPairings.value
-    }
-    return eventStore.pairings
-  })
+  const pairings = computed(() => pairingsData.value ?? [])
+  const effectivePairings = computed(() => displayedPairingsData.value ?? [])
 
-  const loading = computed(() => eventStore.loading || waitroomLoading.value)
+  const loading = computed(() => eventStore.loading || waitroomLoading.value || eventsLoading.value)
 
   return {
     leagueId,
@@ -277,14 +233,14 @@ export function useEventPage() {
     waitroomEntries,
     tableEstimate,
     previewTables,
-    pairings: computed(() => eventStore.pairings),
+    pairings,
     displayedPairings: effectivePairings,
     viewedRound: computed(() => viewedRound.value),
     isViewingPastRound,
     viewRound,
     clearViewedRound,
-    pairingHistory: computed(() => eventStore.pairingHistory),
-    standings: computed(() => eventStore.standings),
+    pairingHistory: computed(() => pairingHistoryData.value ?? []),
+    standings: computed(() => standingsData.value ?? []),
     loading,
     players: computed(() => players.value ?? []),
     getPlayerName,
@@ -296,9 +252,5 @@ export function useEventPage() {
     turnBackRound,
     updateEvent,
     navigateToScore,
-    refreshWaiting,
-    refreshStandings,
-    refreshPairingHistory,
-    refreshEvents,
   }
 }

@@ -17,7 +17,6 @@ const {
   eventStatus, canStartEvent, waitingPlayers, waitroomEntries, pairings, standings,
   players, tableEstimate, getPlayerName,
   addToWaitingList, removeFromWaitingList, startEvent, nextRound, turnBackRound, updateEvent,
-  refreshWaiting, refreshStandings, refreshPairingHistory, refreshEvents,
   pairingHistory, loading, previewTables, viewedRound, isViewingPastRound, viewRound, clearViewedRound,
   displayedPairings,
 } = useEventPage()
@@ -73,17 +72,9 @@ const { liveStandings } = useLiveStandings(
 )
 
 // ── Data Fetching ──────────────────────────────────────────────────────────
-
-await Promise.all([
-  useAsyncData(`event-page-events-${leagueId}`, refreshEvents),
-  useAsyncData(`waiting-${eventId}`, refreshWaiting),
-  useAsyncData(`event-standings-${eventId}`, refreshStandings),
-  useAsyncData(`event-pairing-history-${eventId}`, refreshPairingHistory),
-])
-
-if (eventStatus.value === 'playing' && currentRound.value > 0) {
-  await eventStore.fetchPairings(eventId, currentRound.value)
-}
+// The Colada queries inside useEventPage (events, waitroom, standings,
+// pairing history, pairings) SSR-prefetch themselves — no useAsyncData
+// orchestration needed anymore (ADR-015).
 
 if (phaseFromQuery.value !== 'previewTables' && phaseFromQuery.value !== eventStatus.value) {
   syncUrl(eventStatus.value, currentRound.value)

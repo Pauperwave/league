@@ -9,8 +9,8 @@ const props = defineProps<{
 
 const { t } = useI18n()
 
-// Use the SSR-friendly composable for events
-const { data: eventsData, pending: loading } = useEvents(props.leagueId)
+// Colada cache of the league's events (ADR-015)
+const { data: eventsData, isLoading: loading } = useEventsQuery(props.leagueId)
 
 const allLeagueEvents = computed(() => {
   const events = eventsData.value ?? []
@@ -21,9 +21,9 @@ const allLeagueEvents = computed(() => {
   })
 })
 
-// Fetch all standings for all events via composable -> store chain
+// Standings across all the league's events (Colada, ADR-015)
 const eventIds = computed(() => eventsData.value?.map(e => e.event_id) ?? [])
-const { data: allStandings } = useMultipleEventStandings(eventIds)
+const { data: allStandings } = useMultipleEventStandingsQuery(eventIds)
 
 // Group standings by event
 const eventStandings = computed(() => {
