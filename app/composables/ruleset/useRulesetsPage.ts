@@ -7,12 +7,6 @@
 import type { Ruleset } from '#shared/utils/types'
 import type { RulesetFormPayload } from '~/composables/ruleset/useRulesetMutations'
 
-/** True when a $fetch error is the endpoint's 409 "ruleset in use" answer. */
-function isInUseConflict(err: unknown): boolean {
-  return typeof err === 'object' && err !== null
-    && 'statusCode' in err && (err as { statusCode?: number }).statusCode === 409
-}
-
 export function useRulesetsPage() {
   const toast = useToast()
   const { t } = useI18n()
@@ -108,7 +102,7 @@ export function useRulesetsPage() {
     } catch (err) {
       toast.add({
         title: t('ruleset.toast.deleteErrorTitle'),
-        description: isInUseConflict(err)
+        description: isConflictError(err)
           ? t('store.ruleset.inUseError')
           : toErrorMessage(err, t('store.ruleset.deleteError')),
         color: 'error'

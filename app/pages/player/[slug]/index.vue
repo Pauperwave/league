@@ -1,6 +1,7 @@
 <!-- app\pages\player\[slug]\index.vue -->
 <script setup lang="ts">
 import type { CommanderDeck } from '#shared/utils/types'
+import type { DeckFormPayload } from '~/composables/deck/useDeckMutations'
 
 const route = useRoute()
 const slug = route.params.slug as string
@@ -24,7 +25,7 @@ const {
 
 const { data: playerStats } = usePlayerStats(playerId)
 
-const deckStore = useCommanderDeckStore()
+const { createDeck, updateDeck, deleteDeck } = useDeckMutations()
 const editModalOpen = ref(false)
 const editingDeck = ref<CommanderDeck | null>(null)
 
@@ -48,40 +49,33 @@ function notifyDeckSuccess(titleKey: string, descriptionKey: string) {
   })
 }
 
-function notifyDeckError(result: { error?: string }, fallbackKey: string) {
+function notifyDeckError(description: string) {
   useToast().add({
     title: t('deck.toast.errorTitle'),
-    description: result.error || t(fallbackKey),
+    description,
     color: 'error',
     icon: ICONS.close
   })
 }
 
 async function handleUpdateDeck({ id, updates }: { id: number; updates: Partial<CommanderDeck> }) {
-  const result = await deckStore.updateDeck(id, updates)
-  if (result.success) {
-    notifyDeckSuccess('deck.toast.updatedTitle', 'deck.toast.updatedDescription')
-  } else {
-    notifyDeckError(result, 'deck.toast.updateErrorFallback')
+  try {
+    await updateDeck.mutateAsync({ id, updates })
+  } catch (err) {
+    notifyDeckError(toErrorMessage(err, t('deck.toast.updateErrorFallback')))
+    return
   }
+  notifyDeckSuccess('deck.toast.updatedTitle', 'deck.toast.updatedDescription')
 }
 
-async function handleCreateDeck(deckData: {
-  player_id: number
-  commander_1_name: string
-  commander_2_name: string | null
-  companion_name: string | null
-  is_borrowed: boolean
-  lender_id: number | null
-}) {
-  const result = await deckStore.createDeck(deckData)
-  if (result.success) {
-    notifyDeckSuccess('deck.toast.createdTitle', 'deck.toast.createdDescription')
-    // Refresh the composable data
-    refreshNuxtData(`commander-decks-usage-by-player-${playerId.value}`)
-  } else {
-    notifyDeckError(result, 'deck.toast.createErrorFallback')
+async function handleCreateDeck(deckData: DeckFormPayload) {
+  try {
+    await createDeck.mutateAsync(deckData)
+  } catch (err) {
+    notifyDeckError(toErrorMessage(err, t('deck.toast.createErrorFallback')))
+    return
   }
+  notifyDeckSuccess('deck.toast.createdTitle', 'deck.toast.createdDescription')
 }
 
 function handleDeleteClick(deck: CommanderDeck) {
@@ -94,17 +88,18 @@ async function confirmDeleteDeck() {
   if (!deckToDelete.value) return
   deleteLoading.value = true
 
-  const result = await deckStore.deleteDeck(deckToDelete.value.id)
-
-  deleteLoading.value = false
-  deleteModalOpen.value = false
-  deckToDelete.value = null
-
-  if (result.success) {
+  try {
+    await deleteDeck.mutateAsync(deckToDelete.value.id)
     notifyDeckSuccess('deck.toast.deletedTitle', 'deck.toast.deletedDescription')
-    refreshNuxtData(`commander-decks-usage-by-player-${playerId.value}`)
-  } else {
-    notifyDeckError(result, 'deck.toast.deleteErrorFallback')
+  } catch (err) {
+    // The endpoint answers 409 when the deck was played in an event.
+    notifyDeckError(isConflictError(err)
+      ? t('store.deck.inUseError')
+      : toErrorMessage(err, t('deck.toast.deleteErrorFallback')))
+  } finally {
+    deleteLoading.value = false
+    deleteModalOpen.value = false
+    deckToDelete.value = null
   }
 }
 

@@ -5,11 +5,12 @@ const props = defineProps<{
   playerId: number
 }>()
 
-const decksStore = useCommanderDeckStore()
+// Colada cache of all decks (ADR-015) — shared with the pages, no refetch
+const { data: decksData } = useDecksQuery()
 const { t } = useI18n()
 
 const deckCount = computed(() => {
-  return decksStore.getDecksByPlayerId(props.playerId).length
+  return (decksData.value ?? []).filter(d => d.player_id === props.playerId).length
 })
 </script>
 

@@ -6,55 +6,43 @@ interface RoundResultUsage {
   commander_2: string | null
 }
 
+/** Query-key prefix for per-player deck usage — invalidated by useDeckMutations. */
+export const DECK_USAGE_KEY = ['deck-usage']
+
 /**
- * Composable for managing a player's commander decks.
- * Fetches the decks + round_results to determine which are in use.
- * SSR-friendly wrapper around the store.
+ * A player's commander decks plus their event usage (ADR-015): decks derive
+ * from the cached ['decks'] Colada query, usage from a per-player
+ * ['deck-usage', id] query over round_results (which decks were played, for
+ * the UI's in-use badge/guard).
  *
  * @param playerId - Reactive ref to the player_id (may be undefined initially)
  */
 export function useCommanderDecks(playerId: Ref<number | undefined>) {
-  const store = useCommanderDeckStore()
   const supabase = useSupabaseClient()
 
-  // Fetch usage data (round_results) via useAsyncData for SSR
-  const { data: usageData, pending, error } = useAsyncData<{ usage: RoundResultUsage[] }>(
-    () => playerId.value ? `commander-decks-usage-by-player-${playerId.value}` : 'commander-decks-usage-none',
-    async () => {
-      if (!playerId.value) {
-        return { usage: [] }
-      }
+  const { decks, isLoading: decksLoading, error } = usePlayerDecks(playerId)
 
-      // Ensure store has fetched decks for this player
-      await store.fetchDecksByPlayer(playerId.value)
+  const { data: usageData, isLoading: usageLoading } = useQuery({
+    key: () => [...DECK_USAGE_KEY, playerId.value ?? 0],
+    query: async (): Promise<RoundResultUsage[]> => {
+      if (!playerId.value) return []
 
-      // Fetch round_results for this player to determine deck usage
-      const { data: usageRows } = await supabase
+      const { data, error: usageError } = await supabase
         .from('round_results')
         .select('commander_1, commander_2')
         .eq('player_id', playerId.value)
 
-      return {
-        usage: usageRows || []
-      }
+      if (usageError) throw usageError
+      return data ?? []
     },
-    {
-      server: true,
-      default: () => ({ usage: [] }),
-      watch: [playerId]
-    }
-  )
-
-  // Decks are read directly from the reactive store — mutations are instant
-  const decks = computed(() => {
-    if (!playerId.value) return []
-    return store.decks.filter(d => d.player_id === playerId.value)
   })
+
+  const pending = computed(() => decksLoading.value || usageLoading.value)
 
   // Build a usage map: key = "commander1|commander2" → count
   const usageMap = computed(() => {
     const map = new Map<string, number>()
-    for (const row of usageData.value?.usage || []) {
+    for (const row of usageData.value ?? []) {
       const key = `${row.commander_1 ?? ''}|${row.commander_2 ?? ''}`
       map.set(key, (map.get(key) || 0) + 1)
     }
@@ -78,13 +66,6 @@ export function useCommanderDecks(playerId: Ref<number | undefined>) {
     pending,
     error,
     isDeckInUse,
-    getDeckEventCount,
-    refresh: async () => {
-      if (playerId.value) {
-        const result = await store.fetchDecksByPlayer(playerId.value)
-        return result
-      }
-      return []
-    }
+    getDeckEventCount
   }
 }

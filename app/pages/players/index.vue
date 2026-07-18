@@ -7,9 +7,11 @@ const { t } = useI18n()
 useSeoMeta({ title: t('player.pageTitle') })
 
 const playersStore = usePlayerStore()
-const decksStore = useCommanderDeckStore()
 const statsStore = usePlayerStatsStore()
 const toast = useToast()
+
+// Colada cache of all decks (ADR-015) — used for the per-player deck counts
+const { data: decksData } = useDecksQuery()
 
 const {
   searchQuery, showOnlyWithDecks, sortBy, sortDirection,
@@ -17,7 +19,7 @@ const {
 } = usePlayersFilter(
   computed(() => playersStore.players),
   statsStore.getStat,
-  (id) => decksStore.getDecksByPlayerId(id).length
+  (id) => (decksData.value ?? []).filter(d => d.player_id === id).length
 )
 
 const showCreatePlayerModal = ref(false)
@@ -36,7 +38,6 @@ async function handlePlayerCreate(player: NewPlayer) {
 
 onMounted(() => {
   if (playersStore.players.length === 0) playersStore.fetchPlayers()
-  if (!decksStore.initialized) decksStore.fetchDecks()
   if (!statsStore.initialized) statsStore.fetchStats()
 })
 </script>

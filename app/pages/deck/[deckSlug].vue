@@ -7,12 +7,12 @@ const deckSlug = route.params.deckSlug as string
 
 const { t } = useI18n()
 
-const commanderDecksStore = useCommanderDeckStore()
 const playersStore = usePlayerStore()
 
-// Fetch all decks and players
+// Colada cache of all decks (ADR-015); players still store-based for now
+const { data: decksData } = useDecksQuery()
+
 onMounted(() => {
-  commanderDecksStore.fetchDecks()
   if (playersStore.players.length === 0) {
     playersStore.fetchPlayers()
   }
@@ -20,7 +20,7 @@ onMounted(() => {
 
 // Find all decks with matching commander_1_name slug
 const matchingDecks = computed(() => {
-  return commanderDecksStore.decks.filter((d: CommanderDeck) =>
+  return (decksData.value ?? []).filter((d: CommanderDeck) =>
     slugify(d.commander_1_name) === deckSlug
   )
 })

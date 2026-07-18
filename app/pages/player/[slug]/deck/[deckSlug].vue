@@ -8,15 +8,14 @@ const deckSlug = route.params.deckSlug as string
 
 const { t } = useI18n()
 
-const commanderDecksStore = useCommanderDeckStore()
-
 const { player, playerId } = usePlayerBySlug(slug)
+
+// Colada cache of the player's decks (ADR-015)
+const { decks: playerDecks } = usePlayerDecks(playerId)
 
 // Look up deck by commander 1 slug match (or exact name)
 const deck = computed(() => {
-  if (!playerId.value) return null
-  const decks = commanderDecksStore.getDecksByPlayerId(playerId.value)
-  return decks.find((d: CommanderDeck) => {
+  return playerDecks.value.find((d: CommanderDeck) => {
     const c1Slug = slugify(d.commander_1_name)
     return c1Slug === deckSlug
   }) ?? null
@@ -44,10 +43,9 @@ const breadcrumbItems = useBreadcrumb(() => [
   { label: commanderDisplayName.value }
 ])
 
+// The decks themselves come from the Colada ['decks'] query (auto-fetched);
+// only the Scryfall card data still needs a manual kick.
 onMounted(() => {
-  if (playerId.value && commanderDecksStore.getDecksByPlayerId(playerId.value).length === 0) {
-    commanderDecksStore.fetchDecksByPlayer(playerId.value)
-  }
   fetchAllData()
 })
 

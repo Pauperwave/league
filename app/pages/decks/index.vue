@@ -5,12 +5,9 @@ import type { CommanderDeck } from '#shared/utils/types'
 
 const { t } = useI18n()
 
-const commanderDecksStore = useCommanderDeckStore()
-
-// Fetch all decks
-onMounted(() => {
-  commanderDecksStore.fetchDecks()
-})
+// Colada cache of all decks (ADR-015) — SSR-prefetched, shared across pages
+const { data: decksData, isLoading: decksLoading } = useDecksQuery()
+const allDecks = computed(() => decksData.value ?? [])
 
 // Aggregate stats per commander from materialized view
 const { data: commanderStatsList } = useAllCommanderStats()
@@ -39,7 +36,7 @@ function toggleDirection() {
 // Fetch commander data when color or mana-cost sort is selected
 watch(selectedSort, async (newSort) => {
   if ((newSort === 'color' || newSort === 'mana-cost') && commanderCache.value.size === 0) {
-    const uniqueCommanders: string[] = [...new Set(commanderDecksStore.decks.map((d: CommanderDeck) => d.commander_1_name))]
+    const uniqueCommanders: string[] = [...new Set(allDecks.value.map((d: CommanderDeck) => d.commander_1_name))]
     if (uniqueCommanders.length > 0) {
       commanderLoading.value = true
       const supabase = useSupabaseClient()
@@ -113,7 +110,7 @@ const SORT_COMPARATORS: Record<string, (a: CommanderDeck, b: CommanderDeck) => n
 }
 
 const sortedDecks = computed(() => {
-  const decks = [...commanderDecksStore.decks]
+  const decks = [...allDecks.value]
   const comparator = SORT_COMPARATORS[selectedSort.value] ?? compareAlphabetical
   const multiplier = sortDirection.value === 'asc' ? 1 : -1
 
@@ -169,7 +166,7 @@ const breadcrumbItems = useBreadcrumb(() => [
     </PageHeaderRow>
 
     <!-- Loading -->
-    <div v-if="commanderDecksStore.loading || commanderLoading" class="flex items-center justify-center py-12">
+    <div v-if="decksLoading || commanderLoading" class="flex items-center justify-center py-12">
       <UIcon :name="ICONS.loading" class="animate-spin text-3xl text-muted" />
     </div>
 

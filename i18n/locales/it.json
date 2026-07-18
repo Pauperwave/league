@@ -651,11 +651,7 @@
       "registerError": "Errore nella registrazione in lista d'attesa"
     },
     "deck": {
-      "loadError": "Errore nel caricamento dei deck",
-      "createError": "Errore nella creazione del deck",
-      "updateError": "Errore nella modifica del deck",
-      "inUseError": "Non è possibile eliminare questo deck perché è stato usato in un evento",
-      "deleteError": "Errore nella eliminazione del deck"
+      "inUseError": "Non è possibile eliminare questo deck perché è stato usato in un evento"
     },
     "kill": {
       "alreadyRegistered": "Uccisione già registrata",
