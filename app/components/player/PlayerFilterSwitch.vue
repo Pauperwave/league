@@ -1,25 +1,25 @@
 <!-- app\components\player\PlayerFilterSwitch.vue -->
 <script setup lang="ts">
 
-const playersStore = usePlayerStore()
-
-// Colada cache of all decks (ADR-015)
+// Colada caches (ADR-015) — shared with the pages, no refetch
+const { data: playersData } = usePlayersQuery()
 const { data: decksData } = useDecksQuery()
 
 const showOnlyWithDecks = defineModel<boolean>('modelValue', { required: true })
 
 const { t } = useI18n()
 
+const players = computed(() => playersData.value ?? [])
 const playerIdsWithDecks = computed(() => new Set((decksData.value ?? []).map(d => d.player_id)))
 
 const playersWithDecksCount = computed(() =>
-  playersStore.players.filter(p => playerIdsWithDecks.value.has(p.player_id)).length,
+  players.value.filter(p => playerIdsWithDecks.value.has(p.player_id)).length,
 )
 
 const label = computed(() =>
   showOnlyWithDecks.value
     ? t('player.filterSwitch.onlyWithDecks', { count: playersWithDecksCount.value })
-    : t('player.filterSwitch.allPlayers', { count: playersStore.players.length }),
+    : t('player.filterSwitch.allPlayers', { count: players.value.length }),
 )
 </script>
 

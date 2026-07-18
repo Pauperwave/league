@@ -18,14 +18,15 @@ const emit = defineEmits<{
   delete: [deck: CommanderDeck]
 }>()
 
-const playersStore = usePlayerStore()
+// Colada cache of all players (ADR-015) — shared, no refetch
+const { data: playersData } = usePlayersQuery()
 
 /** True when showing in aggregate mode (no specific player context) */
 const isAggregate = computed(() => !props.playerSlug)
 
 const lenderName = computed(() => {
   if (!props.deck.is_borrowed || !props.deck.lender_id) return null
-  const lender = playersStore.players.find(p => p.player_id === props.deck.lender_id)
+  const lender = (playersData.value ?? []).find(p => p.player_id === props.deck.lender_id)
   return lender ? t('deck.lentBy', { name: `${lender.player_name} ${lender.player_surname}` }) : null
 })
 

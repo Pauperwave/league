@@ -20,17 +20,10 @@ const emit = defineEmits<{
 
 const open = defineModel<boolean>('open', { default: false })
 const { t } = useI18n()
-const playersStore = usePlayerStore()
-
 const { isBorrowed, lenderId, lenderOptions } = useLenderSelection(() => props.playerId)
 
 watch(open, async (isOpen) => {
   if (!isOpen) return
-
-  // Ensure players are loaded before showing options
-  if (playersStore.players.length === 0) {
-    await playersStore.fetchPlayers()
-  }
 
   const d = props.deck
   if (d) {

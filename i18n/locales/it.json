@@ -644,10 +644,8 @@
       "deleteError": "Errore nell'eliminazione regolamento"
     },
     "player": {
-      "loadError": "Errore nel caricamento giocatori",
       "createError": "Errore nella creazione giocatore",
       "updateError": "Errore nella modifica giocatore",
-      "alreadyInWaitingList": "Giocatore già nella lista d'attesa",
       "registerError": "Errore nella registrazione in lista d'attesa"
     },
     "deck": {

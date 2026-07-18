@@ -2,7 +2,6 @@
 // fallow-ignore-file code-duplication -- intentional store CRUD boilerplate, see app/stores/CLAUDE.md
 import type { Event, EventInsert, StandingWithPlayer, Player, Pairing, PairingWithResults } from '#shared/utils/types'
 import type { Database } from '#shared/utils/types/database'
-import { sanitizePlayer } from './players'
 import type { PairingHistoryEntry } from '~/composables/event-pairing/pairingOptimizer'
 
 type PairingRoundIds = Pick<Pairing, 'pairing_round' | 'pairing_player1_id' | 'pairing_player2_id' | 'pairing_player3_id' | 'pairing_player4_id'>

@@ -3,15 +3,12 @@
 import type { Player, NewPlayer } from '#shared/utils/types'
 
 interface EventPlayersDeps {
-  // Stores
-  playerStore: ReturnType<typeof import('~/stores/players').usePlayerStore>
-
   // Actions from useEventPage
   addToWaitingList: (playerIds: number[]) => Promise<void>
   removeFromWaitingList: (playerId: number) => Promise<void>
 
   // State
-  players: Ref<import('#shared/utils/types').Player[]>
+  players: Ref<Player[]>
 
   // Modal refs
   showCreatePlayerModal: Ref<boolean>
@@ -23,14 +20,16 @@ interface EventPlayersDeps {
 
 /**
  * Composable for player management actions within an event context.
+ * Player create/update go through the Colada mutations (ADR-015).
  */
 export function useEventPlayers(deps: EventPlayersDeps) {
   const {
-    playerStore, addToWaitingList, removeFromWaitingList,
+    addToWaitingList, removeFromWaitingList,
     players, showCreatePlayerModal, playerToEdit, toast,
   } = deps
 
   const { t } = useI18n()
+  const { createPlayer, updatePlayer } = usePlayerMutations()
 
   function handleCreateNewPlayer() {
     playerToEdit.value = null
@@ -46,20 +45,28 @@ export function useEventPlayers(deps: EventPlayersDeps) {
   }
 
   async function handlePlayerCreate(player: NewPlayer) {
-    const result = await playerStore.createPlayer(player)
-    if (result?.success && result.data) {
-      await addToWaitingList([result.data.player_id])
-      showCreatePlayerModal.value = false
-      toast.add({ title: t('event.playerCreatedTitle'), description: t('event.playerCreatedDescription', { name: `${result.data.player_name} ${result.data.player_surname}` }), color: 'success' })
+    let created
+    try {
+      ({ player: created } = await createPlayer.mutateAsync(player))
+    } catch (err) {
+      toast.add({ title: t('store.player.createError'), description: toErrorMessage(err, t('store.player.createError')), color: 'error' })
+      return
     }
+    await addToWaitingList([created.player_id])
+    showCreatePlayerModal.value = false
+    const display = sanitizePlayer(created)
+    toast.add({ title: t('event.playerCreatedTitle'), description: t('event.playerCreatedDescription', { name: `${display.player_name} ${display.player_surname}` }), color: 'success' })
   }
 
   async function handlePlayerUpdate(payload: { id: number, data: NewPlayer }) {
-    const result = await playerStore.updatePlayer(payload.id, payload.data)
-    if (result?.success) {
-      showCreatePlayerModal.value = false
-      toast.add({ title: t('event.playerUpdatedTitle'), color: 'success' })
+    try {
+      await updatePlayer.mutateAsync(payload)
+    } catch (err) {
+      toast.add({ title: t('store.player.updateError'), description: toErrorMessage(err, t('store.player.updateError')), color: 'error' })
+      return
     }
+    showCreatePlayerModal.value = false
+    toast.add({ title: t('event.playerUpdatedTitle'), color: 'success' })
   }
 
   async function handlePlayerSelectFromModal(playerId: number) {

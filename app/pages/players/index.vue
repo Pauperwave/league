@@ -1,23 +1,27 @@
 <!-- app\pages\players\index.vue -->
 <script setup lang="ts">
+// fallow-ignore-file code-duplication -- create-player handler boilerplate shared with useEventPlayers (the post-create flows differ: plain toast here, waitlist registration there)
 import type { NewPlayer } from '#shared/utils/types'
 
 const { t } = useI18n()
 
 useSeoMeta({ title: t('player.pageTitle') })
 
-const playersStore = usePlayerStore()
 const statsStore = usePlayerStatsStore()
 const toast = useToast()
 
-// Colada cache of all decks (ADR-015) — used for the per-player deck counts
+// Colada caches (ADR-015): players list + all decks for the per-player counts
+const { data: playersData, isLoading: playersLoading } = usePlayersQuery()
+const players = computed(() => playersData.value ?? [])
 const { data: decksData } = useDecksQuery()
+
+const { createPlayer } = usePlayerMutations()
 
 const {
   searchQuery, showOnlyWithDecks, sortBy, sortDirection,
   filteredPlayers, emptyState, getSortLabel
 } = usePlayersFilter(
-  computed(() => playersStore.players),
+  players,
   statsStore.getStat,
   (id) => (decksData.value ?? []).filter(d => d.player_id === id).length
 )
@@ -25,19 +29,27 @@ const {
 const showCreatePlayerModal = ref(false)
 
 async function handlePlayerCreate(player: NewPlayer) {
-  const result = await playersStore.createPlayer(player)
-  if (result?.success && result.data) {
-    showCreatePlayerModal.value = false
+  let created
+  try {
+    ({ player: created } = await createPlayer.mutateAsync(player))
+  } catch (err) {
     toast.add({
-      title: t('player.toast.createdTitle'),
-      description: t('player.toast.createdDescription', { name: `${result.data.player_name} ${result.data.player_surname}` }),
-      color: 'success'
+      title: t('store.player.createError'),
+      description: toErrorMessage(err, t('store.player.createError')),
+      color: 'error'
     })
+    return
   }
+  showCreatePlayerModal.value = false
+  const display = sanitizePlayer(created)
+  toast.add({
+    title: t('player.toast.createdTitle'),
+    description: t('player.toast.createdDescription', { name: `${display.player_name} ${display.player_surname}` }),
+    color: 'success'
+  })
 }
 
 onMounted(() => {
-  if (playersStore.players.length === 0) playersStore.fetchPlayers()
   if (!statsStore.initialized) statsStore.fetchStats()
 })
 </script>
@@ -53,7 +65,7 @@ onMounted(() => {
       v-model:sort-direction="sortDirection"
     />
 
-    <div v-if="playersStore.loading" class="flex items-center justify-center py-12">
+    <div v-if="playersLoading" class="flex items-center justify-center py-12">
       <UIcon :name="ICONS.loading" class="size-8 animate-spin text-primary" />
     </div>
 
@@ -76,7 +88,7 @@ onMounted(() => {
     <CreatePlayerModal
       v-model:open="showCreatePlayerModal"
       :player="null"
-      :existing-players="playersStore.players"
+      :existing-players="players"
       @create="handlePlayerCreate"
     />
   </div>

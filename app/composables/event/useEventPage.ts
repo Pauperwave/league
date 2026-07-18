@@ -1,11 +1,11 @@
 // app\composables\event\useEventPage.ts
 import type { Player, PairingWithResults } from '#shared/utils/types'
-import { usePlayerStore } from '~/stores/players'
 import { useEventUrl } from './useEventUrl'
 
 export function useEventPage() {
   const supabase = useSupabaseClient()
   const route = useRoute()
+  const toast = useToast()
   const { t } = useI18n()
 
   const leagueId = parseInt(route.params.leagueId as string)
@@ -15,10 +15,17 @@ export function useEventPage() {
   const { phaseFromQuery, roundFromQuery, syncUrl } = useEventUrl()
 
   const eventStore = useEventStore()
-  const playerStore = usePlayerStore()
   const { calculateTables, buildPreviewTables, formatTableEstimate } = useTableCalculator()
 
-  const { data: players } = usePlayers()
+  // Colada caches (ADR-015): players list + this event's waitroom
+  const { data: players } = usePlayersQuery()
+  const {
+    waitingPlayers,
+    waitroomEntries,
+    isLoading: waitroomLoading,
+    refresh: refreshWaitroom,
+  } = useWaitroom(eventId)
+  const { registerPlayers, unregisterPlayers } = useWaitroomMutations(eventId)
 
   // Colada resolves the league from the cached list (SSR-prefetched) — no
   // store, no manual fetch fallback (ADR-015).
@@ -46,7 +53,7 @@ export function useEventPage() {
   })
 
   const canStartEvent = computed(() => {
-    const count = playerStore.waitingPlayers.length
+    const count = waitingPlayers.value.length
     return count >= 3 && count !== 5
   })
 
@@ -63,7 +70,7 @@ export function useEventPage() {
   })
 
   const tableEstimate = computed(() => {
-    const count = playerStore.waitingPlayers.length
+    const count = waitingPlayers.value.length
     const result = calculateTables(count)
     if (!result.canPlay) {
       return count < 3
@@ -82,7 +89,7 @@ export function useEventPage() {
 
   const previewTables = computed<number[][]>(() => {
     if (eventStatus.value === 'registration') {
-      return buildPreviewTables([...playerStore.waitingPlayers])
+      return buildPreviewTables([...waitingPlayers.value])
     }
     const activePlayers = eventStore.standings.map(s => s.player_id)
     return buildPreviewTables(activePlayers)
@@ -94,15 +101,31 @@ export function useEventPage() {
   }
 
   function isInWaitingList(playerId: number) {
-    return playerStore.waitingPlayers.includes(playerId)
+    return waitingPlayers.value.includes(playerId)
   }
 
   async function addToWaitingList(playerIds: number[]) {
-    await playerStore.addToWaitingList(eventId, playerIds)
+    try {
+      await registerPlayers.mutateAsync(playerIds)
+    } catch (err) {
+      toast.add({
+        title: t('store.player.registerError'),
+        description: toErrorMessage(err, t('store.player.registerError')),
+        color: 'error'
+      })
+    }
   }
 
   async function removeFromWaitingList(playerId: number) {
-    await playerStore.removeFromWaitingList(eventId, playerId)
+    try {
+      await unregisterPlayers.mutateAsync([playerId])
+    } catch (err) {
+      toast.add({
+        title: t('store.player.registerError'),
+        description: toErrorMessage(err, t('store.player.registerError')),
+        color: 'error'
+      })
+    }
   }
 
   async function startEvent(playerOrder?: number[]) {
@@ -115,7 +138,7 @@ export function useEventPage() {
       eventStore.fetchEvents(leagueId, true),
       eventStore.fetchPairings(eventId, 1),
       eventStore.fetchStandings(eventId),
-      playerStore.fetchWaitingPlayers(eventId),
+      refreshWaitroom(),
     ])
 
     return true
@@ -145,7 +168,7 @@ export function useEventPage() {
     await Promise.all([
       eventStore.fetchEvents(leagueId, true),
       eventStore.fetchStandings(eventId),
-      playerStore.fetchWaitingPlayers(eventId),
+      refreshWaitroom(),
     ])
 
     // Only fetch pairings if we're still in playing phase (not back to registration)
@@ -184,8 +207,8 @@ export function useEventPage() {
   }
 
   async function refreshWaiting() {
-    await playerStore.fetchWaitingPlayers(eventId)
-    return playerStore.waitingPlayers
+    await refreshWaitroom()
+    return waitingPlayers.value
   }
 
   async function refreshStandings() {
@@ -236,7 +259,7 @@ export function useEventPage() {
     return eventStore.pairings
   })
 
-  const loading = computed(() => eventStore.loading || playerStore.loading)
+  const loading = computed(() => eventStore.loading || waitroomLoading.value)
 
   return {
     leagueId,
@@ -250,8 +273,8 @@ export function useEventPage() {
     currentPhase,
     phaseFromQuery,
     roundFromQuery,
-    waitingPlayers: computed(() => playerStore.waitingPlayers),
-    waitroomEntries: computed(() => playerStore.waitroomEntries),
+    waitingPlayers,
+    waitroomEntries,
     tableEstimate,
     previewTables,
     pairings: computed(() => eventStore.pairings),

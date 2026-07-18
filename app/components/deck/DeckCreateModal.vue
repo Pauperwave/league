@@ -29,8 +29,6 @@ const props = defineProps<{
 
 const { t } = useI18n()
 
-const playersStore = usePlayerStore()
-
 // — Form state —
 const commander1 = ref('')
 const commander2 = ref('')
@@ -46,11 +44,6 @@ const canSubmit = computed(() => {
 
 watch(open, async (isOpen) => {
   if (!isOpen) return
-
-  // Ensure players are loaded before showing options
-  if (playersStore.players.length === 0) {
-    await playersStore.fetchPlayers()
-  }
 
   commander1.value = ''
   commander2.value = ''

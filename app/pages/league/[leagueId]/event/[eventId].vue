@@ -57,7 +57,6 @@ const {
 } = useEventModals()
 
 const eventStore = useEventStore()
-const playerStore = usePlayerStore()
 const rankingsStore = useRankingsStore()
 const commandersStore = useCommandersStore()
 const killsStore = useKillsStore()
@@ -135,7 +134,6 @@ const lifecycle = useEventLifecycle({
 // ── Player Handlers ──────────────────────────────────────────────────────
 
 const playersHandlers = useEventPlayers({
-  playerStore,
   addToWaitingList,
   removeFromWaitingList,
   players,
