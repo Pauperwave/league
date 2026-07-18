@@ -87,6 +87,15 @@ export default defineNuxtConfig({
     },
   },
 
+  icon: {
+    // Scans source files at build time and inlines every icon used directly
+    // into the client JS bundle — avoids the runtime /api/_nuxt_icon/*.json
+    // fetch that otherwise happens the first time each icon renders.
+    clientBundle: {
+      scan: true
+    }
+  },
+
   robots: {
     disallow: ['/']
   },
