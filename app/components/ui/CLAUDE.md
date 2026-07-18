@@ -25,6 +25,12 @@ These two families solve different problems (row action *group* vs. one modal's 
 
 If a new modal needs a title/body/footer shell and is a create-or-edit form → `FormModal`. If it already has bespoke header/body and just needs the button row → `ModalFooterActions`. If it's a delete/destructive confirmation → `ConfirmModal`. Don't hand-roll a fourth footer pattern — extend one of these three first.
 
+### `defineEmits` payload types — export from the owning composable, never redeclare
+
+A `FormModal`-based component's `create`/`update` payload is a real type, not a one-off inline shape — **export it from the composable that owns the mutation the payload feeds** (e.g. `DeckUpdatePayload` from `useDeckMutations.ts`, `LeagueFormPayload`/`LeagueUpdatePayload` from `useLeagueMutations.ts`, `PlayerUpdatePayload` from `usePlayerMutations.ts`, `EventCreatePayload`/`EventUpdatePayload` from `EventFormModal.vue` itself since events' mutation takes DB-shaped fields the modal has to transform first), then `import type` it at every consumer: the modal's own `defineEmits<{...}>()`, the page/composable handler that receives the emit, and the mutation's own parameter type. Never write out `{ id: number; data: { ... } }` (or similar) by hand a second time.
+
+This was a real, shipped bug, not just style: `DeckEditModal.vue`'s `update` emit was typed `Partial<CommanderDeck>` while `useDeckMutations.ts`'s `updateDeck` mutation separately expected `Partial<DeckFormPayload>` — two hand-written types that happened to overlap enough to compile, so nothing caught them silently drifting apart. A one-line field rename in either type would have broken the other at runtime without a type error at the point of change. Exporting one canonical type turns that into a compile error at the actual point of change instead.
+
 ## Other pieces here
 
 - **`layout/ListPageShell`** — the list-page chrome (breadcrumb, home/title/add header row, error alert, loading spinner, content slot, `#extra` slot for always-mounted modals). Used by `leagues.vue`/`rulesets.vue`. Only reuse for pages that share that exact `min-h-screen bg-default` list-page shape — `decks/index.vue`/`players/index.vue` have a different shell (`container mx-auto p-6 space-y-6` with an inline header row) and weren't forced into this one.
