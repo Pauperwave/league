@@ -112,21 +112,24 @@ export async function fetchPlayerMatchHistory(
   return results
 }
 
-/** SSR-friendly composable for fetching player match history */
-export function usePlayerMatchHistory(playerId: Ref<number | undefined>) {
+/** Query key for a player's match history. */
+export const PLAYER_MATCH_HISTORY_KEY = ['player-match-history']
+
+/** A player's match history across all events (Colada, ADR-015). */
+export function usePlayerMatchHistory(playerId: MaybeRefOrGetter<number | undefined>) {
   const supabase = useSupabaseClient()
   const { t } = useI18n()
+  const unknownEventName = t('player.matchHistory.unknownEvent')
 
-  return useAsyncData<PlayerMatchHistory[]>(
-    () => `player-match-history-${playerId.value ?? 'none'}`,
-    () => {
-      if (!playerId.value) return Promise.resolve([])
-      return fetchPlayerMatchHistory(supabase, playerId.value, t('player.matchHistory.unknownEvent'))
+  const { data, isLoading, error } = useQuery({
+    key: () => [...PLAYER_MATCH_HISTORY_KEY, toValue(playerId) ?? 'none'],
+    enabled: () => toValue(playerId) !== undefined,
+    query: (): Promise<PlayerMatchHistory[]> => {
+      const id = toValue(playerId)
+      if (!id) return Promise.resolve([])
+      return fetchPlayerMatchHistory(supabase, id, unknownEventName)
     },
-    {
-      immediate: true,
-      server: true,
-      default: () => [],
-    },
-  )
+  })
+
+  return { data: computed(() => data.value ?? []), pending: isLoading, error }
 }

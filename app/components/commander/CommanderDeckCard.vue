@@ -44,7 +44,7 @@ const statsPageUrl = computed(() => {
   return `/player/${props.playerSlug}/deck/${slugify(props.deck.commander_1_name)}`
 })
 
-const { commander1Data, commander2Data, loading, fetchAllData } = useCommanderCards(
+const { commander1Data, commander2Data, loading } = useCommanderCards(
   () => props.deck.commander_1_name,
   () => props.deck.commander_2_name
 )
@@ -57,8 +57,6 @@ const eventCountLabel = computed(() =>
     ? t('deck.usedInEvents', props.eventCount!, { named: { count: props.eventCount } })
     : t('deck.notUsedInEvents')
 )
-
-onMounted(fetchAllData)
 </script>
 
 <template>

@@ -37,7 +37,7 @@ const decksWithPlayers = computed(() => {
 const commander1Name = computed(() => firstDeck.value?.commander_1_name ?? '')
 const commander2Name = computed(() => firstDeck.value?.commander_2_name ?? undefined)
 
-const { commander1Data, commander2Data, loading: scryfallLoading, fetchAllData } = useCommanderCards(
+const { commander1Data, commander2Data, loading: scryfallLoading } = useCommanderCards(
   commander1Name,
   commander2Name
 )
@@ -57,12 +57,6 @@ const breadcrumbItems = useBreadcrumb(() => [
   { label: t('deck.breadcrumb'), to: '/decks' },
   { label: commanderDisplayName.value }
 ])
-
-watch(() => firstDeck.value?.commander_1_name, () => {
-  if (firstDeck.value?.commander_1_name) {
-    fetchAllData()
-  }
-})
 </script>
 
 <template>

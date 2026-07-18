@@ -7,13 +7,13 @@ const { t } = useI18n()
 
 useSeoMeta({ title: t('player.pageTitle') })
 
-const statsStore = usePlayerStatsStore()
 const toast = useToast()
 
 // Colada caches (ADR-015): players list + all decks for the per-player counts
 const { data: playersData, isLoading: playersLoading } = usePlayersQuery()
 const players = computed(() => playersData.value ?? [])
 const { data: decksData } = useDecksQuery()
+const { getStat } = useAllPlayerStats()
 
 const { createPlayer } = usePlayerMutations()
 
@@ -22,7 +22,7 @@ const {
   filteredPlayers, emptyState, getSortLabel
 } = usePlayersFilter(
   players,
-  statsStore.getStat,
+  getStat,
   (id) => (decksData.value ?? []).filter(d => d.player_id === id).length
 )
 
@@ -48,10 +48,6 @@ async function handlePlayerCreate(player: NewPlayer) {
     color: 'success'
   })
 }
-
-onMounted(() => {
-  if (!statsStore.initialized) statsStore.fetchStats()
-})
 </script>
 
 <template>
@@ -74,7 +70,7 @@ onMounted(() => {
       :players="filteredPlayers"
       :sort-by="sortBy"
       :get-sort-label="getSortLabel"
-      :get-player-stat="statsStore.getStat"
+      :get-player-stat="getStat"
     />
 
     <PlayersEmptyState

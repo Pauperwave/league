@@ -27,7 +27,7 @@ const { data: deckStats } = useDeckStats(
   computed(() => deck.value?.commander_2_name ?? null)
 )
 
-const { commander1Data, commander2Data, loading: cardLoading, fetchAllData } = useCommanderCards(
+const { commander1Data, commander2Data, loading: cardLoading } = useCommanderCards(
   computed(() => deck.value?.commander_1_name ?? null),
   computed(() => deck.value?.commander_2_name ?? null)
 )
@@ -42,16 +42,6 @@ const breadcrumbItems = useBreadcrumb(() => [
   },
   { label: commanderDisplayName.value }
 ])
-
-// The decks themselves come from the Colada ['decks'] query (auto-fetched);
-// only the Scryfall card data still needs a manual kick.
-onMounted(() => {
-  fetchAllData()
-})
-
-watch(() => deck.value?.commander_1_name, () => {
-  fetchAllData()
-})
 </script>
 
 <template>

@@ -12,10 +12,6 @@ const allDecks = computed(() => decksData.value ?? [])
 // Aggregate stats per commander from materialized view
 const { data: commanderStatsList } = useAllCommanderStats()
 
-// Commander data for color / mana cost sorting (fetched lazily from DB)
-const commanderCache = ref(new Map<string, CommanderCard>())
-const commanderLoading = ref(false)
-
 // Sort state
 const sortOptions = [
   { label: t('deck.sortOptions.alphabetical'), value: 'alphabetical', icon: ICONS.sortAlpha },
@@ -33,19 +29,12 @@ function toggleDirection() {
   sortDirection.value = sortDirection.value === 'asc' ? 'desc' : 'asc'
 }
 
-// Fetch commander data when color or mana-cost sort is selected
-watch(selectedSort, async (newSort) => {
-  if ((newSort === 'color' || newSort === 'mana-cost') && commanderCache.value.size === 0) {
-    const uniqueCommanders: string[] = [...new Set(allDecks.value.map((d: CommanderDeck) => d.commander_1_name))]
-    if (uniqueCommanders.length > 0) {
-      commanderLoading.value = true
-      const supabase = useSupabaseClient()
-      const cards = await fetchCommandersByNames(uniqueCommanders, supabase)
-      commanderCache.value = cards
-      commanderLoading.value = false
-    }
-  }
-})
+// Commander data for color / mana-cost sorting, fetched only once one of
+// those sort modes is selected (Colada caches by the name set, ADR-015).
+const uniqueCommanderNames = computed(() => [...new Set(allDecks.value.map((d: CommanderDeck) => d.commander_1_name))])
+const needsCommanderData = computed(() => selectedSort.value === 'color' || selectedSort.value === 'mana-cost')
+const { data: commanderCacheData, isLoading: commanderLoading } = useCommandersByNamesQuery(uniqueCommanderNames, needsCommanderData)
+const commanderCache = computed(() => commanderCacheData.value ?? new Map<string, CommanderCard>())
 
 function getDeckKey(deck: CommanderDeck): string {
   return `${deck.commander_1_name}|${deck.commander_2_name ?? ''}`
