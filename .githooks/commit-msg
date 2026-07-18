@@ -12,6 +12,11 @@
 // league status values" — this is the one emoji that IS pinned, since it feeds the
 // version-bump hook's major-bump detection.
 //
+// This hook does NOT enforce it, but by project convention (see root CLAUDE.md)
+// version-bump commits are always exactly "chore(release): 🔖 bump version to X.Y.Z" —
+// no variation in type/scope/emoji. A differently-shaped bump commit still passes
+// this hook's general format check, so it won't catch a drift from that convention.
+//
 // Wired up via `git config core.hooksPath .githooks` (set automatically by
 // `pnpm install`'s postinstall script — see package.json).
 
