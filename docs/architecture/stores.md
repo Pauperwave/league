@@ -1,15 +1,10 @@
 # Pinia Stores
 
-10 stores using the **Setup API** pattern: 6 Supabase (persistent) + 4 Session (ephemeral).
+5 stores using the **Setup API** pattern: 1 lifecycle store (persistent, BFF-backed) + 4 Session (ephemeral). All other domains (leagues, rulesets, players, player stats, commander decks, deck/commander stats, match history) have migrated to Pinia Colada query composables (ADR-015) — see `docs/architecture/async-data-keys.md` for their query keys and `app/composables/CLAUDE.md` for the pattern.
 
 | Store | Type | File | Purpose |
 |-------|------|------|---------|
-| `useLeagueStore` | Supabase | `app/stores/leagues.ts` | League CRUD |
-| `useRulesetStore` | Supabase | `app/stores/rulesets.ts` | Ruleset CRUD |
-| `usePlayerStore` | Supabase | `app/stores/players.ts` | Players + waitroom |
-| `usePlayerStatsStore` | Supabase | `app/stores/player-stats.ts` | Denormalized `player_stats` read cache |
-| `useCommanderDeckStore` | Supabase | `app/stores/commander-decks.ts` | Commander deck CRUD |
-| `useEventStore` | Supabase | `app/stores/events.ts` | Events, standings, pairings, rounds |
+| `useEventStore` | Lifecycle | `app/stores/events.ts` | Event lifecycle state machine (registration → playing → ended), round scoring |
 | `useRankingsStore` | Session | `app/stores/rankings.ts` | Player rankings per pairing |
 | `useKillsStore` | Session | `app/stores/kills.ts` | Kill tracking in round |
 | `useVotesStore` | Session | `app/stores/votes.ts` | Deck/Play votes |
@@ -35,75 +30,19 @@ export const useXxxStore = defineStore('xxx', () => {
 
 ---
 
-## Supabase Stores
-
-Common patterns: `initialized` flag, `loading` state, `error` state, optimistic local updates.
-
-### `useLeagueStore`
-
-**State**: `leagues`, `currentLeague`, `error`, `initialized`, `loadingFetch/Create/Update/Delete`, `loading` (computed)
-
-**Getters**: `getLeagueById(id)`, `sortedLeagues` (by start date, newest first)
-
-**Actions**: `fetchLeagues`, `createLeague`, `updateLeague`, `deleteLeague`, `setCurrentLeague`, `clearError`
-
----
-
-### `useRulesetStore`
-
-**State**: `rulesets`, `loading`, `error`, `initialized`
-
-**Getters**: `getRulesetById(id)`
-
-**Actions**: `fetchRulesets`, `createRuleset`, `updateRuleset`, `deleteRuleset` (checks league usage first), `clearError`
-
----
-
-### `usePlayerStore`
-
-**Utility**: `sanitizePlayer<T>(player: T): T` — replaces `_` with spaces in names.
-
-**State**: `players` (sanitized), `waitingPlayers`, `waitroomEntries` (Map<playerId, insertedAt>), `loading`, `error`, `initialized`
-
-**Getters**: `getPlayerById(id)`, `getPlayersByIds(ids)`, `searchPlayers(query)`
-
-**Actions**: `fetchPlayers`, `createPlayer`, `updatePlayer`, `fetchWaitingPlayers`, `addToWaitingList`, `removeFromWaitingList`, `clearError`
-
----
-
-### `usePlayerStatsStore`
-
-**State**: `stats` (`PlayerStat[]`, from denormalized `player_stats` table), `initialized`, `loading`
-
-**Actions**: `fetchStats(force)`, `getStat(playerId, key)` (returns 0 if not found), `reset`
-
----
-
-### `useCommanderDeckStore`
-
-**State**: `decks` (`CommanderDeck[]`), `loading`, `error`, `initialized`
-
-**Getters**: `getDecksByPlayerId(playerId)`, `getDeckById(id)`
-
-**Actions**: `fetchDecks(force)`, plus standard create/update/delete CRUD (see `app/stores/CLAUDE.md`)
-
----
+## The Lifecycle Store
 
 ### `useEventStore`
 
-The most complex store. Uses `loadingCount` counter instead of boolean.
+The event lifecycle state machine — `currentEvent` + BFF `$fetch` actions + the ADR-007 `save*` seam. No Supabase client, no read caches (those live in `event/useEventQueries.ts` / `league/useLeagueStandingsQuery.ts`, refreshed by `useEventPage.refreshAfterLifecycle()`).
 
-**State**: `events`, `currentEvent`, `standings`, `pairings`, `pairingHistory`, `loadingCount`, `loading` (computed), `error`, `initialized` (per-league Record)
+**State**: `currentEvent`, `loading` (computed from `loadingCount`), `error`
 
-**Helpers**: `beginLoading()`, `endLoading()`, `upsertRoundResult(pairingId, playerId, data)`
+**Getters**: `isEventEnded`
 
-**Getters**: `getEventsByLeagueId(leagueId)`, `isEventEnded`
+**Event Lifecycle**: `createEvent`, `updateEvent`, `deleteEvent`, `startEvent` (validates 3+ players, not 5), `nextRound` (server scores the round, advances or ends the event, inserts next pairings), `turnBackRound` (rolls back a round or to registration), `setCurrentEvent`
 
-**Event Lifecycle**: `fetchEvents`, `createEvent`, `updateEvent`, `deleteEvent`, `startEvent` (validates 3+ players, not 5), `nextRound` (calculates scores, updates standings, creates pairings), `turnBackRound` (goes back or to registration), `setCurrentEvent`
-
-**Round Data**: `createPairings` (round 1 uses `playerOrder`, 2+ uses optimizer), `fetchPairings`, `fetchPairingHistory`, `submitRoundResult`, `updateRoundResult`, `saveVote`, `saveCommander`, `savePairingRankings`, `savePairingKills`
-
-**Standings**: `fetchStandings`, `fetchMultipleEventStandings`, `fetchLeagueStandings` (simple sum), `fetchLeagueResults` (ruleset scoring with participation bonus + tie-breakers)
+**Round writes** (ADR-007 `save*` seam, each a direct BFF `$fetch`): `saveVote`, `saveCommander`, `savePairingRankings`, `savePairingKills`
 
 **Score formula** (`nextRound`): `rankScore + kills × rule_set_kill + brew_votes × rule_set_brew + play_votes × rule_set_play`
 
@@ -163,17 +102,24 @@ Ephemeral UI state for the event page. No Supabase calls. `Map<number, ...>` pat
 
 ## Patterns
 
-### Composables
-Wrap store calls in `useAsyncData` for SSR:
+### Colada query composables (all non-lifecycle domains)
+Reads live in `useQuery` composables, not stores — see `app/composables/CLAUDE.md`'s "Colada domains" note and `docs/architecture/async-data-keys.md` for the key inventory:
 
 ```ts
-const { data, pending, error } = useAsyncData('key', async () => {
-  await store.fetchItems()
-  return store.items
-})
+export function useXxxQuery(id: number) {
+  const supabase = useSupabaseClient()
+  return useQuery({
+    key: ['xxx', id],
+    query: async () => {
+      const { data, error } = await supabase.from('xxx').select('*').eq('id', id)
+      if (error) throw error
+      return data
+    },
+  })
+}
 ```
 
-### Error Handling
+### Error Handling (lifecycle store + session stores)
 ```ts
 try {
   const { data, error: supaError } = await supabase.from('table').select('*')
@@ -189,10 +135,10 @@ try {
 
 ### Architecture
 1. **Setup API exclusively** — better TS inference, explicit public API
-2. **Two categories** — Supabase for persistent data, Session for ephemeral UI state
-3. **Loading strategies** — per-action booleans (`leagues`) vs counter (`events`)
-4. **Composables as orchestrators** — SSR support, stores manage actual state
-5. **Initialization flags** — prevent duplicate fetches on navigation
-6. **Optimistic updates** — local state updated immediately after successful mutation
+2. **Two remaining categories** — the lifecycle store (`events.ts`, BFF-backed state machine) and Session stores (ephemeral UI state); every other domain reads/writes through Colada query/mutation composables instead
+3. **Loading strategy** — `events.ts` uses a `loadingCount` counter since its actions nest; Colada composables expose `isLoading` per query
+4. **Composables as the read layer** — Colada's `useQuery` handles SSR + caching directly; no `useAsyncData` wrapper needed
+5. **Query keys as initialization** — Colada's own cache replaces the old per-store `initialized` flag pattern
+6. **Optimistic updates** — Colada mutations invalidate + refetch rather than hand-patching local state (see `app/composables/CLAUDE.md`)
 
 See [`PROGRESS.md`](../PROGRESS.md) for high-level architecture overview.

@@ -26,14 +26,8 @@ All keys follow the pattern:
 
 ## Current Key Inventory
 
-### Composables (`app/composables/supabase/`)
+No `useAsyncData` keys remain — every domain has migrated to Pinia Colada (ADR-015); see the table below.
 
-| File | Key Pattern | Parameters |
-|------|-------------|------------|
-| `usePlayerStats.ts` | `player-stats-by-player-${playerId}` | `playerId: Ref<number \| undefined>` |
-| `useDeckStats.ts` | `deck-stats-by-player-${playerId}-commander-${commanderName}` | `playerId, commander1Name, commander2Name` |
-| `useCommanderStats.ts` | `commander-stats-by-commander-${commanderName}` | `commander1Name, commander2Name` |
-| `useCommanderStats.ts` (all) | `all-commander-stats` | — |
 ### Pinia Colada query keys (ADR-015)
 
 Domains migrated to Pinia Colada use array query keys instead of `useAsyncData` keys — same collision rules apply, so register new ones here:
@@ -52,6 +46,14 @@ Domains migrated to Pinia Colada use array query keys instead of `useAsyncData` 
 | `event/useEventQueries.ts` | `['pairing-history', eventId]` | invalidated after lifecycle transitions (useEventPage) |
 | `league/useLeagueStandingsQuery.ts` | `['league-standings', leagueId]` | read-only aggregate |
 | `league/useLeagueStandingsQuery.ts` | `['event-standings-multi', ids]` | read-only aggregate (EventRanking) |
+| `players/usePlayerStats.ts` | `['player-stats', playerId]` | read-only |
+| `players/usePlayerStats.ts` (all) | `['all-player-stats']` | read-only (players list page) |
+| `players/usePlayerMatchHistory.ts` | `['player-match-history', playerId]` | read-only |
+| `commanders/useDeckStats.ts` | `['deck-stats', playerId, commander1Name]` | read-only |
+| `commanders/useCommanderStats.ts` | `['commander-stats', commander1Name]` | read-only |
+| `commanders/useCommanderStats.ts` (all) | `['all-commander-stats']` | read-only (decks browse page) |
+| `commanders/useCommanderCards.ts` | `['commander-card', cardName]` | read-only (Scryfall card data) |
+| `commanders/useCommanderCards.ts` (batch) | `['commanders-by-names', sortedNameSet]` | read-only (decks browse color/mana-cost sort) |
 
 ### Pages
 
