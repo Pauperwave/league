@@ -16,6 +16,12 @@ export interface DeckFormPayload {
   lender_id: number | null
 }
 
+/** The payload emitted by DeckEditModal. */
+export interface DeckUpdatePayload {
+  id: number
+  updates: Partial<DeckFormPayload>
+}
+
 export function useDeckMutations() {
   const queryCache = useQueryCache()
   const invalidate = () => {
@@ -34,7 +40,7 @@ export function useDeckMutations() {
   // depth") as the route count grows — the explicit generic keeps the
   // response typed instead.
   const updateDeck = useMutation({
-    mutation: ({ id, updates }: { id: number, updates: Partial<DeckFormPayload> }) =>
+    mutation: ({ id, updates }: DeckUpdatePayload) =>
       $fetch<{ deck: CommanderDeck }>(`/api/decks/${id}/update` as string, { method: 'POST', body: updates }),
     onSettled: invalidate,
   })

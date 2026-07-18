@@ -1,10 +1,5 @@
 // app\composables\league\useLeagueUpdate.ts
-import type { LeagueFormPayload } from '~/composables/league/useLeagueMutations'
-
-export interface UpdateLeagueData {
-  id: number
-  data: LeagueFormPayload
-}
+import type { LeagueUpdatePayload } from '~/composables/league/useLeagueMutations'
 
 /** Shared league-edit submit handler used by leagues.vue and league/[id].vue. */
 export function useLeagueUpdate(onSuccess: () => void) {
@@ -12,7 +7,7 @@ export function useLeagueUpdate(onSuccess: () => void) {
   const toast = useToast()
   const { t } = useI18n()
 
-  async function updateLeague({ id, data }: UpdateLeagueData) {
+  async function updateLeague({ id, data }: LeagueUpdatePayload) {
     try {
       await updateLeagueMutation.mutateAsync({ id, data })
     } catch (err) {

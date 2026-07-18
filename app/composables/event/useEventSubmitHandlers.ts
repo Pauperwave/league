@@ -1,6 +1,7 @@
 // app\composables\event\useEventSubmitHandlers.ts
 
 import type { Kill } from '#shared/utils/types'
+import type { RankingEntry } from '~/stores/rankings'
 
 interface SubmitHandlerDeps {
   rankingsStore: ReturnType<typeof import('~/stores/rankings').useRankingsStore>
@@ -29,7 +30,7 @@ export function useEventSubmitHandlers(deps: SubmitHandlerDeps) {
 
   const { t } = useI18n()
 
-  function handleScoreSubmit(ranking: number[], rankingWithRanks: { playerId: number; rank: number }[]) {
+  function handleScoreSubmit(ranking: number[], rankingWithRanks: RankingEntry[]) {
     if (selectedPairingId.value !== null) {
       rankingsStore.setRankingWithRanks(selectedPairingId.value, rankingWithRanks)
       toast.add({ title: t('event.rankingsSavedTitle'), color: 'success' })

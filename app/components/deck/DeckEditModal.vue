@@ -2,6 +2,7 @@
 <script setup lang="ts">
 // fallow-ignore-file code-duplication -- FormModal invocation boilerplate, see app/components/ui/CLAUDE.md
 import type { CommanderDeck } from '#shared/utils/types'
+import type { DeckUpdatePayload } from '~/composables/deck/useDeckMutations'
 import * as v from 'valibot'
 
 const DeckUpdateSchema = v.object({
@@ -15,7 +16,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  update: [{ id: number; updates: Partial<CommanderDeck> }]
+  update: [DeckUpdatePayload]
 }>()
 
 const open = defineModel<boolean>('open', { default: false })

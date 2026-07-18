@@ -2,6 +2,7 @@
 <script setup lang="ts">
 // fallow-ignore-file code-duplication -- FormModal invocation boilerplate + props/emit shape coincidence, see app/components/ui/CLAUDE.md
 import type { Player, NewPlayer } from '#shared/utils/types'
+import type { PlayerUpdatePayload } from '~/composables/players/usePlayerMutations'
 import { findSimilarPlayers } from '#shared/utils/playerSimilarity'
 import * as v from 'valibot'
 
@@ -14,7 +15,7 @@ const { t } = useI18n()
 
 const emit = defineEmits<{
   create: [player: NewPlayer]
-  update: [{ id: number, data: NewPlayer }]
+  update: [PlayerUpdatePayload]
   select: [playerId: number]
 }>()
 

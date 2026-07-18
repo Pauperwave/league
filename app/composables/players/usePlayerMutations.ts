@@ -5,6 +5,12 @@
 // delete — deliberately, players are referenced everywhere.
 import type { Player, NewPlayer } from '#shared/utils/types'
 
+/** The update payload emitted by CreatePlayerModal. */
+export interface PlayerUpdatePayload {
+  id: number
+  data: NewPlayer
+}
+
 export function usePlayerMutations() {
   const queryCache = useQueryCache()
   const invalidate = () => queryCache.invalidateQueries({ key: PLAYERS_KEY })
@@ -26,7 +32,7 @@ export function usePlayerMutations() {
   // depth") as the route count grows — the explicit generic keeps the
   // response typed instead.
   const updatePlayer = useMutation({
-    mutation: ({ id, data }: { id: number, data: NewPlayer }) =>
+    mutation: ({ id, data }: PlayerUpdatePayload) =>
       $fetch<{ player: Player }>(`/api/players/${id}/update` as string, {
         method: 'POST',
         body: {

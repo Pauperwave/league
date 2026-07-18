@@ -2,6 +2,7 @@
 import type { Ref } from 'vue'
 import { getPairingPlayerIds } from '#shared/utils/types'
 import type { StandingWithPlayer, PairingWithResults, EventStatus } from '#shared/utils/types'
+import type { RankingEntry } from '~/stores/rankings'
 
 interface RulesetValues {
   rule_set_rank1: number
@@ -48,7 +49,7 @@ export function calculatePlayerTableScore(
   playerId: number,
   playerIds: number[],
   posValues: number[],
-  ranking: { playerId: number; rank: number }[] | null,
+  ranking: RankingEntry[] | null,
   tableKills: { killerId: number; victimId: number }[],
   r: RulesetValues,
   getDeckVote: (playerId: number) => number | null,

@@ -3,6 +3,7 @@
 // fallow-ignore-file code-duplication -- FormModal invocation boilerplate, see app/components/ui/CLAUDE.md
 import type { CalendarDate } from '@internationalized/date'
 import type { Ruleset, League } from '#shared/utils/types'
+import type { LeagueFormPayload, LeagueUpdatePayload } from '~/composables/league/useLeagueMutations'
 import * as v from 'valibot'
 
 const { t } = useI18n()
@@ -21,21 +22,8 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  create: [{
-    name: string
-    startsAt: string | null
-    endsAt: string | null
-    rulesetId: number | null
-  }]
-  update: [{
-    id: number
-    data: {
-      name: string
-      startsAt: string | null
-      endsAt: string | null
-      rulesetId: number | null
-    }
-  }]
+  create: [LeagueFormPayload]
+  update: [LeagueUpdatePayload]
 }>()
 
 const open = defineModel<boolean>('open', { default: false })

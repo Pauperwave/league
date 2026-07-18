@@ -3,6 +3,7 @@
 import type { Pairing, Player } from '#shared/utils/types'
 import TableSeatItem from '../TableSeatItem.vue'
 import type { RankingGridPlayer } from '~/composables/tables/useRankingGrid'
+import type { RankingEntry } from '~/stores/rankings'
 
 const { t } = useI18n()
 
@@ -13,11 +14,11 @@ type DatabasePlayer = Pick<Player, 'player_id' | 'player_name' | 'player_surname
 const props = defineProps<{
   pairing: Pairing | null
   allPlayers: DatabasePlayer[]
-  savedRankingWithRanks?: { playerId: number; rank: number }[]
+  savedRankingWithRanks?: RankingEntry[]
 }>()
 
 const emit = defineEmits<{
-  submit: [ranking: number[], rankingWithRanks: { playerId: number; rank: number }[]]
+  submit: [ranking: number[], rankingWithRanks: RankingEntry[]]
   cancel: []
 }>()
 

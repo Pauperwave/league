@@ -1,7 +1,7 @@
 <!-- app\pages\player\[slug]\index.vue -->
 <script setup lang="ts">
 import type { CommanderDeck } from '#shared/utils/types'
-import type { DeckFormPayload } from '~/composables/deck/useDeckMutations'
+import type { DeckFormPayload, DeckUpdatePayload } from '~/composables/deck/useDeckMutations'
 
 const route = useRoute()
 const slug = route.params.slug as string
@@ -58,7 +58,7 @@ function notifyDeckError(description: string) {
   })
 }
 
-async function handleUpdateDeck({ id, updates }: { id: number; updates: Partial<CommanderDeck> }) {
+async function handleUpdateDeck({ id, updates }: DeckUpdatePayload) {
   try {
     await updateDeck.mutateAsync({ id, updates })
   } catch (err) {

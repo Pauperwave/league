@@ -1,6 +1,7 @@
 // app\composables\event\useEventPlayers.ts
 
 import type { Player, NewPlayer } from '#shared/utils/types'
+import type { PlayerUpdatePayload } from '~/composables/players/usePlayerMutations'
 
 interface EventPlayersDeps {
   // Actions from useEventPage
@@ -58,7 +59,7 @@ export function useEventPlayers(deps: EventPlayersDeps) {
     toast.add({ title: t('event.playerCreatedTitle'), description: t('event.playerCreatedDescription', { name: `${display.player_name} ${display.player_surname}` }), color: 'success' })
   }
 
-  async function handlePlayerUpdate(payload: { id: number, data: NewPlayer }) {
+  async function handlePlayerUpdate(payload: PlayerUpdatePayload) {
     try {
       await updatePlayer.mutateAsync(payload)
     } catch (err) {

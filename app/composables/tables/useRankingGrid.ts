@@ -1,5 +1,6 @@
 // app\composables\tables\useRankingGrid.ts
 import type { Seat } from '#shared/utils/types'
+import type { RankingEntry } from '~/stores/rankings'
 
 export interface RankingGridPlayer {
   id: number
@@ -21,7 +22,7 @@ interface RankEntry { playerId: number; rank: number; col: number }
  */
 export function useRankingGrid(
   players: () => (RankingGridPlayer | undefined)[],
-  savedRankingWithRanks?: () => { playerId: number; rank: number }[] | undefined
+  savedRankingWithRanks?: () => RankingEntry[] | undefined
 ) {
   const grid = ref<(Seat | null)[][]>([])
 
@@ -184,7 +185,7 @@ export function useRankingGrid(
     return extractRankedPlayers().map(r => r.playerId)
   }
 
-  function getRankingWithRanks(): { playerId: number; rank: number }[] {
+  function getRankingWithRanks(): RankingEntry[] {
     return extractRankedPlayers().map(r => ({ playerId: r.playerId, rank: r.rank }))
   }
 

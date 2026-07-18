@@ -13,6 +13,12 @@ export interface LeagueFormPayload {
   rulesetId: number | null
 }
 
+/** The update payload emitted by LeagueFormModal. */
+export interface LeagueUpdatePayload {
+  id: number
+  data: LeagueFormPayload
+}
+
 export function useLeagueMutations() {
   const queryCache = useQueryCache()
   const invalidate = () => queryCache.invalidateQueries({ key: LEAGUES_KEY })
@@ -28,7 +34,7 @@ export function useLeagueMutations() {
   // depth") as the route count grows — the explicit generic keeps the
   // response typed instead.
   const updateLeague = useMutation({
-    mutation: ({ id, data }: { id: number, data: LeagueFormPayload }) =>
+    mutation: ({ id, data }: LeagueUpdatePayload) =>
       $fetch<{ league: League }>(`/api/leagues/${id}/update` as string, { method: 'POST', body: data }),
     onSettled: invalidate,
   })

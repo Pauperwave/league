@@ -1,6 +1,7 @@
 <!-- app\components\event\modal\EventScoreModal.vue -->
 <script setup lang="ts">
 import type { PairingWithResults, Player } from '#shared/utils/types'
+import type { RankingEntry } from '~/stores/rankings'
 
 const { t } = useI18n()
 
@@ -21,7 +22,7 @@ const {
 }>()
 
 const emit = defineEmits<{
-  submit: [ranking: number[], rankingWithRanks: { playerId: number; rank: number }[]]
+  submit: [ranking: number[], rankingWithRanks: RankingEntry[]]
   cancel: []
 }>()
 
