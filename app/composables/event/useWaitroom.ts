@@ -11,7 +11,7 @@ export const WAITROOM_KEY = ['waitroom']
 export function useWaitroom(eventId: number) {
   const supabase = useSupabaseClient()
 
-  const { data, isLoading, error, refresh } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     key: [...WAITROOM_KEY, eventId],
     query: async (): Promise<{ player_id: number, inserted_at: string | null }[]> => {
       const { data: rows, error: waitroomError } = await supabase
@@ -32,7 +32,7 @@ export function useWaitroom(eventId: number) {
     new Map((data.value ?? []).map(w => [w.player_id, w.inserted_at ?? '']))
   )
 
-  return { waitingPlayers, waitroomEntries, isLoading, error, refresh }
+  return { waitingPlayers, waitroomEntries, isLoading, error, refetch }
 }
 
 export function useWaitroomMutations(eventId: number) {

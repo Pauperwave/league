@@ -40,7 +40,7 @@ const rulesets = computed(() => rulesetsData.value ?? [])
 // Colada caches (ADR-015): the league's events and its summed standings
 // (the latter finally on its own key, no longer sharing the event store's
 // standings slot with the per-event standings).
-const { data: events, isLoading: eventsLoading, refresh: refreshEvents } = useEventsQuery(leagueId)
+const { data: events, isLoading: eventsLoading, refetch: refreshEvents } = useEventsQuery(leagueId)
 const { data: leagueStandings, error: standingsError } = useLeagueStandingsQuery(leagueId)
 const standings = computed(() => leagueStandings.value ?? [])
 

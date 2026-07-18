@@ -24,11 +24,11 @@ export function useEventPage() {
     waitingPlayers,
     waitroomEntries,
     isLoading: waitroomLoading,
-    refresh: refreshWaitroom,
+    refetch: refreshWaitroom,
   } = useWaitroom(eventId)
   const { registerPlayers, unregisterPlayers } = useWaitroomMutations(eventId)
-  const { data: eventsData, isLoading: eventsLoading, refresh: refreshEventsQuery } = useEventsQuery(leagueId)
-  const { data: standingsData, refresh: refreshStandingsQuery } = useEventStandingsQuery(eventId)
+  const { data: eventsData, isLoading: eventsLoading, refetch: refreshEventsQuery } = useEventsQuery(leagueId)
+  const { data: standingsData, refetch: refreshStandingsQuery } = useEventStandingsQuery(eventId)
   const { data: pairingHistoryData } = usePairingHistoryQuery(eventId)
 
   // Colada resolves the league from the cached list (SSR-prefetched) — no
