@@ -12,18 +12,7 @@
 <script setup lang="ts">
 // fallow-ignore-file code-duplication -- LeagueFormModal/ConfirmModal invocation boilerplate shared with leagues.vue
 import type { Event } from '#shared/utils/types'
-
-interface CreateEventData {
-  eventName: string
-  eventDate: string
-  numRound: number
-  roundDuration: number
-}
-
-interface UpdateEventData {
-  id: number
-  data: { eventName: string; eventDate: string | null; numRound: number; roundDuration: number }
-}
+import type { EventCreatePayload, EventUpdatePayload } from '~/components/event/modal/EventFormModal.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -32,7 +21,11 @@ const { t } = useI18n()
 
 const leagueId = Number(route.params.id)
 
-const { createEvent: createEventMutation, updateEvent: updateEventMutation, deleteEvent: deleteEventMutation } = useEventMutations()
+const {
+  createEvent: createEventMutation,
+  updateEvent: updateEventMutation,
+  deleteEvent: deleteEventMutation
+} = useEventMutations()
 
 const { data: rulesetsData, isLoading: rulesetsLoading } = useRulesetsQuery()
 const rulesets = computed(() => rulesetsData.value ?? [])
@@ -90,7 +83,7 @@ function navigateToEvent(event: Event) {
 }
 
 // — Event CRUD —
-async function createEvent(data: CreateEventData) {
+async function createEvent(data: EventCreatePayload) {
   try {
     await createEventMutation.mutateAsync({
       event_name: data.eventName,
@@ -117,7 +110,7 @@ async function createEvent(data: CreateEventData) {
   })
 }
 
-async function updateEvent({ id, data }: UpdateEventData) {
+async function updateEvent({ id, data }: EventUpdatePayload) {
   try {
     await updateEventMutation.mutateAsync({
       id,

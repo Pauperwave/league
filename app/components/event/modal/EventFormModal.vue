@@ -28,15 +28,18 @@ interface EventForm {
   roundDuration: number
 }
 
-// Emitted payload — eventDate serialized to ISO string for callers
-interface EventCreatePayload {
+// Emitted payload — eventDate serialized to ISO string for callers.
+// Exported: this is the single source of truth for the shape, consumed by
+// useEventLifecycle.ts, useEventPage.ts, and pages/league/[id].vue instead
+// of each redeclaring their own structurally-compatible-by-accident copy.
+export interface EventCreatePayload {
   eventName: string
   eventDate: string
   numRound: number
   roundDuration: number
 }
 
-interface EventUpdatePayload {
+export interface EventUpdatePayload {
   id: number
   data: Omit<EventCreatePayload, 'eventDate'> & { eventDate: string | null }
 }

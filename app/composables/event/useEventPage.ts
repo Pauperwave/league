@@ -1,5 +1,6 @@
 // app\composables\event\useEventPage.ts
 import type { Player } from '#shared/utils/types'
+import type { EventUpdatePayload } from '~/components/event/modal/EventFormModal.vue'
 import { useEventUrl } from './useEventUrl'
 
 export function useEventPage() {
@@ -168,7 +169,7 @@ export function useEventPage() {
     return true
   }
 
-  async function updateEvent({ id, data }: { id: number; data: { eventName: string; eventDate: string | null; numRound: number; roundDuration: number } }) {
+  async function updateEvent({ id, data }: EventUpdatePayload) {
     try {
       await updateEventMutation.mutateAsync({
         id,

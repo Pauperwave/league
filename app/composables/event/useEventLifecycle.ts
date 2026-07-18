@@ -1,11 +1,12 @@
 // app\composables\event\useEventLifecycle.ts
+import type { EventUpdatePayload } from '~/components/event/modal/EventFormModal.vue'
 
 interface LifecycleDeps {
   // Event actions from useEventPage
   nextRound: (playerOrder?: number[]) => Promise<boolean>
   turnBackRound: () => Promise<boolean>
   startEvent: (playerOrder: number[]) => Promise<boolean>
-  updateEvent: (payload: { id: number; data: { eventName: string; eventDate: string | null; numRound: number; roundDuration: number } }) => Promise<boolean>
+  updateEvent: (payload: EventUpdatePayload) => Promise<boolean>
 
   // State refs
   showNextRoundModal: Ref<boolean>
