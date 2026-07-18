@@ -33,7 +33,6 @@ All keys follow the pattern:
 | `useEvents.ts` | `events-by-league-${leagueId}` / `events-all` | `leagueId?: number` |
 | `useStandings.ts` | `standings-by-event-${eventId}` / `standings-all` | `eventId?: number` |
 | `useStandings.ts` (multi) | `standings-multi-event-${eventIds}` | `eventIds: number[]` |
-| `useWaitroom.ts` | `waitroom-by-event-${eventId}` / `waitroom-all` | `eventId?: number` |
 | `usePairings.ts` | `pairings-event-${eventId}-round-${round}` | `eventId?: number, round?: number` |
 | `useRoundResults.ts` | `round-results-by-pairing-${pairingId}` / `round-results-all` | `pairingId?: number` |
 | `useTournaments.ts` | `tournaments-by-event-${eventId}` / `tournaments-all` | `eventId?: number` |
@@ -41,8 +40,6 @@ All keys follow the pattern:
 | `useDeckStats.ts` | `deck-stats-by-player-${playerId}-commander-${commanderName}` | `playerId, commander1Name, commander2Name` |
 | `useCommanderStats.ts` | `commander-stats-by-commander-${commanderName}` | `commander1Name, commander2Name` |
 | `useCommanderStats.ts` (all) | `all-commander-stats` | — |
-| `usePlayers.ts` | `players` | — |
-
 ### Pinia Colada query keys (ADR-015)
 
 Domains migrated to Pinia Colada use array query keys instead of `useAsyncData` keys — same collision rules apply, so register new ones here:
@@ -53,6 +50,8 @@ Domains migrated to Pinia Colada use array query keys instead of `useAsyncData` 
 | `ruleset/useRulesetsQuery.ts` | `['rulesets']` | `useRulesetMutations` |
 | `deck/useDecksQuery.ts` | `['decks']` | `useDeckMutations` |
 | `commanders/useCommanderDecks.ts` | `['deck-usage', playerId]` | `useDeckMutations` |
+| `players/usePlayersQuery.ts` | `['players']` | `usePlayerMutations` |
+| `event/useWaitroom.ts` | `['waitroom', eventId]` | `useWaitroomMutations` (+ manual refresh on start/turn-back) |
 
 ### Pages
 
