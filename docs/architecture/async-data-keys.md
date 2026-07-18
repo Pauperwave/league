@@ -37,14 +37,22 @@ All keys follow the pattern:
 | `usePairings.ts` | `pairings-event-${eventId}-round-${round}` | `eventId?: number, round?: number` |
 | `useRoundResults.ts` | `round-results-by-pairing-${pairingId}` / `round-results-all` | `pairingId?: number` |
 | `useTournaments.ts` | `tournaments-by-event-${eventId}` / `tournaments-all` | `eventId?: number` |
-| `useCommanderDecks.ts` | `commander-decks-usage-by-player-${playerId}` | `playerId: Ref<number \| undefined>` |
 | `usePlayerStats.ts` | `player-stats-by-player-${playerId}` | `playerId: Ref<number \| undefined>` |
 | `useDeckStats.ts` | `deck-stats-by-player-${playerId}-commander-${commanderName}` | `playerId, commander1Name, commander2Name` |
 | `useCommanderStats.ts` | `commander-stats-by-commander-${commanderName}` | `commander1Name, commander2Name` |
 | `useCommanderStats.ts` (all) | `all-commander-stats` | — |
 | `usePlayers.ts` | `players` | — |
-| `useLeagues.ts` | `leagues-list` | — |
-| `useRulesets.ts` | `rulesets-with-leagues` | — |
+
+### Pinia Colada query keys (ADR-015)
+
+Domains migrated to Pinia Colada use array query keys instead of `useAsyncData` keys — same collision rules apply, so register new ones here:
+
+| Composable | Key | Invalidated by |
+|-----------|-----|----------------|
+| `league/useLeaguesQuery.ts` | `['leagues']` | `useLeagueMutations` |
+| `ruleset/useRulesetsQuery.ts` | `['rulesets']` | `useRulesetMutations` |
+| `deck/useDecksQuery.ts` | `['decks']` | `useDeckMutations` |
+| `commanders/useCommanderDecks.ts` | `['deck-usage', playerId]` | `useDeckMutations` |
 
 ### Pages
 
@@ -55,7 +63,6 @@ All keys follow the pattern:
 | `pages/league/[leagueId]/event/[eventId].vue` | `waiting-${eventId}` | Waiting list for this event |
 | `pages/league/[leagueId]/event/[eventId].vue` | `event-standings-${eventId}` | Standings for this event |
 | `pages/league/[leagueId]/event/[eventId].vue` | `event-pairing-history-${eventId}` | Pairing history for this event |
-| `pages/player/[slug]/index.vue` | `commander-decks-usage-by-player-${playerId}` | Refresh after create/delete |
 
 ## Collision History
 
