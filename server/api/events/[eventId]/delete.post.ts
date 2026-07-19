@@ -3,7 +3,7 @@
 // BFF wave 4 (ADR-013): delete an event. Related rows (standings, pairings,
 // waitroom, round_results) follow the DB's FK behavior, same as the old
 // client-side delete.
-import { serverSupabaseClient } from '#supabase/server'
+import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 
 export default defineEventHandler(async (event) => {
@@ -11,8 +11,8 @@ export default defineEventHandler(async (event) => {
 
   console.log('[api/events/delete] request', { eventId })
 
-  // Still the anon key for now — see docs/BACKLOG.md #7 for the service-role flip.
-  const supabase = await serverSupabaseClient<Database>(event)
+  // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this endpoint is the authorization boundary now, not a DB policy.
+  const supabase = serverSupabaseServiceRole<Database>(event)
 
   const { error } = await supabase
     .from('events')

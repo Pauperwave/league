@@ -2,7 +2,7 @@
 // fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
 // BFF slice (ADR-013): remove players from an event's waiting list —
 // symmetric with register-player.
-import { serverSupabaseClient } from '#supabase/server'
+import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 
 export default defineEventHandler(async (event) => {
@@ -11,8 +11,8 @@ export default defineEventHandler(async (event) => {
 
   console.log('[api/unregister-player] request', { eventId, playerIds })
 
-  // Still the anon key for now — see docs/BACKLOG.md #7 for the service-role flip.
-  const supabase = await serverSupabaseClient<Database>(event)
+  // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this endpoint is the authorization boundary now, not a DB policy.
+  const supabase = serverSupabaseServiceRole<Database>(event)
 
   const { data: removed, error: deleteError } = await supabase
     .from('waitroom')

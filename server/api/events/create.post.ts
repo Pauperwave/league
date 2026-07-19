@@ -2,7 +2,7 @@
 // fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
 // BFF wave 4 (ADR-013): create an event in its registration phase,
 // returning the created row so the client cache mirrors server truth.
-import { serverSupabaseClient } from '#supabase/server'
+import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 
 export default defineEventHandler(async (event) => {
@@ -10,8 +10,8 @@ export default defineEventHandler(async (event) => {
 
   console.log('[api/events/create] request', { name: body.event_name, leagueId: body.league_id })
 
-  // Still the anon key for now — see docs/BACKLOG.md #7 for the service-role flip.
-  const supabase = await serverSupabaseClient<Database>(event)
+  // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this endpoint is the authorization boundary now, not a DB policy.
+  const supabase = serverSupabaseServiceRole<Database>(event)
 
   const { data, error } = await supabase
     .from('events')

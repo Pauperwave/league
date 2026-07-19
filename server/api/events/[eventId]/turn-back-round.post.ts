@@ -4,7 +4,7 @@
 // the registration phase, wiping standings/pairings and restoring the
 // waitroom from the standings players.
 import * as v from 'valibot'
-import { serverSupabaseClient } from '#supabase/server'
+import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 
 const bodySchema = v.object({
@@ -17,8 +17,8 @@ export default defineEventHandler(async (event) => {
 
   console.log('[api/turn-back-round] request', { eventId, currentRound })
 
-  // Still the anon key for now — see docs/BACKLOG.md #7 for the service-role flip.
-  const supabase = await serverSupabaseClient<Database>(event)
+  // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this endpoint is the authorization boundary now, not a DB policy.
+  const supabase = serverSupabaseServiceRole<Database>(event)
 
   // Domain guard: the round the client wants to roll back must be the round
   // the event is actually at (double-submit/stale-tab protection).

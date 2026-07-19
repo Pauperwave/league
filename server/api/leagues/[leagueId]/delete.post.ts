@@ -3,7 +3,7 @@
 // BFF wave 4 (ADR-013): delete a league. A foreign-key violation (league
 // still referenced by events) surfaces as the DB error message, same as the
 // old client-side delete did.
-import { serverSupabaseClient } from '#supabase/server'
+import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 
 export default defineEventHandler(async (event) => {
@@ -11,8 +11,8 @@ export default defineEventHandler(async (event) => {
 
   console.log('[api/leagues/delete] request', { leagueId })
 
-  // Still the anon key for now — see docs/BACKLOG.md #7 for the service-role flip.
-  const supabase = await serverSupabaseClient<Database>(event)
+  // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this endpoint is the authorization boundary now, not a DB policy.
+  const supabase = serverSupabaseServiceRole<Database>(event)
 
   const { error } = await supabase
     .from('leagues')

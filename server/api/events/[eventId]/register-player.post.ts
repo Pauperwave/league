@@ -4,7 +4,7 @@
 // event's waiting list. Enforces the site-password gate server-side and owns
 // the domain rules (registration must be open, no duplicates), returning the
 // rows it actually wrote so the store mirrors server truth.
-import { serverSupabaseClient } from '#supabase/server'
+import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 
 export default defineEventHandler(async (event) => {
@@ -13,11 +13,8 @@ export default defineEventHandler(async (event) => {
 
   console.log('[api/register-player] request', { eventId, playerIds })
 
-  // Still the anon key for now — same DB privileges the client already has.
-  // Switching to serverSupabaseServiceRole + denying anon writes on `waitroom`
-  // completes this slice (needs SUPABASE_SERVICE_KEY in the deployment env) —
-  // see docs/BACKLOG.md #7.
-  const supabase = await serverSupabaseClient<Database>(event)
+  // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this endpoint is the authorization boundary now, not a DB policy.
+  const supabase = serverSupabaseServiceRole<Database>(event)
 
   // Domain guard: the event must exist and registration must be open.
   const eventRow = await requireEventRow(supabase, eventId)

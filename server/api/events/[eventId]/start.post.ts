@@ -4,7 +4,7 @@
 // validate the waitroom, create zeroed standings, flip the event to playing,
 // clear the waitroom, insert round-1 pairings from the confirmed playerOrder.
 import * as v from 'valibot'
-import { serverSupabaseClient } from '#supabase/server'
+import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 import { buildRoundOneTables, buildPairingRows } from '#shared/utils/roundScoring'
 
@@ -18,8 +18,8 @@ export default defineEventHandler(async (event) => {
 
   console.log('[api/start] request', { eventId, playerOrderLength: playerOrder?.length ?? 0 })
 
-  // Still the anon key for now — see docs/BACKLOG.md #7 for the service-role flip.
-  const supabase = await serverSupabaseClient<Database>(event)
+  // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this endpoint is the authorization boundary now, not a DB policy.
+  const supabase = serverSupabaseServiceRole<Database>(event)
 
   // Domain guards: the event must exist and not be running already.
   const eventRow = await requireEventRow(supabase, eventId)

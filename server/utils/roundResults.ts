@@ -2,7 +2,7 @@
 // Shared helpers for the round-data BFF endpoints (ADR-013).
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { H3Event } from 'h3'
-import { serverSupabaseClient } from '#supabase/server'
+import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 
 type RoundResultRow = Database['public']['Tables']['round_results']['Row']
@@ -70,15 +70,15 @@ export async function upsertRoundResult(
 
 /**
  * Common request scaffolding for the /api/pairings/:pairingId/* endpoints:
- * pairing id param, pairing existence, and the anon supabase client (auth is
- * enforced upstream by server/middleware/api-auth.ts). Returns the pairing's
- * player ids for membership validation.
+ * pairing id param, pairing existence, and the service-role supabase client
+ * (auth is enforced upstream by server/middleware/api-auth.ts). Returns the
+ * pairing's player ids for membership validation.
  */
 export async function requirePairingContext(event: H3Event) {
   const pairingId = requireIdParam(event, 'pairingId')
 
-  // Still the anon key for now — see docs/BACKLOG.md #7 for the service-role flip.
-  const supabase = await serverSupabaseClient<Database>(event)
+  // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this endpoint is the authorization boundary now, not a DB policy.
+  const supabase = serverSupabaseServiceRole<Database>(event)
 
   const playerIds = await fetchPairingPlayerIds(supabase, pairingId)
   if (playerIds === null) {
