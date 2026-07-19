@@ -680,7 +680,8 @@
       "nextRoundError": "Errore nel prossimo round",
       "turnBackError": "Errore nel tornare indietro",
       "submissionError": "Errore nella sottomissione dei risultati",
-      "resultsUpdateError": "Errore nell'aggiornamento dei risultati"
+      "resultsUpdateError": "Errore nell'aggiornamento dei risultati",
+      "alreadyInProgressError": "Un'altra operazione è già in corso, attendi il completamento"
     }
   },
   "login": {

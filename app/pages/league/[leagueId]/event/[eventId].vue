@@ -531,6 +531,7 @@ function handleResetTable(pairingId: number) {
       :warning="t('event.cancelRound.warning')"
       :confirm-label="t('event.cancelRound.confirmLabel')"
       :confirm-icon="ICONS.delete"
+      :loading="loading"
       @confirm="lifecycle.confirmCancelRound"
     />
 
@@ -542,6 +543,7 @@ function handleResetTable(pairingId: number) {
       :warning="t('event.endEvent.warning')"
       :confirm-label="t('event.endEvent.confirmLabel')"
       :confirm-icon="ICONS.flag"
+      :loading="loading"
       @confirm="lifecycle.confirmEndEvent"
     />
 

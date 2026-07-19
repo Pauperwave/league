@@ -48,6 +48,12 @@ export const useEventStore = defineStore('events', () => {
    * → clear waitroom → round-1 pairings from the confirmed order).
    */
   async function startEvent(eventId: number, playerOrder?: number[]) {
+    // Re-entrancy guard (BACKLOG #13): a double-click/retry while a previous
+    // lifecycle action is still in flight is rejected here, not just
+    // discouraged in the UI — `loading` already tracks any in-flight action.
+    if (loading.value) {
+      return { success: false as const, error: t('store.event.alreadyInProgressError') }
+    }
     beginLoading()
     error.value = null
 
@@ -80,6 +86,10 @@ export const useEventStore = defineStore('events', () => {
    * preview modal's confirmed order travels in the request body.
    */
   async function nextRound(eventId: number, currentRound: number, playerOrder?: number[]) {
+    // Re-entrancy guard (BACKLOG #13) — see startEvent's comment.
+    if (loading.value) {
+      return { success: false as const, error: t('store.event.alreadyInProgressError') }
+    }
     beginLoading()
     error.value = null
 
@@ -110,6 +120,10 @@ export const useEventStore = defineStore('events', () => {
    * waitroom restore when leaving round 1.
    */
   async function turnBackRound(eventId: number, currentRound: number) {
+    // Re-entrancy guard (BACKLOG #13) — see startEvent's comment.
+    if (loading.value) {
+      return { success: false as const, error: t('store.event.alreadyInProgressError') }
+    }
     beginLoading()
     error.value = null
 
