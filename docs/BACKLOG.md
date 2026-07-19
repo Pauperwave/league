@@ -21,7 +21,6 @@ Committed, actionable work items, ranked by priority with a rough effort estimat
 | 10 | [Single-commander list, aggregated across partner pairs](#10-single-commander-list-aggregated-across-partner-pairs) | P3 | M |
 | 11 | [Fix `turn-back-round` 500 when the round has scores](#11-fix-turn-back-round-500-when-the-round-has-scores) | P1 | M |
 | 12 | [Idempotency guards on advance-round/start/round-result submission](#12-idempotency-guards-on-advance-roundstartround-result-submission) | P1 | M |
-| 13 | [Double-submission protection on event lifecycle buttons](#13-double-submission-protection-on-event-lifecycle-buttons) | P1 | S |
 
 ---
 
@@ -233,17 +232,9 @@ Found 2026-07-20, same audit as #11. None of `advance-round`, `start`, or round-
 - `start`: no unique constraint on `standings (event_id, player_id)` — a retried call could insert a second full set of standings rows.
 - Round-result submission: no unique constraint on `round_results (pairing_id, player_id)` — a duplicate row inflates `samePositionCount` in `calculateRoundScores` (`shared/utils/roundScoring.ts`), skewing the rank-split math for every player at that table, not just the duplicate.
 
-Confirmed: zero duplicates exist in production today (checked directly) — this is a latent risk, not a manifested corruption, but real given #13's total lack of client-side double-submit protection.
+Confirmed: zero duplicates exist in production today (checked directly) — this is a latent risk, not a manifested corruption. The main client-side trigger (double-click on the lifecycle buttons) is now closed — see `docs/PROGRESS.md`'s 2026-07-20 entry — but that's a store-level in-memory guard, not a DB constraint: it doesn't protect against two different tabs/sessions, or a direct API retry bypassing the store entirely. This item stays open for that reason.
 
 **TDD approach**: write API tests that call each endpoint twice in a row (the realistic double-click/retry scenario) and assert the *second* call is a no-op or a clean rejection, not a second mutation. Fix via unique constraints (`standings (event_id, player_id)`, `round_results (pairing_id, player_id)`) plus upsert-on-conflict logic, and switching `advance-round`'s standings update to set absolute values computed from all rounds so far rather than incrementing.
-
----
-
-## 13. Double-submission protection on event lifecycle buttons
-
-Found 2026-07-20, same audit. `EventControlPanel.vue`'s "Avvia evento"/"Avanza round"/"Torna indietro" buttons are bare `@click` handlers with no `loading`/disabled-while-in-flight state — violating this project's own documented convention (root `CLAUDE.md` "Async action buttons": bare async-triggering buttons must use `loading-auto`). `app/stores/events.ts`'s `nextRound`/`startEvent`/`turnBackRound` actions also have no in-flight re-entrancy guard. This is the cheapest, most direct mitigation for #12's race condition — closing it doesn't fix the missing DB constraints, but removes the main real-world trigger (a double-click).
-
-**TDD approach**: a component/E2E test that fires the click handler twice in quick succession and asserts the mutation fires once. Fix: add `loading-auto` (or an explicit in-flight guard in the store actions) matching the pattern already used elsewhere in the app.
 
 ---
 
