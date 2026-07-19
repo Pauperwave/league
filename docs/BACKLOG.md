@@ -19,7 +19,6 @@ Committed, actionable work items, ranked by priority with a rough effort estimat
 | 8 | [Rename event → tournament; decouple tournament from league](#8-rename-event--tournament-decouple-tournament-from-league) | P3 | L |
 | 9 | [Adopt `nuxt-echarts` for charts](#9-adopt-nuxt-echarts-for-charts) | P3 | M |
 | 10 | [Single-commander list, aggregated across partner pairs](#10-single-commander-list-aggregated-across-partner-pairs) | P3 | M |
-| 11 | [Fix `turn-back-round` 500 when the round has scores](#11-fix-turn-back-round-500-when-the-round-has-scores) | P1 | M |
 | 12 | [Idempotency guards on advance-round/start/round-result submission](#12-idempotency-guards-on-advance-roundstartround-result-submission) | P1 | M |
 
 ---
@@ -212,21 +211,9 @@ A true single-commander list needs new aggregation (not just a new page): group 
 
 ---
 
-## 11. Fix `turn-back-round` 500 when the round has scores
-
-Found 2026-07-20, in the event-lifecycle fragility audit — a regression introduced by this session's own RESTRICT-cascade migration (`20260719030000_restrict_league_event_cascade_deletes.sql`).
-
-`server/api/events/[eventId]/turn-back-round.post.ts` deletes the `pairings` row(s) for the round being turned back. `round_results.pairing_id → pairings.pairing_id` is now `ON DELETE RESTRICT` (previously `CASCADE`), so this delete fails with a Postgres FK violation — surfaced as a bare 500 — for exactly the case an organizer actually needs it: a round where scores were already entered wrong. Confirmed no duplicate/orphaned rows exist in production today (checked `round_results`/`standings` directly), so this is a pure regression, not yet a corrupted-data incident.
-
-Also a logic gap independent of the FK: even where the delete would succeed, the endpoint never deletes/resets the round's `round_results` rows — re-playing that round after a successful turn-back would leave orphaned historical rows.
-
-**TDD approach (per user direction 2026-07-20)**: write a failing API/E2E test first — advance an event to a round, submit real scores, then call turn-back-round and assert it succeeds (currently 500s) and that round_results for that round are actually gone/reset. Only then fix the endpoint (reset round_results before/instead of deleting pairings, or don't delete pairings at all — reset their state in place).
-
----
-
 ## 12. Idempotency guards on advance-round/start/round-result submission
 
-Found 2026-07-20, same audit as #11. None of `advance-round`, `start`, or round-result submission (`upsertRoundResult`) have a DB-level uniqueness constraint or an idempotency check — only a client-trusted "is the round what you think" comparison (TOCTOU, not a lock):
+Found 2026-07-20, event-lifecycle fragility audit. None of `advance-round`, `start`, or round-result submission (`upsertRoundResult`) have a DB-level uniqueness constraint or an idempotency check — only a client-trusted "is the round what you think" comparison (TOCTOU, not a lock):
 
 - `advance-round`: round score is **added** to existing standings, not set absolutely — a retried call before `event_current_round` advances double-counts that round's score.
 - `start`: no unique constraint on `standings (event_id, player_id)` — a retried call could insert a second full set of standings rows.
