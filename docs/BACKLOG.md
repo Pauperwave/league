@@ -20,9 +20,16 @@ Committed, actionable work items, ranked by priority with a rough effort estimat
 
 ## 1. E2E testing: Playwright + Playwright MCP
 
-- Add `@playwright/test` and a `playwright.config.ts` for E2E tests (`docs/AGENTS.md` already calls for Playwright + `@nuxt/test-utils` E2E coverage on critical flows: event creation, round progression, score submission)
-- `playwright-core` is a direct devDependency but currently unused (no config or tests) — exempted in `.fallowrc.json`'s `ignoreDependencies` for exactly this reason; remove the exemption once real E2E tests land
-- Set up the Playwright MCP server for browser-driven E2E authoring/debugging
+**Scaffolding done (2026-07-19), one flow covered — critical flows (event creation, round progression, score submission) still needed.**
+
+- `@playwright/test` installed, `playwright.config.ts` at repo root, `pnpm test:e2e` script. `playwright-core` (the old unused-dependency placeholder) removed — `@playwright/test` brings its own.
+- **Runs against the real production Supabase project** — this repo has no local Supabase/Docker stack available, and the user decided (2026-07-19) production is an acceptable target as long as pre-existing data is never touched. Every test-created entity is tagged (`test/e2e/helpers/testTag.ts`, `E2E TEST ... <timestamp>`) and deleted in `test.afterEach` regardless of outcome (`test/e2e/helpers/cleanup.ts`, never throws — logs loudly instead so a cleanup failure can't silently mask itself).
+- **`webServer` runs the production build (`pnpm build && node .output/server/index.mjs`), not `pnpm dev`** — the dev server (Vite/Nitro) was observed returning empty-body error responses for a real, correctly-rejected request (a schema-valid-looking update 400'd with no parseable body); the built server handled the identical flow correctly and ~3x faster. Worth remembering if a future spec mysteriously fails only in dev.
+- **Not using `@nuxt/test-utils/playwright`'s `nuxt` fixture** — it manages its own separate Nuxt build/instance, which conflicted with (and timed out alongside) `webServer`. Plain `@playwright/test` + a `page.waitForLoadState('networkidle')` after each `goto` (to let Nuxt hydration finish before interacting — filling a field before hydration means the `v-model` listener isn't attached yet and the submit button never enables) is simpler and sufficient.
+- Auth: `test/e2e/global.setup.ts` logs in once via the real site-password gate and saves `storageState`, reused by every spec project.
+- Visual debugging: `PW_SLOWMO=1 pnpm test:e2e` runs headed with a 2s delay between actions.
+- First spec (`test/e2e/league-crud.e2e.spec.ts`): create → edit → delete a league via the real UI, response-body assertions on each write, verified clean (no orphaned data) after every run.
+- Still needed: event creation, round progression (start → advance-round → turn-back-round), score submission (rankings/kills/commander/votes), and the Playwright MCP server setup for browser-driven authoring/debugging (not done yet).
 
 ---
 
