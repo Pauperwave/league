@@ -75,7 +75,7 @@ Dettaglio completo: [`docs/architecture/stores.md`](docs/architecture/stores.md)
 | `/players`, `/player/[slug]` | Roster giocatori, profilo |
 | `/decks`, `/deck/[deckSlug]`, `/player/[slug]/deck/[deckSlug]` | Mazzi commander |
 
-**⚠️ Inconsistenza nota (trovata 2026-07-12):** il parametro lega **non** è uniformato come indicato in precedenza — `app/pages/league/[id].vue` usa ancora `route.params.id`, mentre la route annidata evento usa `[leagueId]`. Non rinominato in questa sessione (cambia gli URL pubblici); da decidere se e quando allinearli.
+**Nota sul parametro route lega (aggiornata 2026-07-20):** `app/pages/league/[id].vue` usa `route.params.id`, mentre la route annidata evento usa `[leagueId]`. Non è un'inconsistenza da risolvere: è strutturalmente necessario che i due segmenti abbiano nomi diversi (`league/[leagueId]/event/[eventId]` non potrebbe avere due parametri chiamati entrambi `id` sullo stesso percorso), e la pagina lega da sola non ha ambiguità da disambiguare. Discusso e chiuso più volte — non riaprire come TODO.
 
 ---
 
@@ -269,7 +269,7 @@ Gli store di sessione hanno **persistenza ottimistica**: update immediato UI + s
 - [x] Migrazione `withDefaults` → destructuring (8 file)
 - [x] Store Pinia uniformati a Setup API (4 store sessione migrati)
 - [x] Typecheck: `@tanstack/vue-table` devDep + tipi Scryfall in `useCardWhitelists`
-- [ ] ~~Uniformato parametro route per lega a `[leagueId]`~~ — **non verificato, in realtà regredito**: `app/pages/league/[id].vue` usa ancora `route.params.id` (vedi nota nella sezione Route sopra)
+- [x] ~~Uniformato parametro route per lega a `[leagueId]`~~ — **non applicabile**: `app/pages/league/[id].vue` usa `route.params.id` per una ragione strutturale (route annidate non possono condividere lo stesso nome di parametro), non per un'incoerenza mai sistemata — vedi nota nella sezione Route sopra
 
 ### Batch completati (2026-07-12)
 
@@ -284,24 +284,19 @@ Audit dettagliato: [`docs/audits/skills-audit-report.md`](docs/audits/skills-aud
 
 ---
 
-## Prossimi passi (priorità)
+## Prossimi passi (storico, aggiornato 2026-07-20)
 
-### Alta
+Questa lista risale al 2026-07-12/13 ed era rimasta non aggiornata da allora — molti item sono stati completati o superati nel frattempo. Il lavoro forward-looking attuale vive in `docs/BACKLOG.md`, non qui.
 
-0. **`pnpm build` è rotto** — fallisce in prerender di `/` con un errore ESM/CJS su `vue/index.mjs` (vedi tabella Qualità e tooling sopra). CI attuale non lo cattura (`ci.yml` gira solo lint + typecheck, non build). Non correlato a questa sessione.
-1. **Applicare la migrazione `event_round_duration`** al DB reale (`supabase db push` o dashboard) e rigenerare `shared/utils/types/database.ts` per davvero (`npx supabase gen types ...`) — vedi ADR-008.
-2. **Rimuovere o centralizzare `console.log` di debug** (`[eventId].vue`, `useEventUrl`, `useCardWhitelists`, …) → usare `app/utils/logger.ts` dove serve.
-3. **Decidere sul parametro route `[id]` vs `[leagueId]`** su `league/[id].vue` — inconsistenza trovata il 2026-07-12, non ancora risolta (cambia URL pubblici, richiede decisione esplicita).
+0. ~~`pnpm build` è rotto~~ — **risolto**: il build funziona (verificato più volte in questa sessione, incluso l'harness E2E che builda ripetutamente `.output/server/index.mjs`).
+1. ~~Applicare la migrazione `event_round_duration`~~ — **risolto**: applicata e cablata end-to-end (form → mutation → schema server → DB → `RoundTimer`), verificato 2026-07-20.
+2. **Rimuovere o centralizzare `console.log` di debug** — ancora aperto in piccola parte: `app/stores/events.ts` ha 7 `console.log` grezzi (righe 60-187) invece di `app/utils/logger.ts`. Minore, non bloccante.
+3. ~~Decidere sul parametro route `[id]` vs `[leagueId]`~~ — **non era un'incoerenza**: vedi nota nella sezione Route sopra, chiuso definitivamente.
+4. **Refactor pagina evento** — invariato: deciso il 2026-07-13 (ADR-011) di non spezzare forzatamente i file oltre le 250 righe, con ceiling espliciti in `.fallowrc.json`. Nessuna azione a meno che un file superi il proprio ceiling.
+5. ~~Validazione con valibot sugli altri form modali~~ — **risolto**: tutte e 6 le modali form (`CreatePlayerModal`, `LeagueFormModal`, `RulesetFormModal`, `EventFormModal`, `DeckCreateModal`, `DeckEditModal`) usano valibot, verificato 2026-07-20.
+6. ~~Test Vitest~~ / 7. ~~E2E Playwright~~ — **superati da `docs/BACKLOG.md` #1**, che ora è il tracker unico per la strategia di test a 3 livelli (unit/API-integration/E2E) e la checklist dei test mancanti.
 
-### Media
-
-4. **Refactor pagina evento** — `[eventId].vue` e alcuni SFC restano > 250 righe (`TablePreviewModal`, `PairingsCard`, `TableScoreGrid`, `RoundTimer`, `useEventStore`, `useEventPage`, `useTableDnd`). Deciso il 2026-07-13 (ADR-011) di **non** spezzarli forzatamente: sono stati dati ceiling espliciti via `health.thresholdOverrides` in `.fallowrc.json`, restando tracciati se crescono oltre. Riconsiderare uno split reale solo se uno di questi supera il proprio ceiling o diventa davvero difficile da seguire, non per inseguire il punteggio `fallow health`.
-5. **Validazione con valibot** — estendere agli altri form modali oltre a `EventFormModal` (lega, ruleset, player).
-
-### Bassa
-
-6. **Test Vitest** — store sessione, `useEventUrl`, composables Supabase critici.
-7. **E2E Playwright** — vedi `docs/TODO.md` (setup `@playwright/test` + Playwright MCP, poi: login, crea lega, apri evento, modale punteggi con query).
+**Nuovo, 2026-07-20 — audit di fragilità del lifecycle evento** (priorità corrente): bug confermati e rischi latenti su `advance-round`/`turn-back-round`/submission punteggi, tracciati in `docs/BACKLOG.md` #11-#13, da affrontare con approccio TDD (test che riproduce il problema prima del fix).
 8. **Estendere URL sync** alle modali su `/leagues` (opzionale).
 9. **Accessibilità** — review sistematica modali/tabelle (skill web-design-guidelines).
 
@@ -343,6 +338,6 @@ Indice completo e aggiornato: [`docs/README.md`](docs/README.md). Voci principal
 | 2026-07-12 | Sessione lint/typecheck/architettura: `pnpm lint` e `pnpm typecheck` portati a 0/0 (ADR-009); aggiunta `event_round_duration` (migrazione + wiring, non ancora applicata — ADR-008); documentato invariante scoring pairing optimizer (ADR-004); rimossa cartella shim `app/composables/events/` (progetto non pubblicato → niente backward-compat); creato `CLAUDE.md`; TODO Playwright + MCP aggiunto; corrette informazioni datate (store count 8→10, claim falso sul rename `[id]`→`[leagueId]`, valibot "0 uso"); scoperto `pnpm build` rotto (prerender `/`, non correlato a questa sessione) |
 | 2026-05-26 | Preview mostra tavoli prima di avanzare round (non dopo); `playerOrder` propagato a `nextRound` → `createPairings`; URL `phase=previewTables` ora include `round=N`; `previewTables` usa standings durante playing |
 | 2026-05-26 | Documentazione completa dei 6 URL query params in `docs/architecture/modal-url-sync.md` |
-| 2026-05-25 | Uniformato il parametro di routing da [id] a [leagueId] per consistenza — **⚠️ non risulta più vero al 2026-07-12**, `league/[id].vue` esiste ancora con `route.params.id` |
+| 2026-05-25 | Uniformato il parametro di routing da [id] a [leagueId] per l'evento annidato — **nota (2026-07-20)**: `league/[id].vue` (pagina lega, non annidata) usa comunque `route.params.id`, per necessità strutturale di Nuxt (route annidate non possono avere due segmenti con lo stesso nome parametro), non per un'incoerenza da correggere |
 | 2026-05-25 | Aggiornamento `docs/architecture/stores.md`: documentazione 8 store (4 Supabase + 4 sessione) e migrazione Setup API |
 | 2026-05-25 | Creazione iniziale `PROGRESS.md` dopo audit skill e batch convenzioni |

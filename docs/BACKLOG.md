@@ -15,6 +15,13 @@ Committed, actionable work items, ranked by priority with a rough effort estimat
 | 4 | [Form `isValid` should derive from Valibot schemas](#4-form-isvalid-should-derive-from-valibot-schemas) | P2 | M |
 | 5 | [Replace native HTML5 DnD in `TableScoreGrid.vue`](#5-replace-native-html5-dnd-in-tablescoregridvue) | P3 | M |
 | 6 | [Slim `useEventStore` by extracting pure logic](#6-slim-useeventstore-by-extracting-pure-logic) | P2 | M |
+| 7 | [Soft delete for leagues/events (and possibly decks)](#7-soft-delete-for-leaguesevents-and-possibly-decks) | P3 | L |
+| 8 | [Rename event → tournament; decouple tournament from league](#8-rename-event--tournament-decouple-tournament-from-league) | P3 | L |
+| 9 | [Adopt `nuxt-echarts` for charts](#9-adopt-nuxt-echarts-for-charts) | P3 | M |
+| 10 | [Single-commander list, aggregated across partner pairs](#10-single-commander-list-aggregated-across-partner-pairs) | P3 | M |
+| 11 | [Fix `turn-back-round` 500 when the round has scores](#11-fix-turn-back-round-500-when-the-round-has-scores) | P1 | M |
+| 12 | [Idempotency guards on advance-round/start/round-result submission](#12-idempotency-guards-on-advance-roundstartround-result-submission) | P1 | M |
+| 13 | [Double-submission protection on event lifecycle buttons](#13-double-submission-protection-on-event-lifecycle-buttons) | P1 | S |
 
 ---
 
@@ -41,11 +48,11 @@ Three layers, each with a different target — not "100% everywhere":
 - [ ] `POST /api/rulesets/*` — create, update, delete (409 in-use guard)
 - [ ] `POST /api/auth/login` — success + wrong-password cases
 
-**E2E (1 of ~5 major flows covered):**
+**E2E (3 of ~5 major flows covered, 2 fully, 1 create-only):**
 - [ ] Event lifecycle: create event → register players → start (round-1 pairings generated) → submit round scores (rankings/kills/commander/votes) → advance-round → turn-back-round → end event
 - [ ] Ruleset CRUD (mirror of `league-crud.e2e.spec.ts`)
-- [ ] Deck CRUD, including the 409 in-use guard when a deck has been played
-- [ ] Player create/edit (no delete — none exists, see `api.md`)
+- [x] Deck create (`deck-create.e2e.spec.ts`, 2026-07-19) — edit and the 409 in-use guard when a deck has been played still open
+- [x] Player create (`player-create.e2e.spec.ts`, 2026-07-19) — no edit UI exists on `/players` and no delete endpoint exists (see `api.md`), so this flow is now fully covered
 - [ ] League/event delete blocked with children present (409, post-2026-07-19 RESTRICT migration) — currently only verified manually, not in an automated spec
 
 **Unit — pure logic still untested (lower priority than the above two, but real gaps):**
@@ -156,6 +163,87 @@ Carried over from the same since-deleted `docs/reinventing-the-wheel.md` audit.
 ## 6. Slim `useEventStore` by extracting pure logic
 
 From the 2026-07-14 data-flow review. `app/stores/events.ts` owns the full event lifecycle, pairing generation, and round scoring — a god store. Per ADR-011, don't force a split of the store itself (its state genuinely is one lifecycle). Instead, continue the pattern already started (`fetchRoundData`, `calculateRoundScores`, now in `shared/utils/roundScoring.ts`): whenever an action is touched, extract its **pure logic** (score calculation, round-data assembly, standings math) into module-level functions, `app/utils`, or `shared/utils`, leaving the store action as thin state + API/DB round-trips. Pure functions get unit tests for free — long inline store actions never will. Incremental, opportunistic; no big-bang refactor. **Progress check 2026-07-17**: the ADR-013 BFF waves moved round scoring server-side and the store is down to ~755 lines from the original ~1300 — the strategy is working; keep applying it opportunistically.
+
+---
+
+## 7. Soft delete for leagues/events (and possibly decks)
+
+Raised 2026-07-19, same session as the RESTRICT-cascade fix (see `docs/PROGRESS.md` and `database.md`'s "Key Insight" section). Today, leagues/events with children are hard-blocked from deletion (409 + app-level guard) rather than cascading — safe, but all-or-nothing: an admin can't remove a league/event from the active lists without either deleting every child first or leaving it around forever, and a genuine mistake (delete-then-regret) has no recovery path short of restoring from a Supabase backup.
+
+A `deleted_at timestamptz null` column (leagues/events, maybe decks) instead of/alongside the hard-delete path would let "delete" mean "hide from active lists" rather than "gone" — reversible, and it sidesteps the FK/RESTRICT question entirely since the row still physically exists for `round_results`/`standings` to join against. Needs real design before implementing, not just a migration:
+
+- Which entities actually need it. Leagues/events are the motivating case (real incident history this session); players have no delete at all; decks already have a working 409 guard and lower stakes.
+- What "deleted" means for every read path — anon SELECT policies, the Colada query composables, admin-facing lists vs. historical standings/match-history joins (a soft-deleted league's events should probably still resolve in a player's match history, just not show up in `/leagues`).
+- Whether it fully replaces the RESTRICT+409 guard (soft delete never needs to block on children — there's nothing to cascade) or coexists with it for entities that should still be truly unrecoverable in some cases.
+- A restore path (UI + endpoint), or this is one-way hiding with no way back except direct SQL — decide explicitly rather than defaulting into it.
+
+**Deliberately P3/someday, not next**: same reason as #8 — the standing priority is making the *current* event lifecycle rock solid first.
+
+---
+
+## 8. Rename event → tournament; decouple tournament from league
+
+Raised 2026-07-19. "Event" is the wrong word for what this domain concept actually is — a **tournament**: currently modeled as always belonging to exactly one league (`events.league_id`), but a tournament should be able to:
+
+- belong to a league (today's only shape), **or**
+- be linked to a single one-off event with no league, **or**
+- stand completely alone, tied to neither a league nor an event.
+
+This is two separate large changes bundled together: (1) a naming rework — DB table/column names, TS types (`Event`, `EventInsert`, ...), every route (`/league/[leagueId]/event/[eventId]`), every composable/component/i18n key with "event" in the name — and (2) a real schema/FK change making the league relationship optional and auditing every place that currently assumes "an event always has a league" (pairing generation, standings aggregation, waitroom, breadcrumbs, `api.md`/`database.md` docs). Underestimating this as "just a rename" would be a mistake — the FK optionality change touches the pairing/standings/waitroom stack much more deeply than the name does.
+
+**Deliberately P3/someday, not next**: the standing priority is making the *current* event lifecycle (registration → playing → round advance → ended) rock solid first. Don't start this rename until that's true; a big rename on top of a shaky lifecycle compounds risk instead of reducing it.
+
+---
+
+## 9. Adopt `nuxt-echarts` for charts
+
+Raised 2026-07-19. No charting library exists in the project today (`package.json` has none) — stats are currently all numbers/badges/tables (`StatTile`, `player_stats`/`deck_stats`/`commander_stats`, standings tables). `nuxt-echarts` would give a Nuxt module wrapping Apache ECharts for actual visualizations: standings/points trends across rounds, a player's score history over time, commander win-rate/pick distribution, etc.
+
+Needs a first concrete use case before pulling in the dependency (don't add a charting library speculatively) — natural candidates once picked: the player profile page (score/kills trend across `matchHistory`) or a league-level standings-over-rounds view. Effort estimate assumes just the module setup + one real chart, not a general charting overhaul.
+
+---
+
+## 10. Single-commander list, aggregated across partner pairs
+
+Raised 2026-07-19. `/decks` (`app/pages/decks/index.vue`) looks like a commander list but is actually deduplicated by **commander pair** (`commander_1_name + commander_2_name`), backed by `commander_stats` which is also aggregated per pair — a commander played both solo and as a partner (e.g. "A" alone, then "A + B") shows up as two disconnected entries today, never rolled up into one "A" row.
+
+A true single-commander list needs new aggregation (not just a new page): group by individual commander name across both `commander_1`/`commander_2` slots, summing player/match/win/kill counts across every pair that commander has appeared in. Decide whether this replaces `commander_stats` or is a second materialized view/query alongside it — likely the latter, since the pair-level breakdown is still useful for "which partner combo performs best."
+
+**P3/someday**, deferred behind the event lifecycle priority same as #7/#8.
+
+---
+
+## 11. Fix `turn-back-round` 500 when the round has scores
+
+Found 2026-07-20, in the event-lifecycle fragility audit — a regression introduced by this session's own RESTRICT-cascade migration (`20260719030000_restrict_league_event_cascade_deletes.sql`).
+
+`server/api/events/[eventId]/turn-back-round.post.ts` deletes the `pairings` row(s) for the round being turned back. `round_results.pairing_id → pairings.pairing_id` is now `ON DELETE RESTRICT` (previously `CASCADE`), so this delete fails with a Postgres FK violation — surfaced as a bare 500 — for exactly the case an organizer actually needs it: a round where scores were already entered wrong. Confirmed no duplicate/orphaned rows exist in production today (checked `round_results`/`standings` directly), so this is a pure regression, not yet a corrupted-data incident.
+
+Also a logic gap independent of the FK: even where the delete would succeed, the endpoint never deletes/resets the round's `round_results` rows — re-playing that round after a successful turn-back would leave orphaned historical rows.
+
+**TDD approach (per user direction 2026-07-20)**: write a failing API/E2E test first — advance an event to a round, submit real scores, then call turn-back-round and assert it succeeds (currently 500s) and that round_results for that round are actually gone/reset. Only then fix the endpoint (reset round_results before/instead of deleting pairings, or don't delete pairings at all — reset their state in place).
+
+---
+
+## 12. Idempotency guards on advance-round/start/round-result submission
+
+Found 2026-07-20, same audit as #11. None of `advance-round`, `start`, or round-result submission (`upsertRoundResult`) have a DB-level uniqueness constraint or an idempotency check — only a client-trusted "is the round what you think" comparison (TOCTOU, not a lock):
+
+- `advance-round`: round score is **added** to existing standings, not set absolutely — a retried call before `event_current_round` advances double-counts that round's score.
+- `start`: no unique constraint on `standings (event_id, player_id)` — a retried call could insert a second full set of standings rows.
+- Round-result submission: no unique constraint on `round_results (pairing_id, player_id)` — a duplicate row inflates `samePositionCount` in `calculateRoundScores` (`shared/utils/roundScoring.ts`), skewing the rank-split math for every player at that table, not just the duplicate.
+
+Confirmed: zero duplicates exist in production today (checked directly) — this is a latent risk, not a manifested corruption, but real given #13's total lack of client-side double-submit protection.
+
+**TDD approach**: write API tests that call each endpoint twice in a row (the realistic double-click/retry scenario) and assert the *second* call is a no-op or a clean rejection, not a second mutation. Fix via unique constraints (`standings (event_id, player_id)`, `round_results (pairing_id, player_id)`) plus upsert-on-conflict logic, and switching `advance-round`'s standings update to set absolute values computed from all rounds so far rather than incrementing.
+
+---
+
+## 13. Double-submission protection on event lifecycle buttons
+
+Found 2026-07-20, same audit. `EventControlPanel.vue`'s "Avvia evento"/"Avanza round"/"Torna indietro" buttons are bare `@click` handlers with no `loading`/disabled-while-in-flight state — violating this project's own documented convention (root `CLAUDE.md` "Async action buttons": bare async-triggering buttons must use `loading-auto`). `app/stores/events.ts`'s `nextRound`/`startEvent`/`turnBackRound` actions also have no in-flight re-entrancy guard. This is the cheapest, most direct mitigation for #12's race condition — closing it doesn't fix the missing DB constraints, but removes the main real-world trigger (a double-click).
+
+**TDD approach**: a component/E2E test that fires the click handler twice in quick succession and asserts the mutation fires once. Fix: add `loading-auto` (or an explicit in-flight guard in the store actions) matching the pattern already used elsewhere in the app.
 
 ---
 
