@@ -9,6 +9,7 @@ Master index of all project documentation.
 | Doc | What it covers | Priority |
 |-----|---------------|----------|
 | `AGENTS.md` | Core requirements, code style, Vue/Pinia conventions, error handling, testing strategy, fallow workflow | Required reading for all agents |
+| `architecture/api.md` | CRUD matrix per entity: which operations exist, which `server/api/*` endpoint backs each, deliberate gaps (no player delete, no pairing CRUD) and inconsistencies (409 vs 500 on in-use delete) | API reference |
 | `architecture/async-data-keys.md` | useAsyncData key naming convention (`{domain}-{scope}-{id}`), full inventory, collision history | Data fetching |
 | `architecture/component-hierarchy.md` | Component tree for every page, reusable component catalog, directory structure | Component reference |
 | `architecture/database.md` | RLS policies, denormalized stats tables, trigger architecture, migration conventions | Database ops |
@@ -43,8 +44,9 @@ Master index of all project documentation.
 ### For Database Work
 
 1. `architecture/database.md` — RLS, triggers, denormalized stats
-2. `architecture/event-flow.md` — which tables mutate on each event phase
-3. `architecture/state-flow.md` — how store actions map to DB operations
+2. `architecture/api.md` — CRUD matrix: what's possible per entity, which endpoint backs it
+3. `architecture/event-flow.md` — which tables mutate on each event phase
+4. `architecture/state-flow.md` — how store actions map to DB operations
 
 ### For Frontend Development
 
