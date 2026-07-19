@@ -4,6 +4,7 @@ import type { CommanderDeck } from '#shared/utils/types'
 import type { DeckFormPayload, DeckUpdatePayload } from '~/composables/deck/useDeckMutations'
 
 const route = useRoute()
+const router = useRouter()
 const slug = route.params.slug as string
 
 const { t } = useI18n()
@@ -113,6 +114,15 @@ const { data: matchHistory } = usePlayerMatchHistory(playerId)
 <template>
   <div class="container mx-auto p-6 space-y-6">
     <UBreadcrumb :items="breadcrumbItems" />
+
+    <UButton
+      color="neutral"
+      :icon="ICONS.back"
+      :aria-label="t('common.back')"
+      @click="() => { router.push('/players') }"
+    >
+      {{ t('common.back') }}
+    </UButton>
 
     <!-- Level-one heading: always present for accessibility -->
     <h1 class="text-2xl font-bold">

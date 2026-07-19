@@ -6,9 +6,24 @@ interface Props {
   matchHistory: PlayerMatchHistory[]
 }
 
-defineProps<Props>()
+const { matchHistory } = defineProps<Props>()
 
 const { t } = useI18n()
+
+function formatMatchDate(pairingDatetime: string): string {
+  return new Date(pairingDatetime).toLocaleDateString('it-IT')
+}
+
+// A row gets a divider above it only when its date differs from the
+// previous row's — matchHistory is already sorted newest-first (see
+// usePlayerMatchHistory.ts), so same-day matches render as one visual group
+// instead of every row carrying its own border.
+const rows = computed(() =>
+  matchHistory.map((match, index) => ({
+    match,
+    isNewDateGroup: index === 0 || formatMatchDate(match.pairing_datetime) !== formatMatchDate(matchHistory[index - 1]!.pairing_datetime),
+  }))
+)
 </script>
 
 <template>
@@ -21,22 +36,26 @@ const { t } = useI18n()
     <div class="overflow-x-auto">
       <table class="w-full text-sm">
         <thead>
-          <tr class="border-b border-default">
+          <tr class="border-b border-accented">
+            <th class="text-left py-2 px-3 text-muted font-medium">{{ t('player.matchHistory.date') }}</th>
             <th class="text-left py-2 px-3 text-muted font-medium">{{ t('player.matchHistory.event') }}</th>
             <th class="text-center py-2 px-3 text-muted font-medium">{{ t('player.matchHistory.round') }}</th>
             <th class="text-center py-2 px-3 text-muted font-medium">{{ t('player.matchHistory.table') }}</th>
             <th class="text-left py-2 px-3 text-muted font-medium">{{ t('player.matchHistory.commander') }}</th>
             <th class="text-center py-2 px-3 text-muted font-medium">{{ t('player.matchHistory.position') }}</th>
             <th class="text-center py-2 px-3 text-muted font-medium">{{ t('player.matchHistory.kills') }}</th>
-            <th class="text-right py-2 px-3 text-muted font-medium">{{ t('player.matchHistory.date') }}</th>
           </tr>
         </thead>
         <tbody>
           <tr
-            v-for="match in matchHistory"
+            v-for="{ match, isNewDateGroup } in rows"
             :key="match.pairing_id"
-            class="border-b border-default/50 hover:bg-elevated/50 transition-colors"
+            class="hover:bg-elevated/50 transition-colors"
+            :class="isNewDateGroup ? '[&>td]:border-t [&>td]:border-accented' : ''"
           >
+            <td class="py-2 px-3 text-muted">
+              {{ formatMatchDate(match.pairing_datetime) }}
+            </td>
             <td class="py-2 px-3">
               <NuxtLink
                 :to="`/league/${match.league_id}/event/${match.event_id}`"
@@ -53,19 +72,8 @@ const { t } = useI18n()
                 <span v-if="match.commander_2" class="text-muted">+ {{ match.commander_2 }}</span>
               </div>
             </td>
-            <td class="text-center py-2 px-3">
-              <UBadge
-                :color="match.position === 1 ? 'warning' : 'neutral'"
-                variant="soft"
-                size="xs"
-              >
-                {{ match.position }}°
-              </UBadge>
-            </td>
+            <td class="text-center py-2 px-3">{{ match.position }}</td>
             <td class="text-center py-2 px-3">{{ match.number_of_kills }}</td>
-            <td class="text-right py-2 px-3 text-muted">
-              {{ new Date(match.pairing_datetime).toLocaleDateString('it-IT') }}
-            </td>
           </tr>
         </tbody>
       </table>

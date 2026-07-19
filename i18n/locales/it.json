@@ -168,8 +168,8 @@
       "round": "Round",
       "table": "Tavolo",
       "commander": "Commander",
-      "position": "Pos",
-      "kills": "Kill",
+      "position": "Posizione",
+      "kills": "Uccisioni",
       "date": "Data",
       "unknownEvent": "Evento sconosciuto"
     },
