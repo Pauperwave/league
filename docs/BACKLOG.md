@@ -9,7 +9,7 @@ Committed, actionable work items, ranked by priority with a rough effort estimat
 
 | # | Item | Priority | Effort |
 |---|------|----------|--------|
-| 1 | [E2E testing: Playwright + Playwright MCP](#1-e2e-testing-playwright--playwright-mcp) | P1 | L |
+| 1 | [Test coverage strategy and missing tests](#1-test-coverage-strategy-and-missing-tests) | P1 | L |
 | 2 | [Redesign `TableCard.vue` layout for future player self-entry](#2-redesign-tablecardvue-layout-for-future-player-self-entry) | P1 | M |
 | 3 | [Round timer alarm sound](#3-round-timer-alarm-sound) | P2 | S |
 | 4 | [Form `isValid` should derive from Valibot schemas](#4-form-isvalid-should-derive-from-valibot-schemas) | P2 | M |
@@ -18,18 +18,53 @@ Committed, actionable work items, ranked by priority with a rough effort estimat
 
 ---
 
-## 1. E2E testing: Playwright + Playwright MCP
+## 1. Test coverage strategy and missing tests
 
-**Scaffolding done (2026-07-19), one flow covered — critical flows (event creation, round progression, score submission) still needed.**
+**Full picture (what's tested today, gap by gap): `docs/architecture/testing.md`. Playwright E2E scaffolding done 2026-07-19 (see below) — this item now also tracks the overall coverage strategy and the concrete backlog of missing tests across all three layers.**
 
-- `@playwright/test` installed, `playwright.config.ts` at repo root, `pnpm test:e2e` script. `playwright-core` (the old unused-dependency placeholder) removed — `@playwright/test` brings its own.
+### Strategy (decided 2026-07-19)
+
+Three layers, each with a different target — not "100% everywhere":
+
+- **Unit** (`test/unit/`): target near-100% of **pure/complex logic** — scoring, pairing/ranking algorithms, validation, formatting. This is already the strongest layer (10 files, well-covered). Deliberately **not** chasing coverage on thin Colada query/mutation wrappers (`useXQuery.ts` files that are essentially a one-line `useQuery({...})`) — unit-testing those mostly tests the mock, not real behavior; they're better verified by API/E2E actually hitting them.
+- **API/integration** (new tier, not yet started): Playwright's `request` fixture hitting `server/api/*` endpoints directly, no browser/UI. Much cheaper than a full E2E spec per endpoint — closes the "0 of 23 server endpoints have direct coverage" gap fast. Candidate location: `test/api/` (sibling to `test/e2e/`), reusing `test/e2e/helpers/testTag.ts`/`cleanup.ts`.
+- **Component** (`test/nuxt/`): not a current priority tier — the 3 existing tests are shallow and that's an acceptable state for now given the other two layers have bigger, higher-value gaps.
+- **E2E** (`test/e2e/`): full flows through the real UI against production (see scaffolding notes below). Priority order: **event lifecycle first** (create → register players → start → advance-round → submit scores → turn-back-round → end) — the most stateful, most bug-prone path, and the one that already surfaced 3 real bugs this session (refresh-vs-refetch staleness, RLS policy drift, cascade-delete data loss) — then the remaining entity CRUD (rulesets, decks, players; leagues done).
+
+### Missing tests — concrete checklist
+
+**API/integration (new tier — 0 of 23 endpoints covered directly):**
+- [ ] `POST /api/events/*` — create, update, delete (with the new 409 in-use guard), start, advance-round, turn-back-round, register-player, unregister-player
+- [ ] `POST /api/pairings/:id/*` — rankings, kills, commander, votes
+- [ ] `POST /api/decks/*` — create, update, delete (409 in-use guard)
+- [ ] `POST /api/players/*` — create, update
+- [ ] `POST /api/rulesets/*` — create, update, delete (409 in-use guard)
+- [ ] `POST /api/auth/login` — success + wrong-password cases
+
+**E2E (1 of ~5 major flows covered):**
+- [ ] Event lifecycle: create event → register players → start (round-1 pairings generated) → submit round scores (rankings/kills/commander/votes) → advance-round → turn-back-round → end event
+- [ ] Ruleset CRUD (mirror of `league-crud.e2e.spec.ts`)
+- [ ] Deck CRUD, including the 409 in-use guard when a deck has been played
+- [ ] Player create/edit (no delete — none exists, see `api.md`)
+- [ ] League/event delete blocked with children present (409, post-2026-07-19 RESTRICT migration) — currently only verified manually, not in an automated spec
+
+**Unit — pure logic still untested (lower priority than the above two, but real gaps):**
+- [ ] `app/utils/error.ts` (`toErrorMessage`, `isConflictError`)
+- [ ] `app/utils/localStorage.ts` (TTL expiry, corrupt/missing cache)
+- [ ] `app/utils/slug.ts`
+- [ ] `app/composables/tables/useTableCalculator.ts` (table-size math feeding the pairing optimizer and waitroom estimate)
+- [ ] Pinia stores: `app/stores/events.ts` (lifecycle) and the 4 session stores (`rankings`, `kills`, `votes`, `commanders`) have no dedicated test file today — only exercised via hand-built fakes in `useSessionStorePersistence.test.ts`
+
+### E2E scaffolding notes (2026-07-19)
+
+- `@playwright/test` installed, `playwright.config.ts` at repo root, `pnpm test:e2e` / `pnpm test:e2e:headed` scripts. `playwright-core` (the old unused-dependency placeholder) removed — `@playwright/test` brings its own.
 - **Runs against the real production Supabase project** — this repo has no local Supabase/Docker stack available, and the user decided (2026-07-19) production is an acceptable target as long as pre-existing data is never touched. Every test-created entity is tagged (`test/e2e/helpers/testTag.ts`, `E2E TEST ... <timestamp>`) and deleted in `test.afterEach` regardless of outcome (`test/e2e/helpers/cleanup.ts`, never throws — logs loudly instead so a cleanup failure can't silently mask itself).
 - **`webServer` runs the production build (`pnpm build && node .output/server/index.mjs`), not `pnpm dev`** — the dev server (Vite/Nitro) was observed returning empty-body error responses for a real, correctly-rejected request (a schema-valid-looking update 400'd with no parseable body); the built server handled the identical flow correctly and ~3x faster. Worth remembering if a future spec mysteriously fails only in dev.
 - **Not using `@nuxt/test-utils/playwright`'s `nuxt` fixture** — it manages its own separate Nuxt build/instance, which conflicted with (and timed out alongside) `webServer`. Plain `@playwright/test` + a `page.waitForLoadState('networkidle')` after each `goto` (to let Nuxt hydration finish before interacting — filling a field before hydration means the `v-model` listener isn't attached yet and the submit button never enables) is simpler and sufficient.
 - Auth: `test/e2e/global.setup.ts` logs in once via the real site-password gate and saves `storageState`, reused by every spec project.
-- Visual debugging: `PW_SLOWMO=1 pnpm test:e2e` runs headed with a 2s delay between actions.
+- Visual debugging: `pnpm test:e2e:headed` (PW_SLOWMO=1 under the hood, via `cross-env` for Windows/PowerShell) runs headed with a 2s delay between actions.
 - First spec (`test/e2e/league-crud.e2e.spec.ts`): create → edit → delete a league via the real UI, response-body assertions on each write, verified clean (no orphaned data) after every run.
-- Still needed: event creation, round progression (start → advance-round → turn-back-round), score submission (rankings/kills/commander/votes), and the Playwright MCP server setup for browser-driven authoring/debugging (not done yet).
+- Playwright MCP server setup for browser-driven E2E authoring/debugging: not done yet.
 
 ---
 
