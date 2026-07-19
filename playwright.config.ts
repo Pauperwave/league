@@ -32,6 +32,13 @@ export default defineConfig({
     trace: 'retain-on-failure',
     headless: !slowMode,
     launchOptions: slowMode ? { slowMo: 2000 } : {},
+    // The app has no hardcoded default — it follows the browser's
+    // prefers-color-scheme (Nuxt UI's color-mode default is 'system').
+    // Playwright's own browser context defaults to 'light' regardless of
+    // the host OS's actual theme, so headed runs looked light even on a
+    // dark-themed machine. Pin it to dark to match how this app is
+    // actually used/screenshotted day to day.
+    colorScheme: 'dark',
   },
   // Runs the production build, not `pnpm dev`: the dev server (Vite/Nitro)
   // was observed returning empty-body error responses for real, correctly-
