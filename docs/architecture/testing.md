@@ -21,10 +21,10 @@ Three test layers exist: **unit** (`test/unit/`, pure logic, `happy-dom` environ
 | `StandingsCard` | – | 🟨 | – |
 | Event page shell, modals, pairing UI, waiting-room, ruleset components | – | 🟥 | 🟥 |
 | Player/deck components | – | 🟥 | 🟨 (create only) |
-| Server API endpoints (23 total) | 🟥 | – | 🟨 (5 of 23, via the league/player/deck E2E specs) |
+| Server API endpoints (23 total) | 🟥 | – | 🟨 (12 of 23, via the league/player/deck/turn-back-round E2E specs) |
 | League CRUD (create/edit/delete via real UI) | – | – | 🟩 |
 | Player create, deck create (via real UI) | – | – | 🟨 (create only, no edit/delete UI coverage) |
-| Event CRUD, lifecycle (start/advance-round/turn-back-round), round-result submission | – | – | 🟥 |
+| Event CRUD, lifecycle (start/advance-round/turn-back-round), round-result submission | – | – | 🟨 (start/turn-back-round/rankings submission only, via `turn-back-round.e2e.spec.ts` — advance-round and full CRUD/update/delete-guard paths still untested) |
 
 **Legend**
 - 🟩 well covered — multiple cases, edge cases considered
@@ -59,13 +59,14 @@ Three test layers exist: **unit** (`test/unit/`, pure logic, `happy-dom` environ
 
 **Gap**: this is the thinnest layer by far. Zero component tests for the entire event page shell (`EventControlPanel`, `EventStepper`, `RoundTimer`, `TimerControlButton`, `EndedEventBadge`), every event modal (score/kill/commander/votes/next-round/form), the whole pairing UI (`PairingsCard`, `PairingSettingsModal`, weights/presets/forbidden-pairs sections, kill-flow canvas, all table card/seat/score-grid components, preview grid/toolbar), waiting-room components, and every deck/league/ruleset/player form modal and display component.
 
-## E2E tests (`test/e2e/`) — 3 specs
+## E2E tests (`test/e2e/`) — 4 specs
 
 | File | What's covered |
 |------|-----------------|
 | `league-crud.e2e.spec.ts` | Create → edit (rename) → delete a league via the real UI against production, asserting on actual `/api/leagues/*` network responses and table rows |
-| `player-create.e2e.spec.ts` | Create a player via the real UI (`/players`), asserting on `/api/players/create` and the resulting card grid text. No update/delete coverage — `/players` has no edit action and there is no delete endpoint (see `api.md`) |
+| `player-create.e2e.spec.ts` | Create a player via the real UI (`/players`), asserting on `/api/players/create` and the resulting row in the players table. No update/delete UI coverage — players are edited via a modal reachable from the table's row actions (see `CreatePlayerModal.vue`), and there is no delete endpoint at all (see `api.md`) |
 | `deck-create.e2e.spec.ts` | Create a deck for an existing player via the real UI (`/player/[slug]`), asserting on `/api/decks/create` and the resulting deck card's "Statistiche" link (built from the commander-name slug — the commander is a fake tag with no Scryfall art, so no `<img>`/alt-text or visible name heading renders, per `ImageWithFallback.vue`/`CommanderArt.vue`). No update/delete UI coverage yet — see `BACKLOG.md` #1 |
+| `turn-back-round.e2e.spec.ts` | API-only (Playwright's `request` fixture, no `page` — reuses the same authenticated storageState) reproduction of BACKLOG #11: create a disposable league/event/3 players → register → start → submit real round scores → turn-back-round, asserting the endpoint succeeds and the round's `round_results` are actually gone, not orphaned. First spec of this shape — closer to the "API/integration" tier BACKLOG #1 describes than to a browser E2E flow, just not yet split into its own `test/api/` directory |
 
 **Gap**: event creation, the event lifecycle (start → advance-round → turn-back-round), round-result submission (rankings/kills/commander/votes modals), waitroom registration, rulesets, and deck/player edit+delete all remain untested end-to-end. See `BACKLOG.md` #1 for the planned next specs.
 

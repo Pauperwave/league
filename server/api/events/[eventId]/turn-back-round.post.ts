@@ -31,6 +31,40 @@ export default defineEventHandler(async (event) => {
   }
 
   if (currentRound > 1) {
+    // Delete this round's results before its pairings — round_results.pairing_id
+    // is ON DELETE RESTRICT (2026-07-19 migration), so a pairing can't be
+    // removed while results still reference it. Turning back a round that
+    // already has real scores entered is the realistic case this endpoint
+    // exists for (BACKLOG #11) — not an edge case to skip.
+    const { data: roundPairings, error: roundPairingsError } = await supabase
+      .from('pairings')
+      .select('pairing_id')
+      .eq('event_id', eventId)
+      .eq('pairing_round', currentRound)
+
+    if (roundPairingsError) {
+      throw createError({
+        statusCode: 500,
+        statusMessage: roundPairingsError.message
+      })
+    }
+
+    const roundPairingIds = (roundPairings ?? []).map(p => p.pairing_id)
+    if (roundPairingIds.length > 0) {
+      const { error: resultsDeleteError } = await supabase
+        .from('round_results')
+        .delete()
+        .in('pairing_id', roundPairingIds)
+
+      if (resultsDeleteError) {
+        console.error('[api/turn-back-round] round_results delete failed', { eventId, currentRound, resultsDeleteError })
+        throw createError({
+          statusCode: 500,
+          statusMessage: resultsDeleteError.message
+        })
+      }
+    }
+
     // Reopen the previous round: decrement + delete the current round's pairings.
     const [{ data: updatedEvent, error: updateError }, { error: pairingsError }] = await Promise.all([
       supabase
@@ -78,6 +112,37 @@ export default defineEventHandler(async (event) => {
     })
   }
   const playerIds = (standingsData ?? []).map(s => s.player_id)
+
+  // Same RESTRICT constraint as the currentRound > 1 branch above: delete
+  // every round_results row for this event's pairings before the pairings
+  // themselves get wiped below.
+  const { data: eventPairings, error: eventPairingsError } = await supabase
+    .from('pairings')
+    .select('pairing_id')
+    .eq('event_id', eventId)
+
+  if (eventPairingsError) {
+    throw createError({
+      statusCode: 500,
+      statusMessage: eventPairingsError.message
+    })
+  }
+
+  const eventPairingIds = (eventPairings ?? []).map(p => p.pairing_id)
+  if (eventPairingIds.length > 0) {
+    const { error: resultsDeleteError } = await supabase
+      .from('round_results')
+      .delete()
+      .in('pairing_id', eventPairingIds)
+
+    if (resultsDeleteError) {
+      console.error('[api/turn-back-round] round_results delete failed', { eventId, resultsDeleteError })
+      throw createError({
+        statusCode: 500,
+        statusMessage: resultsDeleteError.message
+      })
+    }
+  }
 
   const [
     { data: updatedEvent, error: updateError },
