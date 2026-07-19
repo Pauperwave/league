@@ -6,6 +6,31 @@ Entity-by-entity inventory of what's actually possible: which operations exist, 
 
 All reads are client → Supabase direct (anon key, `SELECT`-only RLS — see `database.md`), via a Pinia Colada `use*Query.ts` composable. All writes go through a `server/api/*` BFF endpoint using the service-role key (ADR-013/015, `database.md`) — there is no entity where the client writes to Supabase directly. Exact query keys for reads: `async-data-keys.md`.
 
+## At a glance
+
+| Entity | Create | Read | Update | Delete |
+|--------|:------:|:----:|:------:|:------:|
+| Leagues | 🟩 | 🟩 | 🟩 | 🟨 |
+| Rulesets | 🟩 | 🟩 | 🟩 | 🟩 |
+| Players | 🟩 | 🟩 | 🟩 | 🟥 |
+| Commander Decks | 🟩 | 🟩 | 🟩 | 🟩 |
+| Events (CRUD)¹ | 🟩 | 🟩 | 🟩 | 🟨 |
+| Pairings | 🟥 | 🟩 | 🟥 | 🟥 |
+| Round Results² | 🟩 | 🟩 | 🟩 | 🟥 |
+| Waitroom | 🟩 | 🟩 | – | 🟩 |
+| `player_stats` / `deck_stats` / `commander_stats` | 🟥 | 🟩 | 🟥 | 🟥 |
+| `mtg_commanders` | 🟥 | 🟩 | 🟥 | 🟥 |
+| `standings` | 🟥 | 🟩 | 🟥 | 🟥 |
+
+**Legend**
+- 🟩 supported, no known caveats
+- 🟨 supported, but with a caveat/inconsistency worth knowing before you rely on it (see that entity's notes below)
+- 🟥 not supported, and not planned — either deliberately (e.g. player delete) or because the operation only ever happens as a side effect of a different action (e.g. pairings, standings)
+- `–` doesn't conceptually apply to this entity (e.g. a waitroom entry isn't something you "update", only add/remove)
+
+¹ Events also have a separate lifecycle state machine (start/advance-round/turn-back-round/register-player/unregister-player) that isn't plain CRUD — see the Events section below and `event-flow.md`.
+² Rankings/kills/commander/votes — four endpoints, all upserts, detailed below.
+
 ## Leagues
 
 | Op | Endpoint / composable | Notes |
