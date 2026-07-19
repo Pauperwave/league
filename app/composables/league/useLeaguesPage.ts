@@ -58,7 +58,9 @@ export function useLeaguesPage() {
     } catch (err) {
       toast.add({
         title: t('league.toast.deleteErrorTitle'),
-        description: toErrorMessage(err, t('store.league.deleteError')),
+        description: isConflictError(err)
+          ? t('store.league.inUseError')
+          : toErrorMessage(err, t('store.league.deleteError')),
         color: 'error'
       })
       return

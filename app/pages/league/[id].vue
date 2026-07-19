@@ -157,7 +157,9 @@ async function confirmDeleteEvent() {
   } catch (err) {
     toast.add({
       title: t('event.toast.deleteErrorTitle'),
-      description: toErrorMessage(err, t('event.toast.deleteErrorFallback')),
+      description: isConflictError(err)
+        ? t('store.event.inUseError')
+        : toErrorMessage(err, t('event.toast.deleteErrorFallback')),
       color: 'error'
     })
     return

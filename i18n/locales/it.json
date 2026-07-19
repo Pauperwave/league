@@ -634,6 +634,7 @@
       "loadError": "Errore nel caricamento leghe",
       "createError": "Errore nella creazione lega",
       "updateError": "Errore nell'aggiornamento lega",
+      "inUseError": "Non è possibile eliminare questa lega perché contiene ancora degli eventi",
       "deleteError": "Errore nell'eliminazione lega"
     },
     "ruleset": {
@@ -656,6 +657,7 @@
       "victimAlreadyKilled": "La vittima ha già ucciso questo giocatore"
     },
     "event": {
+      "inUseError": "Non è possibile eliminare questo evento perché contiene ancora tavoli, classifiche o iscritti",
       "startError": "Errore nell'avvio evento",
       "voteSaveError": "Errore nel salvataggio del voto",
       "commanderSaveError": "Errore nel salvataggio dei comandanti",
