@@ -1,9 +1,10 @@
 // playwright.config.ts
 import { defineConfig, devices } from '@playwright/test'
 
-// Visual debugging: PW_SLOWMO=1 pnpm test:e2e runs headed with a 2s delay
-// between actions, so you can actually watch the browser instead of it
-// running headless/instant. Off by default — normal runs stay fast.
+// Visual debugging: `pnpm test:e2e:headed` (PW_SLOWMO=1 under the hood, via
+// cross-env for Windows/PowerShell) runs headed with a 2s delay between
+// actions, so you can actually watch the browser instead of it running
+// headless/instant. Off by default — `pnpm test:e2e` stays fast.
 const slowMode = !!process.env.PW_SLOWMO
 
 // E2E runs against the real Supabase project (BACKLOG #1) — this repo has no

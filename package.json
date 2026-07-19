@@ -23,7 +23,8 @@
     "test:nuxt": "vitest run test/nuxt",
     "test:watch": "vitest --watch",
     "test:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:e2e:headed": "cross-env PW_SLOWMO=1 playwright test"
   },
   "dependencies": {
     "@formkit/auto-animate": "^0.10.0",
@@ -67,6 +68,7 @@
     "@vitejs/plugin-vue": "^6.0.7",
     "@vitest/coverage-v8": "^4.1.10",
     "@vue/test-utils": "^2.4.11",
+    "cross-env": "^10.1.0",
     "eslint": "^10.7.0",
     "fallow": "^3.3.0",
     "happy-dom": "^20.10.6",
