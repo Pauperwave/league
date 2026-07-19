@@ -4,6 +4,7 @@
 // handled here — server/middleware/api-auth.ts guards every /api route.
 import * as v from 'valibot'
 import type { H3Event } from 'h3'
+import { Constants } from '#shared/utils/types/database'
 
 /**
  * Parse a positive-integer id from the route params, throwing the uniform
@@ -65,6 +66,8 @@ export const rulesetFormBodySchema = v.object({
 export const playerFormBodySchema = v.object({
   player_name: v.pipe(v.string(), v.trim(), v.minLength(1)),
   player_surname: v.pipe(v.string(), v.trim(), v.minLength(1)),
+  is_active: v.optional(v.boolean(), true),
+  formats_played: v.optional(v.nullable(v.array(v.picklist(Constants.public.Enums.mtg_formats))), null),
 })
 
 /**

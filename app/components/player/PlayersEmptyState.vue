@@ -1,7 +1,7 @@
 <!-- app\components\player\PlayersEmptyState.vue -->
 <script setup lang="ts">
 const props = defineProps<{
-  type: 'no-search-results' | 'no-decks-filter' | 'no-players'
+  type: 'no-search-results' | 'no-decks-filter' | 'no-active-filter' | 'no-players'
   searchQuery?: string
 }>()
 
@@ -34,6 +34,17 @@ const config = computed(() => ({
     icon: ICONS.noDecks,
     title: t('player.emptyState.noDecksTitle'),
     description: t('player.emptyState.noDecksDescription'),
+    action: {
+      label: t('player.emptyState.showAll'),
+      icon: undefined,
+      color: 'neutral' as const,
+      event: 'clearFilter' as const
+    }
+  },
+  'no-active-filter': {
+    icon: ICONS.players,
+    title: t('player.emptyState.noActiveTitle'),
+    description: t('player.emptyState.noActiveDescription'),
     action: {
       label: t('player.emptyState.showAll'),
       icon: undefined,

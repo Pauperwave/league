@@ -21,7 +21,9 @@ export function usePlayerMutations() {
         method: 'POST',
         body: {
           player_name: payload.player_name,
-          player_surname: payload.player_surname
+          player_surname: payload.player_surname,
+          is_active: payload.is_active,
+          formats_played: payload.formats_played
         },
       }),
     onSettled: invalidate,
@@ -37,7 +39,9 @@ export function usePlayerMutations() {
         method: 'POST',
         body: {
           player_name: data.player_name,
-          player_surname: data.player_surname
+          player_surname: data.player_surname,
+          is_active: data.is_active,
+          formats_played: data.formats_played
         },
       }),
     onSettled: invalidate,

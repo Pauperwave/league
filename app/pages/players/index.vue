@@ -1,7 +1,8 @@
 <!-- app\pages\players\index.vue -->
 <script setup lang="ts">
-// fallow-ignore-file code-duplication -- create-player handler boilerplate shared with useEventPlayers (the post-create flows differ: plain toast here, waitlist registration there)
-import type { NewPlayer } from '#shared/utils/types'
+// fallow-ignore-file code-duplication -- create/update-player handler boilerplate shared with useEventPlayers (the post-create/update flows differ: plain toast here, waitlist registration there)
+import type { NewPlayer, Player } from '#shared/utils/types'
+import type { PlayerUpdatePayload } from '~/composables/players/usePlayerMutations'
 
 const { t } = useI18n()
 
@@ -15,18 +16,29 @@ const players = computed(() => playersData.value ?? [])
 const { data: decksData } = useDecksQuery()
 const { getStat } = useAllPlayerStats()
 
-const { createPlayer } = usePlayerMutations()
+const { createPlayer, updatePlayer } = usePlayerMutations()
 
 const {
-  searchQuery, showOnlyWithDecks, sortBy, sortDirection,
-  filteredPlayers, emptyState, getSortLabel
+  searchQuery, showOnlyWithDecks, showOnlyActive,
+  filteredPlayers, emptyState
 } = usePlayersFilter(
   players,
-  getStat,
   (id) => (decksData.value ?? []).filter(d => d.player_id === id).length
 )
 
 const showCreatePlayerModal = ref(false)
+const playerToEdit = ref<Player | null>(null)
+const rowSelection = ref<Record<string, boolean>>({})
+
+function openCreateModal() {
+  playerToEdit.value = null
+  showCreatePlayerModal.value = true
+}
+
+function openEditModal(player: Player) {
+  playerToEdit.value = player
+  showCreatePlayerModal.value = true
+}
 
 async function handlePlayerCreate(player: NewPlayer) {
   let created
@@ -48,44 +60,60 @@ async function handlePlayerCreate(player: NewPlayer) {
     color: 'success'
   })
 }
+
+async function handlePlayerUpdate(payload: PlayerUpdatePayload) {
+  try {
+    await updatePlayer.mutateAsync(payload)
+  } catch (err) {
+    toast.add({
+      title: t('store.player.updateError'),
+      description: toErrorMessage(err, t('store.player.updateError')),
+      color: 'error'
+    })
+    return
+  }
+  showCreatePlayerModal.value = false
+  toast.add({ title: t('player.toast.updatedTitle'), color: 'success' })
+}
 </script>
 
 <template>
   <div class="container mx-auto p-6 space-y-6">
-    <PlayersHeader @create-player="showCreatePlayerModal = true" />
+    <PlayersHeader @create-player="openCreateModal" />
 
     <PlayersToolbar
       v-model:search-query="searchQuery"
       v-model:show-only-with-decks="showOnlyWithDecks"
-      v-model:sort-by="sortBy"
-      v-model:sort-direction="sortDirection"
+      v-model:show-only-active="showOnlyActive"
     />
 
     <div v-if="playersLoading" class="flex items-center justify-center py-12">
       <UIcon :name="ICONS.loading" class="size-8 animate-spin text-primary" />
     </div>
 
-    <PlayersGrid
+    <PlayersTable
       v-else-if="filteredPlayers.length > 0"
+      v-model:row-selection="rowSelection"
       :players="filteredPlayers"
-      :sort-by="sortBy"
-      :get-sort-label="getSortLabel"
       :get-player-stat="getStat"
+      :get-deck-count="(id) => (decksData ?? []).filter(d => d.player_id === id).length"
+      @edit="openEditModal"
     />
 
     <PlayersEmptyState
       v-else-if="emptyState"
       :type="emptyState"
       :search-query="searchQuery"
-      @create-player="showCreatePlayerModal = true"
-      @clear-filter="showOnlyWithDecks = false"
+      @create-player="openCreateModal"
+      @clear-filter="() => { showOnlyWithDecks = false; showOnlyActive = false }"
     />
 
     <CreatePlayerModal
       v-model:open="showCreatePlayerModal"
-      :player="null"
+      :player="playerToEdit"
       :existing-players="players"
       @create="handlePlayerCreate"
+      @update="handlePlayerUpdate"
     />
   </div>
 </template>

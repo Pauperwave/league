@@ -1,7 +1,7 @@
 // shared\utils\types\index.ts
 // Auto-generated database types are in `database.ts` — do not modify that file.
 // This file extends them with project-specific types.
-import type { Tables, TablesInsert } from '#shared/utils/types/database'
+import type { Database, Tables, TablesInsert } from '#shared/utils/types/database'
 
 // ─── Table Row Types ────────────────────────────────────────────────────────
 export type League      = Tables<'leagues'>
@@ -12,6 +12,7 @@ export type Pairing     = Tables<'pairings'>
 export type Standing    = Tables<'standings'>
 export type RoundResult = Tables<'round_results'>
 export type WaitroomEntry = Tables<'waitroom'>
+export type MtgFormat    = Database['public']['Enums']['mtg_formats']
 
 /** Extract non-null player IDs from a pairing row */
 export function getPairingPlayerIds(pairing: { pairing_player1_id: number | null; pairing_player2_id: number | null; pairing_player3_id: number | null; pairing_player4_id: number | null }): number[] {

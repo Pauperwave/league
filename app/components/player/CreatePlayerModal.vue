@@ -1,9 +1,10 @@
 <!-- app\components\player\CreatePlayerModal.vue -->
 <script setup lang="ts">
 // fallow-ignore-file code-duplication -- FormModal invocation boilerplate + props/emit shape coincidence, see app/components/ui/CLAUDE.md
-import type { Player, NewPlayer } from '#shared/utils/types'
+import type { Player, NewPlayer, MtgFormat } from '#shared/utils/types'
 import type { PlayerUpdatePayload } from '~/composables/players/usePlayerMutations'
 import { findSimilarPlayers } from '#shared/utils/playerSimilarity'
+import { Constants } from '#shared/utils/types/database'
 import * as v from 'valibot'
 
 const props = defineProps<{
@@ -27,6 +28,8 @@ const selectExistingLogging = useButtonLogging('Select Existing Player')
 const PlayerFormSchema = v.object({
   player_name: v.pipe(v.string(), v.trim(), v.minLength(1)),
   player_surname: v.pipe(v.string(), v.trim(), v.minLength(1)),
+  is_active: v.boolean(),
+  formats_played: v.nullable(v.array(v.picklist(Constants.public.Enums.mtg_formats))),
 })
 
 // — Derived modal state —
@@ -40,9 +43,13 @@ const { title: modalTitle, description: modalDescription, icon: modalIcon, submi
 })
 
 // — Form —
-const defaultForm = (): { firstName: string, lastName: string } => ({
+const formatItems = Constants.public.Enums.mtg_formats
+
+const defaultForm = (): { firstName: string, lastName: string, isActive: boolean, formatsPlayed: MtgFormat[] } => ({
   firstName: '',
   lastName: '',
+  isActive: true,
+  formatsPlayed: [],
 })
 
 const form = shallowReactive(defaultForm())
@@ -70,7 +77,7 @@ watch(open, (isOpen) => {
 
   const p = props.player
   Object.assign(form, p
-    ? { firstName: p.player_name, lastName: p.player_surname }
+    ? { firstName: p.player_name, lastName: p.player_surname, isActive: p.is_active, formatsPlayed: p.formats_played ?? [] }
     : defaultForm()
   )
 })
@@ -79,6 +86,8 @@ function handleSubmit() {
   const data: NewPlayer = {
     player_name: form.firstName.trim(),
     player_surname: form.lastName.trim(),
+    is_active: form.isActive,
+    formats_played: form.formatsPlayed.length ? form.formatsPlayed : null,
   }
 
   const parsed = v.safeParse(PlayerFormSchema, data)
@@ -98,6 +107,12 @@ function handleSubmit() {
   }
 
   open.value = false
+}
+
+function toggleFormat(format: MtgFormat) {
+  form.formatsPlayed = form.formatsPlayed.includes(format)
+    ? form.formatsPlayed.filter((f) => f !== format)
+    : [...form.formatsPlayed, format]
 }
 
 function handleSelectExisting(playerId: number) {
@@ -140,6 +155,26 @@ function handleSelectExisting(playerId: number) {
             />
           </UFormField>
         </div>
+
+        <UFormField :label="t('player.form.formatsLabel')">
+          <div class="flex flex-wrap gap-2">
+            <UButton
+              v-for="format in formatItems"
+              :key="format"
+              type="button"
+              size="sm"
+              :variant="form.formatsPlayed.includes(format) ? 'solid' : 'outline'"
+              :color="form.formatsPlayed.includes(format) ? 'primary' : 'neutral'"
+              @click="toggleFormat(format)"
+            >
+              {{ format }}
+            </UButton>
+          </div>
+        </UFormField>
+
+        <UFormField :label="t('player.form.activeLabel')">
+          <USwitch id="field-active" v-model="form.isActive" />
+        </UFormField>
 
         <!-- Warning: similar players found (creation only) -->
         <UCard

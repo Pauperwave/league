@@ -46,6 +46,26 @@ export function sortableHeader(label: string, UButton: Component) {
   }
 }
 
+export function createSelectionColumn<T>(UCheckbox: Component): TableColumn<T> {
+  return {
+    id: 'select',
+    header: ({ table }) => h(UCheckbox, {
+      modelValue: table.getIsAllPageRowsSelected()
+        ? true
+        : table.getIsSomePageRowsSelected() ? 'indeterminate' : false,
+      'onUpdate:modelValue': (value: boolean) => table.toggleAllPageRowsSelected(!!value),
+      'aria-label': 'Seleziona tutti'
+    }),
+    cell: ({ row }) => h(UCheckbox, {
+      modelValue: row.getIsSelected(),
+      'onUpdate:modelValue': (value: boolean) => row.toggleSelected(!!value),
+      'aria-label': 'Seleziona riga'
+    }),
+    enableSorting: false,
+    meta: { class: { th: 'w-10', td: 'w-10' } }
+  }
+}
+
 export function createActionsColumn<T>(
   UButton: Component,
   RowActionButtons: Component,

@@ -147,6 +147,7 @@
   "player": {
     "breadcrumb": "Giocatori",
     "pageTitle": "Giocatori",
+    "countSubtitle": "{total} giocatori totali · {active} attivi",
     "newPlayer": "Crea Giocatore",
     "fallbackName": "Profilo",
     "profileFallbackHeading": "Profilo giocatore",
@@ -157,7 +158,7 @@
       "matches": "Match",
       "wins": "Vittorie",
       "kills": "Uccisioni",
-      "average": "Media",
+      "average": "Media punti",
       "decks": "Mazzi",
       "borrowedSuffix": "prestati"
     },
@@ -179,22 +180,30 @@
     },
     "filterSwitch": {
       "onlyWithDecks": "Solo con mazzi ({count})",
+      "onlyActive": "Solo attivi ({count})",
       "allPlayers": "Tutti i giocatori ({count})"
     },
     "toolbar": {
       "searchPlaceholder": "Cerca giocatore per nome...",
-      "sortPlaceholder": "Ordina per...",
-      "sortDescAriaLabel": "Ordina decrescente",
-      "sortAscAriaLabel": "Ordina crescente"
+      "sortPlaceholder": "Ordina per..."
     },
-    "sortOptions": {
+    "table": {
+      "id": "ID",
       "name": "Nome",
+      "surname": "Cognome",
+      "decks": "Mazzi",
+      "events": "Eventi",
+      "matches": "Match",
       "wins": "Vittorie",
       "kills": "Uccisioni",
-      "matches": "Partite",
-      "events": "Eventi",
       "avgScore": "Media punti",
-      "decks": "Mazzi"
+      "formats": "Formati",
+      "active": "Stato",
+      "actions": "Azioni"
+    },
+    "status": {
+      "active": "Attivo",
+      "inactive": "Inattivo"
     },
     "emptyState": {
       "noResultsTitle": "Nessun risultato per \"{query}\"",
@@ -202,6 +211,8 @@
       "createPlayer": "Crea Giocatore",
       "noDecksTitle": "Nessun giocatore ha mazzi associati",
       "noDecksDescription": "Disattiva il filtro per vedere tutti i giocatori",
+      "noActiveTitle": "Nessun giocatore attivo",
+      "noActiveDescription": "Disattiva il filtro per vedere tutti i giocatori",
       "showAll": "Mostra tutti",
       "noPlayersTitle": "Nessun giocatore trovato",
       "noPlayersDescription": "Inizia creando il primo giocatore"
@@ -226,6 +237,8 @@
       "firstNamePlaceholder": "Es. Mario",
       "lastNameLabel": "Cognome",
       "lastNamePlaceholder": "Es. Rossi",
+      "formatsLabel": "Formati giocati",
+      "activeLabel": "Giocatore attivo",
       "similarFoundHeading": "Giocatori simili trovati",
       "similarFoundHint": "Verifica che il giocatore non sia già registrato:",
       "select": "Seleziona",
@@ -234,7 +247,8 @@
     },
     "toast": {
       "createdTitle": "Giocatore creato",
-      "createdDescription": "{name} creato con successo"
+      "createdDescription": "{name} creato con successo",
+      "updatedTitle": "Giocatore aggiornato"
     }
   },
   "deck": {
