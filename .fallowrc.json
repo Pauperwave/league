@@ -6,7 +6,8 @@
     "app/composables/**/*.ts",
     "app/stores/**/*.ts",
     "server/**/*.ts",
-    "scripts/sync-commanders.ts"
+    "scripts/sync-commanders.ts",
+    "test/e2e/global.setup.ts"
   ],
   "ignorePatterns": [
     "public/**",
@@ -21,7 +22,6 @@
     "@pinia/colada",
     "@vue/test-utils",
     "@vueuse/core",
-    "playwright-core",
     "vue-i18n"
   ],
   "duplicates": {
