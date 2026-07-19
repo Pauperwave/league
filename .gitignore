@@ -27,3 +27,5 @@ logs
 
 # OpenCode configuration (contains MCP secrets)
 .opencode/
+
+supabase/.temp
