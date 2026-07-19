@@ -18,6 +18,7 @@ Master index of all project documentation.
 | `architecture/routes.md` | Complete route inventory, nested route gotchas, navigation patterns | Routing |
 | `architecture/state-flow.md` | DB → store → composable → component data flow, caching strategy | Architecture |
 | `architecture/stores.md` | Pinia store overview, Setup API pattern, state categories, error handling | State management |
+| `architecture/testing.md` | Test coverage matrix by area (unit/component/E2E): what's tested today, what isn't, where to add the next test | Test reference |
 | `PROGRESS.md` | Backward-looking curated changelog + ADRs; what's actually been done | Architecture history |
 | `CHANGELOG.md` | Raw commit-by-commit trail, newest first; the play-by-play behind `PROGRESS.md`'s distilled history | Architecture history |
 | `BACKLOG.md` | Forward-looking, committed work items ranked by priority (P1–P3) with effort estimates (S/M/L) | Roadmap |
