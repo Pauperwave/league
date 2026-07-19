@@ -435,7 +435,7 @@ function handleResetTable(pairingId: number) {
                 :waitroom-entries="waitroomEntries"
                 :table-estimate="tableEstimate"
                 @update="playersHandlers.handlePlayerStatusUpdate"
-                @remove="removeFromWaitingList"
+                @remove="(playerId: number) => removeFromWaitingList([playerId])"
                 @batch-remove="playersHandlers.handleBatchRemove"
                 @edit="playersHandlers.handleEditPlayer"
                 @add-player="showPlayerSearchModal = true"

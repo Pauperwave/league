@@ -6,7 +6,7 @@ import type { PlayerUpdatePayload } from '~/composables/players/usePlayerMutatio
 interface EventPlayersDeps {
   // Actions from useEventPage
   addToWaitingList: (playerIds: number[]) => Promise<void>
-  removeFromWaitingList: (playerId: number) => Promise<void>
+  removeFromWaitingList: (playerIds: number[]) => Promise<void>
 
   // State
   players: Ref<Player[]>
@@ -81,7 +81,7 @@ export function useEventPlayers(deps: EventPlayersDeps) {
   }
 
   async function handleBatchRemove(playerIds: number[]) {
-    for (const playerId of playerIds) await removeFromWaitingList(playerId)
+    await removeFromWaitingList(playerIds)
   }
 
   return {

@@ -120,9 +120,9 @@ export function useEventPage() {
     }
   }
 
-  async function removeFromWaitingList(playerId: number) {
+  async function removeFromWaitingList(playerIds: number[]) {
     try {
-      await unregisterPlayers.mutateAsync([playerId])
+      await unregisterPlayers.mutateAsync(playerIds)
     } catch (err) {
       toast.add({
         title: t('store.player.registerError'),
