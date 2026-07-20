@@ -93,6 +93,7 @@ defineExpose({
       v-model="internalStep"
       :items="items"
       class="w-full"
+      :ui="{ content: 'w-full' }"
       @update:model-value="handleStepClick"
     >
       <template #content="{ item }">
