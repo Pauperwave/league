@@ -60,6 +60,22 @@ const openScoreModalLogging = useButtonLogging('Open Score Modal', {
   tableIndex: () => currentTableIndex.value
 })
 
+// ─── Fullscreen ───────────────────────────────────────────────────────────────
+// Same pattern as RoundTimer.vue: browser Fullscreen API on a wrapping ref, so
+// the tables take over the whole screen instead of sharing space with the
+// standings sidebar.
+const pairingsRef = useTemplateRef<HTMLDivElement>('pairingsRef')
+const { isFullscreen, toggle: toggleFullscreen } = useFullscreen(pairingsRef)
+
+const toggleFullscreenLogging = useButtonLogging('Toggle Pairings Fullscreen', {
+  isFullscreen: () => isFullscreen.value,
+})
+
+function handleToggleFullscreen() {
+  toggleFullscreenLogging.logClick()
+  toggleFullscreen()
+}
+
 // ─── Computed ─────────────────────────────────────────────────────────────────
 
 /**
@@ -228,87 +244,108 @@ function toggleKillConfirmation(pairingId: number) {
 </script>
 
 <template>
-  <UCard variant="outline">
-    <template #header>
-      <div class="flex items-center gap-2">
-        <UIcon :name="ICONS.gridView" class="size-5 text-primary" />
-        <h2 class="text-lg font-semibold">{{ t('event.pairing.tablesHeading') }}</h2>
-      </div>
-    </template>
+  <div ref="pairingsRef">
+    <PairingsFullscreenView
+      v-if="isFullscreen"
+      :pairings="pairings"
+      :all-players="allPlayers"
+      @exit="handleToggleFullscreen"
+    />
 
-    <div v-if="pairings.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <UCard
-        v-for="(pairing, index) in pairings"
-        :key="pairing.pairing_id"
+    <UCard v-else variant="outline">
+      <template #header>
+        <div class="flex items-center gap-2">
+          <UIcon :name="ICONS.gridView" class="size-5 text-primary" />
+          <h2 class="text-lg font-semibold">{{ t('event.pairing.tablesHeading') }}</h2>
+          <UTooltip :content="{ side: 'top' }" :text="t('event.pairing.fullscreenTooltip')">
+            <UButton
+              :icon="ICONS.expand"
+              color="neutral"
+              variant="ghost"
+              :aria-label="t('event.pairing.fullscreenTooltip')"
+              @click="handleToggleFullscreen"
+            />
+          </UTooltip>
+        </div>
+      </template>
+
+      <div
+        v-if="pairings.length > 0"
+        class="grid grid-cols-1 md:grid-cols-2 gap-4"
       >
-        <!-- Table actions (view scores, reset, quick fill) — hidden in readonly mode -->
-        <div v-if="!readonly" class="flex items-center justify-between mb-3">
-          <TableCardActions
-            :pairing="pairing"
-            :table-index="index"
-            :is-complete="isTableComplete(pairing)"
-            @view-scores="emit('openScoresModal', $event)"
-            @reset-table="handleResetTable"
-            @quick-fill="handleQuickTestFill"
-          />
-        </div>
+        <UCard
+          v-for="(pairing, index) in pairings"
+          :key="pairing.pairing_id"
+        >
+          <!-- Table actions (view scores, reset, quick fill) — hidden in readonly mode -->
+          <div v-if="!readonly" class="flex items-center justify-between mb-3">
+            <TableCardActions
+              :pairing="pairing"
+              :table-index="index"
+              :is-complete="isTableComplete(pairing)"
+              @view-scores="emit('openScoresModal', $event)"
+              @reset-table="handleResetTable"
+              @quick-fill="handleQuickTestFill"
+            />
+          </div>
 
-        <!-- Player rows -->
-        <div class="space-y-2">
-          <PairingPlayerRow
-            v-for="playerId in pairingPlayerIds(pairing)"
-            :key="playerId"
-            :player-id="playerId"
+          <!-- Player rows -->
+          <div class="space-y-2">
+            <PairingPlayerRow
+              v-for="playerId in pairingPlayerIds(pairing)"
+              :key="playerId"
+              :player-id="playerId"
+              :pairing-id="pairing.pairing_id"
+              :name="allPlayers.find(p => p.id === playerId)?.name ?? ''"
+              :surname="allPlayers.find(p => p.id === playerId)?.surname ?? ''"
+              :readonly="readonly"
+              :has-commander="!!commandersStore.getCommander1(playerId)"
+              :has-votes="votesStore.hasVotes(playerId)"
+              @open-commander-modal="(pairingId, pid) => emit('openCommanderModal', pairingId, pid)"
+              @open-votes-modal="(pairingId, pid) => emit('openVotesModal', pairingId, pid)"
+            />
+          </div>
+
+          <!-- Table-level action buttons — hidden in readonly mode -->
+          <PairingTableActions
+            v-if="!readonly"
             :pairing-id="pairing.pairing_id"
-            :name="allPlayers.find(p => p.id === playerId)?.name ?? ''"
-            :surname="allPlayers.find(p => p.id === playerId)?.surname ?? ''"
-            :readonly="readonly"
-            :has-commander="!!commandersStore.getCommander1(playerId)"
-            :has-votes="votesStore.hasVotes(playerId)"
-            @open-commander-modal="(pairingId, pid) => emit('openCommanderModal', pairingId, pid)"
-            @open-votes-modal="(pairingId, pid) => emit('openVotesModal', pairingId, pid)"
+            :table-index="index"
+            :has-ranking="hasRanking(pairing.pairing_id)"
+            :kills-confirmed="killsStore.isPairingConfirmed(pairing.pairing_id)"
+            @open-score-modal="handleOpenScoreModal"
+            @open-kill-modal="emit('openKillModal', $event)"
+            @toggle-kill-confirmation="toggleKillConfirmation"
           />
-        </div>
+        </UCard>
+      </div>
 
-        <!-- Table-level action buttons — hidden in readonly mode -->
-        <PairingTableActions
-          v-if="!readonly"
-          :pairing-id="pairing.pairing_id"
-          :table-index="index"
-          :has-ranking="hasRanking(pairing.pairing_id)"
-          :kills-confirmed="killsStore.isPairingConfirmed(pairing.pairing_id)"
-          @open-score-modal="handleOpenScoreModal"
-          @open-kill-modal="emit('openKillModal', $event)"
-          @toggle-kill-confirmation="toggleKillConfirmation"
-        />
-      </UCard>
-    </div>
+      <UEmpty v-else :icon="ICONS.players" :title="t('event.pairing.noTablesAvailable')" />
 
-    <UEmpty v-else :icon="ICONS.players" :title="t('event.pairing.noTablesAvailable')" />
+      <!-- Reset confirmation dialog -->
+      <ConfirmModal
+        v-model:open="showResetConfirm"
+        :title="t('event.pairing.resetConfirm.title')"
+        :description="t('event.pairing.resetConfirm.description')"
+        :question="t('event.pairing.resetConfirm.question')"
+        :subject="t('event.pairing.tableHeading', { n: pairings.findIndex(p => p.pairing_id === tableToReset) + 1 })"
+        :confirm-label="t('event.pairing.resetConfirm.confirmLabel')"
+        :confirm-icon="ICONS.reset"
+        @confirm="handleConfirm"
+      />
 
-    <!-- Reset confirmation dialog -->
-    <ConfirmModal
-      v-model:open="showResetConfirm"
-      :title="t('event.pairing.resetConfirm.title')"
-      :description="t('event.pairing.resetConfirm.description')"
-      :question="t('event.pairing.resetConfirm.question')"
-      :subject="t('event.pairing.tableHeading', { n: pairings.findIndex(p => p.pairing_id === tableToReset) + 1 })"
-      :confirm-label="t('event.pairing.resetConfirm.confirmLabel')"
-      :confirm-icon="ICONS.reset"
-      @confirm="handleConfirm"
-    />
-
-    <!-- Test fill confirmation dialog -->
-    <ConfirmModal
-      v-model:open="showFillConfirm"
-      :title="t('event.pairing.fillConfirm.title')"
-      :description="t('event.pairing.fillConfirm.description')"
-      :question="t('event.pairing.fillConfirm.question')"
-      :subject="t('event.pairing.tableHeading', { n: pairings.findIndex(p => p.pairing_id === tableToFill) + 1 })"
-      :warning="t('event.pairing.fillConfirm.warning')"
-      :confirm-label="t('event.pairing.fillConfirm.confirmLabel')"
-      :confirm-icon="ICONS.quickAction"
-      @confirm="handleConfirm"
-    />
-  </UCard>
+      <!-- Test fill confirmation dialog -->
+      <ConfirmModal
+        v-model:open="showFillConfirm"
+        :title="t('event.pairing.fillConfirm.title')"
+        :description="t('event.pairing.fillConfirm.description')"
+        :question="t('event.pairing.fillConfirm.question')"
+        :subject="t('event.pairing.tableHeading', { n: pairings.findIndex(p => p.pairing_id === tableToFill) + 1 })"
+        :warning="t('event.pairing.fillConfirm.warning')"
+        :confirm-label="t('event.pairing.fillConfirm.confirmLabel')"
+        :confirm-icon="ICONS.quickAction"
+        @confirm="handleConfirm"
+      />
+    </UCard>
+  </div>
 </template>

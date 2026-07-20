@@ -483,6 +483,8 @@
     "pairing": {
       "tableHeading": "Tavolo {n}",
       "tablesHeading": "Tavoli",
+      "fullscreenTooltip": "Schermo intero",
+      "exitFullscreenTooltip": "Esci da schermo intero",
       "noTablesAvailable": "Nessun tavolo disponibile",
       "scoreLabel": "Punteggio: {score}",
       "commanderSetTooltip": "Commander inserito",
