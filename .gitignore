@@ -29,6 +29,7 @@ logs
 .opencode/
 
 supabase/.temp
+supabase/.temp/cli-latest
 
 # Playwright E2E (BACKLOG #1) — test-results/report are run output; .auth
 # holds a real session cookie (storageState), never commit it

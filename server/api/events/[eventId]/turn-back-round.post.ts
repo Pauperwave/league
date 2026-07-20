@@ -51,16 +51,23 @@ export default defineEventHandler(async (event) => {
 
     const roundPairingIds = (roundPairings ?? []).map(p => p.pairing_id)
     if (roundPairingIds.length > 0) {
-      const { error: resultsDeleteError } = await supabase
-        .from('round_results')
-        .delete()
-        .in('pairing_id', roundPairingIds)
+      const [{ error: resultsDeleteError }, { error: killsDeleteError }] = await Promise.all([
+        supabase.from('round_results').delete().in('pairing_id', roundPairingIds),
+        supabase.from('round_kills').delete().in('pairing_id', roundPairingIds),
+      ])
 
       if (resultsDeleteError) {
         console.error('[api/turn-back-round] round_results delete failed', { eventId, currentRound, resultsDeleteError })
         throw createError({
           statusCode: 500,
           statusMessage: resultsDeleteError.message
+        })
+      }
+      if (killsDeleteError) {
+        console.error('[api/turn-back-round] round_kills delete failed', { eventId, currentRound, killsDeleteError })
+        throw createError({
+          statusCode: 500,
+          statusMessage: killsDeleteError.message
         })
       }
     }
@@ -130,16 +137,23 @@ export default defineEventHandler(async (event) => {
 
   const eventPairingIds = (eventPairings ?? []).map(p => p.pairing_id)
   if (eventPairingIds.length > 0) {
-    const { error: resultsDeleteError } = await supabase
-      .from('round_results')
-      .delete()
-      .in('pairing_id', eventPairingIds)
+    const [{ error: resultsDeleteError }, { error: killsDeleteError }] = await Promise.all([
+      supabase.from('round_results').delete().in('pairing_id', eventPairingIds),
+      supabase.from('round_kills').delete().in('pairing_id', eventPairingIds),
+    ])
 
     if (resultsDeleteError) {
       console.error('[api/turn-back-round] round_results delete failed', { eventId, resultsDeleteError })
       throw createError({
         statusCode: 500,
         statusMessage: resultsDeleteError.message
+      })
+    }
+    if (killsDeleteError) {
+      console.error('[api/turn-back-round] round_kills delete failed', { eventId, killsDeleteError })
+      throw createError({
+        statusCode: 500,
+        statusMessage: killsDeleteError.message
       })
     }
   }

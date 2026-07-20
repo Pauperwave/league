@@ -9,7 +9,13 @@ import '@vue-flow/controls/dist/style.css'
 import KillPlayerNode from './KillPlayerNode.vue'
 import type { TournamentPlayer } from '#shared/utils/types'
 
-const { setViewport, fitView, setEdges, onInit } = useVueFlow()
+// Explicit id shared with <VueFlow id="kill-flow"> below — calling
+// useVueFlow() in the same component that renders <VueFlow>, before it
+// mounts, is only guaranteed to share that component's store when the ids
+// match; otherwise setEdges()/etc. can silently write to an orphaned store
+// that <VueFlow> never renders.
+const FLOW_ID = 'kill-flow'
+const { setViewport, fitView, setEdges, onInit } = useVueFlow(FLOW_ID)
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 const props = defineProps<{
@@ -27,30 +33,42 @@ const { t } = useI18n()
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const nodeTypes = { player: markRaw(KillPlayerNode) } as any
 
-// ─── Circular position calculation ────────────────────────────────────────────
-function getCircularPosition(index: number, total: number, radius = 150) {
-  const angle = (2 * Math.PI * index) / total - Math.PI / 2
-  return {
-    x: 200 + radius * Math.cos(angle),
-    y: 200 + radius * Math.sin(angle),
+// ─── Rectangular position calculation ─────────────────────────────────────────
+// Distributes `total` nodes evenly around a rectangle's perimeter, starting
+// at the top-left corner and walking clockwise (top -> right -> bottom -> left).
+function getRectangularPosition(index: number, total: number, width = 300, height = 300) {
+  const perimeter = 2 * (width + height)
+  const dist = (perimeter * index) / total
+
+  if (dist < width) {
+    return { x: dist, y: 0 }
   }
+  if (dist < width + height) {
+    return { x: width, y: dist - width }
+  }
+  if (dist < 2 * width + height) {
+    return { x: width - (dist - width - height), y: height }
+  }
+  return { x: 0, y: height - (dist - 2 * width - height) }
 }
 
 // ─── Nodes (players) ─────────────────────────────────────────────────────────
 const nodes = computed<Node[]>(() =>
   props.players.map((player, index) => ({
     id: String(player.id),
-    type: 'player',                    // matches nodeTypes.player
-    position: getCircularPosition(index, props.players.length),
+    // matches nodeTypes.player
+    type: 'player',
+    position: getRectangularPosition(index, props.players.length),
     data: { player },
-    draggable: false,                  // fixed chips on the canvas
+    // fixed chips on the canvas
+    draggable: false,
   })),
 )
 
 // ─── Helper: map store kills to Vue Flow edges ──────────────────────
 function mapKillsToEdges(): Edge[] {
   const validPlayerIds = new Set(props.players.map((p) => String(p.id)))
-  return killsStore.kills
+  const edges = killsStore.kills
     .filter((kill) => validPlayerIds.has(String(kill.killerId)) && validPlayerIds.has(String(kill.victimId)))
     .map((kill) => {
       const isSuicide = kill.killerId === kill.victimId
@@ -72,10 +90,13 @@ function mapKillsToEdges(): Edge[] {
         },
       }
     })
+  logDebug('KillFlowCanvas', 'mapKillsToEdges:', { kills: killsStore.kills, edges })
+  return edges
 }
 
 // ─── Sync Vue Flow edges with the kills store ────────────────────────────
 onInit(() => {
+  logDebug('KillFlowCanvas', 'onInit — setting initial edges')
   setEdges(mapKillsToEdges())
 })
 
@@ -83,6 +104,7 @@ onInit(() => {
 // replace the array, which would leave a reference-based watcher attached to
 // the old, dead array.
 watch(() => killsStore.kills, () => {
+  logDebug('KillFlowCanvas', 'kills store changed — resyncing edges')
   setEdges(mapKillsToEdges())
 }, { deep: true })
 
@@ -97,17 +119,17 @@ const defaultEdgeOptions = {
   },
 }
 
-// ─── Connection validation (prevents duplicates) ───────────────────────────────
+// ─── Connection validation (structural only) ───────────────────────────────
+// Vue Flow re-runs `isValidConnection` against every edge on every setEdges()
+// sync, not just live drag attempts (see createGraphEdges in
+// @vue-flow/core) — so a duplicate check here (`isKillPresent`) would reject
+// an edge the instant its own kill lands in the store, since by then the
+// kill is obviously "already present". Duplicate/reverse-kill rejection is
+// `killsStore.addKill`'s job (called from onConnect below, with a toast) —
+// this only checks that both endpoints belong to the current table.
 function validateConnection(connection: Connection): boolean {
-  // Check that both players exist at the current table
   const validPlayerIds = new Set(props.players.map((p) => String(p.id)))
-  if (!validPlayerIds.has(connection.source) || !validPlayerIds.has(connection.target)) return false
-
-  // No duplicates
-  return !killsStore.isKillPresent(
-    Number(connection.source),
-    Number(connection.target),
-  )
+  return validPlayerIds.has(connection.source) && validPlayerIds.has(connection.target)
 }
 
 // ─── Event: connection completed (drag released on a valid target) ─────────
@@ -115,7 +137,9 @@ function onConnect(connection: Connection) {
   const killerId = Number(connection.source)
   const victimId = Number(connection.target)
 
+  logDebug('KillFlowCanvas', 'onConnect:', connection)
   const result = killsStore.addKill(killerId, victimId)
+  logDebug('KillFlowCanvas', 'addKill result:', result)
   if (!result.success) {
     toast.add({
       title: t('event.killFlow.invalidTitle'),
@@ -160,6 +184,7 @@ function logToObject() {
 <template>
   <div class="w-full rounded-lg overflow-hidden border border-default" style="height: 420px">
     <VueFlow
+      :id="FLOW_ID"
       :nodes="nodes"
       :node-types="nodeTypes"
       :class="{ dark }"

@@ -15,7 +15,6 @@ interface SubmitHandlerDeps {
   selectedCommanderPairingId: Ref<number | null>
   selectedVotesPlayerId: Ref<number | null>
   selectedVotesPairingId: Ref<number | null>
-  pairings: Ref<import('#shared/utils/types').PairingWithResults[]>
 }
 
 /**
@@ -25,7 +24,7 @@ export function useEventSubmitHandlers(deps: SubmitHandlerDeps) {
   const {
     rankingsStore, eventStore, commandersStore, votesStore, toast,
     selectedPairingId, selectedPlayerId, selectedCommanderPairingId,
-    selectedVotesPlayerId, selectedVotesPairingId, pairings,
+    selectedVotesPlayerId, selectedVotesPairingId,
   } = deps
 
   const { t } = useI18n()
@@ -41,23 +40,10 @@ export function useEventSubmitHandlers(deps: SubmitHandlerDeps) {
   }
 
   function handleKillsSubmit(pairingId: number, kills: Kill[]) {
-    const pairing = pairings.value.find(p => p.pairing_id === pairingId)
-    if (!pairing) return false
-
-    const playerIds = [
-      pairing.pairing_player1_id, pairing.pairing_player2_id,
-      pairing.pairing_player3_id, pairing.pairing_player4_id,
-    ].filter((id): id is number => id !== null)
-
-    const killCounts = playerIds.map(pid => ({
-      playerId: pid,
-      count: kills.filter(k => k.killerId === pid).length,
-    }))
-
-    toast.add({ title: t('event.killsSavedTitle'), color: 'success' })
-    eventStore.savePairingKills(pairingId, killCounts)
-      .then(result => { if (!result.success) toast.add({ title: t('deck.toast.errorTitle'), description: result.error, color: 'error' }) })
-    return true
+    eventStore.savePairingKills(pairingId, kills)
+      .then(result => {
+        toast.add({ title: result.success ? t('event.killsSavedTitle') : t('deck.toast.errorTitle'), description: result.success ? undefined : result.error, color: result.success ? 'success' : 'error' })
+      })
   }
 
   function handleCommanderSubmit(commander1: string | null, commander2: string | null) {

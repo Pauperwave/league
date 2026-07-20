@@ -429,6 +429,52 @@ export type Database = {
         }
         Relationships: []
       }
+      round_kills: {
+        Row: {
+          created_at: string
+          id: number
+          killer_id: number
+          pairing_id: number
+          victim_id: number
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          killer_id: number
+          pairing_id: number
+          victim_id: number
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          killer_id?: number
+          pairing_id?: number
+          victim_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "round_kills_killer_id_fkey"
+            columns: ["killer_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["player_id"]
+          },
+          {
+            foreignKeyName: "round_kills_pairing_id_fkey"
+            columns: ["pairing_id"]
+            isOneToOne: false
+            referencedRelation: "pairings"
+            referencedColumns: ["pairing_id"]
+          },
+          {
+            foreignKeyName: "round_kills_victim_id_fkey"
+            columns: ["victim_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["player_id"]
+          },
+        ]
+      }
       round_results: {
         Row: {
           brew_vote: number | null

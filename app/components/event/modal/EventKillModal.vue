@@ -14,12 +14,12 @@ const {
 
 const emit = defineEmits<{
   submit: [kills: Kill[]]
-  cancel: []
+  close: []
 }>()
 
 const open = computed({
   get: () => showKillModal,
-  set: (val) => { if (!val) emit('cancel') },
+  set: (val) => { if (!val) emit('close') },
 })
 </script>
 

@@ -37,7 +37,7 @@ const hasSuicided = computed(() =>
   />
 
   <div
-    class="rounded-lg border-2 bg-default shadow-sm transition-all duration-150 min-w-36"
+    class="rounded-lg border-2 bg-default shadow-sm transition-all duration-150 w-36"
     :class="[
       selected
         ? 'border-primary-500 shadow-primary-500/20 shadow-lg'

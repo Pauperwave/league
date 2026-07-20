@@ -630,7 +630,8 @@
       "registeredKillsLabel": "Uccisioni registrate:",
       "noKills": "Nessuna uccisione registrata. Trascina tra i giocatori per aggiungerne.",
       "resetButton": "Azzera",
-      "playerFallback": "#{id}"
+      "playerFallback": "#{id}",
+      "removeKillAriaLabel": "Rimuovi questa uccisione"
     },
     "killFlow": {
       "invalidTitle": "Non valido",

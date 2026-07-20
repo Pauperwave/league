@@ -1,6 +1,6 @@
 // app\stores\events.ts
 // fallow-ignore-file code-duplication -- intentional store CRUD boilerplate, see app/stores/CLAUDE.md
-import type { Event } from '#shared/utils/types'
+import type { Event, Kill } from '#shared/utils/types'
 
 /**
  * The event lifecycle state machine (ADR-015 carve-out): currentEvent plus
@@ -168,11 +168,11 @@ export const useEventStore = defineStore('events', () => {
     }
   }
 
-  /** Save kill counts for a pairing via the BFF endpoint (ADR-013) */
-  async function savePairingKills(pairingId: number, killCounts: { playerId: number; count: number }[]): Promise<{ success: boolean; error?: string }> {
+  /** Save a pairing's kill events (killer->victim pairs) via the BFF endpoint (ADR-013) */
+  async function savePairingKills(pairingId: number, kills: Kill[]): Promise<{ success: boolean; error?: string }> {
     try {
-      await $fetch(`/api/pairings/${pairingId}/kills`, { method: 'POST', body: { killCounts } })
-      console.log('[useEventStore] kills saved', { pairingId, players: killCounts.length })
+      await $fetch(`/api/pairings/${pairingId}/kills`, { method: 'POST', body: { kills } })
+      console.log('[useEventStore] kills saved', { pairingId, kills: kills.length })
       return { success: true }
     }
     catch (err) {

@@ -147,7 +147,6 @@ const submitHandlers = useEventSubmitHandlers({
   selectedCommanderPairingId,
   selectedVotesPlayerId,
   selectedVotesPairingId,
-  pairings,
 })
 
 // ── Computed: Advance Check ────────────────────────────────────────────────
@@ -590,11 +589,8 @@ function handleResetTable(pairingId: number) {
       :show-kill-modal="showKillModal"
       :selected-kill-players="selectedKillPlayers"
       :selected-kill-pairing-id="selectedKillPairingId"
-      @submit="(kills) => {
-        if (submitHandlers.handleKillsSubmit(selectedKillPairingId!, kills))
-          showKillModal = false
-      }"
-      @cancel="showKillModal = false"
+      @submit="(kills) => submitHandlers.handleKillsSubmit(selectedKillPairingId!, kills)"
+      @close="showKillModal = false"
     />
 
     <EventVotesModal

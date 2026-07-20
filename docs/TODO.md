@@ -61,9 +61,9 @@ Confirmed inconsistent today across three components, all using `warning` for th
 
 Two different color schemes already coexist for the *same* concept (commander) depending on which component renders it. Fix: standardize all six on `filled ? 'success' : 'neutral'`.
 
-### 8. Bug: "Uccisioni" (kills) not stored when the kill modal is closed
+### 8. ~~Bug: "Uccisioni" (kills) not stored when the kill modal is closed~~ — resolved 2026-07-20
 
-Confirmed, precise root cause. `KillSystemModal.vue:35-40` (`handleSubmit`) is the *only* path that emits `submit`, which is the only thing wired to persistence (`useEventSubmitHandlers.ts:58`, `savePairingKills`). The "Annulla" button (`KillSystemModal.vue:97-100`) just does `open = false` directly, bypassing `handleSubmit` — no submit emitted. Closing via backdrop/ESC/X does the same (`EventKillModal.vue:20-23`'s `open` setter emits `'cancel'`, never `'submit'`). The real trap: `killsStore.kills` is live state — `KillFlowCanvas` writes into it as soon as the organizer draws a kill arrow, and the modal already renders those as "registered" badges (`KillSystemModal.vue:63-78`) *before* anything is saved — so the UI visually confirms kills the instant they're drawn, but nothing reaches `round_results` until "Conferma" is explicitly clicked. Closing also never calls `killsStore.reset()`, so reopening shows the same unsaved kills again, reinforcing the false impression they were saved. Fix: either persist on every kill added (matches how rankings already work), or make the modal buffer locally and only commit to the store on Confirm — right now it's neither.
+Fixed by saving the whole kill list once whenever the modal closes (any way — button, backdrop, ESC, X), instead of gating persistence behind an explicit "Conferma" the UI never made clear was required. See `docs/PROGRESS.md`'s 2026-07-20 entry for the full fix (also added a `round_kills` table to persist actual killer→victim pairs, not just the aggregate count).
 
 ### 9. New component: always-present "who's won this table" checklist, filled in as scores are entered
 

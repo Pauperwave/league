@@ -4,7 +4,7 @@
 // history. Reads stay client → Supabase (ADR-013). The event store keeps
 // only the lifecycle state machine — these queries are refreshed/invalidated
 // by useEventPage after lifecycle writes.
-import type { Event, StandingWithPlayer, Pairing, PairingWithResults } from '#shared/utils/types'
+import type { Event, StandingWithPlayer, Pairing, PairingWithResults, Kill } from '#shared/utils/types'
 import type { Database } from '#shared/utils/types/database'
 import type { PairingHistoryEntry } from '~/composables/event-pairing/pairingOptimizer'
 
@@ -129,6 +129,37 @@ export function usePairingsQuery(eventId: number, round: MaybeRefOrGetter<number
     // Round 0 = registration phase, nothing to fetch yet.
     enabled: () => toValue(round) > 0,
     query: () => fetchPairingsWithResults(supabase, eventId, toValue(round)),
+  })
+}
+
+/** Query key prefix for a pairing's persisted kill events — the kill modal refetches this on open. */
+export const ROUND_KILLS_KEY = ['round-kills']
+
+/**
+ * Persisted killer->victim pairs for one pairing (round_kills table). The
+ * kill modal has no other way to know what's already saved once the local
+ * kills-store state for that pairing is gone (a different pairing's modal
+ * was opened in between, or the page was reloaded past the localStorage
+ * crash-insurance TTL) — see docs/TODO.md's kills-audit entry.
+ */
+export function useRoundKillsQuery(pairingId: MaybeRefOrGetter<number | null>) {
+  const supabase = useSupabaseClient()
+
+  return useQuery({
+    key: () => [...ROUND_KILLS_KEY, toValue(pairingId) ?? 'none'],
+    enabled: () => toValue(pairingId) !== null,
+    query: async (): Promise<Kill[]> => {
+      const id = toValue(pairingId)
+      if (id === null) return []
+
+      const { data, error } = await supabase
+        .from('round_kills')
+        .select('killer_id, victim_id')
+        .eq('pairing_id', id)
+
+      if (error) throw error
+      return (data ?? []).map(k => ({ killerId: k.killer_id, victimId: k.victim_id }))
+    },
   })
 }
 
