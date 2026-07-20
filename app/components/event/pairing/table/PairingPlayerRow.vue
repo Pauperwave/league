@@ -33,7 +33,7 @@ const emit = defineEmits<{
         <UButton
           size="xs"
           variant="outline"
-          :color="hasCommander ? 'neutral' : 'warning'"
+          :color="hasCommander ? 'success' : 'neutral'"
           :icon="hasCommander ? ICONS.commanderSet : ICONS.commanderNotSet"
           :aria-label="t('event.pairing.commanderAriaLabel')"
           @click="emit('openCommanderModal', pairingId, playerId)"
@@ -49,7 +49,7 @@ const emit = defineEmits<{
         <UButton
           size="xs"
           variant="outline"
-          :color="hasVotes ? 'neutral' : 'warning'"
+          :color="hasVotes ? 'success' : 'neutral'"
           :icon="hasVotes ? ICONS.confirm : ICONS.vote"
           :aria-label="t('event.pairing.voteAriaLabel')"
           @click="emit('openVotesModal', pairingId, playerId)"

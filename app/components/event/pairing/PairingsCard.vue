@@ -1,14 +1,14 @@
 <!-- app\components\event\pairing\PairingsCard.vue -->
 <script setup lang="ts">
-import type { Pairing, TournamentPlayer, Kill } from '#shared/utils/types'
+import type { Pairing, PairingWithResults, TournamentPlayer } from '#shared/utils/types'
 
 const { t } = useI18n()
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
 const props = defineProps<{
-  /** List of pairings for the current round. */
-  pairings: Pairing[]
+  /** List of pairings for the current round (with nested round_results). */
+  pairings: PairingWithResults[]
   /** When true, hides all action buttons and renders the card in read-only mode. */
   readonly?: boolean
   /** Full list of tournament players used to resolve player details. */
@@ -27,8 +27,6 @@ const votesStore = useVotesStore()
 const emit = defineEmits<{
   /** Opens the score entry modal for a specific pairing and table. */
   openScoreModal: [pairingId: number, tableIndex: number]
-  /** Persists kill records to the database for a given pairing. */
-  submitKills: [pairingId: number, kills: Kill[]]
   /** Opens the commander selection modal for a specific player in a pairing. */
   openCommanderModal: [pairingId: number, playerId: number]
   /** Opens the scores summary modal for a given pairing. */
@@ -39,16 +37,18 @@ const emit = defineEmits<{
   openKillModal: [pairingId: number]
   /** Resets all data for a given pairing table. */
   resetTable: [pairingId: number]
+  /** Declares a draw for a pairing: zero kills, every seated player ties for first. */
+  draw: [pairingId: number, playerIds: number[]]
 }>()
 
 // ─── State ────────────────────────────────────────────────────────────────────
 
 /**
- * Tracks which pairing is pending a confirmation action (reset or test fill),
- * along with the type of action. Null when no dialog is open. 'fill-all' has
- * no single pairingId — it applies to every table in the round.
+ * Tracks which pairing is pending a confirmation action (reset, test fill, or
+ * draw), along with the type of action. Null when no dialog is open.
+ * 'fill-all' has no single pairingId — it applies to every table in the round.
  */
-const confirmDialog = ref<{ type: 'reset' | 'fill'; pairingId: number } | { type: 'fill-all' } | null>(null)
+const confirmDialog = ref<{ type: 'reset' | 'fill' | 'draw'; pairingId: number } | { type: 'fill-all' } | null>(null)
 
 /** Used by useButtonLogging to track the last pairing the score modal was opened for. */
 const currentPairingId = ref<number | null>(null)
@@ -122,6 +122,23 @@ const tableToFill = computed(() =>
   confirmDialog.value?.type === 'fill' ? confirmDialog.value.pairingId : null
 )
 
+/**
+ * Two-way computed for the draw confirmation modal's open state.
+ * Setting it to false clears the active confirmDialog.
+ */
+const showDrawConfirm = computed({
+  get: () => confirmDialog.value?.type === 'draw',
+  set: (v: boolean) => { if (!v) confirmDialog.value = null }
+})
+
+/**
+ * The pairing ID currently pending a draw confirmation, derived from confirmDialog.
+ * Used to resolve the table label in the draw ConfirmModal.
+ */
+const tableToDraw = computed(() =>
+  confirmDialog.value?.type === 'draw' ? confirmDialog.value.pairingId : null
+)
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /**
@@ -144,9 +161,19 @@ const hasRanking = (pairingId: number): boolean => {
 }
 
 /**
+ * True once the kill modal has been confirmed at least once for this pairing
+ * (even with zero kills) — read from `round_results.number_of_kills`, which
+ * `kills.post.ts` only ever writes on a confirm, staying `null` until then.
+ * Not from `killsStore` (the session store): it's a single flat array shared
+ * across whichever pairing's modal is currently open, not scoped per pairing,
+ * so it can't answer "has this *other* table's kills been reviewed".
+ */
+const hasKills = (pairing: PairingWithResults): boolean =>
+  (pairing.round_results ?? []).some(r => r.number_of_kills !== null)
+
+/**
  * Returns true if all required data has been entered for a pairing:
  * - Rankings are saved
- * - Kills have been confirmed (even if zero)
  * - All players have a commander set
  * - All players have submitted a vote
  */
@@ -154,7 +181,6 @@ const isTableComplete = (pairing: Pairing): boolean => {
   const playerIds = pairingPlayerIds(pairing)
   return (
     hasRanking(pairing.pairing_id) &&
-    killsStore.isPairingConfirmed(pairing.pairing_id) &&
     playerIds.every(id => commandersStore.getCommander1(id) !== null) &&
     playerIds.every(id => votesStore.hasVotes(id))
   )
@@ -187,9 +213,14 @@ function handleQuickTestFillAll() {
   confirmDialog.value = { type: 'fill-all' }
 }
 
+/** Queues a draw ("Patta") confirmation for the given pairing. */
+function handleDrawTable(pairingId: number) {
+  confirmDialog.value = { type: 'draw', pairingId }
+}
+
 /**
- * Executes the confirmed action (reset, test fill, or fill-all) and clears
- * the dialog state. Called by all three ConfirmModal @confirm events.
+ * Executes the confirmed action (reset, test fill, fill-all, or draw) and
+ * clears the dialog state. Called by all four ConfirmModal @confirm events.
  */
 function handleConfirm() {
   if (!confirmDialog.value) return
@@ -198,6 +229,10 @@ function handleConfirm() {
     emit('resetTable', confirmDialog.value.pairingId)
   } else if (confirmDialog.value.type === 'fill') {
     fillTable(confirmDialog.value.pairingId)
+  } else if (confirmDialog.value.type === 'draw') {
+    const pairingId = confirmDialog.value.pairingId
+    const pairing = props.pairings.find(p => p.pairing_id === pairingId)
+    if (pairing) emit('draw', pairingId, pairingPlayerIds(pairing))
   } else {
     for (const pairing of props.pairings) {
       fillTable(pairing.pairing_id)
@@ -227,7 +262,6 @@ function fillTable(pairingId: number) {
   )
 
   killsStore.addKill(playerIds[0]!, playerIds[1]!)
-  killsStore.confirmPairing(pairingId)
 
   for (const id of playerIds) {
     commandersStore.setCommanders(id, 'Test Commander', null)
@@ -237,27 +271,6 @@ function fillTable(pairingId: number) {
     const nextIdx = (i + 1) % playerIds.length
     votesStore.setVotes(playerIds[i]!, playerIds[nextIdx]!, playerIds[nextIdx]!)
   }
-}
-
-/**
- * Toggles the kill confirmation state for a pairing.
- * - If already confirmed: removes confirmation.
- * - If not confirmed: confirms and persists kills to the DB via the parent's submitKills handler.
- */
-function toggleKillConfirmation(pairingId: number) {
-  if (killsStore.isPairingConfirmed(pairingId)) {
-    killsStore.unconfirmPairing(pairingId)
-    return
-  }
-
-  killsStore.confirmPairing(pairingId)
-
-  const pairing = props.pairings.find(p => p.pairing_id === pairingId)
-  if (!pairing) return
-
-  const playerIds = pairingPlayerIds(pairing)
-  const pairingKills = killsStore.kills.filter(k => playerIds.includes(k.killerId))
-  emit('submitKills', pairingId, pairingKills)
 }
 </script>
 
@@ -339,10 +352,10 @@ function toggleKillConfirmation(pairingId: number) {
             :pairing-id="pairing.pairing_id"
             :table-index="index"
             :has-ranking="hasRanking(pairing.pairing_id)"
-            :kills-confirmed="killsStore.isPairingConfirmed(pairing.pairing_id)"
+            :has-kills="hasKills(pairing)"
             @open-score-modal="handleOpenScoreModal"
             @open-kill-modal="emit('openKillModal', $event)"
-            @toggle-kill-confirmation="toggleKillConfirmation"
+            @draw="handleDrawTable"
           />
         </UCard>
       </div>
@@ -383,6 +396,19 @@ function toggleKillConfirmation(pairingId: number) {
         :warning="t('event.pairing.fillAllConfirm.warning')"
         :confirm-label="t('event.pairing.fillAllConfirm.confirmLabel')"
         :confirm-icon="ICONS.quickAction"
+        @confirm="handleConfirm"
+      />
+
+      <!-- Draw ("Patta") confirmation dialog -->
+      <ConfirmModal
+        v-model:open="showDrawConfirm"
+        :title="t('event.pairing.drawConfirm.title')"
+        :description="t('event.pairing.drawConfirm.description')"
+        :question="t('event.pairing.drawConfirm.question')"
+        :subject="t('event.pairing.tableHeading', { n: pairings.findIndex(p => p.pairing_id === tableToDraw) + 1 })"
+        :warning="t('event.pairing.drawConfirm.warning')"
+        :confirm-label="t('event.pairing.drawConfirm.confirmLabel')"
+        :confirm-icon="ICONS.draw"
         @confirm="handleConfirm"
       />
     </UCard>

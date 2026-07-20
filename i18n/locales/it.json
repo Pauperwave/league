@@ -242,7 +242,7 @@
       "similarFoundHeading": "Giocatori simili trovati",
       "similarFoundHint": "Verifica che il giocatore non sia già registrato:",
       "select": "Seleziona",
-      "similarHelpText": "Se il giocatore è nella lista, clicca \"Seleziona\" per aggiungerlo all'evento.",
+      "similarHelpText": "Se il giocatore è nella lista, clicca \"Seleziona\" per aggiungerlo all'evento. Altrimenti, procedi pure con la creazione.",
       "noSimilarFound": "Nessun giocatore simile trovato. Puoi procedere con la creazione."
     },
     "toast": {
@@ -442,7 +442,12 @@
       "markCompanion": "Marca companion",
       "removeSelected": "Rimuovi selezionati",
       "noResultsFor": "Nessun risultato per \"{query}\"",
-      "emptyTitle": "Nessun giocatore in lista d'attesa"
+      "emptyTitle": "Nessun giocatore in lista d'attesa",
+      "removeConfirm": {
+        "title": "Conferma Rimozione",
+        "description": "Stai per rimuovere questo giocatore dalla lista d'attesa",
+        "question": "Sei sicuro di voler rimuovere"
+      }
     },
     "waitingListStats": {
       "noPlayers": "Nessun giocatore",
@@ -504,12 +509,10 @@
       "rankingSetTooltip": "Classifica inserita",
       "rankingNotSetTooltip": "Inserisci classifica",
       "rankingButton": "Classifica",
-      "killsSetTooltip": "Uccisioni confermate",
+      "killsSetTooltip": "Uccisioni registrate",
       "killsNotSetTooltip": "Inserisci uccisioni",
       "killsButton": "Uccisioni",
-      "removeKillConfirmTooltip": "Rimuovi conferma uccisioni",
-      "confirmKillsTooltip": "Conferma uccisioni (anche zero)",
-      "confirmKillsAriaLabel": "Conferma uccisioni",
+      "drawButton": "Patta",
       "resetConfirm": {
         "title": "Conferma Reset",
         "description": "Stai per resettare tutti i valori del tavolo",
@@ -530,6 +533,13 @@
         "warning": "Questa azione sovrascriverà i dati esistenti su tutti i tavoli.",
         "confirmLabel": "Compila tutti"
       },
+      "drawConfirm": {
+        "title": "Conferma Patta",
+        "description": "Stai per segnare zero uccisioni e classificare tutti i giocatori del tavolo a pari primo posto",
+        "question": "Sei sicuro di voler dichiarare una patta per",
+        "warning": "Questa azione sovrascriverà uccisioni e classifica già inserite per questo tavolo.",
+        "confirmLabel": "Patta"
+      },
       "fillAllTooltip": "Compila tutti i tavoli con dati di test",
       "viewScoresTooltip": "Visualizza punteggi",
       "scoresButtonLabel": "Punteggi",
@@ -548,7 +558,7 @@
     "pairingWeights": {
       "heading": "Pesi dell'algoritmo",
       "formulaHeading": "Come viene calcolato il punteggio",
-      "formula": "totale = bilanciamento_forza + novità - rematch - rotazione3 + peso_dimensione"
+      "formula": "totale = bilanciamento_forza + novità - rematch - rotazione3 + bonus_tavoli4 + peso_tavoli3"
     },
     "forbiddenPairs": {
       "heading": "Coppie Vietate",
@@ -629,6 +639,8 @@
       "description": "Trascina dall'handle inferiore di un giocatore verso quello superiore della vittima. Clicca una freccia per rimuoverla.",
       "registeredKillsLabel": "Uccisioni registrate:",
       "noKills": "Nessuna uccisione registrata. Trascina tra i giocatori per aggiungerne.",
+      "drawButton": "Patta (nessuno ha ucciso nessuno)",
+      "drawHint": "Segna zero uccisioni e classifica tutti i giocatori del tavolo a pari primo posto",
       "resetButton": "Azzera",
       "playerFallback": "#{id}",
       "removeKillAriaLabel": "Rimuovi questa uccisione"

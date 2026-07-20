@@ -72,7 +72,7 @@ function handleCommanderClick() {
         v-if="playerId"
         size="xs"
         variant="ghost"
-        :color="hasCommander ? 'success' : 'warning'"
+        :color="hasCommander ? 'success' : 'neutral'"
         :icon="hasCommander ? ICONS.commanderSet : ICONS.commanderNotSet"
         :aria-label="t('event.pairing.commanderAriaLabel')"
         @click="handleCommanderClick"

@@ -15,6 +15,7 @@ interface SubmitHandlerDeps {
   selectedCommanderPairingId: Ref<number | null>
   selectedVotesPlayerId: Ref<number | null>
   selectedVotesPairingId: Ref<number | null>
+  refreshDisplayedPairings: () => Promise<unknown>
 }
 
 /**
@@ -24,17 +25,23 @@ export function useEventSubmitHandlers(deps: SubmitHandlerDeps) {
   const {
     rankingsStore, eventStore, commandersStore, votesStore, toast,
     selectedPairingId, selectedPlayerId, selectedCommanderPairingId,
-    selectedVotesPlayerId, selectedVotesPairingId,
+    selectedVotesPlayerId, selectedVotesPairingId, refreshDisplayedPairings,
   } = deps
 
   const { t } = useI18n()
 
+  /** Shared by handleScoreSubmit and handleDrawSubmit — sets the local
+   * ranking state and persists it, with the same toast/error handling. */
+  function saveRanking(pairingId: number, rankingWithRanks: RankingEntry[]) {
+    rankingsStore.setRankingWithRanks(pairingId, rankingWithRanks)
+    toast.add({ title: t('event.rankingsSavedTitle'), color: 'success' })
+    eventStore.savePairingRankings(pairingId, rankingWithRanks.map(r => ({ playerId: r.playerId, position: r.rank })))
+      .then(result => { if (!result.success) toast.add({ title: t('deck.toast.errorTitle'), description: result.error, color: 'error' }) })
+  }
+
   function handleScoreSubmit(ranking: number[], rankingWithRanks: RankingEntry[]) {
     if (selectedPairingId.value !== null) {
-      rankingsStore.setRankingWithRanks(selectedPairingId.value, rankingWithRanks)
-      toast.add({ title: t('event.rankingsSavedTitle'), color: 'success' })
-      eventStore.savePairingRankings(selectedPairingId.value, rankingWithRanks.map(r => ({ playerId: r.playerId, position: r.rank })))
-        .then(result => { if (!result.success) toast.add({ title: t('deck.toast.errorTitle'), description: result.error, color: 'error' }) })
+      saveRanking(selectedPairingId.value, rankingWithRanks)
     }
     return true // signal to caller that modal can close
   }
@@ -43,7 +50,19 @@ export function useEventSubmitHandlers(deps: SubmitHandlerDeps) {
     eventStore.savePairingKills(pairingId, kills)
       .then(result => {
         toast.add({ title: result.success ? t('event.killsSavedTitle') : t('deck.toast.errorTitle'), description: result.success ? undefined : result.error, color: result.success ? 'success' : 'error' })
+        // Refetch so the "Uccisioni" button's reviewed indicator (derived
+        // from round_results.number_of_kills, see PairingsCard) updates
+        // immediately instead of waiting for the next lifecycle transition.
+        if (result.success) refreshDisplayedPairings()
       })
+  }
+
+  /** "Patta" from the kill modal: no kills happened, and every seated player
+   * ties for first — matches the ruleset's existing tied-rank scoring
+   * (roundScoring.ts averages the placement values across tied positions). */
+  function handleDrawSubmit(pairingId: number, playerIds: number[]) {
+    handleKillsSubmit(pairingId, [])
+    saveRanking(pairingId, playerIds.map(playerId => ({ playerId, rank: 1 })))
   }
 
   function handleCommanderSubmit(commander1: string | null, commander2: string | null) {
@@ -72,6 +91,7 @@ export function useEventSubmitHandlers(deps: SubmitHandlerDeps) {
   return {
     handleScoreSubmit,
     handleKillsSubmit,
+    handleDrawSubmit,
     handleCommanderSubmit,
     handleVotesSubmit,
   }

@@ -27,10 +27,8 @@ function makeFakeStores() {
   })
   const killsStore = reactive({
     kills: [] as Kill[],
-    confirmedPairings: new Set<number>(),
-    hydrate(snapshot: { kills: Kill[]; confirmedPairings: number[] }) {
+    hydrate(snapshot: { kills: Kill[] }) {
       this.kills = [...snapshot.kills]
-      this.confirmedPairings = new Set(snapshot.confirmedPairings)
     },
   })
   const commandersStore = reactive({
@@ -64,7 +62,6 @@ function snapshot(overrides: Partial<SessionSnapshot> = {}): SessionSnapshot {
     round: 1,
     rankings: [[7, [{ playerId: 1, rank: 1 }, { playerId: 2, rank: 2 }]]],
     kills: [{ killerId: 1, victimId: 2 }],
-    confirmedPairings: [7],
     commanders: [{ playerId: 1, commander1: 'Atraxa', commander2: null }],
     votes: [{ playerId: 1, deckVotePlayerId: 2, playVotePlayerId: 2 }],
     ...overrides,
@@ -86,7 +83,6 @@ describe('useSessionStorePersistence', () => {
       { playerId: 2, rank: 2 },
     ])
     expect(stores.killsStore.kills).toEqual([{ killerId: 1, victimId: 2 }])
-    expect(stores.killsStore.confirmedPairings.has(7)).toBe(true)
     expect(stores.commandersStore.commanders.get(1)?.commander1).toBe('Atraxa')
     expect(stores.votesStore.votes.get(1)?.deckVotePlayerId).toBe(2)
   })
@@ -118,7 +114,6 @@ describe('useSessionStorePersistence', () => {
     mountWithPersistence(stores, 1)
 
     stores.rankingsStore.rankingsWithRanks.set(9, [{ playerId: 3, rank: 1 }])
-    stores.killsStore.confirmedPairings.add(9)
     stores.commandersStore.commanders.set(3, { playerId: 3, commander1: 'Krenko', commander2: null })
     stores.votesStore.votes.set(3, { playerId: 3, deckVotePlayerId: null, playVotePlayerId: 4 })
     await nextTick()
@@ -128,7 +123,6 @@ describe('useSessionStorePersistence', () => {
     mountWithPersistence(freshStores, 1)
 
     expect(freshStores.rankingsStore.rankingsWithRanks.get(9)).toEqual([{ playerId: 3, rank: 1 }])
-    expect(freshStores.killsStore.confirmedPairings.has(9)).toBe(true)
     expect(freshStores.commandersStore.commanders.get(3)?.commander1).toBe('Krenko')
     expect(freshStores.votesStore.votes.get(3)?.playVotePlayerId).toBe(4)
   })
@@ -142,7 +136,6 @@ describe('useSessionStorePersistence', () => {
     currentRound.value = 2
     stores.rankingsStore.rankingsWithRanks = new Map()
     stores.killsStore.kills = []
-    stores.killsStore.confirmedPairings = new Set()
     await nextTick()
 
     const saved = getCached<SessionSnapshot>(KEY, TTL)

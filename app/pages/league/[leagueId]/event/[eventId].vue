@@ -18,7 +18,7 @@ const {
   players, tableEstimate, getPlayerName,
   addToWaitingList, removeFromWaitingList, startEvent, nextRound, turnBackRound, updateEvent,
   pairingHistory, loading, previewTables, viewedRound, isViewingPastRound, viewRound, clearViewedRound,
-  displayedPairings,
+  displayedPairings, refreshDisplayedPairings,
 } = useEventPage()
 
 const {
@@ -129,6 +129,7 @@ const playersHandlers = useEventPlayers({
   removeFromWaitingList,
   players,
   showCreatePlayerModal,
+  showPlayerSearchModal,
   playerToEdit,
   toast,
 })
@@ -147,6 +148,7 @@ const submitHandlers = useEventSubmitHandlers({
   selectedCommanderPairingId,
   selectedVotesPlayerId,
   selectedVotesPairingId,
+  refreshDisplayedPairings,
 })
 
 // ── Computed: Advance Check ────────────────────────────────────────────────
@@ -276,7 +278,7 @@ const submittedByPlayerId = computed<Record<number, boolean>>(() => {
     }
   }
   return Object.fromEntries(
-    buildStandingsSubmissionMap(pairings.value, rankingsByPairing.value, hasVotesByPlayerId, killsStore.confirmedPairings).entries(),
+    buildStandingsSubmissionMap(pairings.value, rankingsByPairing.value, hasVotesByPlayerId).entries(),
   )
 })
 
@@ -484,12 +486,12 @@ function handleResetTable(pairingId: number) {
                 :readonly="isViewingPastRound"
                 :all-players="tournamentPlayers"
                 @open-score-modal="handleOpenScoreModal"
-                @submit-kills="(pid, kills) => submitHandlers.handleKillsSubmit(pid, kills)"
                 @open-commander-modal="handleOpenCommanderModal"
                 @open-scores-modal="handleOpenScoresModal"
                 @open-votes-modal="handleOpenVotesModal"
                 @open-kill-modal="handleOpenKillModal"
                 @reset-table="handleResetTable"
+                @draw="(pairingId, playerIds) => submitHandlers.handleDrawSubmit(pairingId, playerIds)"
               />
             </div>
             <StandingsCard

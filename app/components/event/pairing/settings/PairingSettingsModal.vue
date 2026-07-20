@@ -66,5 +66,19 @@ const emit = defineEmits<{
         />
       </div>
     </template>
+
+    <!-- Single "Chiudi" button, not ModalFooterActions' Conferma/Annulla —
+         every slider/pair edit here applies live to localStorage, there's no
+         local draft to confirm or discard. -->
+    <template #footer>
+      <div class="flex justify-end w-full">
+        <CancelButton
+          :label="t('common.close')"
+          :icon="ICONS.close"
+          variant="outline"
+          @click="() => { open = false }"
+        />
+      </div>
+    </template>
   </UModal>
 </template>

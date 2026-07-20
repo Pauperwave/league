@@ -64,14 +64,6 @@ const similarPlayers = computed(() => {
 
 const hasSimilarPlayers = computed(() => similarPlayers.value.length > 0)
 
-const canCreate = computed(() => {
-  if (!isValid.value) return false
-  // When editing: always valid
-  if (isEditing.value) return true
-  // When creating: valid only if there are no similar players
-  return !hasSimilarPlayers.value
-})
-
 watch(open, (isOpen) => {
   if (!isOpen) return
 
@@ -133,7 +125,7 @@ function handleSelectExisting(playerId: number) {
     :icon="modalIcon"
     :submit-label="submitLabel"
     form-id="player-form"
-    :disabled="!canCreate"
+    :disabled="!isValid"
     @cancel="handleCancel"
   >
     <form id="player-form" class="space-y-4" @submit.prevent="handleSubmit">

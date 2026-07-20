@@ -207,7 +207,7 @@ export function useEventPage() {
   // input) and the displayed round (past-round viewing). When the keys match
   // they share one cache entry; setting viewedRound refetches by key change.
   const { data: pairingsData } = usePairingsQuery(eventId, () => currentRound.value)
-  const { data: displayedPairingsData } = usePairingsQuery(eventId, () => viewedRound.value ?? currentRound.value)
+  const { data: displayedPairingsData, refetch: refreshDisplayedPairings } = usePairingsQuery(eventId, () => viewedRound.value ?? currentRound.value)
 
   function viewRound(round: number) {
     viewedRound.value = round === currentRound.value ? null : round
@@ -240,6 +240,7 @@ export function useEventPage() {
     previewTables,
     pairings,
     displayedPairings: effectivePairings,
+    refreshDisplayedPairings,
     viewedRound: computed(() => viewedRound.value),
     isViewingPastRound,
     viewRound,

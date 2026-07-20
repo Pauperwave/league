@@ -50,6 +50,23 @@ function emitUpdate(playerId: number) {
   emit('update', { playerId, paid: state.paid, companion: state.companion })
 }
 
+// --- Removal confirmation ---
+
+const playerIdToRemove = ref<number | null>(null)
+const showRemoveConfirm = computed({
+  get: () => playerIdToRemove.value !== null,
+  set: (v) => { if (!v) playerIdToRemove.value = null },
+})
+const playerNameToRemove = computed(() =>
+  props.data.find((p) => p.playerId === playerIdToRemove.value)?.name ?? '',
+)
+
+function handleConfirmRemove() {
+  if (playerIdToRemove.value === null) return
+  emit('remove', playerIdToRemove.value)
+  playerIdToRemove.value = null
+}
+
 // --- Selection ---
 
 const selectedPlayerIds = computed(() =>
@@ -164,7 +181,7 @@ const columns = computed<TableColumn<WaitingPlayer>[]>(() => [
         showEdit: true,
         showDelete: true,
         onEdit: () => emit('edit', row.original.playerId),
-        onDelete: () => emit('remove', row.original.playerId),
+        onDelete: () => { playerIdToRemove.value = row.original.playerId },
       }),
   },
 ])
@@ -271,5 +288,14 @@ const meta = computed(() => ({
         <UEmpty v-else :title="t('event.waitingListTable.emptyTitle')" :icon="ICONS.players" />
       </template>
     </UTable>
+
+    <ConfirmModal
+      v-model:open="showRemoveConfirm"
+      :title="t('event.waitingListTable.removeConfirm.title')"
+      :description="t('event.waitingListTable.removeConfirm.description')"
+      :question="t('event.waitingListTable.removeConfirm.question')"
+      :subject="playerNameToRemove"
+      @confirm="handleConfirmRemove"
+    />
   </div>
 </template>

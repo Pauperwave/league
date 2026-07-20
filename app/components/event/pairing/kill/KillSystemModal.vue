@@ -27,9 +27,7 @@ const killsStore = useKillsStore()
 const pairingIdRef = computed(() => props.pairingId)
 const { data: persistedKills, refetch: refetchKills } = useRoundKillsQuery(pairingIdRef)
 
-/** Kill state as of the last hydrate — restored on cancel, diffed against on
- * confirm so a no-edit confirm doesn't resave (and re-trigger the stats
- * triggers) for nothing. */
+/** Kill state as of the last hydrate — restored on cancel. */
 let savedKillsSnapshot: Kill[] = []
 
 /** Set only by the Confirm button, right before closing — distinguishes a
@@ -41,22 +39,12 @@ let confirmed = false
  * fetch resolves and hydrate() replaces the whole array. */
 const hydrating = ref(false)
 
-function killKey(k: Kill): string {
-  return `${k.killerId}-${k.victimId}`
-}
-
-function sameKills(a: Kill[], b: Kill[]): boolean {
-  if (a.length !== b.length) return false
-  const keysA = new Set(a.map(killKey))
-  return b.every((k) => keysA.has(killKey(k)))
-}
-
 watch(open, async (isOpen) => {
   if (!isOpen) return
   hydrating.value = true
   await refetchKills()
   const kills = persistedKills.value ?? []
-  killsStore.hydrate({ kills, confirmedPairings: Array.from(killsStore.confirmedPairings) })
+  killsStore.hydrate({ kills })
   savedKillsSnapshot = [...kills]
   confirmed = false
   hydrating.value = false
@@ -72,19 +60,21 @@ function getPlayerName(id: number): string {
 const playerColors = computed(() => getPlayerColorMap(props.players))
 
 // Kills are drawn live on the canvas — there's no separate draft/confirm
-// step for individual kills, only for the batch as a whole. Confirm saves
-// it; Cancel/backdrop/ESC/X all discard it back to the snapshot from when
-// the modal opened — every close funnels through this `open` watcher, and
-// `confirmed` (set only by onConfirm, just before closing) is what tells
-// the two paths apart.
+// step for individual kills, only for the batch as a whole. Confirm always
+// saves, even when unchanged from the snapshot: that's what lets a genuine
+// "zero kills, reviewed" state register (round_results.number_of_kills goes
+// from null to 0, see PairingsCard's hasKills) instead of looking identical
+// to a table nobody has opened yet. Cancel/backdrop/ESC/X all discard back
+// to the snapshot from when the modal opened — every close funnels through
+// this `open` watcher, and `confirmed` (set only by onConfirm, just before
+// closing) is what tells the two paths apart.
 watch(open, (isOpen, wasOpen) => {
   if (!wasOpen || isOpen) return
   if (confirmed) {
-    if (sameKills(killsStore.kills, savedKillsSnapshot)) return
     logDebug('KillSystemModal', 'Saving kills on confirm - Table ID:', props.pairingId)
     emit('submit', [...killsStore.kills])
   } else {
-    killsStore.hydrate({ kills: savedKillsSnapshot, confirmedPairings: Array.from(killsStore.confirmedPairings) })
+    killsStore.hydrate({ kills: savedKillsSnapshot })
   }
 })
 

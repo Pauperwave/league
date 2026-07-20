@@ -36,9 +36,8 @@ describe('buildStandingsSubmissionMap', () => {
     const hasVotes = new Map<number, boolean>([
       [1, true], [2, true], [3, true], [4, true]
     ])
-    const confirmedPairings = new Set<number>([10, 20])
 
-    const result = buildStandingsSubmissionMap(pairings, rankingsByPairing, hasVotes, confirmedPairings)
+    const result = buildStandingsSubmissionMap(pairings, rankingsByPairing, hasVotes)
 
     expect(result.get(1)).toBe(true)
     expect(result.get(2)).toBe(true)
@@ -68,9 +67,8 @@ describe('buildStandingsSubmissionMap', () => {
     const hasVotes = new Map<number, boolean>([
       [1, true], [2, true]
     ])
-    const confirmedPairings = new Set<number>([10])
 
-    const result = buildStandingsSubmissionMap(pairings, rankingsByPairing, hasVotes, confirmedPairings)
+    const result = buildStandingsSubmissionMap(pairings, rankingsByPairing, hasVotes)
 
     expect(result.get(1)).toBe(false)
     expect(result.get(2)).toBe(false)

@@ -12,8 +12,6 @@ export const useKillsStore = defineStore('kills', () => {
 
   /** All kills registered in the current round */
   const kills = ref<Kill[]>([])
-  /** Set of pairing IDs whose kills have been confirmed/submitted */
-  const confirmedPairings = ref<Set<number>>(new Set())
 
   // ── Getters ────────────────────────────────────────────────────────────────
 
@@ -38,9 +36,6 @@ export const useKillsStore = defineStore('kills', () => {
     kills.value.filter(k => k.victimId === victimId).length)
 
   /** Check if a pairing's kills have been confirmed */
-  const isPairingConfirmed = computed(() => (pairingId: number) =>
-    confirmedPairings.value.has(pairingId))
-
   // ── Actions ────────────────────────────────────────────────────────────────
 
   /**
@@ -66,44 +61,28 @@ export const useKillsStore = defineStore('kills', () => {
     )
   }
 
-  /** Mark a pairing's kills as confirmed */
-  function confirmPairing(pairingId: number) {
-    confirmedPairings.value.add(pairingId)
-  }
-
-  /** Unconfirm a pairing's kills */
-  function unconfirmPairing(pairingId: number) {
-    confirmedPairings.value.delete(pairingId)
-  }
-
   /**
    * Replace all state from an external snapshot (localStorage today, a
    * realtime subscription in the future) — the single rehydration entry point.
    */
-  function hydrate(snapshot: { kills: Kill[]; confirmedPairings: number[] }) {
+  function hydrate(snapshot: { kills: Kill[] }) {
     kills.value = [...snapshot.kills]
-    confirmedPairings.value = new Set(snapshot.confirmedPairings)
   }
 
-  /** Clear all kills and confirmed pairings */
+  /** Clear all kills */
   function reset() {
     kills.value = []
-    confirmedPairings.value.clear()
   }
 
   return {
     kills,
-    confirmedPairings,
     isKillPresent,
     isReverseKillPresent,
     hasSuicided,
     killsByKiller,
     deathsByVictim,
-    isPairingConfirmed,
     addKill,
     removeKill,
-    confirmPairing,
-    unconfirmPairing,
     hydrate,
     reset,
   }

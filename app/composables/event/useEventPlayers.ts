@@ -13,6 +13,7 @@ interface EventPlayersDeps {
 
   // Modal refs
   showCreatePlayerModal: Ref<boolean>
+  showPlayerSearchModal: Ref<boolean>
   playerToEdit: Ref<Player | null>
 
   // Toast
@@ -26,14 +27,23 @@ interface EventPlayersDeps {
 export function useEventPlayers(deps: EventPlayersDeps) {
   const {
     addToWaitingList, removeFromWaitingList,
-    players, showCreatePlayerModal, playerToEdit, toast,
+    players, showCreatePlayerModal, showPlayerSearchModal, playerToEdit, toast,
   } = deps
 
   const { t } = useI18n()
   const { createPlayer, updatePlayer } = usePlayerMutations()
 
+  // True only when the create-player modal was opened via PlayerSearchModal's
+  // "create new" escape hatch — set here, cleared by every path that closes
+  // the modal (success or cancel). Read by the watcher below so *cancelling*
+  // (any way: Annulla, backdrop, ESC, X) returns to the search modal instead
+  // of just closing everything, while a successful create/update/select
+  // doesn't reopen it.
+  const openedFromSearch = ref(false)
+
   function handleCreateNewPlayer() {
     playerToEdit.value = null
+    openedFromSearch.value = true
     showCreatePlayerModal.value = true
   }
 
@@ -41,9 +51,16 @@ export function useEventPlayers(deps: EventPlayersDeps) {
     const player = players.value.find(p => p.player_id === playerId)
     if (player) {
       playerToEdit.value = player
+      openedFromSearch.value = false
       showCreatePlayerModal.value = true
     }
   }
+
+  watch(showCreatePlayerModal, (isOpen) => {
+    if (isOpen || !openedFromSearch.value) return
+    openedFromSearch.value = false
+    showPlayerSearchModal.value = true
+  })
 
   async function handlePlayerCreate(player: NewPlayer) {
     let created
@@ -54,6 +71,7 @@ export function useEventPlayers(deps: EventPlayersDeps) {
       return
     }
     await addToWaitingList([created.player_id])
+    openedFromSearch.value = false
     showCreatePlayerModal.value = false
     const display = sanitizePlayer(created)
     toast.add({ title: t('event.playerCreatedTitle'), description: t('event.playerCreatedDescription', { name: `${display.player_name} ${display.player_surname}` }), color: 'success' })
@@ -72,6 +90,7 @@ export function useEventPlayers(deps: EventPlayersDeps) {
 
   async function handlePlayerSelectFromModal(playerId: number) {
     await addToWaitingList([playerId])
+    openedFromSearch.value = false
     showCreatePlayerModal.value = false
     toast.add({ title: t('event.playerAddedTitle'), description: t('event.playerAddedDescription'), color: 'success' })
   }

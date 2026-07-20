@@ -25,29 +25,29 @@ icon: {
 - `refreshAfterLifecycle()` (`useEventPage.ts:136-144`) fires 5 refetch/invalidate calls after every lifecycle transition (start/next/turn-back) — appropriate, each cache genuinely changes.
 - Every `save*` action in `events.ts` (rankings/kills/commander/votes, lines 159-208) is a raw `$fetch` with no Colada cache invalidation tied to it — standings/pairings caches only refresh on the next *lifecycle* transition, not after each individual score/kill/commander/vote save. Not confirmed as a bug, but worth checking whether any UI reads standings mid-round expecting it to reflect a just-submitted result.
 
-### 1. Confirm modal before removing a player from the waiting list
+### 1. ~~Confirm modal before removing a player from the waiting list~~ — resolved 2026-07-20
 
-`WaitingListTable.vue:167` (`onDelete: () => emit('remove', row.original.playerId)`) and `WaitingList.vue:80` (`@remove="emit('remove', $event)"`) both go straight to `removeFromWaitingList([playerId])` (`[leagueId]/event/[eventId].vue:438`) with no confirmation. Wrap it with `ConfirmModal`, same pattern as `PairingsCard.vue`'s table-reset confirm.
+Fixed: `WaitingListTable.vue`'s row-delete action now opens a `ConfirmModal` (same pattern as `PairingsCard.vue`'s table-reset confirm) before emitting `remove`, instead of calling `removeFromWaitingList` straight away. `batchRemove` (the multi-select toolbar button) was left as-is — out of this item's original scope, but worth the same treatment if it comes up again.
 
-### 2. `CreatePlayerModal`: "Crea Giocatore" is blocked by similar-player matches even when they're not the same person
+### 2. ~~`CreatePlayerModal`: "Crea Giocatore" is blocked by similar-player matches even when they're not the same person~~ — resolved 2026-07-20
 
-`CreatePlayerModal.vue:67-73` — `canCreate` returns `false` whenever `hasSimilarPlayers` is true in creation mode, with no way to proceed anyway. The similarity warning card (lines 179-223) already has a "Seleziona" action per match to link the *existing* player, but there's no "no, create a new one anyway" escape hatch — the user is stuck. Fix: let `canCreate` stay `true` when similar players are found (keep the warning visible, just don't gate submission on it), or add an explicit "crea comunque" acknowledgment.
+Fixed: removed the `canCreate` gate entirely (it only ever differed from plain form validity by also requiring `!hasSimilarPlayers`) — the submit button is now disabled purely on `isValid`. The warning card and its "Seleziona" action are unchanged, and its help text now also tells the user they can just proceed with creation if it's not the same person.
 
-### 3. `CreatePlayerModal` "Annulla" should return to the "Aggiungi giocatori alla lista d'attesa" modal, not close everything
+### 3. ~~`CreatePlayerModal` "Annulla" should return to the "Aggiungi giocatori alla lista d'attesa" modal, not close everything~~ — resolved 2026-07-20
 
-`useEventPlayers.ts:35-38` (`handleCreateNewPlayer`) opens `showCreatePlayerModal` but never closes `showPlayerSearchModal` — and `useFormModalMeta`'s `handleCancel` (wired at `CreatePlayerModal.vue:137`) only closes the create-player modal, with no notion of "came from search." Fix needs a way for the cancel path to know it was opened via `PlayerSearchModal`'s `@create-new` (`[eventId].vue:449`) and reopen `showPlayerSearchModal` instead of just closing — e.g. a dedicated cancel handler in `useEventPlayers.ts` rather than routing through the generic `useFormModalMeta` cancel.
+Fixed in `useEventPlayers.ts`: a local `openedFromSearch` ref is set in `handleCreateNewPlayer` (the only path reachable from `PlayerSearchModal`'s `@create-new`) and cleared by `handleEditPlayer` and by every success path (`handlePlayerCreate`/`handlePlayerSelectFromModal`). A `watch(showCreatePlayerModal, ...)` reopens `showPlayerSearchModal` whenever the create modal closes while that flag is still set — which only remains true for a genuine cancel (Annulla, backdrop, ESC, or X), since every success path clears it first. `CreatePlayerModal.vue` itself needed no changes; its existing `handleCancel` already just closes its own `open` v-model, which is all the watcher needs to react to.
 
-### 4. "Pesi e Vincoli Pairing" formula is missing the 4-player-table bonus term
+### 4. ~~"Pesi e Vincoli Pairing" formula is missing the 4-player-table bonus term~~ — resolved 2026-07-20
 
-Not actually a missing weight — a labeling gap. The formula string is hardcoded at `i18n/locales/it.json:551` (`"totale = bilanciamento_forza + novità - rematch - rotazione3 + peso_dimensione"`), rendered verbatim at `PairingWeightsSection.vue:56`. `peso_dimensione` silently stands in for **two** independently-adjustable weights defined in `pairingOptimizer.ts:63-70`: `tableSize4` (default 0.15, labeled "Bonus tavoli da 4" at `it.json:584`) and `tableSize3` (default -0.15, "Peso tavoli da 3" at `it.json:585`), applied at `pairingOptimizer.ts:347`. Both sliders already exist individually in the modal; only the summary formula collapses them. Fix: `totale = bilanciamento_forza + novità - rematch - rotazione3 + bonus_tavoli4 + peso_tavoli3`.
+Fixed: `i18n/locales/it.json`'s `pairingWeights.formula` now spells out both terms individually (`totale = bilanciamento_forza + novità - rematch - rotazione3 + bonus_tavoli4 + peso_tavoli3`) instead of collapsing them into one `peso_dimensione` placeholder. No logic changed — the two weights were already computed correctly, this was a display-only string.
 
 ### 5. "Coppie Vietate" / "Pesi dell'algoritmo" — are they persisted, and carried into later rounds?
 
 Both persist to **`localStorage`**, not the DB: `app/composables/event-pairing/pairingPreferences.ts:10-11,32-71`, keyed `pairing-preferences-event-${eventId}` (per-event, not per-round) — `it.json:561` already discloses this to the user in-modal. Since the key is event-scoped, values *do* carry forward automatically across rounds within the same event, but they're browser/device-local: a different browser, incognito session, or cleared storage silently loses them. No DB table backs this (no `event_pairing_weights`-style migration exists). Worth a decision on whether this should move server-side — flagged here, not fixed.
 
-### 6. "Pesi e Vincoli Pairing" modal has no footer (no "Conferma"/"Annulla")
+### 6. ~~"Pesi e Vincoli Pairing" modal has no footer (no "Conferma"/"Annulla")~~ — resolved 2026-07-20
 
-Confirmed — `PairingSettingsModal.vue:41-70` only fills `UModal`'s `#body` slot. This turns out to be intentional-by-omission rather than a bug: there's no local draft state to confirm/discard — every slider drag and pair add/remove (`updateWeight`/`addPair`/`removePair`, lines 34-37) applies live and writes straight to `localStorage` via #5. If a footer is still wanted for symmetry with other modals, it should probably be a single "Chiudi" button (nothing to actually confirm or cancel), not `ModalFooterActions`'s Conferma/Annulla pair — check `ModalFooterActions`' API before reusing it here since its Conferma/Annulla framing doesn't fit a live-apply modal.
+Added a footer with a single "Chiudi" button (`CancelButton` + `common.close`), not `ModalFooterActions`' Conferma/Annulla pair — correctly matches this modal's shape, since every edit here still applies live to `localStorage`, there's nothing to actually confirm or discard.
 
 ### 7. Button color semantics: "Classifica"/"Uccisioni"/"Inserisci Commander"/"Inserisci voto" should be neutral-when-empty, success-when-filled (not warning-when-empty)
 

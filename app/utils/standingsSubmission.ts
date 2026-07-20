@@ -4,14 +4,13 @@ import type { Pairing } from '#shared/utils/types'
 type RankingsByPairing = Map<number, number[]>
 
 /**
- * Check if all data for a table is complete (rankings, votes, kills confirmed).
+ * Check if all data for a table is complete (rankings, votes).
  * Returns a map of playerId -> boolean indicating if their table is fully submitted.
  */
 export function buildStandingsSubmissionMap(
   pairings: Pairing[],
   rankingsByPairing: RankingsByPairing,
   hasVotesByPlayerId: Map<number, boolean>,
-  confirmedPairingIds: Set<number>,
 ): Map<number, boolean> {
   const submitted = new Map<number, boolean>()
 
@@ -31,10 +30,7 @@ export function buildStandingsSubmissionMap(
     // Check if all players have votes
     const allVotesComplete = playerIds.every(id => hasVotesByPlayerId.get(id) ?? false)
 
-    // Check if kills have been confirmed for this table (even if zero kills)
-    const killsConfirmed = confirmedPairingIds.has(pairing.pairing_id)
-
-    const tableComplete = allRankingsComplete && allVotesComplete && killsConfirmed
+    const tableComplete = allRankingsComplete && allVotesComplete
 
     for (const id of playerIds) {
       submitted.set(id, tableComplete)

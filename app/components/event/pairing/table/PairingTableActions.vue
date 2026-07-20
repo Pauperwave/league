@@ -7,13 +7,14 @@ defineProps<{
   pairingId: number
   tableIndex: number
   hasRanking: boolean
-  killsConfirmed: boolean
+  hasKills: boolean
 }>()
 
 const emit = defineEmits<{
   openScoreModal: [pairingId: number, tableIndex: number]
   openKillModal: [pairingId: number]
-  toggleKillConfirmation: [pairingId: number]
+  /** "Patta" — declares a draw for this table (no kills, everyone ties for first). */
+  draw: [pairingId: number]
 }>()
 </script>
 
@@ -22,7 +23,7 @@ const emit = defineEmits<{
     <!-- Rankings button -->
     <UTooltip :content="{ side: 'top' }" :text="hasRanking ? t('event.pairing.rankingSetTooltip') : t('event.pairing.rankingNotSetTooltip')">
       <UButton
-        :color="hasRanking ? 'neutral' : 'warning'"
+        :color="hasRanking ? 'success' : 'neutral'"
         class="flex-1"
         :icon="ICONS.standings"
         variant="outline"
@@ -33,9 +34,9 @@ const emit = defineEmits<{
     </UTooltip>
 
     <!-- Kills entry button -->
-    <UTooltip :content="{ side: 'top' }" :text="killsConfirmed ? t('event.pairing.killsSetTooltip') : t('event.pairing.killsNotSetTooltip')">
+    <UTooltip :content="{ side: 'top' }" :text="hasKills ? t('event.pairing.killsSetTooltip') : t('event.pairing.killsNotSetTooltip')">
       <UButton
-        :color="killsConfirmed ? 'neutral' : 'warning'"
+        :color="hasKills ? 'success' : 'neutral'"
         class="flex-1"
         :icon="ICONS.kills"
         variant="outline"
@@ -45,19 +46,18 @@ const emit = defineEmits<{
       </UButton>
     </UTooltip>
 
-    <!-- Kill confirmation toggle -->
-    <UTooltip
-      :content="{ side: 'top' }"
-      :text="killsConfirmed ? t('event.pairing.removeKillConfirmTooltip') : t('event.pairing.confirmKillsTooltip')"
-    >
+    <!-- Draw ("Patta") — sits outside both the ranking and kills modals since
+         it sets both at once (zero kills, everyone tied for first). -->
+    <UTooltip :content="{ side: 'top' }" :text="t('event.killModal.drawHint')">
       <UButton
-        :color="killsConfirmed ? 'success' : 'warning'"
-        :icon="killsConfirmed ? ICONS.confirm : ICONS.dot"
+        color="neutral"
+        class="flex-1"
+        :icon="ICONS.draw"
         variant="outline"
-        size="sm"
-        :aria-label="killsConfirmed ? t('event.pairing.removeKillConfirmTooltip') : t('event.pairing.confirmKillsAriaLabel')"
-        @click="emit('toggleKillConfirmation', pairingId)"
-      />
+        @click="emit('draw', pairingId)"
+      >
+        {{ t('event.pairing.drawButton') }}
+      </UButton>
     </UTooltip>
   </div>
 </template>

@@ -29,7 +29,6 @@ export interface SessionSnapshot {
   round: number
   rankings: [number, RankingEntry[]][]
   kills: Kill[]
-  confirmedPairings: number[]
   commanders: CommanderEntry[]
   votes: VoteEntry[]
 }
@@ -41,8 +40,7 @@ interface RankingsStoreLike {
 
 interface KillsStoreLike {
   kills: Kill[]
-  confirmedPairings: Set<number>
-  hydrate: (snapshot: { kills: Kill[]; confirmedPairings: number[] }) => void
+  hydrate: (snapshot: { kills: Kill[] }) => void
 }
 
 interface CommandersStoreLike {
@@ -78,7 +76,6 @@ export function useSessionStorePersistence(params: {
       round: currentRound.value,
       rankings: Array.from(rankingsStore.rankingsWithRanks.entries()),
       kills: [...killsStore.kills],
-      confirmedPairings: Array.from(killsStore.confirmedPairings),
       commanders: Array.from(commandersStore.commanders.values()),
       votes: Array.from(votesStore.votes.values()),
     }
@@ -93,7 +90,7 @@ export function useSessionStorePersistence(params: {
     if (!snapshot || snapshot.round !== currentRound.value) return
 
     rankingsStore.hydrate(snapshot.rankings)
-    killsStore.hydrate({ kills: snapshot.kills, confirmedPairings: snapshot.confirmedPairings })
+    killsStore.hydrate({ kills: snapshot.kills })
     commandersStore.hydrate(snapshot.commanders)
     votesStore.hydrate(snapshot.votes)
     logInfo('useSessionStorePersistence', `restored round ${snapshot.round} session state for event ${eventId}`)
@@ -109,7 +106,6 @@ export function useSessionStorePersistence(params: {
       [
         () => rankingsStore.rankingsWithRanks,
         () => killsStore.kills,
-        () => killsStore.confirmedPairings,
         () => commandersStore.commanders,
         () => votesStore.votes,
       ],
