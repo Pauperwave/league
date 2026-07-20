@@ -20,6 +20,7 @@ Committed, actionable work items, ranked by priority with a rough effort estimat
 | 9 | [Adopt `nuxt-echarts` for charts](#9-adopt-nuxt-echarts-for-charts) | P3 | M |
 | 10 | [Single-commander list, aggregated across partner pairs](#10-single-commander-list-aggregated-across-partner-pairs) | P3 | M |
 | 12 | [Idempotency guards on advance-round/start/round-result submission](#12-idempotency-guards-on-advance-roundstartround-result-submission) | P1 | M |
+| 14 | [Persist an explicit table number instead of deriving it from array order](#14-persist-an-explicit-table-number-instead-of-deriving-it-from-array-order) | P3 | M |
 
 ---
 
@@ -222,6 +223,18 @@ Found 2026-07-20, event-lifecycle fragility audit. None of `advance-round`, `sta
 Confirmed: zero duplicates exist in production today (checked directly) — this is a latent risk, not a manifested corruption. The main client-side trigger (double-click on the lifecycle buttons) is now closed — see `docs/PROGRESS.md`'s 2026-07-20 entry — but that's a store-level in-memory guard, not a DB constraint: it doesn't protect against two different tabs/sessions, or a direct API retry bypassing the store entirely. This item stays open for that reason.
 
 **TDD approach**: write API tests that call each endpoint twice in a row (the realistic double-click/retry scenario) and assert the *second* call is a no-op or a clean rejection, not a second mutation. Fix via unique constraints (`standings (event_id, player_id)`, `round_results (pairing_id, player_id)`) plus upsert-on-conflict logic, and switching `advance-round`'s standings update to set absolute values computed from all rounds so far rather than incrementing.
+
+---
+
+## 14. Persist an explicit table number instead of deriving it from array order
+
+Raised 2026-07-20, while building `PairingsFullscreenView.vue`. The `pairings` table has no `table_number`/`pairing_table_number` column at all — every place that shows "Tavolo N" (the normal `PairingsCard.vue` grid, `ConfirmModal` subjects, the new fullscreen view) derives it from the array position of the fetched `pairings` list.
+
+This works reliably **today** because: `usePairingsQuery` explicitly orders by `.order('pairing_id')`, and each round's pairings are written in a single batch `INSERT` (`buildPairingRows`) — Postgres assigns identity-sequence values in row order for a single insert, so `pairing_id` order matches table-assignment order, and turn-back-round deletes+recreates a round's pairings as a whole batch each time, never partially. Verified not a live bug — but it's an *implicit* guarantee, not one the schema enforces. Any future change to how pairings are queried, filtered, paginated, or batched could silently break table numbering everywhere at once, without a type error or an obvious symptom until someone notices "Tavolo 2" showing the wrong players.
+
+**Needs a decision, not just a migration**: adding a real `pairing_table_number` column touches every read site that currently computes it from index (`PairingsCard.vue`, `TableCardActions`, `PairingTableActions`, `ConfirmModal` subjects in the reset/fill dialogs, `PairingsFullscreenView.vue`, and the pairing-generation code in `shared/utils/roundScoring.ts`'s `buildPairingRows`/`buildRoundOneTables` that would need to actually set it). Before implementing: audit **all** of these together (the user asked specifically to review how this fits with everything else) rather than adding the column and fixing sites piecemeal — a half-migrated state (some reads using the new column, others still on array index) would be worse than the current fully-consistent-but-implicit convention.
+
+**P3/someday**, deferred behind the event lifecycle priority same as #7/#8/#10 — the current behavior is verified correct, this is a robustness improvement, not a live bug.
 
 ---
 
