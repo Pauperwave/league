@@ -45,9 +45,10 @@ const emit = defineEmits<{
 
 /**
  * Tracks which pairing is pending a confirmation action (reset or test fill),
- * along with the type of action. Null when no dialog is open.
+ * along with the type of action. Null when no dialog is open. 'fill-all' has
+ * no single pairingId — it applies to every table in the round.
  */
-const confirmDialog = ref<{ type: 'reset' | 'fill'; pairingId: number } | null>(null)
+const confirmDialog = ref<{ type: 'reset' | 'fill'; pairingId: number } | { type: 'fill-all' } | null>(null)
 
 /** Used by useButtonLogging to track the last pairing the score modal was opened for. */
 const currentPairingId = ref<number | null>(null)
@@ -93,6 +94,15 @@ const showResetConfirm = computed({
  */
 const showFillConfirm = computed({
   get: () => confirmDialog.value?.type === 'fill',
+  set: (v: boolean) => { if (!v) confirmDialog.value = null }
+})
+
+/**
+ * Two-way computed for the fill-all-tables confirmation modal's open state.
+ * Setting it to false clears the active confirmDialog.
+ */
+const showFillAllConfirm = computed({
+  get: () => confirmDialog.value?.type === 'fill-all',
   set: (v: boolean) => { if (!v) confirmDialog.value = null }
 })
 
@@ -172,18 +182,26 @@ function handleQuickTestFill(pairing: Pairing) {
   confirmDialog.value = { type: 'fill', pairingId: pairing.pairing_id }
 }
 
+/** Queues a test-fill confirmation for every table in the round at once. */
+function handleQuickTestFillAll() {
+  confirmDialog.value = { type: 'fill-all' }
+}
+
 /**
- * Executes the confirmed action (reset or test fill) and clears the dialog state.
- * Called by both ConfirmModal @confirm events.
+ * Executes the confirmed action (reset, test fill, or fill-all) and clears
+ * the dialog state. Called by all three ConfirmModal @confirm events.
  */
 function handleConfirm() {
   if (!confirmDialog.value) return
-  const { type, pairingId } = confirmDialog.value
 
-  if (type === 'reset') {
-    emit('resetTable', pairingId)
+  if (confirmDialog.value.type === 'reset') {
+    emit('resetTable', confirmDialog.value.pairingId)
+  } else if (confirmDialog.value.type === 'fill') {
+    fillTable(confirmDialog.value.pairingId)
   } else {
-    fillTable(pairingId)
+    for (const pairing of props.pairings) {
+      fillTable(pairing.pairing_id)
+    }
   }
 
   confirmDialog.value = null
@@ -257,6 +275,15 @@ function toggleKillConfirmation(pairingId: number) {
         <div class="flex items-center gap-2">
           <UIcon :name="ICONS.gridView" class="size-5 text-primary" />
           <h2 class="text-lg font-semibold">{{ t('event.pairing.tablesHeading') }}</h2>
+          <UTooltip v-if="!readonly" :content="{ side: 'top' }" :text="t('event.pairing.fillAllTooltip')">
+            <UButton
+              :icon="ICONS.quickAction"
+              color="neutral"
+              variant="ghost"
+              :aria-label="t('event.pairing.fillAllTooltip')"
+              @click="handleQuickTestFillAll"
+            />
+          </UTooltip>
           <UTooltip :content="{ side: 'top' }" :text="t('event.pairing.fullscreenTooltip')">
             <UButton
               :icon="ICONS.expand"
@@ -343,6 +370,18 @@ function toggleKillConfirmation(pairingId: number) {
         :subject="t('event.pairing.tableHeading', { n: pairings.findIndex(p => p.pairing_id === tableToFill) + 1 })"
         :warning="t('event.pairing.fillConfirm.warning')"
         :confirm-label="t('event.pairing.fillConfirm.confirmLabel')"
+        :confirm-icon="ICONS.quickAction"
+        @confirm="handleConfirm"
+      />
+
+      <!-- Fill-all-tables confirmation dialog -->
+      <ConfirmModal
+        v-model:open="showFillAllConfirm"
+        :title="t('event.pairing.fillAllConfirm.title')"
+        :description="t('event.pairing.fillAllConfirm.description')"
+        :question="t('event.pairing.fillAllConfirm.question')"
+        :warning="t('event.pairing.fillAllConfirm.warning')"
+        :confirm-label="t('event.pairing.fillAllConfirm.confirmLabel')"
         :confirm-icon="ICONS.quickAction"
         @confirm="handleConfirm"
       />

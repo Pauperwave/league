@@ -523,6 +523,14 @@
         "warning": "Questa azione sovrascriverà i dati esistenti.",
         "confirmLabel": "Compila"
       },
+      "fillAllConfirm": {
+        "title": "Compila tutti i tavoli con dati di test",
+        "description": "Stai per compilare tutti i tavoli del round con dati di test",
+        "question": "Sei sicuro di voler compilare tutti i tavoli",
+        "warning": "Questa azione sovrascriverà i dati esistenti su tutti i tavoli.",
+        "confirmLabel": "Compila tutti"
+      },
+      "fillAllTooltip": "Compila tutti i tavoli con dati di test",
       "viewScoresTooltip": "Visualizza punteggi",
       "scoresButtonLabel": "Punteggi",
       "resetTableTooltip": "Resetta tavolo",
