@@ -1,6 +1,5 @@
 @import "tailwindcss";
 @import "@nuxt/ui";
-@import "mana-font/css/mana.css";
 
 /* Safelist for gradient classes generated dynamically in CardPreview.vue */
 @source inline("{from,via,to}-{amber-100,amber-200,blue-600,gray-950,red-600,green-600,gray-300}");

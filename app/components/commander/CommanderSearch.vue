@@ -32,45 +32,6 @@ const {
   playerId: props.playerId,
 })
 
-/**
- * Converts a mana symbol to a mana-font class
- * {W} → ms ms-w, {2} → ms ms-2, etc.
- */
-function getManaFontClass(token: string): string {
-  // Strip the curly braces
-  const symbol = token.replace(/[{}]/g, '').toLowerCase()
-
-  // Map special symbols
-  const specialMap: Record<string, string> = {
-    'w': 'ms ms-w',
-    'u': 'ms ms-u',
-    'b': 'ms ms-b',
-    'r': 'ms ms-r',
-    'g': 'ms ms-g',
-    'c': 'ms ms-c', // colorless
-    'p': 'ms ms-p', // phyrexian
-    'wp': 'ms ms-wp',
-    'up': 'ms ms-up',
-    'bp': 'ms ms-bp',
-    'rp': 'ms ms-rp',
-    'gp': 'ms ms-gp',
-    'x': 'ms ms-x',
-    'y': 'ms ms-y',
-    'z': 'ms ms-z',
-    't': 'ms ms-tap',
-    'q': 'ms ms-untap',
-    'e': 'ms ms-e', // energy
-    's': 'ms ms-s', // snow
-  }
-
-  // If it's a number (0-20+), use ms-{number}
-  if (/^\d+$/.test(symbol)) {
-    return `ms ms-${symbol}`
-  }
-
-  return specialMap[symbol] || `ms ms-${symbol}`
-}
-
 // Logging when the card changes
 watch(card, (newCard) => {
   if (newCard) {
@@ -185,17 +146,12 @@ function handleKeydown(e: KeyboardEvent) {
         :aria-selected="index === selectedIndex"
         @mousedown="handleSuggestionClick(suggestion)"
       >
-        <!-- Mana cost symbols with mana-font -->
+        <!-- Mana cost symbols -->
         <span
           v-if="suggestionMeta[suggestion]?.tokens?.length"
-          class="flex items-center gap-0.5 shrink-0 bg-gray-950 p-1 rounded"
+          class="shrink-0 bg-gray-950 p-1 rounded"
         >
-          <i
-            v-for="(token, idx) in suggestionMeta[suggestion].tokens"
-            :key="`${suggestion}-${token}-${idx}`"
-            :class="getManaFontClass(token)"
-            class="text-lg"
-          />
+          <ManaCost :mana-cost="suggestionMeta[suggestion].tokens.join('')" size="lg" />
         </span>
 
         <!-- Highlighted card name -->
