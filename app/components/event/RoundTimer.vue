@@ -69,6 +69,16 @@ const timerRef = useTemplateRef<HTMLDivElement>('timerRef')
 const { isFullscreen, toggle } = useFullscreen(timerRef)
 
 // ---------------------------------------------------------------------------
+// Reset confirmation
+// ---------------------------------------------------------------------------
+// Resetting wipes elapsed time AND any added/removed minutes — destructive
+// enough (and easy to fat-finger, especially on the oversized fullscreen
+// buttons) to gate behind a confirmation, same as PairingsCard.vue's table
+// reset. One modal instance covers both the normal and fullscreen layouts,
+// since this component renders both from the same template.
+const showResetConfirm = ref(false)
+
+// ---------------------------------------------------------------------------
 // Interval
 // ---------------------------------------------------------------------------
 
@@ -114,6 +124,15 @@ function reset() {
   timeBonus.value = 0
 }
 
+/**
+ * ConfirmModal's own @confirm doesn't close itself (see ConfirmModal.vue —
+ * only its cancel/dismiss paths do) — the caller is expected to close it.
+ */
+function confirmReset() {
+  reset()
+  showResetConfirm.value = false
+}
+
 /** Add extra minutes to the current round. If the timer had expired, restarts it from the added time. */
 function addMinutes(minutes: number) {
   const wasExpired = isExpired.value
@@ -123,6 +142,11 @@ function addMinutes(minutes: number) {
     startTime.value = null
     isRunning.value = false
   }
+}
+
+/** Remove minutes from the current round, floored so the total duration never goes below zero. */
+function subtractMinutes(minutes: number) {
+  timeBonus.value = Math.max(timeBonus.value - minutes, -props.durationMinutes)
 }
 
 // ---------------------------------------------------------------------------
@@ -160,13 +184,26 @@ onMounted(() => {
   >
     <CurrentTime
       v-if="isFullscreen"
-      class="absolute top-[4cqmin] right-[4cqmin] text-muted"
+      class="absolute top-[4cqmin] left-[4cqmin] text-muted"
     />
+
+    <UTooltip v-if="isFullscreen" :content="{ side: 'top' }" :text="t('event.roundTimer.exitFullscreenTooltip')">
+      <UButton
+        :icon="ICONS.collapse"
+        color="neutral"
+        variant="ghost"
+        size="xl"
+        class="absolute top-[4cqmin] right-[4cqmin]"
+        :aria-label="t('event.roundTimer.exitFullscreenTooltip')"
+        @click="toggle"
+      />
+    </UTooltip>
+
     <UIcon
       :name="ICONS.timer"
       :class="[
         isExpired ? 'text-error' : isRunning ? 'text-primary' : 'text-muted',
-        isFullscreen ? 'size-[15cqmin]' : 'size-5',
+        isFullscreen ? 'size-[20cqmin]' : 'size-5',
       ]"
     />
 
@@ -175,7 +212,7 @@ onMounted(() => {
       class="font-mono font-bold tabular-nums leading-none"
       :class="[
         isExpired ? 'text-error' : 'text-default',
-        isFullscreen ? 'text-[25cqmin]' : 'text-2xl',
+        isFullscreen ? 'text-[32cqmin]' : 'text-2xl',
       ]"
     >
       {{ display }}
@@ -212,7 +249,27 @@ onMounted(() => {
         variant="ghost"
         :fullscreen="isFullscreen"
         :tooltip="t('event.roundTimer.resetTooltip')"
-        @click="reset"
+        @click="showResetConfirm = true"
+      />
+
+      <TimerControlButton
+        :icon="ICONS.subtract"
+        color="error"
+        variant="soft"
+        :fullscreen="isFullscreen"
+        :tooltip="t('event.roundTimer.subtract10Tooltip')"
+        label="10:00"
+        @click="subtractMinutes(10)"
+      />
+
+      <TimerControlButton
+        :icon="ICONS.subtract"
+        color="error"
+        variant="soft"
+        :fullscreen="isFullscreen"
+        :tooltip="t('event.roundTimer.subtract5Tooltip')"
+        label="5:00"
+        @click="subtractMinutes(5)"
       />
 
       <TimerControlButton
@@ -236,13 +293,25 @@ onMounted(() => {
       />
 
       <TimerControlButton
-        :icon="isFullscreen ? ICONS.collapse : ICONS.expand"
+        v-if="!isFullscreen"
+        :icon="ICONS.expand"
         color="neutral"
         variant="ghost"
         :fullscreen="isFullscreen"
-        :tooltip="isFullscreen ? t('event.roundTimer.exitFullscreenTooltip') : t('event.roundTimer.fullscreenTooltip')"
+        :tooltip="t('event.roundTimer.fullscreenTooltip')"
         @click="toggle"
       />
     </div>
+
+    <ConfirmModal
+      v-model:open="showResetConfirm"
+      :title="t('event.roundTimer.resetConfirm.title')"
+      :description="t('event.roundTimer.resetConfirm.description')"
+      :question="t('event.roundTimer.resetConfirm.question')"
+      :confirm-label="t('event.roundTimer.resetConfirm.confirmLabel')"
+      :confirm-icon="ICONS.reset"
+      :portal="!isFullscreen"
+      @confirm="confirmReset"
+    />
   </div>
 </template>

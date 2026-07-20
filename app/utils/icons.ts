@@ -11,6 +11,7 @@
 export const ICONS = {
   // Actions
   add: 'i-lucide-plus',
+  subtract: 'i-lucide-minus',
   delete: 'i-lucide-trash-2',
   edit: 'i-lucide-pencil',
   confirm: 'i-lucide-check',

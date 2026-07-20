@@ -13,6 +13,7 @@ const {
   cancelIcon = ICONS.undo,
   loading = false,
   dismissible = true,
+  portal = true,
 } = defineProps<{
   title?: string
   description: string
@@ -25,6 +26,15 @@ const {
   cancelIcon?: string
   loading?: boolean
   dismissible?: boolean
+  /**
+   * Forwarded to UModal's own `portal` prop. Defaults to `true` (teleport to
+   * body, the normal case). Set to `false` for a modal that must render
+   * inside an element currently in the browser Fullscreen API — the
+   * Fullscreen API only paints that element's own DOM subtree, so anything
+   * teleported to `body` (outside it) becomes invisible until fullscreen
+   * exits. See RoundTimer.vue's reset-confirm usage.
+   */
+  portal?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -63,6 +73,7 @@ function onCancel() {
     :title="displayTitle"
     :description="description"
     :dismissible="dismissible && !loading"
+    :portal="portal"
     :ui="{ footer: 'justify-between' }"
     @after:leave="$emit('afterLeave')"
   >

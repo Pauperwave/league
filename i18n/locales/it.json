@@ -409,8 +409,16 @@
       "resetTooltip": "Resetta timer",
       "add5Tooltip": "Aggiungi 5 minuti",
       "add10Tooltip": "Aggiungi 10 minuti",
+      "subtract5Tooltip": "Togli 5 minuti",
+      "subtract10Tooltip": "Togli 10 minuti",
       "fullscreenTooltip": "Schermo intero",
-      "exitFullscreenTooltip": "Esci da schermo intero"
+      "exitFullscreenTooltip": "Esci da schermo intero",
+      "resetConfirm": {
+        "title": "Conferma Reset",
+        "description": "Stai per resettare il timer del round",
+        "question": "Sei sicuro di voler resettare il timer",
+        "confirmLabel": "Reset"
+      }
     },
     "waitingList": {
       "heading": "Lista d'Attesa",

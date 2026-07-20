@@ -8,7 +8,7 @@
  */
 defineProps<{
   icon: string
-  color: 'primary' | 'neutral' | 'success'
+  color: 'primary' | 'neutral' | 'success' | 'error'
   variant: 'soft' | 'ghost'
   tooltip: string
   fullscreen: boolean
