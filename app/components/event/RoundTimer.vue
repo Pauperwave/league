@@ -178,7 +178,7 @@ onMounted(() => {
     ref="timerRef"
     class="flex items-center"
     :class="isFullscreen
-      ? 'relative flex-col justify-center h-screen w-screen bg-default gap-12 [container-type:size]'
+      ? 'relative flex-col justify-center h-screen w-screen bg-default gap-12 @container-size'
       : 'gap-3'
     "
   >

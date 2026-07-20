@@ -85,7 +85,7 @@ const columns = computed(() => Math.max(1, Math.ceil(Math.sqrt(pairings.length))
       <div
         v-for="(pairing, index) in pairings"
         :key="pairing.pairing_id"
-        class="flex items-start justify-start gap-[4cqmin] border border-dashed border-default [container-type:size] overflow-hidden"
+        class="flex items-start justify-start gap-[4cqmin] border border-dashed border-default @container-size overflow-hidden"
       >
         <!-- Fixed min-width, right-aligned: keeps every number's right edge
              (and the surnames starting right after it) on the same vertical
