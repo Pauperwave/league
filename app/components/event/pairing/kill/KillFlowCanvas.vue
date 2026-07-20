@@ -7,6 +7,7 @@ import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
 import '@vue-flow/controls/dist/style.css'
 import KillPlayerNode from './KillPlayerNode.vue'
+import KillLoopbackEdge from './KillLoopbackEdge.vue'
 import type { TournamentPlayer } from '#shared/utils/types'
 
 // Explicit id shared with <VueFlow id="kill-flow"> below — calling
@@ -37,6 +38,8 @@ const { t } = useI18n()
 // re-renders in a loop
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const nodeTypes = { player: markRaw(KillPlayerNode) } as any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const edgeTypes = { loopback: markRaw(KillLoopbackEdge) } as any
 
 // ─── Per-player color ───────────────────────────────────────────────────────
 // Shared with KillSystemModal's registered-kills badge list, so a killer's
@@ -124,7 +127,7 @@ function mapKillsToEdges(): Edge[] {
         target: String(kill.victimId),
         sourceHandle: 'source',
         targetHandle: 'target',
-        type: isSuicide ? 'smoothstep' : 'default',
+        type: isSuicide ? 'loopback' : 'default',
         animated: isSuicide,
         deletable: true,
         style: { stroke: color, strokeWidth: 2.5 },
@@ -219,6 +222,7 @@ function logToObject() {
       :id="FLOW_ID"
       :nodes="nodes"
       :node-types="nodeTypes"
+      :edge-types="edgeTypes"
       :connect-on-click="false"
       :nodes-draggable="false"
       :nodes-connectable="interactive"
@@ -227,6 +231,7 @@ function logToObject() {
       :pan-on-drag="true"
       :pan-on-scroll="false"
       fit-view-on-init
+      :connection-radius="30"
       :default-edge-options="defaultEdgeOptions"
       :is-valid-connection="validateConnection"
       @connect="onConnect"

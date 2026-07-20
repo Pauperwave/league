@@ -653,7 +653,10 @@
       "fitView": "Adatta alla vista",
       "lock": "Blocca modifiche",
       "unlock": "Sblocca modifiche",
-      "logData": "Log dati"
+      "logData": "Log dati",
+      "killCountTooltip": "{count} uccisioni",
+      "deathCountTooltip": "{count} morti subite",
+      "suicideTooltip": "Si è suicidato"
     },
     "standingsCard": {
       "brewVotesTooltip": "Brew votes",

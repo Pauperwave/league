@@ -21,6 +21,7 @@ const props = defineProps<{
 }>()
 
 const killsStore = useKillsStore()
+const { t } = useI18n()
 
 const killCount = computed(() =>
   killsStore.killsByKiller(props.data.player.id).length,
@@ -44,31 +45,34 @@ const hasStats = computed(() => killCount.value > 0 || deathCount.value > 0 || h
     :offset="8"
   >
     <div class="flex items-center gap-1 rounded-lg border border-default bg-elevated px-2 py-1 shadow-sm">
-      <UBadge
-        v-if="killCount > 0"
-        :icon="ICONS.ruleKill"
-        :label="String(killCount)"
-        :color="data.color"
-        variant="solid"
-      />
-      <UBadge
-        v-if="hasSuicided"
-        :icon="ICONS.refresh"
-        color="warning"
-        variant="solid"
-      />
+      <UTooltip v-if="killCount > 0" :content="{ side: 'top' }" :text="t('event.killFlow.killCountTooltip', { count: killCount })">
+        <UBadge
+          :icon="ICONS.ruleKill"
+          :label="String(killCount)"
+          :color="data.color"
+          variant="solid"
+        />
+      </UTooltip>
+      <UTooltip v-if="hasSuicided" :content="{ side: 'top' }" :text="t('event.killFlow.suicideTooltip')">
+        <UBadge
+          :icon="ICONS.refresh"
+          color="warning"
+          variant="solid"
+        />
+      </UTooltip>
       <!-- Neutral, not per-player: aggregates kills from potentially several
            differently-colored killers, so no single accent color applies.
            `solid`, not `soft` — Nuxt UI's neutral+soft combo maps to
            `text-default` (the app's near-black body text), which read as a
            near-invisible icon; `solid` maps to `text-inverted` instead. -->
-      <UBadge
-        v-if="deathCount > 0"
-        :icon="ICONS.kills"
-        :label="String(deathCount)"
-        color="neutral"
-        variant="solid"
-      />
+      <UTooltip v-if="deathCount > 0" :content="{ side: 'top' }" :text="t('event.killFlow.deathCountTooltip', { count: deathCount })">
+        <UBadge
+          :icon="ICONS.kills"
+          :label="String(deathCount)"
+          color="neutral"
+          variant="solid"
+        />
+      </UTooltip>
     </div>
   </NodeToolbar>
 
