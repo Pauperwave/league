@@ -15,7 +15,12 @@ import type { TournamentPlayer } from '#shared/utils/types'
 // match; otherwise setEdges()/etc. can silently write to an orphaned store
 // that <VueFlow> never renders.
 const FLOW_ID = 'kill-flow'
-const { setViewport, fitView, setEdges, onInit } = useVueFlow(FLOW_ID)
+const { setEdges, onInit, zoomIn, zoomOut, fitView } = useVueFlow(FLOW_ID)
+
+// Toggled by the lock/unlock control button — nodes stay permanently
+// non-draggable (they're fixed chips), so "interactive" here only means
+// "can the user still draw/edit kill connections right now".
+const interactive = ref(true)
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 const props = defineProps<{
@@ -33,23 +38,63 @@ const { t } = useI18n()
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const nodeTypes = { player: markRaw(KillPlayerNode) } as any
 
-// ─── Rectangular position calculation ─────────────────────────────────────────
-// Distributes `total` nodes evenly around a rectangle's perimeter, starting
-// at the top-left corner and walking clockwise (top -> right -> bottom -> left).
-function getRectangularPosition(index: number, total: number, width = 300, height = 300) {
-  const perimeter = 2 * (width + height)
-  const dist = (perimeter * index) / total
+// ─── Per-player color ───────────────────────────────────────────────────────
+// Shared with KillSystemModal's registered-kills badge list, so a killer's
+// edges/badges match across both components.
+const playerColors = computed(() => getPlayerColorMap(props.players))
 
-  if (dist < width) {
-    return { x: dist, y: 0 }
+// ─── Shared node width ─────────────────────────────────────────────────────
+// All nodes render at the same width, sized to fit the longest name+surname
+// in full (no ellipsis) — `ch` approximates the width of one character in
+// the current font, plus a fixed buffer for the avatar/gaps/padding in
+// KillPlayerNode's chip content row (avatar 2.5rem + gap-2 0.5rem + px-2
+// padding 1rem = 4rem).
+const nodeWidth = computed(() => {
+  const maxChars = Math.max(1, ...props.players.map((p) => `${p.name} ${p.surname}`.length))
+  return `calc(${maxChars}ch + 4rem)`
+})
+
+// ─── Rectangular position calculation ─────────────────────────────────────────
+// Distributes `total` nodes around a rectangle's perimeter, one side at a
+// time: each side (top, right, bottom, left) gets a share of nodes
+// proportional to its own length (largest-remainder rounding so the shares
+// sum to `total` exactly), then that side's nodes are spaced evenly along
+// its own length, starting at its own corner. Walking a single global arc-
+// length fraction (the previous approach) only lines nodes up onto the
+// corners when width === height — once the rectangle isn't square, opposite
+// sides stop mirroring each other and nodes land unaligned.
+function getRectangularPosition(index: number, total: number, width = 320, height = 240) {
+  const sideLengths = [width, height, width, height] // top, right, bottom, left
+  const perimeter = sideLengths.reduce((sum, length) => sum + length, 0)
+
+  const rawShares = sideLengths.map((length) => (total * length) / perimeter)
+  const counts = rawShares.map(Math.floor)
+  const assigned = counts.reduce((sum, count) => sum + count, 0)
+  const remainders = rawShares
+    .map((share, i) => ({ i, frac: share - Math.floor(share) }))
+    .sort((a, b) => b.frac - a.frac)
+  for (let k = 0; k < total - assigned; k++) {
+    counts[remainders[k]!.i]!++
   }
-  if (dist < width + height) {
-    return { x: width, y: dist - width }
+
+  let side = 0
+  let posInSide = index
+  while (side < 3 && posInSide >= counts[side]!) {
+    posInSide -= counts[side]!
+    side++
   }
-  if (dist < 2 * width + height) {
-    return { x: width - (dist - width - height), y: height }
+  const t = posInSide / (counts[side] || 1)
+
+  switch (side) {
+    case 0: // top: left -> right
+      return { x: t * width, y: 0 }
+    case 1: // right: top -> bottom
+      return { x: width, y: t * height }
+    case 2: // bottom: right -> left
+      return { x: width - t * width, y: height }
+    default: // left: bottom -> top
+      return { x: 0, y: height - t * height }
   }
-  return { x: 0, y: height - (dist - 2 * width - height) }
 }
 
 // ─── Nodes (players) ─────────────────────────────────────────────────────────
@@ -59,7 +104,7 @@ const nodes = computed<Node[]>(() =>
     // matches nodeTypes.player
     type: 'player',
     position: getRectangularPosition(index, props.players.length),
-    data: { player },
+    data: { player, width: nodeWidth.value, color: playerColors.value.get(String(player.id))! },
     // fixed chips on the canvas
     draggable: false,
   })),
@@ -72,6 +117,7 @@ function mapKillsToEdges(): Edge[] {
     .filter((kill) => validPlayerIds.has(String(kill.killerId)) && validPlayerIds.has(String(kill.victimId)))
     .map((kill) => {
       const isSuicide = kill.killerId === kill.victimId
+      const color = `var(--ui-color-${playerColors.value.get(String(kill.killerId))}-500)`
       return {
         id: `${kill.killerId}-${kill.victimId}`,
         source: String(kill.killerId),
@@ -81,10 +127,10 @@ function mapKillsToEdges(): Edge[] {
         type: isSuicide ? 'smoothstep' : 'default',
         animated: isSuicide,
         deletable: true,
-        style: { stroke: 'var(--ui-color-error-500)', strokeWidth: 2.5 },
+        style: { stroke: color, strokeWidth: 2.5 },
         markerEnd: {
           type: MarkerType.Arrow,
-          color: 'var(--ui-color-error-500)',
+          color,
           width: 15,
           height: 15,
         },
@@ -108,7 +154,7 @@ watch(() => killsStore.kills, () => {
   setEdges(mapKillsToEdges())
 }, { deep: true })
 
-// ─── Default options for new edges during drag ───────────────────────────
+// Default options for new edges during drag
 const defaultEdgeOptions = {
   style: { stroke: 'var(--ui-color-primary-500)', strokeWidth: 2 },
   markerEnd: {
@@ -119,7 +165,7 @@ const defaultEdgeOptions = {
   },
 }
 
-// ─── Connection validation (structural only) ───────────────────────────────
+// Connection validation (structural only)
 // Vue Flow re-runs `isValidConnection` against every edge on every setEdges()
 // sync, not just live drag attempts (see createGraphEdges in
 // @vue-flow/core) — so a duplicate check here (`isKillPresent`) would reject
@@ -132,7 +178,7 @@ function validateConnection(connection: Connection): boolean {
   return validPlayerIds.has(connection.source) && validPlayerIds.has(connection.target)
 }
 
-// ─── Event: connection completed (drag released on a valid target) ─────────
+// Event: connection completed (drag released on a valid target)
 function onConnect(connection: Connection) {
   const killerId = Number(connection.source)
   const victimId = Number(connection.target)
@@ -150,7 +196,7 @@ function onConnect(connection: Connection) {
   }
 }
 
-// ─── Event: click on an existing arrow → remove ────────────────────────────
+// Event: click on an existing arrow → remove
 function onEdgeClick({ edge }: EdgeMouseEvent) {
   killsStore.removeKill(Number(edge.source), Number(edge.target))
   toast.add({
@@ -161,21 +207,7 @@ function onEdgeClick({ edge }: EdgeMouseEvent) {
   })
 }
 
-// ─── Control functions ───────────────────────────────────────────────────
-const dark = ref(false)
-
-function resetTransform() {
-  setViewport({ x: 0, y: 0, zoom: 1 })
-}
-
-function handleFitView() {
-  fitView()
-}
-
-function toggleDarkMode() {
-  dark.value = !dark.value
-}
-
+// Control functions
 function logToObject() {
   logDebug('KillFlowCanvas', 'Vue Flow data:', { nodes: nodes.value, edges: mapKillsToEdges() })
 }
@@ -187,10 +219,9 @@ function logToObject() {
       :id="FLOW_ID"
       :nodes="nodes"
       :node-types="nodeTypes"
-      :class="{ dark }"
       :connect-on-click="false"
       :nodes-draggable="false"
-      :nodes-connectable="true"
+      :nodes-connectable="interactive"
       :zoom-on-scroll="true"
       :zoom-on-pinch="true"
       :pan-on-drag="true"
@@ -204,25 +235,66 @@ function logToObject() {
       <!-- Optional grid background -->
       <Background pattern-color="var(--ui-border)" :gap="20" />
 
-      <!-- Top-left controls -->
-      <Controls position="top-left">
-        <ControlButton :title="t('event.killFlow.resetTransform')" @click="resetTransform">
-          <UIcon :name="ICONS.refresh" />
+      <!-- Top-left controls — the library's own zoom/fit-view/lock buttons
+           render raw <svg> icons with no title tooltip and can't be
+           restyled to match (see the style block below), so every control
+           here is a custom ControlButton instead of the defaults. -->
+      <Controls position="top-left" :show-zoom="false" :show-fit-view="false" :show-interactive="false">
+        <ControlButton :title="t('event.killFlow.zoomIn')" @click="zoomIn()">
+          <UIcon :name="ICONS.add" class="size-5" />
         </ControlButton>
 
-        <ControlButton :title="t('event.killFlow.fitView')" @click="handleFitView">
-          <UIcon :name="ICONS.fitView" />
+        <ControlButton :title="t('event.killFlow.zoomOut')" @click="zoomOut()">
+          <UIcon :name="ICONS.subtract" class="size-5" />
         </ControlButton>
 
-        <ControlButton :title="t('event.killFlow.toggleDarkMode')" @click="toggleDarkMode">
-          <UIcon v-if="dark" :name="ICONS.lightMode" />
-          <UIcon v-else :name="ICONS.darkMode" />
+        <ControlButton :title="t('event.killFlow.fitView')" @click="fitView()">
+          <UIcon :name="ICONS.fitView" class="size-5" />
+        </ControlButton>
+
+        <ControlButton
+          :title="interactive ? t('event.killFlow.lock') : t('event.killFlow.unlock')"
+          @click="interactive = !interactive"
+        >
+          <UIcon :name="interactive ? ICONS.unlock : ICONS.lock" class="size-5" />
         </ControlButton>
 
         <ControlButton :title="t('event.killFlow.logData')" @click="logToObject">
-          <UIcon :name="ICONS.terminal" />
+          <UIcon :name="ICONS.terminal" class="size-5" />
         </ControlButton>
       </Controls>
     </VueFlow>
   </div>
 </template>
+
+<style scoped>
+/* Controls is a @vue-flow/controls internal, not our own template markup —
+   :deep() is required to reach its DOM. @vue-flow/controls' own stylesheet
+   hardcodes a white button background regardless of app theme, so any
+   theme-following text color needs a theme-following background to match —
+   the panel itself needs theme-aware colors, not just the icon. */
+:deep(.vue-flow__controls) {
+  background: var(--ui-bg-elevated);
+  border: 1px solid var(--ui-border);
+  border-radius: 0.5rem;
+  overflow: hidden;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+:deep(.vue-flow__controls-button) {
+  width: 1.25rem;
+  height: 1.25rem;
+  background: var(--ui-bg-elevated);
+  border: none;
+  border-bottom: 1px solid var(--ui-border);
+  color: var(--ui-text);
+}
+
+:deep(.vue-flow__controls-button:last-child) {
+  border-bottom: none;
+}
+
+:deep(.vue-flow__controls-button:hover) {
+  background: var(--ui-bg-accented);
+}
+</style>

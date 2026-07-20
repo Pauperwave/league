@@ -17,7 +17,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="flex gap-2 justify-end">
+  <div class="flex gap-2 justify-end w-full">
     <CancelButton
       :label="cancelLabel"
       variant="outline"

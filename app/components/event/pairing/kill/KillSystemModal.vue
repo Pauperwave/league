@@ -27,10 +27,14 @@ const killsStore = useKillsStore()
 const pairingIdRef = computed(() => props.pairingId)
 const { data: persistedKills, refetch: refetchKills } = useRoundKillsQuery(pairingIdRef)
 
-/** Kill state as of the last hydrate — diffed against on close so an
- * open/close cycle with no edits doesn't resave (and re-trigger the stats
+/** Kill state as of the last hydrate — restored on cancel, diffed against on
+ * confirm so a no-edit confirm doesn't resave (and re-trigger the stats
  * triggers) for nothing. */
 let savedKillsSnapshot: Kill[] = []
+
+/** Set only by the Confirm button, right before closing — distinguishes a
+ * genuine save from Cancel/backdrop/ESC/X, which should all discard. */
+let confirmed = false
 
 /** Blocks canvas interaction while the DB fetch is in flight — otherwise a
  * kill drawn during that window gets silently overwritten the instant the
@@ -54,6 +58,7 @@ watch(open, async (isOpen) => {
   const kills = persistedKills.value ?? []
   killsStore.hydrate({ kills, confirmedPairings: Array.from(killsStore.confirmedPairings) })
   savedKillsSnapshot = [...kills]
+  confirmed = false
   hydrating.value = false
 })
 
@@ -62,17 +67,35 @@ function getPlayerName(id: number): string {
   return p ? `${p.name} ${p.surname}` : t('event.killModal.playerFallback', { id })
 }
 
+// Matches KillFlowCanvas's edge/badge colors, so a kill's badge here is the
+// same color as its arrow on the canvas.
+const playerColors = computed(() => getPlayerColorMap(props.players))
+
 // Kills are drawn live on the canvas — there's no separate draft/confirm
-// step, so the whole batch is saved once, whenever the modal closes
-// (button, backdrop, ESC, or X — all funnel through this `open` watcher).
-// Skipped entirely if nothing changed since open, so a no-edit open/close
-// doesn't fire a save for nothing.
+// step for individual kills, only for the batch as a whole. Confirm saves
+// it; Cancel/backdrop/ESC/X all discard it back to the snapshot from when
+// the modal opened — every close funnels through this `open` watcher, and
+// `confirmed` (set only by onConfirm, just before closing) is what tells
+// the two paths apart.
 watch(open, (isOpen, wasOpen) => {
   if (!wasOpen || isOpen) return
-  if (sameKills(killsStore.kills, savedKillsSnapshot)) return
-  logDebug('KillSystemModal', 'Saving kills on close - Table ID:', props.pairingId)
-  emit('submit', [...killsStore.kills])
+  if (confirmed) {
+    if (sameKills(killsStore.kills, savedKillsSnapshot)) return
+    logDebug('KillSystemModal', 'Saving kills on confirm - Table ID:', props.pairingId)
+    emit('submit', [...killsStore.kills])
+  } else {
+    killsStore.hydrate({ kills: savedKillsSnapshot, confirmedPairings: Array.from(killsStore.confirmedPairings) })
+  }
 })
+
+function onConfirm() {
+  confirmed = true
+  open.value = false
+}
+
+function onCancel() {
+  open.value = false
+}
 </script>
 
 <template>
@@ -102,12 +125,22 @@ watch(open, (isOpen, wasOpen) => {
 
         <!-- Text list of registered kills -->
         <div v-if="killsStore.kills.length > 0" class="space-y-2">
-          <p class="text-sm font-medium text-muted">{{ t('event.killModal.registeredKillsLabel') }}</p>
+          <div class="flex items-center justify-between">
+            <p class="text-sm font-medium text-muted">{{ t('event.killModal.registeredKillsLabel') }}</p>
+            <UButton
+              :label="t('event.killModal.resetButton')"
+              :icon="ICONS.delete"
+              color="error"
+              variant="outline"
+              size="xs"
+              @click="killsStore.reset()"
+            />
+          </div>
           <div class="flex flex-wrap gap-2">
             <UBadge
               v-for="kill in killsStore.kills"
               :key="`${kill.killerId}-${kill.victimId}`"
-              color="error"
+              :color="playerColors.get(String(kill.killerId))"
               variant="soft"
               class="gap-1.5"
             >
@@ -131,22 +164,11 @@ watch(open, (isOpen, wasOpen) => {
     </template>
 
     <template #footer>
-      <div class="flex justify-between w-full">
-        <UButton
-          :label="t('event.killModal.resetButton')"
-          :icon="ICONS.delete"
-          color="error"
-          variant="outline"
-          :disabled="killsStore.kills.length === 0"
-          @click="killsStore.reset()"
-        />
-        <CancelButton
-          :label="t('common.close')"
-          :icon="ICONS.close"
-          variant="outline"
-          @click="() => { open = false }"
-        />
-      </div>
+      <ModalFooterActions
+        :confirm-label="t('common.confirm')"
+        @cancel="onCancel"
+        @confirm="onConfirm"
+      />
     </template>
   </UModal>
 </template>

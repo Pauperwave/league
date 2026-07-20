@@ -636,9 +636,11 @@
     "killFlow": {
       "invalidTitle": "Non valido",
       "killRemovedTitle": "Uccisione rimossa",
-      "resetTransform": "Reset Vista",
+      "zoomIn": "Ingrandisci",
+      "zoomOut": "Rimpicciolisci",
       "fitView": "Adatta alla vista",
-      "toggleDarkMode": "Modalità scura",
+      "lock": "Blocca modifiche",
+      "unlock": "Sblocca modifiche",
       "logData": "Log dati"
     },
     "standingsCard": {

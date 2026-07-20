@@ -28,6 +28,7 @@ export const ICONS = {
   filters: 'i-lucide-sliders-horizontal',
   logout: 'i-lucide-log-out',
   lock: 'i-lucide-lock',
+  unlock: 'i-lucide-lock-open',
   quickAction: 'i-lucide-bolt',
 
   // Status / feedback
