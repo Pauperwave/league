@@ -26,6 +26,22 @@ export const defaultStubs = {
     name: 'ClientOnly',
     template: '<slot />',
   },
+  // Always renders both the default (toggle button) and #content slots,
+  // ignoring open/close state — tests assert on rendered content, not on
+  // collapse/expand behavior itself.
+  UCollapsible: {
+    name: 'UCollapsible',
+    template: '<div><slot /><slot name="content" /></div>',
+    props: ['open'],
+  },
+  // Real UTooltip only shows `text` in a floating overlay on hover, which
+  // JSDOM tests can't trigger — this stub renders it inline instead, so
+  // assertions can check tooltip text without simulating hover.
+  UTooltip: {
+    name: 'UTooltip',
+    template: '<span><slot />{{ text }}</span>',
+    props: ['text', 'content'],
+  },
 }
 
 type TestLocaleMessages = { [key: string]: string | TestLocaleMessages }
