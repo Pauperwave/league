@@ -22,11 +22,54 @@ button:not(:disabled):not([aria-disabled="true"]) {
   cursor: pointer !important;
 }
 
-/* General rule for dashed white borders */
-/* * {
-    border-style: dashed !important;
-    border-color: white !important;
-} */
+/* Developer view debug overlay — outlines every element and surfaces
+   otherwise-invisible accessibility metadata (heading level, title,
+   aria-label, missing alt text). Gated behind `.developer-view-active` on
+   <UApp> (see app.vue), toggled via useDeveloperView.ts/DeveloperViewToggle
+   in the header — not a permanent style. `outline` (not `border`) is used
+   deliberately: it doesn't affect layout/box size, so nested elements'
+   outlines can overlap without triggering reflow. */
+.developer-view-active * {
+  outline: 1px solid rgba(129, 140, 248, 0.4);
+  outline-offset: -1px;
+}
+
+.developer-view-active h1::before,
+.developer-view-active h2::before,
+.developer-view-active h3::before,
+.developer-view-active h4::before,
+.developer-view-active h5::before,
+.developer-view-active h6::before {
+  display: inline-block;
+  font-family: monospace;
+  font-size: 0.6rem;
+  font-weight: 700;
+  line-height: 1.4;
+  padding: 0 4px;
+  margin-right: 4px;
+  border-radius: 3px;
+  color: #000;
+  vertical-align: middle;
+}
+.developer-view-active h1::before { content: "H1"; background: #f87171; }
+.developer-view-active h2::before { content: "H2"; background: #fb923c; }
+.developer-view-active h3::before { content: "H3"; background: #facc15; }
+.developer-view-active h4::before { content: "H4"; background: #a3e635; }
+.developer-view-active h5::before { content: "H5"; background: #4ade80; }
+.developer-view-active h6::before { content: "H6"; background: #22d3ee; }
+
+/* Flag real a11y bugs, not just informational overlays:
+   - images missing/empty alt text (pure CSS, ::before/::after don't render
+     on replaced elements like <img> so this uses outline instead of text)
+   - interactive elements with no accessible name at all (no aria-label,
+     aria-labelledby, title, or visible text) — CSS can't detect "has a text
+     node child", so this class is toggled by app.vue's DOM scan instead of
+     a plain attribute selector. */
+.developer-view-active img:not([alt]),
+.developer-view-active img[alt=""],
+.developer-view-active .developer-view-missing-label {
+  outline: 2px solid #ef4444 !important;
+}
 
 /* Vue Flow CSS overrides */
 /* Removes Vue Flow's default white background */

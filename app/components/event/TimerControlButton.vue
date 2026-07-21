@@ -28,6 +28,7 @@ const emit = defineEmits<{
       :color="color"
       :variant="variant"
       :disabled="disabled"
+      :aria-label="tooltip"
       size="md"
       @click="emit('click')"
     >
