@@ -286,6 +286,12 @@ Gli store di sessione hanno **persistenza ottimistica**: update immediato UI + s
 - **`app/utils/bracketLevels.ts`**: `BRACKET_LEVELS` generato programmaticamente dal pattern fisso `bracket.level${n}.xxx` (non 5 oggetti scritti a mano — elimina il rischio di un numero/chiave disallineati per un copia-incolla sbagliato), `BRACKET_COLORS` mappa ogni livello a un colore semantico Nuxt UI (success→info→primary→warning→error, progressione casual→competitivo) usando i token già in `app.config.ts`.
 - **Refactor collaterale**: estratto `app/utils/semanticColor.ts` (`SemanticColor`) dal tipo `PlayerColor` di `playerColor.ts`, che duplicava la stessa union di 6 colori — ora entrambi i moduli riusano un'unica definizione.
 
+### ADR-024 — Un solo componente per la classifica: `/league/:id` e la pagina evento condividono `StandingsCard`
+
+- **Contesto:** `/league/:id` (classifica cross-evento, dati statici da `useLeagueStandingsQuery`) e la pagina evento (`liveStandings`, un'anteprima live che somma in tempo reale il round ancora in corso) mostravano la stessa "riga di classifica" con due componenti diversi — `LeagueRanking.vue`/`LeagueStandingsCard.vue` (tabella `UTable`+colonne TanStack) contro `StandingsCard.vue` (righe `v-for` scritte a mano, collassabile, badge "Inserito", statistiche extra in developer-mode). La rappresentazione era già divergente prima ancora del tipo dati: `StandingsCard.vue` definiva localmente un'interfaccia `Standing` che duplicava a mano `StandingWithPlayer` (`shared/utils/types/index.ts`) invece di importarla.
+- **Decisione:** unificato tutto su `StandingsCard.vue` — `LeagueRanking.vue` e `LeagueStandingsCard.vue` eliminati, `league/[id].vue` ora chiama `<StandingsCard :title :standings>` direttamente, stesso componente usato dalla pagina evento. `StandingsCard.vue` importa `StandingWithPlayer` invece di ridefinirlo. Rimosso il wrapper `h-full`/`overflow-hidden` che forzava l'altezza della vecchia card di lega a corrispondere alla lista eventi accanto — `StandingsCard` non ha quel comportamento (si adatta al contenuto come già fa nella pagina evento), scelto di non reintrodurlo per non complicare il componente condiviso con un layout specifico di un solo consumer.
+- **Chiavi i18n rimosse** (orfane dopo la rimozione di `LeagueRanking.vue`): `league.ranking.rank`, `league.ranking.points`, `league.ranking.pointsAbbrev`. `league.ranking.player`/`playerFallback`/`empty` restano — usate anche altrove (`EventRanking.vue`, `WaitingList.vue`, ecc.).
+
 ---
 
 ## Funzionalità per area

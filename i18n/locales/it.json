@@ -68,11 +68,8 @@
       "rulesetFallback": "Ruleset {id}"
     },
     "ranking": {
-      "rank": "#",
       "player": "Giocatore",
       "playerFallback": "Giocatore {id}",
-      "points": "Punti",
-      "pointsAbbrev": "{score} PT",
       "empty": "Nessun punteggio disponibile"
     },
     "usingRulesetModal": {

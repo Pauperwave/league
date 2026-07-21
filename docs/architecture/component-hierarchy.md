@@ -31,7 +31,7 @@ league/[id].vue
 ├── UBreadcrumb
 ├── LeagueEventsPanel     — event list + create button
 │   └── EventFormModal    — create event
-├── LeagueStandingsCard   — cross-event standings
+├── StandingsCard         — cross-event standings (same component as the event page's live standings, unified 2026-07-22)
 │   └── PlayerNameTag     — linked player names
 ├── EventFormModal        — edit event
 ├── LeagueFormModal       — edit league
@@ -229,7 +229,7 @@ rulesets.vue
 
 | Component | Props | Used By |
 |-----------|-------|---------|
-| `PlayerNameTag` | `name`, `surname`, `showAvatar?`, `linkable?`, `avatarSize?` | StandingsCard, PairingsCard, Rankings, LeagueStandingsCard, deck pages, KillPlayerNode |
+| `PlayerNameTag` | `name`, `surname`, `showAvatar?`, `linkable?`, `avatarSize?` | StandingsCard, PairingsCard, Rankings, deck pages, KillPlayerNode |
 | `ManaCost` | `manaCost` (string), `size?` | CommanderDeckCard, deck pages, `/commanders` list |
 | `CommanderArt` | `cardName`, `artUrl`, `manaCost`, `loading` | `CommanderDeckCard` (browse grid) |
 | `CommanderArtGallery` | `image1`, `image1Alt`, `hasPartner?`, `image2?`, `image2Alt?`, `loading?` | `/deck/:deckSlug`, `/commander/:commanderSlug` — 1 or 2 panes via `ImageWithFallback` |
@@ -240,9 +240,7 @@ rulesets.vue
 | Component | Purpose |
 |-----------|---------|
 | `CommanderDeckCard` | Deck display (player profile or aggregate browse) |
-| `LeagueStandingsCard` | Cross-event standings table |
 | `EventRanking` | Single event ranking view |
-| `LeagueRanking` | League-level ranking view |
 
 ### Modals (Generic)
 
@@ -371,8 +369,6 @@ app/components/
 │   │           ├── TableScoreModal.vue
 │   │           ├── TableScoresModal.vue
 │   │           └── TableScoreTeamRow.vue
-│   ├── standings/
-│   │   └── StandingsCard.vue
 │   └── waiting/
 │       ├── WaitingList.vue
 │       ├── WaitingListStats.vue
@@ -387,8 +383,6 @@ app/components/
 ├── league/
 │   ├── LeagueEventsPanel.vue
 │   ├── LeagueFormModal.vue
-│   ├── LeagueRanking.vue
-│   ├── LeagueStandingsCard.vue
 │   ├── LeaguesUsingRulesetModal.vue
 │   └── LeagueTable.vue
 ├── player/
@@ -407,6 +401,8 @@ app/components/
 ├── ruleset/
 │   ├── RulesetFieldGrid.vue
 │   └── RulesetFormModal.vue
+├── standings/
+│   └── StandingsCard.vue          — shared by `/league/:id` (cross-event) and the event page (live per-round); its own domain folder rather than nested under `event/`, same reasoning as `player/`'s `PlayerNameTag.vue` (ADR-024)
 └── ui/                            — generic, domain-agnostic pieces (see ui/CLAUDE.md)
     ├── actions/
     │   ├── QuickFillButton.vue

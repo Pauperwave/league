@@ -202,9 +202,10 @@ const { updateLeague } = useLeagueUpdate(() => {
         />
       </div>
 
-      <!-- League Standings -->
-      <div class="lg:col-span-1 h-full">
-        <LeagueStandingsCard
+      <!-- League Standings — same StandingsCard used on the event page, so the
+           two representations of "a ranked list of standings" don't diverge. -->
+      <div class="lg:col-span-1">
+        <StandingsCard
           :title="classificaTitle"
           :standings="standings" />
       </div>

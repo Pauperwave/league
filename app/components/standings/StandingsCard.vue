@@ -1,18 +1,6 @@
-<!-- app\components\event\standings\StandingsCard.vue -->
+<!-- app\components\standings\StandingsCard.vue -->
 <script setup lang="ts">
-
-interface Standing {
-  player_id: number
-  standing_player_score: number | null
-  victories: number | null
-  kills?: number | null
-  brew_received?: number | null
-  play_received?: number | null
-  players?: {
-    player_name: string
-    player_surname: string
-  }
-}
+import type { StandingWithPlayer } from '#shared/utils/types'
 
 const {
   standings,
@@ -20,7 +8,7 @@ const {
   title,
   submittedByPlayerId = {},
 } = defineProps<{
-  standings: Standing[]
+  standings: StandingWithPlayer[]
   loading?: boolean
   title?: string
   submittedByPlayerId?: Record<number, boolean>
