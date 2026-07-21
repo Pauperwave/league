@@ -57,6 +57,38 @@ const eventCountLabel = computed(() =>
     ? t('deck.usedInEvents', props.eventCount!, { named: { count: props.eventCount } })
     : t('deck.notUsedInEvents')
 )
+
+// Bracket level (BACKLOG, 2026-07-22): self-assigned per player's own copy of
+// a deck, so it's meaningless in aggregate mode (no single owning player).
+const showBracketModal = ref(false)
+const bracketChipLogging = useButtonLogging('Open Bracket Picker', { deckId: () => props.deck.id })
+const toast = useToast()
+const { updateDeck } = useDeckMutations()
+
+const bracketDefinition = computed(() =>
+  props.deck.bracket_level ? BRACKET_LEVELS[props.deck.bracket_level - 1] : null
+)
+const bracketChipLabel = computed(() => {
+  const def = bracketDefinition.value
+  return def
+    ? t('deck.bracket.chipSet', { level: def.level, name: t(def.nameKey) })
+    : t('deck.bracket.chipUnset')
+})
+
+function openBracketPicker() {
+  bracketChipLogging.logClick()
+  showBracketModal.value = true
+}
+
+async function onBracketConfirm(level: number) {
+  try {
+    await updateDeck.mutateAsync({ id: props.deck.id, updates: { bracket_level: level } })
+  } catch (err) {
+    toast.add({ title: t('deck.bracket.saveError'), description: toErrorMessage(err), color: 'error' })
+    return
+  }
+  toast.add({ title: t('deck.bracket.saveSuccess'), color: 'success' })
+}
 </script>
 
 <template>
@@ -140,6 +172,16 @@ const eventCountLabel = computed(() =>
             <UIcon :name="ICONS.assist" class="size-3.5" />
             <span>{{ lenderName }}</span>
           </div>
+          <UBadge
+            v-if="!isAggregate"
+            :color="bracketDefinition ? BRACKET_COLORS[bracketDefinition.level] : 'neutral'"
+            :variant="bracketDefinition ? 'soft' : 'outline'"
+            size="sm"
+            class="w-fit cursor-pointer"
+            @click="openBracketPicker"
+          >
+            {{ bracketChipLabel }}
+          </UBadge>
         </div>
 
         <div class="flex items-center gap-2">
@@ -153,4 +195,12 @@ const eventCountLabel = computed(() =>
       </div>
     </template>
   </UCard>
+
+  <BracketPickerModal
+    v-if="!isAggregate"
+    v-model:open="showBracketModal"
+    :deck-name="deck.commander_1_name"
+    :current-level="deck.bracket_level"
+    @confirm="onBracketConfirm"
+  />
 </template>

@@ -14,6 +14,7 @@ export interface DeckFormPayload {
   companion_name: string | null
   is_borrowed: boolean
   lender_id: number | null
+  bracket_level?: number | null
 }
 
 /** The payload emitted by DeckEditModal. */

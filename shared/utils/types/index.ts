@@ -33,6 +33,7 @@ export interface CommanderDeck {
   companion_name: string | null
   is_borrowed: boolean
   lender_id: number | null
+  bracket_level: number | null
   created_at: string
   updated_at: string
 }

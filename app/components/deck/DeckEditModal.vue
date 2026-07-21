@@ -22,6 +22,33 @@ const emit = defineEmits<{
 const open = defineModel<boolean>('open', { default: false })
 const { t } = useI18n()
 const { isBorrowed, lenderId, lenderOptions } = useLenderSelection(() => props.playerId)
+const toast = useToast()
+const { updateDeck } = useDeckMutations()
+
+// Bracket saves immediately through its own mini-flow (like the deck card's
+// chip) rather than being bundled into this form's own submit — same
+// behavior regardless of which of the two entry points opened the picker.
+const showBracketModal = ref(false)
+const bracketDefinition = computed(() =>
+  props.deck?.bracket_level ? BRACKET_LEVELS[props.deck.bracket_level - 1] : null
+)
+const bracketFieldHint = computed(() => {
+  const def = bracketDefinition.value
+  return def
+    ? t('deck.bracket.editFieldHintSet', { level: def.level, name: t(def.nameKey) })
+    : t('deck.bracket.editFieldHintUnset')
+})
+
+async function onBracketConfirm(level: number) {
+  if (!props.deck) return
+  try {
+    await updateDeck.mutateAsync({ id: props.deck.id, updates: { bracket_level: level } })
+  } catch (err) {
+    toast.add({ title: t('deck.bracket.saveError'), description: toErrorMessage(err), color: 'error' })
+    return
+  }
+  toast.add({ title: t('deck.bracket.saveSuccess'), color: 'success' })
+}
 
 watch(open, async (isOpen) => {
   if (!isOpen) return
@@ -103,6 +130,24 @@ function handleCancel() {
           <UIcon :name="ICONS.warning" class="size-4" />
           <span>{{ t('deck.editModal.selectLenderWarning') }}</span>
         </div>
+
+        <div class="flex items-center justify-between gap-3 rounded-lg border border-default p-3">
+          <div>
+            <p class="font-medium text-sm">{{ t('deck.bracket.editFieldLabel') }}</p>
+            <p class="text-sm text-muted">{{ bracketFieldHint }}</p>
+          </div>
+          <UButton size="sm" variant="outline" @click="() => { showBracketModal = true }">
+            {{ t('deck.bracket.editButton') }}
+          </UButton>
+        </div>
       </form>
   </FormModal>
+
+  <BracketPickerModal
+    v-if="deck"
+    v-model:open="showBracketModal"
+    :deck-name="deck.commander_1_name"
+    :current-level="deck.bracket_level"
+    @confirm="onBracketConfirm"
+  />
 </template>

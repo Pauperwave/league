@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       commander_decks: {
         Row: {
+          bracket_level: number | null
           commander_1_name: string
           commander_2_name: string | null
           companion_name: string | null
@@ -28,6 +29,7 @@ export type Database = {
           uuid: string
         }
         Insert: {
+          bracket_level?: number | null
           commander_1_name: string
           commander_2_name?: string | null
           companion_name?: string | null
@@ -40,6 +42,7 @@ export type Database = {
           uuid?: string
         }
         Update: {
+          bracket_level?: number | null
           commander_1_name?: string
           commander_2_name?: string | null
           companion_name?: string | null

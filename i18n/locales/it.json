@@ -273,6 +273,20 @@
     "lentBy": "di {name}",
     "viewDetails": "Dettagli",
     "viewStats": "Statistiche",
+    "bracket": {
+      "chipUnset": "Imposta bracket",
+      "chipSet": "Bracket {level} · {name}",
+      "modalTitle": "Imposta bracket",
+      "modalSubtitle": "{deckName} — quanto è ottimizzato questo mazzo?",
+      "editButton": "Imposta →",
+      "editFieldLabel": "Bracket",
+      "editFieldHintUnset": "Non ancora impostato",
+      "editFieldHintSet": "Bracket {level} · {name}",
+      "selectedStatus": "Selezionato: {level} — {name}",
+      "deckBuildingLabel": "Deck building",
+      "saveSuccess": "Bracket salvato",
+      "saveError": "Impossibile salvare il bracket"
+    },
     "toast": {
       "errorTitle": "Errore",
       "updatedTitle": "Deck aggiornato",
@@ -361,6 +375,33 @@
       "searchPlaceholder": "Cerca comandante...",
       "emptyList": "Nessun comandante trovato",
       "nameColumn": "Comandante"
+    }
+  },
+  "bracket": {
+    "level1": {
+      "name": "Esibizione",
+      "experience": "Datti alla pazza gioia con il tuo mazzo Commander ultra-casual!",
+      "deckBuilding": "Nessuna carta dalla lista Game Changers. Nessuna combo infinita intenzionale a due carte, nessuna mass land denial, nessuna carta a turno extra. I tutor dovrebbero essere scarsi."
+    },
+    "level2": {
+      "name": "Base",
+      "experience": "Il punto di riferimento più semplice è che un mazzo preconstruito medio attuale si colloca a livello Base (Bracket 2).",
+      "deckBuilding": "Nessuna carta dalla lista Game Changers. Nessuna combo infinita intenzionale a due carte o mass land denial. Le carte a turno extra dovrebbero comparire solo in piccole quantità e non sono pensate per essere incatenate in successione o loopate. I tutor dovrebbero essere scarsi."
+    },
+    "level3": {
+      "name": "Potenziato",
+      "experience": "Questi mazzi sono rinforzati e pronti a giocare oltre la forza di un mazzo preconstruito medio.",
+      "deckBuilding": "Fino a tre carte dalla lista Game Changers. Nessuna combo infinita intenzionale a due carte nelle fasi iniziali. Le carte a turno extra dovrebbero comparire solo in piccole quantità e non sono pensate per essere incatenate in successione o loopate. Nessuna mass land denial."
+    },
+    "level4": {
+      "name": "Ottimizzato",
+      "experience": "È tempo di scatenarsi!",
+      "deckBuilding": "Nessuna restrizione (a parte la banned list)."
+    },
+    "level5": {
+      "name": "cEDH",
+      "experience": "Alta potenza, con una mentalità molto competitiva e orientata al metagame.",
+      "deckBuilding": "Nessuna restrizione (a parte la banned list)."
     }
   },
   "event": {

@@ -81,6 +81,7 @@ export const deckFormBodySchema = v.object({
   companion_name: v.nullish(v.string()),
   is_borrowed: v.optional(v.boolean(), false),
   lender_id: v.nullish(v.pipe(v.number(), v.integer(), v.minValue(1))),
+  bracket_level: v.nullish(v.pipe(v.number(), v.integer(), v.minValue(1), v.maxValue(5))),
 })
 
 /**

@@ -1,5 +1,7 @@
 // app\utils\playerColor.ts
-export type PlayerColor = 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error'
+import type { SemanticColor } from './semanticColor'
+
+export type PlayerColor = SemanticColor
 
 // Cycles through app.config.ts's 6 semantic Nuxt UI color tokens (rather than
 // arbitrary hex) so a player's kill-flow edges/badges share one color across
