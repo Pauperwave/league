@@ -21,7 +21,9 @@
     "selectDate": "Seleziona una data",
     "logout": "Esci",
     "switchToLightMode": "Passa al tema chiaro",
-    "switchToDarkMode": "Passa al tema scuro"
+    "switchToDarkMode": "Passa al tema scuro",
+    "enableDeveloperView": "Attiva vista sviluppatore",
+    "disableDeveloperView": "Disattiva vista sviluppatore"
   },
   "league": {
     "breadcrumb": "Leghe",
@@ -242,7 +244,9 @@
       "similarFoundHeading": "Giocatori simili trovati",
       "similarFoundHint": "Verifica che il giocatore non sia già registrato:",
       "select": "Seleziona",
-      "similarHelpText": "Se il giocatore è nella lista, clicca \"Seleziona\" per aggiungerlo all'evento. Altrimenti, procedi pure con la creazione.",
+      "search": "Cerca",
+      "similarHelpTextEvent": "Se il giocatore è nella lista, clicca \"Seleziona\" per aggiungerlo all'evento. Altrimenti, procedi pure con la creazione.",
+      "similarHelpTextPlayers": "Se il giocatore è nella lista, clicca \"Cerca\" per trovarlo nell'elenco. Altrimenti, procedi pure con la creazione.",
       "noSimilarFound": "Nessun giocatore simile trovato. Puoi procedere con la creazione."
     },
     "toast": {
@@ -324,11 +328,12 @@
   },
   "commander": {
     "label": "Comandante",
-    "loadingLists": "Caricamento liste carte...",
     "compatibleCards": "{count} carte compatibili",
     "noSecondCommander": "Questo comandante non supporta un secondo comandante",
     "searchPlaceholder": "Nome del comandante",
     "cardLoadError": "Errore nel caricamento dati carta",
+    "refreshCatalog": "Aggiorna elenco carte",
+    "refreshingCatalog": "Aggiornamento in corso...",
     "partnerTypes": {
       "commander2Unavailable": "Comandante 2 (non disponibile)",
       "partner": "Partner",
@@ -338,6 +343,21 @@
       "doctorsCompanion": "Doctor's Companion",
       "companion": "Companion",
       "commander2": "Comandante 2"
+    },
+    "page": {
+      "notFound": "Comandante non trovato",
+      "decksHeading": "Mazzi con questo comandante",
+      "partnerSuffix": "con {name}",
+      "viewSoloStats": "Statistiche individuali",
+      "winRateHeading": "Percentuale vittorie",
+      "chartWins": "Vittorie",
+      "chartOtherMatches": "Altre partite"
+    },
+    "index": {
+      "breadcrumb": "Comandanti",
+      "searchPlaceholder": "Cerca comandante...",
+      "emptyList": "Nessun comandante trovato",
+      "nameColumn": "Comandante"
     }
   },
   "event": {
@@ -513,6 +533,7 @@
       "killsNotSetTooltip": "Inserisci uccisioni",
       "killsButton": "Uccisioni",
       "drawButton": "Patta",
+      "drawnTooltip": "Patta registrata",
       "resetConfirm": {
         "title": "Conferma Reset",
         "description": "Stai per resettare tutti i valori del tavolo",
@@ -664,6 +685,11 @@
       "submittedBadge": "Inserito",
       "emptyText": "Nessun punteggio"
     },
+    "winnerChecklist": {
+      "title": "Vincitori tavoli",
+      "hint": "Spunta quando il booster è stato consegnato",
+      "handedOutAriaLabel": "Booster consegnato a {name}"
+    },
     "toast": {
       "createErrorTitle": "Errore creazione evento",
       "createErrorFallback": "Impossibile creare l'evento",
@@ -737,6 +763,7 @@
     "goToLeagues": "Vai alle Leghe",
     "allPlayers": "Tutti i Giocatori",
     "allDecks": "Tutti i Deck",
+    "allCommanders": "Tutti i Comandanti",
     "viewRulesets": "Vedi Regolamenti"
   },
   "error": {

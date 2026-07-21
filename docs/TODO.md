@@ -2,21 +2,36 @@
 
 Loose observations and open questions — not yet committed, ranked work. For that, see `docs/BACKLOG.md`.
 
+## Upgrade Nuxt to 4.5 and Nuxt UI to 4.10 (2026-07-21)
+
+Currently on `nuxt@^4.4.8` / `@nuxt/ui@^4.9.0`. Do this as its own isolated pass (`pnpm typecheck` + `pnpm lint` clean, then a manual smoke pass through the event lifecycle) rather than folding it into an unrelated feature change — Nuxt UI has broken component APIs across minor versions before. Check `@nuxt/ui`'s peer `typescript` range hasn't moved past `^5.9.x` before bumping (see root `CLAUDE.md`'s note on staying off TypeScript 6.x/7.0 for now).
+
+## 🔴 HIGH PRIORITY — Bug: can't move a player from one table to another in the pairing preview (2026-07-21)
+
+User-reported, confirmed still broken as of this session (not yet root-caused/fixed). Drag-and-drop between tables lives in `TableCard.vue` (`VueDraggable`, `:group="{ name: 'seats', pull: true, put: true }"`, shared `group.name` across every `TableCard` instance so cross-table drops should work in principle) inside `TablePreviewGrid.vue`/`TablePreviewModal.vue`, with `useTableDnd.ts` (`app/composables/tables/useTableDnd.ts`) holding the `localTables` state that each `TableCard`'s `seatsModel` reads/writes via `updateSeats`.
+
+One concrete lead spotted while reading `TableCard.vue`, not yet confirmed as *the* cause: `visibleSeats` (line 34-37) filters a full (4/4) table down to **only its occupied seats** when rendering the draggable list:
+```ts
+const visibleSeats = computed(() => {
+  const occupiedCount = props.table.seats.filter(seat => seat.player !== null).length
+  return occupiedCount >= 4 ? props.table.seats.filter(seat => seat.player !== null) : props.table.seats
+})
+```
+For a table that already has 4 players, this removes any empty-seat drop target from the DOM entirely — `VueDraggable`'s `put`/cross-list dragging generally needs *some* element (even an empty slot) to drop onto/into. If the source table is dragging a player OUT (making room) this shouldn't matter, but if the *target* table is full, there may be nowhere in the DOM to drop onto. Needs to actually be tested against a live repro (drag from a non-full table into a full one vs. non-full-to-non-full vs. full-to-non-full) to confirm which direction(s) fail before touching this.
+
+Next step: reproduce with the dev server + browser tools (not done yet this session — Chrome extension wasn't connected) to pin down exactly which drag direction/table-occupancy combination fails, then fix in `TableCard.vue`/`useTableDnd.ts`.
+
 ## Event lifecycle UX/bug audit (2026-07-20)
 
 Raised in one batch after walking the full event lifecycle end-to-end. Numbered so each can be tackled and checked off one at a time — don't try to do all of these in one pass. Three of these (#8, #11, #12) turned out to be real data-integrity/state bugs, not just UX polish; #11 in particular overlaps `docs/BACKLOG.md`'s #12 (idempotency guards) and should probably be fixed together with it.
 
-### 0. Network call audit + icon bundling report
+### 0. ~~Network call audit + icon bundling report~~ — icon bundling resolved 2026-07-21
 
-**Icon bundling (`scan: true` not working) — root cause confirmed.** `nuxt.config.ts:90-97` sets `icon: { clientBundle: { scan: true } }`, which is the correct option path for the installed `@nuxt/icon@2.3.1`. The problem is the scanner's default `globInclude` (`["**/*.{vue,jsx,tsx,md,mdc,mdx,yml,yaml}"]`) doesn't include `.ts` — and all ~120 icon names live as string literals in `app/utils/icons.ts` (a plain `.ts` file), referenced dynamically as `:icon="ICONS.foo"` in templates, never as a literal `i-lucide-*` string inside a `.vue` file. The scanner never sees them, so none get bundled — each is fetched at runtime via `/api/_nuxt_icon/*.json`, matching what was observed in network requests. Fix: add `ts` to `globInclude`:
-```ts
-icon: {
-  clientBundle: {
-    scan: { globInclude: ['**/*.{vue,jsx,tsx,md,mdc,mdx,yml,yaml,ts}'] }
-  }
-}
-```
-120 icons is small enough that bundling all of them isn't a size concern.
+Fixed: `nuxt.config.ts`'s `icon.clientBundle.scan.globInclude` now includes `ts` (was missing it — the scanner's default `globInclude` doesn't cover `.ts`, and all ~120 icon names live as string literals in `app/utils/icons.ts`, referenced dynamically as `:icon="ICONS.foo"`, never as a literal `i-lucide-*` string inside a `.vue` file — so the scanner saw zero icons and every one was fetched at runtime via `/api/_nuxt_icon/*.json` instead of being statically bundled). Confirmed via `pnpm typecheck`'s own Nuxt Icon output going from reporting nothing to "90 icons, 25.25KB" bundled.
+
+Root-caused this way after observing `EventStepper.vue` render the wrong/missing icon for a duplicate dynamically-fetched icon ("swords", used by every round step) — reproducible in the Nuxt dev server, but **confirmed NOT present in deployed prod** (checked against `v0.20.2`, which predates this fix and never had the bug either) — so this was a dev-only icon-fetch race, not a real user-facing bug. Bundling statically is still the right call: it removes the fetch race structurally instead of relying on prod happening to avoid it.
+
+Network call audit findings below are unrelated and still open.
 
 **Standings repeatedly called, returns `[]` — root cause confirmed (see also #3 below).** `useEventPage.ts:33` calls `useEventStandingsQuery(eventId)` unconditionally on mount with no `enabled` gate, unlike `usePairingsQuery` (`useEventQueries.ts:130`, `enabled: () => toValue(round) > 0`) which deliberately skips fetching during registration. `standings` rows are only created server-side when `startEvent` runs (`events.ts:50`) — during `registration` there are zero rows for that `event_id` by design, so `[]` is the *correct* DB answer, just fetched too early. "Repeatedly": Pinia Colada's default `staleTime` is 5000ms and nothing in the project overrides it, so every remount/re-evaluation while the event page sits in registration re-fires the query and gets `[]` again.
 
@@ -65,9 +80,9 @@ Two different color schemes already coexist for the *same* concept (commander) d
 
 Fixed by saving the whole kill list once whenever the modal closes (any way — button, backdrop, ESC, X), instead of gating persistence behind an explicit "Conferma" the UI never made clear was required. See `docs/PROGRESS.md`'s 2026-07-20 entry for the full fix (also added a `round_kills` table to persist actual killer→victim pairs, not just the aggregate count).
 
-### 9. New component: always-present "who's won this table" checklist, filled in as scores are entered
+### 9. ~~New component: always-present "who's won this table" checklist, filled in as scores are entered~~ — promoted to `BACKLOG.md` #15 (2026-07-21)
 
-This is the same feature already tracked as the second half of the existing **"Booster pack reward per round"** TODO item above — see that entry for the fuller spec (booster hand-out tracking + `table_wins` stat). Keep them merged rather than tracked twice; when picked up, scope it as: a persistent per-round panel/component listing each table's rank-1 player, populated live as `hasRanking` flips true per pairing (same signal `PairingTableActions.vue:25` already reads).
+Merged with the "Booster pack reward per round" note below into a single actionable backlog item.
 
 ### 10. "Termina evento" button shouldn't be `success`-colored
 
@@ -88,15 +103,20 @@ Confirmed root cause: a missing reset, not a rendering bug. `useEventPage.ts:202
 
 ---
 
-## Waiting list paid/companion flags: persist to localStorage (2026-07-14)
+## Deck stats pages: refactor + charts (2026-07-21)
 
-The paid/companion checkboxes in `WaitingListTable` are deliberately ephemeral ("just for remembering right in that moment" — confirmed 2026-07-14, NOT a bug); they currently vanish on page refresh, though. Persist them to **localStorage** (not the DB), keyed by event — same pattern as `useSessionStorePersistence`/`RoundTimer`: hydrate on mount, write through on change, clear when the event starts (waitroom is cleared then anyway).
+Both `/player/[slug]/deck/[deckSlug]` (`app/pages/player/[slug]/deck/[deckSlug].vue`) and the global commander page `/deck/[deckSlug]` (`app/pages/deck/[deckSlug].vue`, the one the user calls "commanders") currently render the same flat shape: `DeckHeader` + `CommanderArtGallery` + one `DeckStatsRow` of point-in-time numbers (events/matches/wins/kills/average). No history, no trend — just the current aggregate from `deck_stats`/`commander_stats`.
 
-## Booster pack reward per round: winner checklist + "table wins" stat (2026-07-14)
+- **Refactoring angle**: the two pages are near-duplicates of each other already (same `DeckHeader`/`CommanderArtGallery`/`DeckStatsRow` composition, same `useCommanderCards` + `useDeckDisplay` calls) — the difference is really just the data source (`useDeckStats` scoped to one player vs. `useCommanderStats` aggregated across all players) and the global page's extra "players using this deck" list. Worth checking whether a shared page-body component (taking the stats/art/loading as props) would remove the duplication cleanly, or whether it's coincidental enough to leave alone (same judgment call as `LeagueTable.vue`/`EventTable.vue`'s `statusConfig`, see below).
+- **Graphs**: both pages only have access to already-aggregated totals (`deck_stats`/`commander_stats`), not a time series — there's no per-round or per-event history table to chart from. Charting a trend (e.g. average score over time, win rate by event) would need either a new query over `round_results` grouped by event/date, or a new denormalized table/view built for that purpose. Needs a charting library decision too — nothing is installed yet (checked `package.json`, no `chart.js`/`apexcharts`/`unovis`/etc.).
 
-After **every** round (including the last one), the winner of each table receives a booster pack. Two parts:
-- **In-room checklist**: a "boosters to hand out" todo list per round — generated from the round's table winners (rank 1 per pairing), with a check-off state so the organizer knows who has already received theirs. Probably an event-page panel or modal shown after round scores are confirmed.
-- **Stat persistence**: record it on player stats as "table wins". Verify what already exists before adding anything: `standings.victories` already accumulates `position === 1` per event, and `player_stats` is trigger-computed from `round_results` — a table win is derivable as `round_results.position = 1`, so this may need **zero new columns**, just a `table_wins` aggregate in the `player_stats` trigger (or even a query). The checklist's check-off state, if it must survive refresh, can live in localStorage like the round timer.
+Flagged by the user for both pages together — not yet scoped into concrete BACKLOG items.
+
+## ~~Waiting list paid/companion flags: persist to localStorage~~ — resolved 2026-07-21
+
+Fixed: `useWaitingListFlags.ts` persists `paid`/`companion` per player to localStorage (via `getCached`/`setCached`), keyed per event, cleared on event start (`useEventLifecycle.ts`'s `handlePreviewConfirm`). Deliberately reads in `onMounted` rather than synchronously — a synchronous read caused an SSR hydration mismatch (Nuxt UI's checkbox didn't reliably repaint the real value until an unrelated click forced a re-render).
+
+## Booster pack reward per round: winner checklist + "table wins" stat — promoted to `BACKLOG.md` #15 (2026-07-21)
 
 ## Deletion UX: 10-second undo + soft delete (2026-07-14)
 
