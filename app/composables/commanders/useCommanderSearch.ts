@@ -66,27 +66,30 @@ export function useCommanderSearch(options: UseCommanderSearchOptions = {}) {
         ? new Set(whitelist)
         : null
 
-      let result = (catalog.value ?? []).filter((row) => {
+      const result = (catalog.value ?? []).filter((row) => {
         if (whitelistSet && !whitelistSet.has(row.name)) return false
         if (trimmed.length >= 1 && !row.name.toLowerCase().includes(trimmed)) return false
         return true
       })
-
-      result.sort((a, b) => (a.edhrecRank ?? 999999) - (b.edhrecRank ?? 999999))
-      result = result.slice(0, 50)
 
       const playerId = toValue(options.playerId)
       const usedNames = playerId !== null && playerId !== undefined
         ? await fetchUsedCommanderNames(supabase, playerId)
         : new Set<string>()
 
+      const byRank = (a: CommanderCatalogRow, b: CommanderCatalogRow) => (a.edhrecRank ?? 999999) - (b.edhrecRank ?? 999999)
       const toItem = (row: CommanderCatalogRow): CommanderSuggestionItem => ({
         label: row.name,
         tokens: parseManaCost(row.manaCost),
       })
 
-      const used = result.filter(row => usedNames.has(row.name)).map(toItem)
-      const rest = result.filter(row => !usedNames.has(row.name)).map(toItem)
+      // Split BEFORE capping to 50 — a niche/unpopular commander the player
+      // has actually played must never be cut by the popularity cap before
+      // its "already used" status is even checked (a real bug: it used to
+      // slice-by-edhrecRank first, so an obscure played commander could
+      // never surface here regardless of usage).
+      const used = result.filter(row => usedNames.has(row.name)).sort(byRank).map(toItem)
+      const rest = result.filter(row => !usedNames.has(row.name)).sort(byRank).slice(0, 50).map(toItem)
 
       const groups: CommanderSuggestionItem[][] = []
       if (used.length > 0) {
