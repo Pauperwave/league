@@ -40,6 +40,14 @@ const { t } = useI18n()
           {{ t('home.allDecks') }}
         </UButton>
         <UButton
+          to="/commanders"
+          color="neutral"
+          size="md"
+          :icon="ICONS.commander"
+        >
+          {{ t('home.allCommanders') }}
+        </UButton>
+        <UButton
           to="/rulesets"
           color="neutral"
           size="md"

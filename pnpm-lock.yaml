@@ -8,6 +8,12 @@ importers:
 
   .:
     dependencies:
+      '@dicebear/core':
+        specifier: ^10.3.0
+        version: 10.3.0
+      '@dicebear/styles':
+        specifier: ^10.2.0
+        version: 10.2.0
       '@formkit/auto-animate':
         specifier: ^0.10.0
         version: 0.10.0
@@ -47,6 +53,9 @@ importers:
       '@pinia/colada-nuxt':
         specifier: 1.0.2
         version: 1.0.2(@pinia/colada@1.4.2(pinia@3.0.4(typescript@5.9.3)(vue@3.5.39(typescript@5.9.3)))(vue@3.5.39(typescript@5.9.3)))(magicast@0.5.3)
+      '@pinia/colada-plugin-cache-persister':
+        specifier: ^1.1.0
+        version: 1.1.0(@pinia/colada@1.4.2(pinia@3.0.4(typescript@5.9.3)(vue@3.5.39(typescript@5.9.3)))(vue@3.5.39(typescript@5.9.3)))
       '@pinia/nuxt':
         specifier: 0.11.3
         version: 0.11.3(magicast@0.5.3)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.39(typescript@5.9.3)))
@@ -71,6 +80,9 @@ importers:
       '@vueuse/nuxt':
         specifier: 14.3.0
         version: 14.3.0(magicast@0.5.3)(nuxt@4.4.8(@babel/plugin-syntax-jsx@7.29.7(@babel/core@7.29.7))(@babel/plugin-syntax-typescript@7.29.7(@babel/core@7.29.7))(@parcel/watcher@2.5.6)(@pinia/colada@1.4.2(pinia@3.0.4(typescript@5.9.3)(vue@3.5.39(typescript@5.9.3)))(vue@3.5.39(typescript@5.9.3)))(@types/node@26.1.1)(@vue/compiler-sfc@3.5.39)(cac@6.7.14)(db0@0.3.4)(esbuild@0.28.1)(eslint@10.7.0(jiti@2.7.0))(ioredis@5.11.1)(lightningcss@1.32.0)(magicast@0.5.3)(optionator@0.9.4)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.39(typescript@5.9.3)))(rollup-plugin-visualizer@7.0.1(rollup@4.62.2))(rollup@4.62.2)(terser@5.49.0)(typescript@5.9.3)(vite@7.3.6(@types/node@26.1.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.49.0)(yaml@2.9.0))(vue-tsc@3.3.7(typescript@5.9.3))(yaml@2.9.0))(vue@3.5.39(typescript@5.9.3))
+      echarts:
+        specifier: ^6.1.0
+        version: 6.1.0
       fast-levenshtein:
         specifier: ^3.0.0
         version: 3.0.0
@@ -86,6 +98,9 @@ importers:
       nuxt-auth-utils:
         specifier: 0.5.29
         version: 0.5.29(magicast@0.5.3)
+      nuxt-echarts:
+        specifier: 1.0.1
+        version: 1.0.1(echarts@6.1.0)(magicast@0.5.3)(vue-echarts@8.0.1(echarts@6.1.0)(vue@3.5.39(typescript@5.9.3)))
       slugify:
         specifier: ^1.6.9
         version: 1.6.9
@@ -101,6 +116,9 @@ importers:
       vue-draggable-plus:
         specifier: ^0.6.1
         version: 0.6.1(@types/sortablejs@1.15.9)
+      vue-echarts:
+        specifier: ^8.0.1
+        version: 8.0.1(echarts@6.1.0)(vue@3.5.39(typescript@5.9.3))
       vue-i18n:
         specifier: ^11.4.6
         version: 11.4.6(vue@3.5.39(typescript@5.9.3))
@@ -371,6 +389,13 @@ packages:
 
   '@colordx/core@5.5.0':
     resolution: {integrity: sha512-3PxTH8itZzltK0U9jTwVVnjLXvnDYuq3m+QXsHkENxWiPRh4WaoLcs1SQjqgZ55kS+QyirpH5BVwzP2gMVG6EQ==}
+
+  '@dicebear/core@10.3.0':
+    resolution: {integrity: sha512-HbzHvYY/E0m3B7BfBjs8SO7JyqJnORJgQhM2YM7VoN/EQzrqJ3Z0j4+op+WfEWXWzZj75tQqBU5SZpUssi5m/Q==}
+    engines: {node: '>=22.0.0'}
+
+  '@dicebear/styles@10.2.0':
+    resolution: {integrity: sha512-o4rw0+7Q7sSAyr9YxYrUe3jCxlOAzEcBvbQvl4hQKQ+9WNmBK4p7wGYvsmGeJbxFh8y/Ux6ltrCPyXBIDV6qYA==}
 
   '@dxup/nuxt@0.4.1':
     resolution: {integrity: sha512-gtYffW6OfWNvoLW+XD3Mx/K8uUq08PMGLYJoDxc92EzZAWqR0FhcR5iaLm5r/OxyGTKz+P5f5Y7Aoir9+SjYaw==}
@@ -2613,6 +2638,11 @@ packages:
     peerDependencies:
       '@pinia/colada': '>=1.4.0'
 
+  '@pinia/colada-plugin-cache-persister@1.1.0':
+    resolution: {integrity: sha512-eGHriu8kcAyjSDmZ2UUuK/AXyaXu1NJruNESVmkWixqvY7Gq26d6krvCMvBJmpap19hfwNwjZvwuEjTTTUuaZQ==}
+    peerDependencies:
+      '@pinia/colada': '>=1.4.0'
+
   '@pinia/colada@1.4.2':
     resolution: {integrity: sha512-HDCFSBd+Uxzuw/BEdl7Kwsm4uccWwkX5uSxpZhc4/MhfFASU+t+DmjByyzNoAG9EK3SGJ7uf6pNR7bJg+dX80w==}
     peerDependencies:
@@ -4396,6 +4426,9 @@ packages:
   eastasianwidth@0.2.0:
     resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
+  echarts@6.1.0:
+    resolution: {integrity: sha512-q0yaFPggC9FUdsWH4blavRWFmxdrIodbkoKNAjJudAI6CA9gNPxHtV2RcZNEepZVlk4yvBYkOkbk6HIVpIyHZA==}
+
   eciesjs@0.5.0:
     resolution: {integrity: sha512-s0J9SEVYAEPg7J63GFMApLYzPH9VNIQIyC6s15JpnqVc0TqcKWdbgFlnAweEBRyMmko2dcs2sfC83Hj4J43tuA==}
     engines: {bun: '>=1', deno: '>=2.7.10', node: '>=16'}
@@ -5598,6 +5631,12 @@ packages:
   nuxt-define@1.0.0:
     resolution: {integrity: sha512-CYZ2WjU+KCyCDVzjYUM4eEpMF0rkPmkpiFrybTqqQCRpUbPt2h3snswWIpFPXTi+osRCY6Og0W/XLAQgDL4FfQ==}
 
+  nuxt-echarts@1.0.1:
+    resolution: {integrity: sha512-YI7XKHSV7K918KKpm35eKMJkuiKcnaHYgRxMhi4ofMolbQkb821r0cOxDdI2Jlc7jh00OAx8drt80rX+PG8d5A==}
+    peerDependencies:
+      echarts: ^6.0.0
+      vue-echarts: ^8.0.0
+
   nuxt-site-config-kit@4.1.1:
     resolution: {integrity: sha512-xa341q3+RbpfNNKTwQ2Nsn980WZqF3zZPIR4PlF0xsm2M8Qfxtuaa1I7wMq6/fg/E2J9IyUm0DQ+B4mnKtMs4Q==}
 
@@ -6542,6 +6581,9 @@ packages:
     peerDependencies:
       typescript: '>=4.8.4'
 
+  tslib@2.3.0:
+    resolution: {integrity: sha512-N82ooyxVNm6h1riLCoyS9e3fuJ3AMG2zIZs2Gd1ATcSFjSA23Q0fzjjZeh0jbJvWVDZ0cJT8yaNNaaXHzueNjg==}
+
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
@@ -6958,6 +7000,12 @@ packages:
       '@vue/composition-api':
         optional: true
 
+  vue-echarts@8.0.1:
+    resolution: {integrity: sha512-23rJTFLu1OUEGRWjJGmdGt8fP+8+ja1gVgzMYPIPaHWpXegcO1viIAaeu2H4QHESlVeHzUAHIxKXGrwjsyXAaA==}
+    peerDependencies:
+      echarts: ^6.0.0
+      vue: ^3.3.0
+
   vue-eslint-parser@10.4.1:
     resolution: {integrity: sha512-Gk6gRDj0n/fkRa3C3l0bBheoBckUq/Rs0F/TvMWIS6nzzx67amAViMe9CkNgsP2tXyQONvGiHQESHwFtZ3aYDA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
@@ -7136,6 +7184,9 @@ packages:
   zip-stream@6.0.1:
     resolution: {integrity: sha512-zK7YHHz4ZXpW89AHXUPbQVGKI7uvkd3hzusTdotCg1UxyaVtg0zFJSTfW/Dq5f7OBBVnq6cZIaC8Ti4hb6dtCA==}
     engines: {node: '>= 14'}
+
+  zrender@6.1.0:
+    resolution: {integrity: sha512-oEGMDB6pOP2S6OwRR4PdVv610zrjnA3Bh+JnSG12fYJlBKjtNAoEb5fSUoCOOINlH96I2fU38/A2UpRKs67xYQ==}
 
 snapshots:
 
@@ -7383,6 +7434,10 @@ snapshots:
   '@cloudflare/kv-asset-handler@0.4.2': {}
 
   '@colordx/core@5.5.0': {}
+
+  '@dicebear/core@10.3.0': {}
+
+  '@dicebear/styles@10.2.0': {}
 
   '@dxup/nuxt@0.4.1(magicast@0.5.3)(typescript@5.9.3)':
     dependencies:
@@ -9498,6 +9553,11 @@ snapshots:
     transitivePeerDependencies:
       - magicast
 
+  '@pinia/colada-plugin-cache-persister@1.1.0(@pinia/colada@1.4.2(pinia@3.0.4(typescript@5.9.3)(vue@3.5.39(typescript@5.9.3)))(vue@3.5.39(typescript@5.9.3)))':
+    dependencies:
+      '@pinia/colada': 1.4.2(pinia@3.0.4(typescript@5.9.3)(vue@3.5.39(typescript@5.9.3)))(vue@3.5.39(typescript@5.9.3))
+      nostics: 1.1.4
+
   '@pinia/colada@1.4.2(pinia@3.0.4(typescript@5.9.3)(vue@3.5.39(typescript@5.9.3)))(vue@3.5.39(typescript@5.9.3))':
     dependencies:
       nostics: 1.1.4
@@ -11199,6 +11259,11 @@ snapshots:
 
   eastasianwidth@0.2.0: {}
 
+  echarts@6.1.0:
+    dependencies:
+      tslib: 2.3.0
+      zrender: 6.1.0
+
   eciesjs@0.5.0:
     dependencies:
       '@ecies/ciphers': 0.2.6(@noble/ciphers@1.3.0)
@@ -12720,6 +12785,14 @@ snapshots:
 
   nuxt-define@1.0.0: {}
 
+  nuxt-echarts@1.0.1(echarts@6.1.0)(magicast@0.5.3)(vue-echarts@8.0.1(echarts@6.1.0)(vue@3.5.39(typescript@5.9.3))):
+    dependencies:
+      '@nuxt/kit': 4.4.8(magicast@0.5.3)
+      echarts: 6.1.0
+      vue-echarts: 8.0.1(echarts@6.1.0)(vue@3.5.39(typescript@5.9.3))
+    transitivePeerDependencies:
+      - magicast
+
   nuxt-site-config-kit@4.1.1(magicast@0.5.3)(vue@3.5.39(typescript@5.9.3)):
     dependencies:
       '@nuxt/kit': 4.4.8(magicast@0.5.3)
@@ -14014,6 +14087,8 @@ snapshots:
     dependencies:
       typescript: 5.9.3
 
+  tslib@2.3.0: {}
+
   tslib@2.8.1: {}
 
   type-check@0.4.0:
@@ -14449,6 +14524,11 @@ snapshots:
     dependencies:
       '@types/sortablejs': 1.15.9
 
+  vue-echarts@8.0.1(echarts@6.1.0)(vue@3.5.39(typescript@5.9.3)):
+    dependencies:
+      echarts: 6.1.0
+      vue: 3.5.39(typescript@5.9.3)
+
   vue-eslint-parser@10.4.1(eslint@10.7.0(jiti@2.7.0)):
     dependencies:
       debug: 4.4.3
@@ -14640,3 +14720,7 @@ snapshots:
       archiver-utils: 5.0.2
       compress-commons: 6.0.2
       readable-stream: 4.7.0
+
+  zrender@6.1.0:
+    dependencies:
+      tslib: 2.3.0

@@ -71,6 +71,29 @@ const breadcrumbItems = useBreadcrumb(() => [
         :companion-name="firstDeck.companion_name"
       />
 
+      <!-- Solo stats for each half of the pair (BACKLOG #10) -->
+      <div class="flex flex-wrap gap-2 -mt-4">
+        <UButton
+          :to="`/commander/${slugify(firstDeck.commander_1_name)}`"
+          variant="ghost"
+          color="neutral"
+          size="xs"
+          :icon="ICONS.statsLink"
+        >
+          {{ t('commander.page.viewSoloStats') }}: {{ firstDeck.commander_1_name }}
+        </UButton>
+        <UButton
+          v-if="firstDeck.commander_2_name"
+          :to="`/commander/${slugify(firstDeck.commander_2_name)}`"
+          variant="ghost"
+          color="neutral"
+          size="xs"
+          :icon="ICONS.statsLink"
+        >
+          {{ t('commander.page.viewSoloStats') }}: {{ firstDeck.commander_2_name }}
+        </UButton>
+      </div>
+
       <CommanderArtGallery
         :image1="art1"
         :image1-alt="t('deck.artAlt', { name: firstDeck.commander_1_name })"

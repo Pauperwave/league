@@ -18,7 +18,6 @@ Committed, actionable work items, ranked by priority with a rough effort estimat
 | 7 | [Soft delete for leagues/events (and possibly decks)](#7-soft-delete-for-leaguesevents-and-possibly-decks) | P3 | L |
 | 8 | [Rename event → tournament; decouple tournament from league](#8-rename-event--tournament-decouple-tournament-from-league) | P3 | L |
 | 9 | [Adopt `nuxt-echarts` for charts](#9-adopt-nuxt-echarts-for-charts) | P3 | M |
-| 10 | [Single-commander list, aggregated across partner pairs](#10-single-commander-list-aggregated-across-partner-pairs) | P3 | M |
 | 12 | [Idempotency guards on advance-round/start/round-result submission](#12-idempotency-guards-on-advance-roundstartround-result-submission) | P1 | M |
 | 14 | [Persist an explicit table number instead of deriving it from array order](#14-persist-an-explicit-table-number-instead-of-deriving-it-from-array-order) | P3 | M |
 | 15 | [Winner checklist + `table_wins` stat (booster pack reward per round)](#15-winner-checklist--table_wins-stat-booster-pack-reward-per-round) | P2 | M |
@@ -200,16 +199,6 @@ This is two separate large changes bundled together: (1) a naming rework — DB 
 Raised 2026-07-19. No charting library exists in the project today (`package.json` has none) — stats are currently all numbers/badges/tables (`StatTile`, `player_stats`/`deck_stats`/`commander_stats`, standings tables). `nuxt-echarts` would give a Nuxt module wrapping Apache ECharts for actual visualizations: standings/points trends across rounds, a player's score history over time, commander win-rate/pick distribution, etc.
 
 Needs a first concrete use case before pulling in the dependency (don't add a charting library speculatively) — natural candidates once picked: the player profile page (score/kills trend across `matchHistory`) or a league-level standings-over-rounds view. Effort estimate assumes just the module setup + one real chart, not a general charting overhaul.
-
----
-
-## 10. Single-commander list, aggregated across partner pairs
-
-Raised 2026-07-19. `/decks` (`app/pages/decks/index.vue`) looks like a commander list but is actually deduplicated by **commander pair** (`commander_1_name + commander_2_name`), backed by `commander_stats` which is also aggregated per pair — a commander played both solo and as a partner (e.g. "A" alone, then "A + B") shows up as two disconnected entries today, never rolled up into one "A" row.
-
-A true single-commander list needs new aggregation (not just a new page): group by individual commander name across both `commander_1`/`commander_2` slots, summing player/match/win/kill counts across every pair that commander has appeared in. Decide whether this replaces `commander_stats` or is a second materialized view/query alongside it — likely the latter, since the pair-level breakdown is still useful for "which partner combo performs best."
-
-**P3/someday**, deferred behind the event lifecycle priority same as #7/#8.
 
 ---
 

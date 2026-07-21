@@ -14,7 +14,8 @@ export default defineNuxtConfig({
     '@nuxtjs/i18n',
     '@nuxt/hints',
     'nuxt-auth-utils',
-    '@pinia/colada-nuxt'
+    '@pinia/colada-nuxt',
+    'nuxt-echarts'
   ],
 
   components: [
@@ -129,5 +130,15 @@ export default defineNuxtConfig({
     strategy: 'no_prefix',
     langDir: 'locales/',
     vueI18n: './i18n.config.ts'
+  },
+
+  // Chart types/components registered here are the only ones tree-shaken
+  // into the bundle — add to these arrays (not inline in a component) when a
+  // new chart needs a type not listed yet. SVG renderer avoids the heavier
+  // canvas runtime for the small, mostly-static charts this app needs.
+  echarts: {
+    renderer: ['svg'],
+    charts: ['BarChart', 'PieChart', 'LineChart'],
+    components: ['TooltipComponent', 'LegendComponent', 'GridComponent', 'TitleComponent']
   }
 })

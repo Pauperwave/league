@@ -27,6 +27,8 @@
     "test:e2e:headed": "cross-env PW_SLOWMO=1 playwright test"
   },
   "dependencies": {
+    "@dicebear/core": "^10.3.0",
+    "@dicebear/styles": "^10.2.0",
     "@formkit/auto-animate": "^0.10.0",
     "@iconify-json/lucide": "^1.2.117",
     "@iconify-json/simple-icons": "^1.2.90",
@@ -49,16 +51,19 @@
     "@vue-flow/node-toolbar": "^1.1.1",
     "@vueuse/core": "^14.3.0",
     "@vueuse/nuxt": "14.3.0",
+    "echarts": "^6.1.0",
     "fast-levenshtein": "^3.0.0",
     "mana-font": "^1.18.0",
     "motion-v": "^2.3.0",
     "nuxt": "^4.4.8",
     "nuxt-auth-utils": "0.5.29",
+    "nuxt-echarts": "1.0.1",
     "slugify": "^1.6.9",
     "tailwindcss": "^4.3.2",
     "valibot": "^1.4.2",
     "vue": "^3.5.39",
     "vue-draggable-plus": "^0.6.1",
+    "vue-echarts": "^8.0.1",
     "vue-i18n": "^11.4.6"
   },
   "devDependencies": {

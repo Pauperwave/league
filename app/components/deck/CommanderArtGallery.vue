@@ -20,7 +20,7 @@ const panes = computed(() => {
 
 <template>
   <div
-    class="overflow-hidden rounded-lg bg-muted"
+    class="overflow-hidden rounded-lg bg-muted mx-auto max-w-sm"
     :class="hasPartner ? 'aspect-2/3 flex flex-col gap-1' : 'aspect-2/3'"
   >
     <div
