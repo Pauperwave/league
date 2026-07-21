@@ -118,7 +118,8 @@ function getScore(playerId: number, eventId: number): number | null {
             <PlayerNameTag
               :name="player.player_name ?? ''"
               :surname="player.player_surname ?? ''"
-              :show-avatar="false"
+              :player-id="player.player_id"
+              avatar-size="xs"
             />
           </td>
           <td

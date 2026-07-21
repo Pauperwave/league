@@ -96,7 +96,7 @@ const hasStats = computed(() => killCount.value > 0 || deathCount.value > 0 || h
     <!-- Chip content -->
     <div class="flex items-center gap-2 px-2 py-2">
       <UAvatar
-        :src="data.player.avatarUrl"
+        :src="data.player.avatarUrl || generatePlayerAvatar(data.player.id)"
         :alt="`${data.player.name} ${data.player.surname}`"
       />
       <div class="min-w-0">

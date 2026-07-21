@@ -2,10 +2,6 @@
 import type { TournamentPlayer } from '#shared/utils/types'
 
 export function usePlayerDisplay() {
-  function playerInitial(player: TournamentPlayer): string {
-    return player.name.trim().charAt(0).toUpperCase() || '?'
-  }
-
   function playerDisplayName(player: TournamentPlayer): { name: string; surname: string } {
     const normalizedSurname = player.surname.trim()
     const fullName = player.name.trim()
@@ -27,7 +23,6 @@ export function usePlayerDisplay() {
   }
 
   return {
-    playerInitial,
     playerDisplayName,
   }
 }

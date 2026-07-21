@@ -25,17 +25,16 @@ const { t } = useI18n()
 <template>
   <div class="bg-elevated rounded-xl p-6 border border-default shadow-lg space-y-6">
     <!-- Profile Header -->
-    <div class="flex items-center gap-4">
-      <UAvatar size="lg" :icon="ICONS.player">
-        {{ player.player_name?.charAt(0).toUpperCase() ?? '?' }}
-      </UAvatar>
-      <div>
-        <div class="text-2xl font-bold">
-          {{ player.player_name }}
-          <span class="text-primary">{{ player.player_surname }}</span>
-        </div>
-        <p class="text-muted text-sm">ID: {{ player.player_id }}</p>
-      </div>
+    <div class="space-y-1">
+      <PlayerNameTag
+        :name="player.player_name"
+        :surname="player.player_surname"
+        :player-id="player.player_id"
+        :linkable="false"
+        avatar-size="lg"
+        class="text-2xl font-bold"
+      />
+      <p class="text-muted text-sm">ID: {{ player.player_id }}</p>
     </div>
 
     <!-- Player Stats — compact horizontal bar -->

@@ -76,7 +76,8 @@ const columns: TableColumn<StandingWithPlayer>[] = [
       return h(PlayerNameTag, {
         name,
         surname,
-        showAvatar: false
+        playerId: row.original.player_id,
+        avatarSize: 'xs'
       })
     }
   },

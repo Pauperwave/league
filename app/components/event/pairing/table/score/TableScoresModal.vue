@@ -3,6 +3,7 @@
 import type { TableColumn } from '@nuxt/ui'
 import type { CellContext } from '@tanstack/vue-table'
 import type { Pairing, TournamentPlayer } from '#shared/utils/types'
+import PlayerNameTag from '~/components/player/PlayerNameTag.vue'
 
 const { t } = useI18n()
 
@@ -79,7 +80,9 @@ const getPlayPoints = (playerId: number): number => {
 }
 
 type TableRow = {
+  playerId: number
   name: string
+  surname: string
   placementPoints: number
   killPoints: number
   deckPoints: number
@@ -94,7 +97,9 @@ const tableData = computed(() => {
     const deckPoints = getDeckPoints(player.id)
     const playPoints = getPlayPoints(player.id)
     return {
-      name: `${player.name} ${player.surname}`,
+      playerId: player.id,
+      name: player.name,
+      surname: player.surname,
       placementPoints,
       killPoints,
       deckPoints,
@@ -136,6 +141,12 @@ const columns: TableColumn<TableRow>[] = [
         h(UIcon, { name: ICONS.player, class: 'size-5' }),
         h('span', t('league.ranking.player')),
       ]),
+    cell: ({ row }) => h(PlayerNameTag, {
+      name: row.original.name,
+      surname: row.original.surname,
+      playerId: row.original.playerId,
+      avatarSize: 'xs',
+    }),
   },
   iconColumn('placementPoints', ICONS.standings, t('event.tableScoresModal.placementColumn')),
   iconColumn('killPoints', ICONS.kills, t('player.stats.kills')),

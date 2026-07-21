@@ -20,8 +20,8 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="flex items-center gap-2 p-2 bg-elevated rounded">
-    <PlayerNameTag :name="name" :surname="surname" class="flex-1" />
+  <div class="flex items-center gap-2 p-1.5 bg-elevated rounded">
+    <PlayerNameTag :name="name" :surname="surname" :player-id="playerId" class="flex-1" />
 
     <template v-if="!readonly">
       <!-- Commander button -->
@@ -31,7 +31,7 @@ const emit = defineEmits<{
         :text="hasCommander ? t('event.pairing.commanderSetTooltip') : t('event.pairing.commanderNotSetTooltip')"
       >
         <UButton
-          size="xs"
+          size="sm"
           variant="outline"
           :color="hasCommander ? 'success' : 'neutral'"
           :icon="hasCommander ? ICONS.commanderSet : ICONS.commanderNotSet"
@@ -47,7 +47,7 @@ const emit = defineEmits<{
         :text="hasVotes ? t('event.pairing.voteSetTooltip') : t('event.pairing.voteNotSetTooltip')"
       >
         <UButton
-          size="xs"
+          size="sm"
           variant="outline"
           :color="hasVotes ? 'success' : 'neutral'"
           :icon="hasVotes ? ICONS.confirm : ICONS.vote"

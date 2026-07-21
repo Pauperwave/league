@@ -105,9 +105,16 @@ const breadcrumbItems = useBreadcrumb(() => [
             variant="soft"
             color="primary"
             size="sm"
-            :icon="ICONS.player"
           >
-            {{ player ? `${player.player_name} ${player.player_surname}` : t('deck.unknownPlayer') }}
+            <PlayerNameTag
+              v-if="player"
+              :name="player.player_name"
+              :surname="player.player_surname"
+              :player-id="player.player_id"
+              :linkable="false"
+              avatar-size="xs"
+            />
+            <span v-else>{{ t('deck.unknownPlayer') }}</span>
             <span v-if="deck.is_borrowed" class="ml-1 text-warning">
               {{ t('deck.borrowedBadge') }}
             </span>

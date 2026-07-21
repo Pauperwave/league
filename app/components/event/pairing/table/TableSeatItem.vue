@@ -15,7 +15,7 @@ const emit = defineEmits<{
   openCommanderModal: [playerId: number]
 }>()
 
-const { playerInitial, playerDisplayName } = usePlayerDisplay()
+const { playerDisplayName } = usePlayerDisplay()
 
 function handleCommanderClick() {
   if (props.playerId) {
@@ -45,20 +45,16 @@ function handleCommanderClick() {
         <UIcon :name="ICONS.dragHandle" class="size-4 cursor-grab hover:cursor-grab active:cursor-grabbing" />
       </button>
 
-      <UAvatar
-        :src="seat.player.avatarUrl"
-        :alt="seat.player.name"
-        class="shrink-0"
-      >
-        {{ playerInitial(seat.player) }}
-      </UAvatar>
-
-      <span class="text-base flex-1 whitespace-normal wrap-break-words leading-tight text-left">
-        {{ playerDisplayName(seat.player).name }}
-        <span class="font-bold text-highlighted">
-          {{ ` ${playerDisplayName(seat.player).surname}` }}
-        </span>
-      </span>
+      <PlayerNameTag
+        :name="playerDisplayName(seat.player).name"
+        :surname="playerDisplayName(seat.player).surname"
+        :avatar-url="seat.player.avatarUrl"
+        :player-id="seat.player.id"
+        :linkable="false"
+        wrap
+        avatar-size="md"
+        class="flex-1 text-base text-left"
+      />
 
       <UBadge
         v-if="seat.player.seed !== undefined"

@@ -23,6 +23,7 @@ const rowSelection = defineModel<Record<string, boolean>>('rowSelection', { defa
 const UButton = resolveComponent('UButton') as Component
 const UCheckbox = resolveComponent('UCheckbox') as Component
 const UBadge = resolveComponent('UBadge') as Component
+const UAvatar = resolveComponent('UAvatar') as Component
 const RowActionButtons = resolveComponent('RowActionButtons') as Component
 
 function slugFor(player: Player) {
@@ -44,6 +45,17 @@ const columns: TableColumn<Player>[] = [
     accessorKey: 'player_id',
     header: sortableHeader(t('player.table.id'), UButton),
     meta: { class: { th: 'w-16', td: 'font-mono text-muted' } }
+  },
+  {
+    id: 'avatar',
+    header: '',
+    enableSorting: false,
+    meta: { class: { th: 'w-10', td: 'w-10' } },
+    cell: ({ row }) => h(UAvatar, {
+      size: 'sm',
+      src: generatePlayerAvatar(row.original.player_id),
+      alt: row.original.player_name ?? undefined
+    })
   },
   {
     accessorKey: 'player_name',
