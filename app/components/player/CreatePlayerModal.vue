@@ -10,6 +10,10 @@ import * as v from 'valibot'
 const props = defineProps<{
   player: Player | null
   existingPlayers: Player[]
+  /** Changes what "similar player found" resolves to: adding to the current
+   * event's waiting list ('event') vs. just locating them in the /players
+   * table via search ('players') — the two contexts this modal is used in. */
+  context: 'event' | 'players'
 }>()
 
 const { t } = useI18n()
@@ -18,6 +22,7 @@ const emit = defineEmits<{
   create: [player: NewPlayer]
   update: [PlayerUpdatePayload]
   select: [playerId: number]
+  search: [query: string]
 }>()
 
 const open = defineModel<boolean>('open', { default: false })
@@ -114,6 +119,13 @@ function handleSelectExisting(playerId: number) {
   open.value = false
 }
 
+function handleSearchExisting(name: string) {
+  selectExistingLogging.logClick()
+  emit('search', name)
+  Object.assign(form, defaultForm())
+  open.value = false
+}
+
 
 </script>
 
@@ -190,13 +202,20 @@ function handleSelectExisting(playerId: number) {
                 :key="similarPlayer.player_id"
                 class="flex items-center justify-between p-2 bg-muted/50 rounded"
               >
-                <span class="font-medium">
-                  {{ similarPlayer.player_name }} {{ similarPlayer.player_surname }}
-                  <span class="text-xs text-muted ml-1">
+                <span class="flex items-center gap-1.5 font-medium">
+                  <PlayerNameTag
+                    :name="similarPlayer.player_name"
+                    :surname="similarPlayer.player_surname"
+                    :player-id="similarPlayer.player_id"
+                    :linkable="false"
+                    avatar-size="xs"
+                  />
+                  <span class="text-xs text-muted">
                     ({{ (combinedSimilarity * 100).toFixed(0) }}%)
                   </span>
                 </span>
                 <UButton
+                  v-if="context === 'event'"
                   size="xs"
                   color="primary"
                   variant="soft"
@@ -205,11 +224,21 @@ function handleSelectExisting(playerId: number) {
                 >
                   {{ t('player.form.select') }}
                 </UButton>
+                <UButton
+                  v-else
+                  size="xs"
+                  color="primary"
+                  variant="soft"
+                  :icon="ICONS.search"
+                  @click="handleSearchExisting(`${similarPlayer.player_name} ${similarPlayer.player_surname}`)"
+                >
+                  {{ t('player.form.search') }}
+                </UButton>
               </li>
             </ul>
 
             <p class="text-xs text-muted">
-              {{ t('player.form.similarHelpText') }}
+              {{ t(context === 'event' ? 'player.form.similarHelpTextEvent' : 'player.form.similarHelpTextPlayers') }}
             </p>
           </div>
         </UCard>

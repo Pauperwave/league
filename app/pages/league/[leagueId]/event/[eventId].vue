@@ -459,6 +459,7 @@ function handleResetTable(pairingId: number) {
                 v-model:open="showCreatePlayerModal"
                 :player="playerToEdit"
                 :existing-players="players"
+                context="event"
                 @create="playersHandlers.handlePlayerCreate"
                 @update="playersHandlers.handlePlayerUpdate"
                 @select="playersHandlers.handlePlayerSelectFromModal"

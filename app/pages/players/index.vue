@@ -112,8 +112,10 @@ async function handlePlayerUpdate(payload: PlayerUpdatePayload) {
       v-model:open="showCreatePlayerModal"
       :player="playerToEdit"
       :existing-players="players"
+      context="players"
       @create="handlePlayerCreate"
       @update="handlePlayerUpdate"
+      @search="(query) => { searchQuery = query }"
     />
   </div>
 </template>
