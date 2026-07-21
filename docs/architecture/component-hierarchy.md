@@ -8,7 +8,7 @@ Maps which components compose each page and their nesting structure.
 
 ```
 index.vue
-└── UButton (×4) — navigation links to /leagues, /players, /decks, /rulesets
+└── UButton (×5) — navigation links to /leagues, /players, /decks, /commanders, /rulesets
 ```
 
 ---
@@ -95,10 +95,9 @@ players/index.vue
 ├── UBreadcrumb
 ├── UInput                    — search by name
 ├── USwitch                   — "Solo con mazzi" filter
-├── Player list (grid):
-│   ├── UAvatar
+├── PlayersTable
 │   ├── PlayerNameTag
-│   └── PlayerDeckCount       — deck count badge
+│   └── UBadge (×N)           — deck count / commander names
 ├── Empty states (×3):
 │   ├── search-x icon          — no search results
 │   ├── layers icon            — no decks filter active
@@ -170,15 +169,45 @@ decks/index.vue
 ```
 deck/[deckSlug].vue
 ├── UBreadcrumb
-├── Deck Header:
-│   ├── Commander name + ManaCost
-│   └── UBadge (companion)
-├── Stats bar (5 metrics from useCommanderStats)
-├── Card Art Gallery:
-│   └── CommanderArt
-├── Owner List:
-│   └── NuxtLink per owner     → /player/:slug
-└── "Vedi su Scryfall" link
+├── DeckHeader                — commander name + ManaCost + companion badge
+├── Solo-stats links (UButton ×1-2)  → /commander/:commanderSlug (per half of the pair, BACKLOG #10)
+├── CommanderArtGallery       — art for commander_1 (+ commander_2 if paired)
+├── DeckStatsRow              — 5 metrics from useCommanderStats
+├── Players Using This Deck:
+│   └── UButton (per deck)    → /player/:slug/deck/:deckSlug
+│       └── PlayerNameTag     — avatar + name, non-linkable (wrapping UButton already links)
+└── ScryfallLinkButton
+```
+
+---
+
+## Page: `/commanders`
+
+```
+commanders/index.vue
+├── UBreadcrumb
+├── PageHeaderRow
+│   └── UInput                — client-side name search
+└── BaseTable                 — sortable, one row per distinct commander name (card-level, not pair)
+    ├── manaCost column        — ManaCost, or USkeleton while the catalog query is still loading
+    ├── name column            — NuxtLink → /commander/:commanderSlug
+    └── playerCount/matchCount/winCount/totalKills/averageScore columns
+```
+
+Data: `useAllCommanderStats()` (small, gates the page's loading state) + `useCommanderCatalogQuery()` (large, ~800KB — loads in the background, only the manaCost column waits on it via a per-cell `USkeleton`, see that composable's file comment).
+
+---
+
+## Page: `/commander/:commanderSlug`
+
+```
+commander/[commanderSlug].vue
+├── UBreadcrumb
+├── Commander header: name, art (CommanderArtGallery), mana cost
+├── Stats bar (from useSingleCommanderStats — summed across every pair this card has appeared in)
+├── BaseChart                 — win-rate donut (winRateOption), only rendered when matchCount > 0
+└── Decks Featuring This Commander:
+    └── NuxtLink per deck      → /deck/:deckSlug (through the deck's own commander_1 slug)
 ```
 
 ---
@@ -200,10 +229,11 @@ rulesets.vue
 
 | Component | Props | Used By |
 |-----------|-------|---------|
-| `PlayerNameTag` | `name`, `surname`, `showAvatar?` | StandingsCard, PairingsCard, Rankings, LeagueStandingsCard |
-| `ManaCost` | `manaCost` (string), `size?` | CommanderDeckCard, deck pages |
-| `CommanderArt` | `cardName`, `artUrl`, `manaCost`, `loading` | CommanderDeckCard, deck detail pages |
-| `PlayerDeckCount` | `playerId` | players/index.vue |
+| `PlayerNameTag` | `name`, `surname`, `showAvatar?`, `linkable?`, `avatarSize?` | StandingsCard, PairingsCard, Rankings, LeagueStandingsCard, deck pages, KillPlayerNode |
+| `ManaCost` | `manaCost` (string), `size?` | CommanderDeckCard, deck pages, `/commanders` list |
+| `CommanderArt` | `cardName`, `artUrl`, `manaCost`, `loading` | `CommanderDeckCard` (browse grid) |
+| `CommanderArtGallery` | `image1`, `image1Alt`, `hasPartner?`, `image2?`, `image2Alt?`, `loading?` | `/deck/:deckSlug`, `/commander/:commanderSlug` — 1 or 2 panes via `ImageWithFallback` |
+| `BaseChart` | `option` (`ECOption`), `height?`, `loading?` | `/commander/:commanderSlug` win-rate chart (thin `vue-echarts` wrapper, `useChartTheme()` for dark/light colors) |
 
 ### Cards
 
@@ -266,90 +296,131 @@ rulesets.vue
 
 ## Component Directory Structure
 
+Domain folders are all lowercase (see `app/components/CLAUDE.md`); tag names drop the folder prefix entirely (`pathPrefix: false`), so e.g. `event/pairing/table/TableCard.vue` is just `<TableCard>`.
+
 ```
 app/components/
-├── CommanderArt.vue           — Scryfall card art with gradient overlay
-├── CommanderDeckCard.vue        — Deck display card (reused across pages)
-├── CommanderSearch.vue          — Commander autocomplete input
-├── DeckCardActions.vue          — Edit/delete buttons for deck card
-├── ManaCost.vue                 — Colored mana symbols
-├── PlayerDeckCount.vue          — Deck count badge
-├── PlayerNameTag.vue            — Avatar + linked name
-├── CardPreview.vue              — Hover card image preview
-├── modals/                      — Generic form modals
-│   ├── CommanderModal.vue
-│   ├── CreatePlayerModal.vue
+├── charts/
+│   └── BaseChart.vue            — thin vue-echarts wrapper (option/height/loading props)
+├── commander/
+│   ├── CardPreview.vue          — hover card image preview
+│   ├── CommanderArt.vue         — single Scryfall card art (used by CommanderDeckCard)
+│   ├── CommanderDeckCard.vue    — deck display card (reused across pages)
+│   ├── CommanderModal.vue       — commander selector modal
+│   ├── CommanderSearch.vue      — commander autocomplete input
+│   └── ManaCost.vue             — colored mana symbols
+├── deck/
+│   ├── CommanderArtGallery.vue  — 1-2 pane art gallery (deck + single-commander pages)
+│   ├── DeckCardActions.vue
 │   ├── DeckCreateModal.vue
 │   ├── DeckEditModal.vue
+│   ├── DeckHeader.vue
+│   ├── DeckNotFound.vue
 │   ├── DeckPlayVotesModal.vue
-│   ├── EventFormModal.vue
-│   ├── LeagueFormModal.vue
-│   ├── PlayerSearchModal.vue
-│   ├── RulesetFormModal.vue
-│   └── LeaguesUsingRulesetModal.vue
-├── events/                      — Event page components
+│   ├── DeckStatsRow.vue
+│   └── ScryfallLinkButton.vue
+├── event/                        — event page components
+│   ├── CurrentTime.vue
 │   ├── EndedEventBadge.vue
 │   ├── EventControlPanel.vue
 │   ├── EventHeaderCard.vue
+│   ├── EventRanking.vue
 │   ├── EventStepper.vue
-│   ├── LeagueEventsPanel.vue
-│   ├── NextRoundModal.vue
+│   ├── EventTable.vue
 │   ├── RoundTimer.vue
 │   ├── StartEventButton.vue
-│   ├── Pairings/
+│   ├── TimerControlButton.vue
+│   ├── WinnerChecklist.vue
+│   ├── modal/                    — in-room round modals + event CRUD
+│   │   ├── EventCommanderModal.vue
+│   │   ├── EventFormModal.vue
+│   │   ├── EventKillModal.vue
+│   │   ├── EventScoreModal.vue
+│   │   ├── EventScoresModal.vue
+│   │   ├── EventVotesModal.vue
+│   │   └── NextRoundModal.vue
+│   ├── pairing/                  — pairing UI
 │   │   ├── PairingsCard.vue
-│   │   ├── TableStateBadge.vue
-│   │   ├── TableCardActions.vue
-│   │   ├── TableScoreGrid.vue
-│   │   ├── Kill/
+│   │   ├── PairingsFullscreenView.vue
+│   │   ├── kill/                 — kill-flow canvas
 │   │   │   ├── KillFlowCanvas.vue
+│   │   │   ├── KillLoopbackEdge.vue
 │   │   │   ├── KillPlayerNode.vue
 │   │   │   └── KillSystemModal.vue
-│   │   ├── Settings/
+│   │   ├── settings/             — optimizer weights, presets, forbidden pairs
 │   │   │   ├── ForbiddenPairsSection.vue
 │   │   │   ├── PairingPresetButtons.vue
 │   │   │   ├── PairingSettingsModal.vue
 │   │   │   └── PairingWeightsSection.vue
-│   │   └── Table/
+│   │   └── table/                — table card pieces
+│   │       ├── PairingPlayerRow.vue
+│   │       ├── PairingTableActions.vue
 │   │       ├── TableCard.vue
+│   │       ├── TableCardActions.vue
 │   │       ├── TablePlayerReceiptCard.vue
-│   │       ├── TablePreviewGrid.vue
-│   │       ├── TablePreviewModal.vue
-│   │       ├── TablePreviewToolbar.vue
 │   │       ├── TableReceiptSummary.vue
-│   │       ├── TableScoreBreakdownModal.vue
-│   │       ├── TableScoresModal.vue
-│   │       ├── TableScoreModal.vue
-│   │       └── TableSeatItem.vue
-│   ├── Standings/
+│   │       ├── TableSeatItem.vue
+│   │       ├── TableStateBadge.vue
+│   │       ├── preview/          — drag-and-drop pairing preview modal
+│   │       │   ├── TablePreviewGrid.vue
+│   │       │   ├── TablePreviewModal.vue
+│   │       │   └── TablePreviewToolbar.vue
+│   │       └── score/            — score-entry grid and its modals
+│   │           ├── TableScoreBreakdownModal.vue
+│   │           ├── TableScoreGrid.vue
+│   │           ├── TableScoreModal.vue
+│   │           ├── TableScoresModal.vue
+│   │           └── TableScoreTeamRow.vue
+│   ├── standings/
 │   │   └── StandingsCard.vue
-│   └── Waiting/
+│   └── waiting/
 │       ├── WaitingList.vue
 │       ├── WaitingListStats.vue
 │       └── WaitingListTable.vue
-├── Rankings/
-│   ├── EventRanking.vue
-│   ├── LeagueRanking.vue
-│   └── LeagueStandingsCard.vue
-├── Tables/
-│   ├── EventTable.vue
-│   └── LeagueTable.vue
-├── Layout/
+├── layout/                        — app chrome mounted from app.vue
 │   ├── AppLogo.vue
 │   ├── ColorModeSwitch.vue
+│   ├── DeveloperViewToggle.vue
 │   ├── HeaderActions.vue
-│   └── LogoutButton.vue
-└── ui/
+│   ├── LogoutButton.vue
+│   └── VersionBadge.vue
+├── league/
+│   ├── LeagueEventsPanel.vue
+│   ├── LeagueFormModal.vue
+│   ├── LeagueRanking.vue
+│   ├── LeagueStandingsCard.vue
+│   ├── LeaguesUsingRulesetModal.vue
+│   └── LeagueTable.vue
+├── player/
+│   ├── CreatePlayerModal.vue
+│   ├── PlayerActiveFilterSwitch.vue
+│   ├── PlayerDecksSection.vue
+│   ├── PlayerFilterSwitch.vue
+│   ├── PlayerMatchHistoryTable.vue
+│   ├── PlayerNameTag.vue
+│   ├── PlayerProfileHeader.vue
+│   ├── PlayerSearchModal.vue
+│   ├── PlayersEmptyState.vue
+│   ├── PlayersHeader.vue
+│   ├── PlayersTable.vue
+│   └── PlayersToolbar.vue
+├── ruleset/
+│   ├── RulesetFieldGrid.vue
+│   └── RulesetFormModal.vue
+└── ui/                            — generic, domain-agnostic pieces (see ui/CLAUDE.md)
     ├── actions/
+    │   ├── QuickFillButton.vue
     │   ├── RowActionButton.vue
     │   └── RowActionButtons.vue
     ├── display/
     │   ├── BaseTable.vue
+    │   ├── ImageWithFallback.vue
     │   └── StatTile.vue
     ├── input/
     │   └── DatePicker.vue
     ├── layout/
-    │   └── ListPageShell.vue
+    │   ├── ListPageShell.vue
+    │   └── PageHeaderRow.vue
     └── modal/
         ├── CancelButton.vue
         ├── ConfirmButton.vue

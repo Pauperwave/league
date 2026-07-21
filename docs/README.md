@@ -89,7 +89,8 @@ docs/
 │   ├── modal-url-sync.md
 │   ├── routes.md
 │   ├── state-flow.md
-│   └── stores.md
+│   ├── stores.md
+│   └── testing.md
 ├── audits/
 │   ├── skills-audit-checklist.md
 │   ├── skills-audit-report.md
@@ -103,7 +104,8 @@ docs/
     │   ├── 2026-05-27-multi-device-realtime-event-data.md
     │   ├── 2026-05-29-full-scryfall-to-supabase-migration.md
     │   ├── 2026-05-29-replace-scryfall-with-supabase.md
-    │   └── 2026-06-01-commander-search-partner-filtering.md
+    │   ├── 2026-06-01-commander-search-partner-filtering.md
+    │   └── 2026-07-21-commander-catalog-caching.md
     └── specs/
         ├── 2026-05-26-event-flow-standings-design.md
         ├── 2026-05-27-multi-device-realtime-event-data.md

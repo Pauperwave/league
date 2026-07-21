@@ -253,6 +253,13 @@ Gli store di sessione hanno **persistenza ottimistica**: update immediato UI + s
 - **Pagina indice deliberatamente minimale:** niente art Scryfall per-riga (fetch pesante moltiplicato per ogni nome distinto), solo nome + ricerca client-side — coerente con l'ambito richiesto ("una pagina", non l'intera UX di `/decks` con ordinamenti multipli). Linkata da `/deck/[deckSlug].vue` ("Statistiche individuali" per ciascuna metà della coppia) e dalla home (`index.vue`).
 - **BACKLOG #10 rimosso** — entrambe le metà (pagina dettaglio + indice) sono complete.
 
+### ADR-019 — Winner checklist in-room (BACKLOG #15, metà completa)
+
+- **Contesto:** dopo ogni round, il vincitore di ogni tavolo riceve un booster pack fisico — serviva un pannello "chi ha vinto questo tavolo" per l'organizzatore, con stato di spunta persistente per sapere chi ha già ricevuto il proprio.
+- **Decisione:** `WinnerChecklist.vue` + `useWinnerChecklist.ts` (`app/composables/event/useWinnerChecklist.ts`). I vincitori sono derivati **live** da `rankingsStore` (rank === 1 per pairing), nessun nuovo stato DB — un pairing "Patta" (draw, tutti i giocatori seduti a rank 1) viene escluso tramite lo stesso `isPairingDraw` già usato da `PairingsCard.vue`, così le due viste concordano su cosa conta come pareggio. Il numero di tavolo segue la stessa convenzione "indice array + 1" usata ovunque altrove (vedi BACKLOG #14 sul perché è implicita).
+- **Persistenza check-off:** lo stato "booster consegnato" per giocatore è mirrorato in `localStorage` via `getCached`/`setCached`, chiave `winner-checklist-${eventId}-${round}` (si azzera da sola ogni round), letto in `onMounted()` per evitare mismatch di idratazione SSR — stesso pattern di `useWaitingListFlags.ts`. Vedi `docs/architecture/client-caching.md`.
+- **Non ancora fatto:** la seconda metà del BACKLOG #15 (persistenza dello stat "table_wins" su `player_stats`) resta da implementare — l'item BACKLOG non va rimosso, solo la parte checklist è completa.
+
 ---
 
 ## Funzionalità per area

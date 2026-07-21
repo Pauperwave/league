@@ -17,7 +17,7 @@ Complete inventory of all application routes.
 
 | Route | File | Description | Key Data |
 |-------|------|-------------|----------|
-| `/leagues` | `pages/leagues.vue` | List all leagues | `useLeagues()` |
+| `/leagues` | `pages/leagues/index.vue` | List all leagues | `useLeagues()` |
 | `/league/:id` | `pages/league/[id].vue` | League detail + event list + cross-event standings | `useLeague(id)`, `useEvents(leagueId)` |
 | `/league/:leagueId/event/:eventId` | `pages/league/[leagueId]/event/[eventId].vue` | Event management page (registration, playing, ended) | `useEventPage()` |
 
@@ -64,6 +64,17 @@ See `docs/architecture/modal-url-sync.md` for full documentation.
 
 ---
 
+## Commander Routes
+
+| Route | File | Description | Key Data |
+|-------|------|-------------|----------|
+| `/commanders` | `pages/commanders/index.vue` | Sortable browse list of every distinct commander name (card-level, not deck-pair) | `useAllCommanderStats()`, `useCommanderCatalogQuery()` |
+| `/commander/:commanderSlug` | `pages/commander/[commanderSlug].vue` | Single-commander page: art, win-rate chart, decks featuring it | `useDecksQuery()`, `usePlayersQuery()`, `useCommanderCards()`, `useSingleCommanderStats()` |
+
+> **Commander vs deck routes:** `/deck/:deckSlug` is about a *pair* (`commander_1` + optional `commander_2`, as actually played together); `/commander/:commanderSlug` is about one *card*, aggregated across every pair it has appeared in on either side (see `useCommanderAggregate.ts`'s known `playerCount` double-count caveat, BACKLOG #10).
+
+---
+
 ## Ruleset Routes
 
 | Route | File | Description | Key Data |
@@ -86,6 +97,9 @@ See `docs/architecture/modal-url-sync.md` for full documentation.
 │
 ├── /decks                  (browse all)
 │   └── /deck/:deckSlug     (global commander stats)
+│
+├── /commanders             (browse all, card-level)
+│   └── /commander/:commanderSlug  (single-commander page)
 │
 ├── /rulesets               (list)
 │
@@ -134,6 +148,7 @@ For `/league/7/event/12`, `league/[leagueId].vue` would take priority over `leag
 | `:eventId` | `number` | Route params | `eventId = 227` |
 | `:slug` | `string` | Route params | `/player/alessandro-berti` → `slug = "alessandro-berti"` |
 | `:deckSlug` | `string` | Route params | `/deck/ellie-vengeful-hunter` → `deckSlug = "ellie-vengeful-hunter"` |
+| `:commanderSlug` | `string` | Route params | `/commander/atraxa-grand-unifier` → `commanderSlug = "atraxa-grand-unifier"` |
 
 All numeric params are parsed via `parseInt()` in composables.
 
@@ -149,6 +164,7 @@ All numeric params are parsed via `parseInt()` in composables.
   - From `/decks` browse: `/deck/:deckSlug`
 - **Event links** → `LeagueEventsPanel` links to `/league/:leagueId/event/:eventId`
 - **League links** → `LeagueTable` links to `/league/:id`
+- **Commander name links** → `/commanders` table and deck pages link to `/commander/:commanderSlug`
 
 ### Programmatic Navigation
 

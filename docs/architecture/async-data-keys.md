@@ -51,7 +51,7 @@ Domains migrated to Pinia Colada use array query keys instead of `useAsyncData` 
 | `players/usePlayerMatchHistory.ts` | `['player-match-history', playerId]` | read-only |
 | `commanders/useDeckStats.ts` | `['deck-stats', playerId, commander1Name]` | read-only |
 | `commanders/useCommanderStats.ts` | `['commander-stats', commander1Name]` | read-only |
-| `commanders/useCommanderStats.ts` (all) | `['all-commander-stats']` | read-only (decks browse page) |
+| `commanders/useCommanderStats.ts` (all) | `['all-commander-stats']` | read-only (decks browse page, `/commanders` list page) |
 | `commanders/useCommanderCards.ts` | `['commander-card', cardName]` | read-only (Scryfall card data) |
 | `commanders/useCommanderCards.ts` (batch) | `['commanders-by-names', sortedNameSet]` | read-only (decks browse color/mana-cost sort) |
 | `commanders/useCommanderCatalogQuery.ts` | `['commander-catalog']` | manual `refetch()` only (`CommanderModal.vue` refresh button) — `staleTime`/`gcTime` 30 days, see `docs/architecture/client-caching.md` |

@@ -228,14 +228,14 @@ This works reliably **today** because: `usePairingsQuery` explicitly orders by `
 
 ---
 
-## 15. Winner checklist + `table_wins` stat (booster pack reward per round)
+## 15. `table_wins` stat persistence (booster pack reward per round)
 
 Raised 2026-07-14, promoted from `docs/TODO.md` 2026-07-21 (was tracked in two places there — the "Booster pack reward per round" note and event-lifecycle-audit item #9 — merged into this single entry).
 
-After **every** round (including the last one), the winner of each table receives a booster pack. Two parts:
+After **every** round (including the last one), the winner of each table receives a booster pack.
 
-- **In-room checklist**: an always-present "who's won this table" panel/component, populated live as each pairing's ranking is submitted (same `hasRanking` signal `PairingTableActions.vue` already reads) — a "boosters to hand out" list per round, generated from each table's rank-1 player, with a check-off state so the organizer knows who's already received theirs. Probably an event-page panel or modal shown after round scores are confirmed. The checklist's check-off state, if it must survive a refresh, can live in localStorage like the round timer (`RoundTimer.vue`'s pattern) or the waiting-list paid/companion flags (`useWaitingListFlags.ts`).
-- **Stat persistence**: record it on player stats as "table wins". Verify what already exists before adding anything: `standings.victories` already accumulates `position === 1` per event, and `player_stats` is trigger-computed from `round_results` — a table win is derivable as `round_results.position = 1`, so this may need **zero new columns**, just a `table_wins` aggregate in the `player_stats` trigger (or even a query).
+- ~~**In-room checklist**~~ — **done** (2026-07-21): `WinnerChecklist.vue` + `useWinnerChecklist.ts`, winners derived live from `rankingsStore`, check-off state persisted per event+round in `localStorage`. See ADR-019 in `docs/PROGRESS.md`.
+- **Stat persistence** (still open): record it on player stats as "table wins". Verify what already exists before adding anything: `standings.victories` already accumulates `position === 1` per event, and `player_stats` is trigger-computed from `round_results` — a table win is derivable as `round_results.position = 1`, so this may need **zero new columns**, just a `table_wins` aggregate in the `player_stats` trigger (or even a query).
 
 ---
 
