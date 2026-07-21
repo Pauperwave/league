@@ -1,5 +1,8 @@
 <!-- app\pages\commander\[commanderSlug].vue -->
 <script setup lang="ts">
+// fallow-ignore-file code-duplication -- 2 accepted clones: the "decks featuring" heading+chip-list wrapper
+// shared with deck/[deckSlug].vue (different heading/v-for source, DeckPlayerChip already extracted), and the
+// empty-state icon+text block shared with PlayerDecksSection.vue (same pattern repeats untracked in other pages)
 import type { CommanderDeck } from '#shared/utils/types'
 
 const route = useRoute()
@@ -148,23 +151,16 @@ const breadcrumbItems = useBreadcrumb(() => [
         </h2>
 
         <div class="flex flex-wrap gap-2">
-          <UButton
+          <DeckPlayerChip
             v-for="{ deck, player, playerSlug, deckSlug, partnerName } in decksFeaturing"
             :key="deck.id"
             :to="`/player/${playerSlug}/deck/${deckSlug}`"
-            variant="soft"
-            color="primary"
-            size="sm"
-            :icon="ICONS.player"
-          >
-            {{ player ? `${player.player_name} ${player.player_surname}` : t('deck.unknownPlayer') }}
-            <span v-if="partnerName" class="text-muted ml-1">
-              {{ t('commander.page.partnerSuffix', { name: partnerName }) }}
-            </span>
-            <span v-if="deck.is_borrowed" class="ml-1 text-warning">
-              {{ t('deck.borrowedBadge') }}
-            </span>
-          </UButton>
+            :player-name="player?.player_name"
+            :player-surname="player?.player_surname"
+            :player-id="player?.player_id"
+            :suffix="partnerName ? t('commander.page.partnerSuffix', { name: partnerName }) : ''"
+            :is-borrowed="deck.is_borrowed"
+          />
         </div>
       </div>
 

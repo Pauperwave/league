@@ -1,5 +1,8 @@
 <!-- app\components\event\pairing\kill\KillFlowCanvas.vue -->
 <script setup lang="ts">
+// fallow-ignore-file code-duplication -- accepted clone: 5 adjacent <ControlButton> each with the same
+// 3-line title/click/icon shape but different title/icon/handler; a generic wrapper would need as many
+// conditional props as the repeated markup it'd replace
 import { VueFlow, MarkerType, useVueFlow, type Node, type Edge, type Connection, type EdgeMouseEvent } from '@vue-flow/core'
 import { Background } from '@vue-flow/background'
 import { Controls, ControlButton } from '@vue-flow/controls'

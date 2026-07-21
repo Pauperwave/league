@@ -1,5 +1,7 @@
 <!-- app\components\player\PlayerDecksSection.vue -->
 <script setup lang="ts">
+// fallow-ignore-file code-duplication -- accepted clone: empty-state icon+text block shared with
+// commander/[commanderSlug].vue (same generic pattern repeats untracked in other pages, e.g. /commanders, /players)
 import type { CommanderDeck } from '#shared/utils/types'
 
 interface Props {

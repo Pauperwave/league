@@ -16,14 +16,6 @@ const emit = defineEmits<{ exit: [] }>()
 
 const { t } = useI18n()
 
-const pairingPlayerIds = (pairing: Pairing): number[] =>
-  [
-    pairing.pairing_player1_id,
-    pairing.pairing_player2_id,
-    pairing.pairing_player3_id,
-    pairing.pairing_player4_id
-  ].filter((id): id is number => !!id)
-
 // O(1) lookup instead of allPlayers.find() per player per render — matters
 // once a tournament has enough players for this to run many times a frame.
 const playersById = computed(() => new Map(allPlayers.map(p => [p.id, p])))

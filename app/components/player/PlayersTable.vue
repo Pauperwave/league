@@ -39,6 +39,16 @@ function goToPlayer(player: Player) {
 // dropdown/direction button (2026-07-19). Stat/deck columns use accessorFn
 // (not accessorKey, since the value isn't a plain Player field) so TanStack
 // has something to compare when sorting.
+const statColumn = (
+  id: string,
+  label: string,
+  statKey: string
+): TableColumn<Player> => ({
+  id,
+  accessorFn: (row) => props.getPlayerStat(row.player_id, statKey),
+  header: sortableHeader(label, UButton),
+})
+
 const columns: TableColumn<Player>[] = [
   createSelectionColumn<Player>(UCheckbox),
   {
@@ -76,30 +86,12 @@ const columns: TableColumn<Player>[] = [
     accessorFn: (row) => props.getDeckCount(row.player_id),
     header: sortableHeader(t('player.table.decks'), UButton)
   },
+  statColumn('events', t('player.table.events'), 'events_played'),
+  statColumn('matches', t('player.table.matches'), 'total_matches'),
+  statColumn('wins', t('player.table.wins'), 'total_wins'),
+  statColumn('kills', t('player.table.kills'), 'total_kills'),
   {
-    id: 'events',
-    accessorFn: (row) => props.getPlayerStat(row.player_id, 'events_played'),
-    header: sortableHeader(t('player.table.events'), UButton)
-  },
-  {
-    id: 'matches',
-    accessorFn: (row) => props.getPlayerStat(row.player_id, 'total_matches'),
-    header: sortableHeader(t('player.table.matches'), UButton)
-  },
-  {
-    id: 'wins',
-    accessorFn: (row) => props.getPlayerStat(row.player_id, 'total_wins'),
-    header: sortableHeader(t('player.table.wins'), UButton)
-  },
-  {
-    id: 'kills',
-    accessorFn: (row) => props.getPlayerStat(row.player_id, 'total_kills'),
-    header: sortableHeader(t('player.table.kills'), UButton)
-  },
-  {
-    id: 'avgScore',
-    accessorFn: (row) => props.getPlayerStat(row.player_id, 'average_score'),
-    header: sortableHeader(t('player.table.avgScore'), UButton),
+    ...statColumn('avgScore', t('player.table.avgScore'), 'average_score'),
     cell: ({ row }) => (row.getValue('avgScore') as number).toFixed(2)
   },
   {

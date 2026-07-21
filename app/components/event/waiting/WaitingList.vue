@@ -1,6 +1,7 @@
 <!-- app\components\event\waiting\WaitingList.vue -->
 <script setup lang="ts">
 import type { Player } from '#shared/utils/types'
+import type { WaitingListFlags } from '~/composables/event/useWaitingListFlags'
 
 const { t } = useI18n()
 
@@ -25,9 +26,10 @@ function handleUpdate(payload: { playerId: number, paid: boolean, companion: boo
 }
 
 function forgetFlags(playerIds: number[]) {
-  const next = { ...flags.value }
-  for (const id of playerIds) delete next[id]
-  flags.value = next
+  const toForget = new Set(playerIds)
+  flags.value = Object.fromEntries(
+    Object.entries(flags.value).filter(([id]) => !toForget.has(Number(id)))
+  ) as Record<number, WaitingListFlags>
 }
 
 const emit = defineEmits<{

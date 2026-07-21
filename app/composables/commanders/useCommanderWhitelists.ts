@@ -63,16 +63,6 @@ export function useCommanderWhitelists() {
     return map
   })
 
-  const partnerWithMap = computed(() => {
-    const map = new Map<string, string>()
-    for (const row of catalog.value ?? []) {
-      if (row.partnerType === 'partner_with' && row.partnerWithScryfallId) {
-        map.set(row.name, row.partnerWithScryfallId)
-      }
-    }
-    return map
-  })
-
   /**
    * Get the partner_type for a given commander name.
    * Returns 'commander' for normal commanders, or the specific type.

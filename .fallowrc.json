@@ -13,15 +13,20 @@
     "public/**",
     "docs/**",
     "shared/utils/types/database.ts",
-    "i18n/i18n.config.ts"
+    "i18n/i18n.config.ts",
+    "colada.options.ts"
   ],
   "ignoreDependencies": [
     "@formkit/auto-animate",
     "@iconify-json/lucide",
     "@iconify-json/simple-icons",
     "@pinia/colada",
+    "@pinia/colada-plugin-cache-persister",
     "@vue/test-utils",
     "@vueuse/core",
+    "echarts",
+    "mana-font",
+    "vue-echarts",
     "vue-i18n"
   ],
   "duplicates": {

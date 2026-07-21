@@ -1,5 +1,7 @@
 <!-- app\pages\deck\[deckSlug].vue -->
 <script setup lang="ts">
+// fallow-ignore-file code-duplication -- accepted clone: the "players using this deck" heading+chip-list
+// wrapper shared with commander/[commanderSlug].vue (different heading/v-for source, DeckPlayerChip already extracted)
 import type { CommanderDeck } from '#shared/utils/types'
 
 const route = useRoute()
@@ -121,27 +123,15 @@ const breadcrumbItems = useBreadcrumb(() => [
         </h2>
 
         <div class="flex flex-wrap gap-2">
-          <UButton
+          <DeckPlayerChip
             v-for="{ deck, player, playerSlug } in decksWithPlayers"
             :key="deck.id"
             :to="`/player/${playerSlug}/deck/${deckSlug}`"
-            variant="soft"
-            color="primary"
-            size="sm"
-          >
-            <PlayerNameTag
-              v-if="player"
-              :name="player.player_name"
-              :surname="player.player_surname"
-              :player-id="player.player_id"
-              :linkable="false"
-              avatar-size="xs"
-            />
-            <span v-else>{{ t('deck.unknownPlayer') }}</span>
-            <span v-if="deck.is_borrowed" class="ml-1 text-warning">
-              {{ t('deck.borrowedBadge') }}
-            </span>
-          </UButton>
+            :player-name="player?.player_name"
+            :player-surname="player?.player_surname"
+            :player-id="player?.player_id"
+            :is-borrowed="deck.is_borrowed"
+          />
         </div>
       </div>
 

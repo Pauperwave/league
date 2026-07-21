@@ -23,6 +23,7 @@ export default withNuxt(
       // Style
       '@stylistic/semi': ['error', 'never'],
       'vue/multi-word-component-names': 'off',
+      'vue/block-order': ['error', { order: ['script', 'template', 'style'] }],
 
       // Optional props are typed with `?` and default via destructuring
       // (Vue 3.5 reactive props destructure); this rule predates that

@@ -142,17 +142,6 @@ const tableToDraw = computed(() =>
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /**
- * Returns the list of non-null player IDs for a given pairing (2 to 4 players).
- */
-const pairingPlayerIds = (pairing: Pairing): number[] =>
-  [
-    pairing.pairing_player1_id,
-    pairing.pairing_player2_id,
-    pairing.pairing_player3_id,
-    pairing.pairing_player4_id
-  ].filter((id): id is number => !!id)
-
-/**
  * Returns true if the pairing has at least one ranking entry saved.
  */
 const hasRanking = (pairingId: number): boolean => {
