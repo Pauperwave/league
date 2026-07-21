@@ -1,6 +1,7 @@
 <!-- app\components\event\pairing\PairingsCard.vue -->
 <script setup lang="ts">
 import type { Pairing, PairingWithResults, TournamentPlayer } from '#shared/utils/types'
+import { getPairingPlayerIds } from '#shared/utils/types'
 
 const { t } = useI18n()
 
@@ -170,7 +171,7 @@ const isDraw = (pairing: PairingWithResults): boolean =>
  * - All players have submitted a vote
  */
 const isTableComplete = (pairing: Pairing): boolean => {
-  const playerIds = pairingPlayerIds(pairing)
+  const playerIds = getPairingPlayerIds(pairing)
   return (
     hasRanking(pairing.pairing_id) &&
     playerIds.every(id => commandersStore.getCommander1(id) !== null) &&
@@ -224,7 +225,7 @@ function handleConfirm() {
   } else if (confirmDialog.value.type === 'draw') {
     const pairingId = confirmDialog.value.pairingId
     const pairing = props.pairings.find(p => p.pairing_id === pairingId)
-    if (pairing) emit('draw', pairingId, pairingPlayerIds(pairing))
+    if (pairing) emit('draw', pairingId, getPairingPlayerIds(pairing))
   } else {
     for (const pairing of props.pairings) {
       fillTable(pairing.pairing_id)
@@ -245,7 +246,7 @@ function fillTable(pairingId: number) {
   const pairing = props.pairings.find(p => p.pairing_id === pairingId)
   if (!pairing) return
 
-  const playerIds = pairingPlayerIds(pairing)
+  const playerIds = getPairingPlayerIds(pairing)
   if (playerIds.length < 2) return
 
   rankingsStore.setRankingWithRanks(
@@ -321,7 +322,7 @@ function fillTable(pairingId: number) {
           <!-- Player rows -->
           <div class="space-y-1.5">
             <PairingPlayerRow
-              v-for="playerId in pairingPlayerIds(pairing)"
+              v-for="playerId in getPairingPlayerIds(pairing)"
               :key="playerId"
               :player-id="playerId"
               :pairing-id="pairing.pairing_id"

@@ -15,7 +15,7 @@ export type WaitroomEntry = Tables<'waitroom'>
 export type MtgFormat    = Database['public']['Enums']['mtg_formats']
 
 /** Extract non-null player IDs from a pairing row */
-export function getPairingPlayerIds(pairing: { pairing_player1_id: number | null; pairing_player2_id: number | null; pairing_player3_id: number | null; pairing_player4_id: number | null }): number[] {
+export function getPairingPlayerIds(pairing: Pairing): number[] {
   return [
     pairing.pairing_player1_id,
     pairing.pairing_player2_id,

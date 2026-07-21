@@ -6,6 +6,7 @@
 // component owns the editable table cards and all their modals/actions,
 // this one is pure display.
 import type { Pairing, TournamentPlayer } from '#shared/utils/types'
+import { getPairingPlayerIds } from '#shared/utils/types'
 
 const { pairings, allPlayers } = defineProps<{
   pairings: Pairing[]
@@ -27,7 +28,7 @@ const playersById = computed(() => new Map(allPlayers.map(p => [p.id, p])))
  * sharing one), hence the initial at all.
  */
 function tablePlayers(pairing: Pairing): { id: number, surname: string, initial: string }[] {
-  return pairingPlayerIds(pairing).map((id) => {
+  return getPairingPlayerIds(pairing).map((id) => {
     const player = playersById.value.get(id)
     return {
       id,
