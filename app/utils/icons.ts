@@ -103,8 +103,8 @@ export const ICONS = {
   // League / event / scoring (MTG domain)
   standings: 'i-lucide-trophy',
   battle: 'i-lucide-swords',
-  ruleKill: 'i-lucide-sword',
-  kills: 'i-lucide-skull',
+  kills: 'i-lucide-sword',
+  deaths: 'i-lucide-skull',
   draw: 'i-lucide-handshake',
   vote: 'i-lucide-star',
   victories: 'i-lucide-medal',
@@ -120,6 +120,7 @@ export const ICONS = {
   statsLink: 'i-lucide-bar-chart-3',
   statsEmpty: 'i-lucide-bar-chart',
   terminal: 'i-lucide-terminal',
+  booster: 'i-lucide-gift',
 } as const
 
 export type IconName = (typeof ICONS)[keyof typeof ICONS]

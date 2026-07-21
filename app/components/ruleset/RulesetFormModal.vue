@@ -103,7 +103,7 @@ watch(open, (isOpen) => {
 
 const gameActionFields = [
   { key: 'partecipation', label: t('ruleset.actions.partecipation'), icon: ICONS.player },
-  { key: 'kill', label: t('ruleset.actions.kill'), icon: ICONS.ruleKill },
+  { key: 'kill', label: t('ruleset.actions.kill'), icon: ICONS.kills },
   { key: 'brew', label: t('ruleset.actions.brew'), icon: ICONS.ruleBrew },
   { key: 'play', label: t('ruleset.actions.play'), icon: ICONS.play },
 ] as const

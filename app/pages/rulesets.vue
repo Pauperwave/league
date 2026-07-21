@@ -54,7 +54,7 @@ const RANK_STYLES = [
 
 const ACTION_ROWS = [
   { icon: ICONS.player,   tooltip: t('ruleset.actionTooltips.partecipation'), label: t('ruleset.actions.partecipation'), key: 'rule_set_partecipation' },
-  { icon: ICONS.ruleKill, tooltip: t('ruleset.actionTooltips.kill'),          label: t('ruleset.actions.kill'),          key: 'rule_set_kill' },
+  { icon: ICONS.kills, tooltip: t('ruleset.actionTooltips.kill'),          label: t('ruleset.actions.kill'),          key: 'rule_set_kill' },
   { icon: ICONS.ruleBrew, tooltip: t('ruleset.actionTooltips.brew'),          label: t('ruleset.actions.brew'),          key: 'rule_set_brew' },
   { icon: ICONS.play,     tooltip: t('ruleset.actionTooltips.play'),          label: t('ruleset.actions.play'),          key: 'rule_set_play' },
 ] as const

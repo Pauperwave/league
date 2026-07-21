@@ -47,7 +47,7 @@ const hasStats = computed(() => killCount.value > 0 || deathCount.value > 0 || h
     <div class="flex items-center gap-1 rounded-lg border border-default bg-elevated px-2 py-1 shadow-sm">
       <UTooltip v-if="killCount > 0" :content="{ side: 'top' }" :text="t('event.killFlow.killCountTooltip', { count: killCount })">
         <UBadge
-          :icon="ICONS.ruleKill"
+          :icon="ICONS.kills"
           :label="String(killCount)"
           :color="data.color"
           variant="solid"
@@ -67,7 +67,7 @@ const hasStats = computed(() => killCount.value > 0 || deathCount.value > 0 || h
            near-invisible icon; `solid` maps to `text-inverted` instead. -->
       <UTooltip v-if="deathCount > 0" :content="{ side: 'top' }" :text="t('event.killFlow.deathCountTooltip', { count: deathCount })">
         <UBadge
-          :icon="ICONS.kills"
+          :icon="ICONS.deaths"
           :label="String(deathCount)"
           color="neutral"
           variant="solid"
