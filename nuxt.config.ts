@@ -91,8 +91,21 @@ export default defineNuxtConfig({
     // Scans source files at build time and inlines every icon used directly
     // into the client JS bundle — avoids the runtime /api/_nuxt_icon/*.json
     // fetch that otherwise happens the first time each icon renders.
+    // Default globInclude doesn't cover `.ts` — every icon name in this app
+    // lives in app/utils/icons.ts (ICONS.foo string literals), referenced
+    // dynamically as :icon="ICONS.foo", never as a literal i-lucide-* string
+    // inside a .vue file, so the scanner saw zero icons without this and
+    // every one was fetched at runtime instead. Root-caused this way after
+    // observing EventStepper.vue render the wrong/missing icon for duplicate
+    // dynamically-fetched icons (e.g. "swords", used by every round step) —
+    // reproducible in the Nuxt dev server, but NOT present in deployed prod
+    // (confirmed against v0.20.2, predating this fix) — so it was a dev-only
+    // icon-fetch race, not a real user-facing bug. Bundling statically is
+    // still the right call regardless: it removes the runtime fetch race
+    // structurally rather than hoping prod always avoids it, and ~120 icons
+    // is small enough that bundling all of them isn't a size concern.
     clientBundle: {
-      scan: true
+      scan: { globInclude: ['**/*.{vue,jsx,tsx,md,mdc,mdx,yml,yaml,ts}'] }
     }
   },
 
