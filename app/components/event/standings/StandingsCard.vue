@@ -27,80 +27,95 @@ const {
 }>()
 
 const { t } = useI18n()
+const { isDeveloperView } = useDeveloperView()
 
 const displayTitle = computed(() => title ?? t('event.standingsTitleDefault'))
+
+/** How many top rows get the gold/warning highlight (rank badge + score). */
+const TOP_PLAYER_COUNT = 8
+const isTopPlayer = (index: number) => index < TOP_PLAYER_COUNT
+
+const isOpen = ref(true)
 </script>
 
 <template>
-  <div class="bg-linear-to-b from-primary/10 to-transparent rounded-xl p-6 border-2 border-primary/30 shadow-lg">
-    <div class="flex items-center justify-center gap-2 mb-4">
-      <UIcon :name="ICONS.standings" class="size-5 text-primary" />
-      <h4 class="text-lg font-bold text-primary">{{ displayTitle }}</h4>
-    </div>
+  <div class="bg-linear-to-b from-primary/10 to-transparent rounded-xl p-3 border-2 border-primary/30 shadow-lg">
+    <UCollapsible v-model:open="isOpen">
+      <button type="button" class="flex items-center justify-center gap-1.5 mb-2 w-full cursor-pointer">
+        <UIcon :name="ICONS.standings" class="size-4 text-primary" />
+        <h4 class="text-base font-bold text-primary">{{ displayTitle }}</h4>
+        <UIcon :name="ICONS.chevronDown" class="size-3.5 text-primary transition-transform" :class="isOpen ? '' : '-rotate-90'" />
+      </button>
 
-    <ClientOnly>
-      <div v-if="loading" class="flex items-center justify-center py-8">
-        <UIcon :name="ICONS.loading" class="animate-spin text-2xl text-primary" />
-      </div>
-      <div v-else-if="standings.length > 0" class="space-y-2">
-        <div
-          v-for="(standing, index) in standings"
-          :key="standing.player_id"
-          class="flex items-center justify-between p-3 bg-elevated rounded-lg"
-        >
-            <div class="flex items-center gap-3">
-              <span class="w-6 h-6 flex items-center justify-center rounded-full bg-primary/20 text-primary font-bold text-sm">
-                {{ index + 1 }}
-              </span>
-              <div class="min-w-0">
-                <PlayerNameTag
-                  :name="standing.players?.player_name ?? ''"
-                  :surname="standing.players?.player_surname ?? ''"
-                  :show-avatar="false"
-                  class="font-medium text-sm"
-                />
-                 <div class="flex items-center gap-2">
-                   <div class="flex items-center gap-1 text-xs text-muted" :title="t('player.stats.wins')">
-                     <UIcon :name="ICONS.victories" class="size-3 text-warning" />
-                     <span>{{ standing.victories ?? 0 }}</span>
-                   </div>
-                   <div class="flex items-center gap-1 text-xs text-muted" :title="t('player.stats.kills')">
-                     <UIcon :name="ICONS.kills" class="size-3 text-error" />
-                     <span>{{ standing.kills ?? 0 }}</span>
-                   </div>
-                   <div class="flex items-center gap-1 text-xs text-muted" :title="t('event.standingsCard.brewVotesTooltip')">
-                     <UIcon :name="ICONS.brewVotes" class="size-3 text-info" />
-                     <span>{{ standing.brew_received ?? 0 }}</span>
-                   </div>
-                   <div class="flex items-center gap-1 text-xs text-muted" :title="t('event.standingsCard.playVotesTooltip')">
-                     <UIcon :name="ICONS.playVotes" class="size-3 text-success" />
-                     <span>{{ standing.play_received ?? 0 }}</span>
-                   </div>
-                   <UBadge
-                    v-if="submittedByPlayerId[standing.player_id]"
-                    size="sm"
-                    color="success"
-                    variant="soft"
-                    class="text-sm px-2 py-1"
+      <template #content>
+        <ClientOnly>
+          <div v-if="loading" class="flex items-center justify-center py-6">
+            <UIcon :name="ICONS.loading" class="animate-spin text-2xl text-primary" />
+          </div>
+          <div v-else-if="standings.length > 0" class="space-y-1">
+            <div
+              v-for="(standing, index) in standings"
+              :key="standing.player_id"
+              class="flex items-center justify-between p-1.5 bg-elevated rounded-lg"
+            >
+                <div class="flex items-center gap-2 min-w-0">
+                  <span
+                    class="w-5 h-5 flex items-center justify-center rounded-full font-bold text-xs shrink-0"
+                    :class="isTopPlayer(index) ? 'bg-warning/20 text-warning' : 'bg-primary/20 text-primary'"
                   >
-                    {{ t('event.standingsCard.submittedBadge') }}
-                  </UBadge>
+                    {{ index + 1 }}
+                  </span>
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-1.5">
+                      <PlayerNameTag
+                        :name="standing.players?.player_name ?? ''"
+                        :surname="standing.players?.player_surname ?? ''"
+                        :player-id="standing.player_id"
+                        avatar-size="md"
+                        class="font-medium text-sm"
+                      />
+                      <UTooltip v-if="submittedByPlayerId[standing.player_id]" :content="{ side: 'top' }" :text="t('event.standingsCard.submittedBadge')">
+                        <UIcon :name="ICONS.confirm" class="size-3.5 text-success shrink-0" />
+                      </UTooltip>
+                    </div>
+                    <div v-if="isDeveloperView" class="flex items-center gap-1.5">
+                      <div class="flex items-center gap-1 text-md text-muted" :title="t('player.stats.wins')">
+                        <UIcon :name="ICONS.victories" class="size-4 text-warning" />
+                        <span>{{ standing.victories ?? 0 }}</span>
+                      </div>
+                      <div class="flex items-center gap-1 text-md text-muted" :title="t('player.stats.kills')">
+                        <UIcon :name="ICONS.kills" class="size-4 text-error" />
+                        <span>{{ standing.kills ?? 0 }}</span>
+                      </div>
+                      <div class="flex items-center gap-1 text-md text-muted" :title="t('event.standingsCard.brewVotesTooltip')">
+                        <UIcon :name="ICONS.brewVotes" class="size-4 text-info" />
+                        <span>{{ standing.brew_received ?? 0 }}</span>
+                      </div>
+                      <div class="flex items-center gap-1 text-md text-muted" :title="t('event.standingsCard.playVotesTooltip')">
+                        <UIcon :name="ICONS.playVotes" class="size-4 text-success" />
+                        <span>{{ standing.play_received ?? 0 }}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              <span
+                class="text-base font-bold shrink-0"
+                :class="isTopPlayer(index) ? 'text-warning' : 'text-primary'"
+              >{{ standing.standing_player_score ?? 0 }} PT</span>
             </div>
-          <span class="text-lg font-bold text-primary">{{ standing.standing_player_score ?? 0 }} PT</span>
-        </div>
-      </div>
-      <div v-else class="text-center py-8 text-muted">
-        <UIcon :name="ICONS.statsEmpty" class="text-4xl mb-2" />
-        <p class="text-sm">{{ t('event.standingsCard.emptyText') }}</p>
-      </div>
+          </div>
+          <div v-else class="text-center py-6 text-muted">
+            <UIcon :name="ICONS.statsEmpty" class="text-4xl mb-2" />
+            <p class="text-sm">{{ t('event.standingsCard.emptyText') }}</p>
+          </div>
 
-      <template #fallback>
-        <div class="flex items-center justify-center py-8">
-          <UIcon :name="ICONS.loading" class="animate-spin text-2xl text-primary" />
-        </div>
+          <template #fallback>
+            <div class="flex items-center justify-center py-6">
+              <UIcon :name="ICONS.loading" class="animate-spin text-2xl text-primary" />
+            </div>
+          </template>
+        </ClientOnly>
       </template>
-    </ClientOnly>
+    </UCollapsible>
   </div>
 </template>
