@@ -12,7 +12,11 @@ const { data: commanderStatsList, pending: statsLoading } = useAllCommanderStats
 // Commander catalog (mana cost, ADR-016) — same cache CommanderModal/search use.
 const { data: catalogData, isLoading: catalogLoading } = useCommanderCatalogQuery()
 
-const isLoading = computed(() => statsLoading.value || catalogLoading.value)
+// Only the (small, fast) commander_stats query gates the page — the ~800KB
+// commander catalog (needed just for the mana-cost column) loads in the
+// background, with a USkeleton shown per-cell in the meantime (see manaCost
+// column below), so the table isn't blocked on the heaviest payload.
+const isLoading = statsLoading
 
 const allNames = computed(() => getAllCommanderNames(commanderStatsList.value ?? []))
 
@@ -75,7 +79,10 @@ const columns: TableColumn<CommanderRow>[] = [
     accessorKey: 'manaCost',
     header: t('deck.sortOptions.manaCost'),
     enableSorting: false,
-    cell: ({ row }) => h(ManaCost, { manaCost: row.original.manaCost, size: 'sm' }),
+    cell: ({ row }) =>
+      catalogLoading.value
+        ? h(resolveComponent('USkeleton') as Component, { class: 'h-4 w-16' })
+        : h(ManaCost, { manaCost: row.original.manaCost, size: 'sm' }),
     meta: { class: { td: 'px-3 py-1.5 w-32' } },
   },
   {
