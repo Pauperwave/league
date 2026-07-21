@@ -1,14 +1,10 @@
 <!-- app\components\event\pairing\table\TableCard.vue -->
 <script setup lang="ts">
 import type { Seat, TournamentTable } from '#shared/utils/types'
+import type { TableStatus } from '~/composables/tables/useTableDnd'
 import { VueDraggable } from 'vue-draggable-plus'
 
 const { t } = useI18n()
-
-interface TableStatus {
-  color: 'success' | 'warning' | 'error'
-  label: string
-}
 
 const props = defineProps<{
   table: TournamentTable
@@ -46,7 +42,7 @@ const visibleSeats = computed(() => {
       <div class="flex items-center justify-between gap-2">
         <div class="flex items-center gap-2">
           <UIcon :name="ICONS.tableView" class="size-4 text-primary" />
-          <span class="font-semibold text-base">{{ t('event.pairing.tableHeading', { n: table.tableNumber }) }}</span>
+          <span class="font-semibold text-base whitespace-nowrap">{{ t('event.pairing.tableHeading', { n: table.tableNumber }) }}</span>
         </div>
         <div class="flex items-center gap-1.5">
           <UButton
@@ -58,31 +54,33 @@ const visibleSeats = computed(() => {
           >
             {{ t('event.pairing.scoreLabel', { score: tableScore.toFixed(2) }) }}
           </UButton>
-          <UBadge :color="tableStatus.color" variant="soft" size="sm" class="text-base font-semibold leading-none">
+          <UBadge :color="tableStatus.color" variant="soft" size="sm" class="text-base font-semibold leading-none whitespace-nowrap">
             {{ tableStatus.label }}
           </UBadge>
         </div>
       </div>
     </template>
 
-    <VueDraggable
-      v-model="seatsModel"
-      tag="div"
-      class="grid grid-cols-2 gap-2"
-      :group="{ name: 'seats', pull: true, put: true }"
-      handle=".drag-handle"
-      :animation="180"
-      ghost-class="!opacity-0"
-      chosen-class="scale-95"
-      @start="emit('dragStart')"
-      @end="emit('dragEnd')"
-    >
-      <TableSeatItem
-        v-for="seat in visibleSeats"
-        :key="seat.id"
-        :seat="seat"
-        :is-dragging="isDragging"
-      />
-    </VueDraggable>
+    <div class="@container">
+      <VueDraggable
+        v-model="seatsModel"
+        tag="div"
+        class="grid grid-cols-1 @md:grid-cols-2 gap-2"
+        :group="{ name: 'seats', pull: true, put: true }"
+        handle=".drag-handle"
+        :animation="180"
+        ghost-class="!opacity-0"
+        chosen-class="scale-95"
+        @start="emit('dragStart')"
+        @end="emit('dragEnd')"
+      >
+        <TableSeatItem
+          v-for="seat in visibleSeats"
+          :key="seat.id"
+          :seat="seat"
+          :is-dragging="isDragging"
+        />
+      </VueDraggable>
+    </div>
   </UCard>
 </template>

@@ -11,6 +11,6 @@ const { t } = useI18n()
     :leading-icon="isComplete ? ICONS.confirm : ICONS.clock"
     variant="subtle"
   >
-    {{ isComplete ? t('event.pairing.complete') : t('event.pairing.inProgress') }}
+    <span class="hidden @sm:inline whitespace-nowrap">{{ isComplete ? t('event.pairing.complete') : t('event.pairing.inProgress') }}</span>
   </UBadge>
 </template>

@@ -240,7 +240,7 @@ const selectedTablePlayerRows = computed(() => {
 })
 
 const modalMaxWidth = computed(() => {
-  return localTables.value.length <= 1 ? 'max-w-2xl' : 'max-w-4xl'
+  return localTables.value.length <= 1 ? 'max-w-3xl' : 'max-w-6xl'
 })
 
 function updateTableSeats(tableIndex: number, seats: [Seat, Seat, Seat, Seat]) {

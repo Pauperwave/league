@@ -18,19 +18,24 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="flex items-center gap-2">
-    <h3 class="font-semibold">
-      {{ t('event.pairing.tableHeading', { n: tableIndex + 1 }) }}
-    </h3>
+  <div class="flex items-center gap-2 @container">
+    <div class="flex items-center gap-1.5">
+      <UIcon :name="ICONS.tableView" class="size-4 text-primary" />
+      <h3 class="font-semibold whitespace-nowrap">{{ t('event.pairing.tableHeading', { n: tableIndex + 1 }) }}</h3>
+    </div>
     <UTooltip :key="`punteggi-${pairing.pairing_id}`" :content="{ side: 'top' }" :text="t('event.pairing.viewScoresTooltip')">
       <UButton
         size="xs"
         variant="outline"
-        :label="t('event.pairing.scoresButtonLabel')"
-        :trailing-icon="ICONS.show"
+        :leading-icon="ICONS.show"
         @click="emit('viewScores', pairing.pairing_id)"
-      />
+      >
+        <span class="hidden @sm:inline whitespace-nowrap">{{ t('event.pairing.scoresButtonLabel') }}</span>
+      </UButton>
     </UTooltip>
+
+    <div class="flex-1" />
+
     <UTooltip :key="`reset-${pairing.pairing_id}`" :content="{ side: 'top' }" :text="t('event.pairing.resetTableTooltip')">
       <UButton
         size="xs"
@@ -41,16 +46,11 @@ const emit = defineEmits<{
         @click="emit('resetTable', pairing.pairing_id)"
       />
     </UTooltip>
-    <UTooltip :key="`fill-${pairing.pairing_id}`" :content="{ side: 'top' }" :text="t('event.pairing.fillConfirm.title')">
-      <UButton
-        size="xs"
-        variant="outline"
-        color="warning"
-        :icon="ICONS.quickAction"
-        :aria-label="t('event.pairing.quickFillAriaLabel')"
-        @click="emit('quickFill', pairing)"
-      />
-    </UTooltip>
+    <QuickFillButton
+      :tooltip="t('event.pairing.fillConfirm.title')"
+      :aria-label="t('event.pairing.quickFillAriaLabel')"
+      @click="emit('quickFill', pairing)"
+    />
     <TableStateBadge :is-complete="isComplete" />
   </div>
 </template>
