@@ -35,7 +35,7 @@ All 12 app tables follow the same shape: `anon` gets `SELECT`-only, `service_rol
 | `standings` | ✅ | server-side only | BFF: `/api/events/*/advance-round` etc. |
 | `waitroom` | ✅ | server-side only | BFF: `/api/events/*/register-player`/`unregister-player` |
 | `commander_decks` | ✅ | server-side only | BFF: `/api/decks/*` |
-| `mtg_commanders` | ✅ | ❌ Denied (server included) | Read-only lookup table (synced from Scryfall) |
+| `mtg_commanders` | ✅ | ❌ Denied (server included) | Read-only lookup table (synced from Scryfall). A plain `select()` is capped at 1000 rows by PostgREST regardless of table size (2986 rows here) — full-catalog reads go through the `get_commander_catalog()` RPC instead, see below |
 
 ### Denormalized Stats Tables
 
@@ -130,6 +130,14 @@ ORDER BY grantee, privilege_type;
 | `recalc_player_stats(player_id)` | Recomputes all player stats from standings + round_results |
 | `recalc_deck_stats(player_id, commander_1, commander_2)` | Recomputes deck stats from round_results |
 | `refresh_commander_stats()` | Calls `REFRESH MATERIALIZED VIEW CONCURRENTLY commander_stats` |
+
+## RPC Functions (callable client-side via `supabase.rpc()`)
+
+| Function | Returns | Purpose |
+|----------|---------|---------|
+| `get_commander_catalog()` | `json` (array) | Full `mtg_commanders` catalog in one response. PostgREST caps a plain `select()` at 1000 rows per request regardless of table size (bit the app in production — see ADR-016 in `docs/PROGRESS.md`); wrapping the result in `json_agg(row_to_json(t))` collapses it into a single JSON value, so PostgREST sees exactly one "row" and the cap never applies. `SECURITY INVOKER` (default) — runs as the calling role (`anon`), covered by `mtg_commanders`' existing `anon_read_only` policy, no extra RLS needed beyond `GRANT EXECUTE ... TO anon`. Consumed by `useCommanderCatalogQuery()` (`app/composables/commanders/useCommanderCatalogQuery.ts`), cached client-side — see `docs/architecture/client-caching.md`. |
+
+This pattern (`json_agg` RPC to sidestep the 1000-row cap) is the one to reach for if another table needs a full, unpaginated client-side read — prefer it over a manual `.range()` pagination loop, which works but costs N requests instead of 1.
 
 ## REST API Access
 

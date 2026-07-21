@@ -671,6 +671,7 @@ export type Database = {
       }
     }
     Functions: {
+      get_commander_catalog: { Args: never; Returns: Json }
       recalc_deck_stats: {
         Args: {
           p_commander_1: string

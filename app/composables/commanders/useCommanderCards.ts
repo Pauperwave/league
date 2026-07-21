@@ -164,7 +164,7 @@ export function useCommandersByNamesQuery(
 /** Query key for a single commander card lookup by name. */
 export const COMMANDER_CARD_KEY = ['commander-card']
 
-async function fetchCommanderByName(
+export async function fetchCommanderByName(
   supabase: ReturnType<typeof useSupabaseClient<Database>>,
   cardName: string
 ): Promise<CommanderCard | null> {

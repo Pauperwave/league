@@ -17,16 +17,16 @@ const emit = defineEmits<{
 const commander1 = ref(props.commander1 || '')
 const commander2 = ref(props.commander2 || '')
 
-// Load the commander whitelists
-const { whitelists, isLoading, loadAllLists, getPartnerType, getAllowedPartners } = useCommanderWhitelists()
+// Whitelists — backed by a shared, localStorage-persisted Pinia Colada query
+// (useCommanderCatalogQuery): fetches once app-wide, no manual load needed.
+const { whitelists, isLoading, refetch, getPartnerType, getAllowedPartners } = useCommanderWhitelists()
 
-// Load whitelists when the component mounts
-onMounted(() => {
-  logDebug('CommanderModal', '🚀 Component mounted, loading whitelists...')
-  loadAllLists().then(() => {
-    logDebug('CommanderModal', '✅ Whitelists loaded, commander count:', whitelists.value.commander.length)
-  })
-})
+const refreshCatalogLogging = useButtonLogging('Refresh Commander Catalog')
+
+async function onRefreshCatalog() {
+  refreshCatalogLogging.logClick()
+  await refetch()
+}
 
 // Computed: what partner type does commander1 have?
 const commander1PartnerType = computed(() => {
@@ -81,9 +81,17 @@ defineExpose({ submit })
   <div class="space-y-4">
     <!-- Commander 1 -->
     <div>
-      <label class="block text-sm font-medium mb-1">{{ t('commander.label') }}</label>
-      <div v-if="isLoading" class="text-sm text-gray-500 mb-2">
-        {{ t('commander.loadingLists') }}
+      <div class="flex items-center justify-between mb-1">
+        <label class="block text-sm font-medium">{{ t('commander.label') }}</label>
+        <UButton
+          :icon="ICONS.refresh"
+          :label="isLoading ? t('commander.refreshingCatalog') : t('commander.refreshCatalog')"
+          size="xs"
+          color="neutral"
+          variant="ghost"
+          :loading="isLoading"
+          @click="onRefreshCatalog"
+        />
       </div>
       <CommanderSearch
         v-model="commander1"

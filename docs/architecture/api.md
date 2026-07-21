@@ -112,7 +112,7 @@ Read/write both scoped to an event, not a standalone entity: see Events' registe
 | `player_stats` | `usePlayerStats`/`useAllPlayerStats` | DB trigger on `round_results` changes only |
 | `deck_stats` | `useDeckStats` | DB trigger on `round_results` changes only |
 | `commander_stats` (materialized view) | `useCommanderStats`/`useAllCommanderStats` | DB trigger refresh on `round_results` changes only |
-| `mtg_commanders` | `useCommanderCards`/`useCommandersByNamesQuery` | Scryfall sync job, not the app |
+| `mtg_commanders` | `useCommanderCards`/`useCommandersByNamesQuery` (per-name lookups); `useCommanderCatalogQuery` via the `get_commander_catalog()` RPC (full-catalog read, powers `useCommanderWhitelists`/`useCommanderSearch` — see `docs/architecture/database.md`'s RPC Functions section) | Scryfall sync job, not the app |
 | `standings` | `useEventStandingsQuery`/`useLeagueStandingsQuery`/`useMultipleEventStandingsQuery` | Only `events/:id/advance-round` (and rollback via `turn-back-round`) — never a direct standings-CRUD endpoint |
 
 ## Cross-cutting notes

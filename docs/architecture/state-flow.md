@@ -156,8 +156,8 @@ export function useXxx(id: Ref<number | undefined>) {
 | `usePairingPresets()` | Saved player order presets |
 | `useOptimizationNotifier()` | Toast notifications for pairing optimizer |
 | `useCommanderCards()` | Local DB commander card data fetching |
-| `useCardSearch()` | Card search with debounce |
-| `useCardWhitelists()` | LocalStorage-cached card whitelist |
+| `useCommanderSearch()` | Commander autocomplete search, filtered client-side from `useCommanderCatalogQuery()`'s cached catalog |
+| `useCommanderWhitelists()` | Partner/background/companion whitelists derived from `useCommanderCatalogQuery()` |
 
 ---
 
@@ -215,9 +215,10 @@ Vue reactivity updates WaitingList.vue UI
 
 | Layer | Cache | Invalidation |
 |-------|-------|--------------|
-| **Browser** | `localStorage` (card whitelists) | TTL-based (`useCardWhitelists`) |
-| **Nuxt SSR** | `useAsyncData` cache | `refreshNuxtData(key)` or page navigation |
-| **Pinia store** | Reactive refs | Overwritten on fetch, optimistic updates on mutation |
+| **Browser (Colada queries)** | `localStorage`, all Colada query entries — see [`client-caching.md`](client-caching.md) | `staleTime`/`gcTime` per query (5s/5min default, 30 days for the commander catalog); manual `refetch()` |
+| **Browser (session stores)** | `localStorage`, one key per event — see [`client-caching.md`](client-caching.md) | 12h TTL or round-number mismatch (`useSessionStorePersistence`) |
+| **Nuxt SSR** | `useAsyncData` cache (non-Colada composables only) | `refreshNuxtData(key)` or page navigation |
+| **Pinia store** | Reactive refs (lifecycle + session stores only) | Overwritten on fetch, optimistic updates on mutation |
 | **PostgreSQL** | Materialized view (`commander_stats`) | Refreshed by trigger on `round_results` changes |
 
 ---

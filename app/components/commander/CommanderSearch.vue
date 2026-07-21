@@ -28,8 +28,8 @@ const {
   selectCurrent,
   closeSuggestions,
 } = useCommanderSearch({
-  whitelist: props.whitelist,
-  playerId: props.playerId,
+  whitelist: () => props.whitelist,
+  playerId: () => props.playerId,
 })
 
 // Logging when the card changes
@@ -155,7 +155,7 @@ function handleKeydown(e: KeyboardEvent) {
         </span>
 
         <!-- Highlighted card name -->
-        <span class="truncate">
+        <span class="truncate min-w-0">
           <component :is="() => highlightMatch(suggestion, query)" />
         </span>
       </div>

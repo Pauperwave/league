@@ -11,6 +11,8 @@ Master index of all project documentation.
 | `AGENTS.md` | Core requirements, code style, Vue/Pinia conventions, error handling, testing strategy, fallow workflow | Required reading for all agents |
 | `architecture/api.md` | CRUD matrix per entity: which operations exist, which `server/api/*` endpoint backs each, deliberate gaps (no player delete, no pairing CRUD) and inconsistencies (409 vs 500 on in-use delete) | API reference |
 | `architecture/async-data-keys.md` | useAsyncData key naming convention (`{domain}-{scope}-{id}`), full inventory, collision history | Data fetching |
+| `architecture/client-caching.md` | The two independent localStorage caching mechanisms (Pinia Colada cache persister vs. `getCached`/`setCached` session-store mirror) — what each stores, why they're kept separate | Data fetching |
+| `architecture/commander-whitelists.md` | How commander2 whitelisting works: catalog fetch/cache, per-partner-type buckets, the Background/background-commander bidirectional split, client-side search filtering | Domain logic |
 | `architecture/component-hierarchy.md` | Component tree for every page, reusable component catalog, directory structure | Component reference |
 | `architecture/database.md` | RLS policies, denormalized stats tables, trigger architecture, migration conventions | Database ops |
 | `architecture/event-flow.md` | Event lifecycle: creation → registration → playing → ended, DB mutations per phase | Event logic |
@@ -54,7 +56,9 @@ Master index of all project documentation.
 1. `architecture/component-hierarchy.md` — component catalog and page composition
 2. `architecture/routes.md` — route structure and parameters
 3. `architecture/async-data-keys.md` — data fetching conventions
-4. `architecture/modal-url-sync.md` — URL state persistence
+4. `architecture/client-caching.md` — localStorage caching mechanisms (Colada persister vs. session-store mirror)
+5. `architecture/modal-url-sync.md` — URL state persistence
+6. `architecture/commander-whitelists.md` — commander2 partner/background whitelisting logic
 
 ### For Code Quality
 
@@ -77,6 +81,8 @@ docs/
 ├── AGENTS.md
 ├── architecture/
 │   ├── async-data-keys.md
+│   ├── client-caching.md
+│   ├── commander-whitelists.md
 │   ├── component-hierarchy.md
 │   ├── database.md
 │   ├── event-flow.md

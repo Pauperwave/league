@@ -1,14 +1,13 @@
 // app\composables\commanders\useCommanderSearch.ts
-import { mapToCommanderCard, type CommanderCard } from './useCommanderCards'
+import { fetchCommanderByName, type CommanderCard } from './useCommanderCards'
 import type { Database } from '#shared/utils/types/database'
-
-type SuggestionRow = { card_name: string; mana_cost: string | null; edhrec_rank: number | null }
+import type { CommanderCatalogRow } from './useCommanderCatalogQuery'
 
 async function reorderByPlayerUsage(
   supabase: ReturnType<typeof useSupabaseClient<Database>>,
-  data: SuggestionRow[],
+  data: CommanderCatalogRow[],
   playerId: number
-): Promise<SuggestionRow[]> {
+): Promise<CommanderCatalogRow[]> {
   const { data: usedData, error: usedError } = await supabase
     .from('round_results')
     .select('commander_1, commander_2')
@@ -23,10 +22,10 @@ async function reorderByPlayerUsage(
   }
 
   return [...data].sort((a, b) => {
-    const aUsed = usedNames.has(a.card_name) ? 1 : 0
-    const bUsed = usedNames.has(b.card_name) ? 1 : 0
+    const aUsed = usedNames.has(a.name) ? 1 : 0
+    const bUsed = usedNames.has(b.name) ? 1 : 0
     if (aUsed !== bUsed) return bUsed - aUsed
-    return (a.edhrec_rank ?? 999999) - (b.edhrec_rank ?? 999999)
+    return (a.edhrecRank ?? 999999) - (b.edhrecRank ?? 999999)
   })
 }
 
@@ -36,12 +35,14 @@ function parseManaCost(manaCost: string | null): string[] {
 }
 
 export interface UseCommanderSearchOptions {
-  whitelist?: string[] | null
-  playerId?: number | null
+  whitelist?: MaybeRefOrGetter<string[] | null | undefined>
+  playerId?: MaybeRefOrGetter<number | null | undefined>
 }
 
 export function useCommanderSearch(options: UseCommanderSearchOptions = {}) {
-  const supabase = useSupabaseClient()
+  const supabase = useSupabaseClient<Database>()
+  const { data: catalog } = useCommanderCatalogQuery()
+
   const query = ref('')
   const suggestions = ref<string[]>([])
   const suggestionMeta = ref<Record<string, { tokens: string[] }>>({})
@@ -54,39 +55,29 @@ export function useCommanderSearch(options: UseCommanderSearchOptions = {}) {
     isLoading.value = true
     try {
       const trimmed = q.trim().toLowerCase()
-      let dbQuery = supabase
-        .from('mtg_commanders')
-        .select('card_name, mana_cost, edhrec_rank')
+      const whitelist = toValue(options.whitelist)
+      const whitelistSet = whitelist && whitelist.length > 0
+        ? new Set(whitelist)
+        : null
 
-      if (trimmed.length >= 1) {
-        dbQuery = dbQuery.ilike('card_name', `%${trimmed}%`)
-      }
+      let result = (catalog.value ?? []).filter((row) => {
+        if (whitelistSet && !whitelistSet.has(row.name)) return false
+        if (trimmed.length >= 1 && !row.name.toLowerCase().includes(trimmed)) return false
+        return true
+      })
 
-      if (options.whitelist && options.whitelist.length > 0) {
-        dbQuery = dbQuery.in('card_name', options.whitelist)
-      }
-
-      const { data, error } = await dbQuery
-        .order('edhrec_rank', { ascending: true })
-        .limit(50)
-
-      if (error || !data) {
-        console.error('[useCommanderSearch] DB error:', error?.message)
-        suggestions.value = []
-        suggestionMeta.value = {}
-        return
-      }
-
-      let result: SuggestionRow[] = data
+      result.sort((a, b) => (a.edhrecRank ?? 999999) - (b.edhrecRank ?? 999999))
+      result = result.slice(0, 50)
 
       // If a playerId is provided, reorder: used commanders first, then by edhrec_rank
-      if (options.playerId !== null && options.playerId !== undefined) {
-        result = await reorderByPlayerUsage(supabase, data, options.playerId)
+      const playerId = toValue(options.playerId)
+      if (playerId !== null && playerId !== undefined) {
+        result = await reorderByPlayerUsage(supabase, result, playerId)
       }
 
-      suggestions.value = result.map(r => r.card_name)
+      suggestions.value = result.map(r => r.name)
       suggestionMeta.value = Object.fromEntries(
-        result.map(r => [r.card_name, { tokens: parseManaCost(r.mana_cost) }])
+        result.map(r => [r.name, { tokens: parseManaCost(r.manaCost) }])
       )
     } finally {
       isLoading.value = false
@@ -94,24 +85,8 @@ export function useCommanderSearch(options: UseCommanderSearchOptions = {}) {
   }
 
   async function handleSelect(name: string) {
-    const { data, error } = await supabase
-      .from('mtg_commanders')
-      .select('*')
-      .eq('card_name', name)
-      .single()
-
-    if (error || !data) {
-      console.error(`[useCommanderSearch] Card not found: "${name}"`, error?.message)
-      card.value = null
-      return
-    }
-
-    try {
-      card.value = mapToCommanderCard(data)
-    } catch (err) {
-      console.error(`[useCommanderSearch] Validation error for "${name}":`, err)
-      card.value = null
-    }
+    const data = await fetchCommanderByName(supabase, name)
+    card.value = data
   }
 
   function navigateSuggestions(direction: 'up' | 'down') {

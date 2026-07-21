@@ -1,81 +1,77 @@
 // app\composables\commanders\useCommanderWhitelists.ts
 
 export function useCommanderWhitelists() {
-  const whitelists = ref({
-    commander: [] as string[],
-    partner: [] as string[],
-    partnerWith: [] as string[],
-    background: [] as string[],
-    doctorsCompanion: [] as string[],
-    companion: [] as string[],
-    friendForever: [] as string[],
+  const { data: catalog, isLoading, refetch } = useCommanderCatalogQuery()
+
+  const whitelists = computed(() => {
+    const result = {
+      commander: [] as string[],
+      partner: [] as string[],
+      partnerWith: [] as string[],
+      // True Background enchantment cards (e.g. "Candlekeep Sage") — valid
+      // commander2 options for a background_commander commander1.
+      background: [] as string[],
+      // Legendary creatures with "Choose a Background" (e.g. "Jaheira, Friend
+      // of the Forest") — these need an actual Background as their second
+      // commander, NOT another background-choosing creature. Kept in a
+      // separate array from `background` so the two can never be offered as
+      // partners for each other (they were previously merged into one list,
+      // which incorrectly allowed pairing two background-choosing creatures).
+      backgroundCommander: [] as string[],
+      doctorsCompanion: [] as string[],
+      companion: [] as string[],
+      friendForever: [] as string[],
+    }
+
+    for (const row of catalog.value ?? []) {
+      result.commander.push(row.name)
+
+      switch (row.partnerType) {
+        case 'partner':
+          result.partner.push(row.name)
+          break
+        case 'partner_with':
+          result.partnerWith.push(row.name)
+          break
+        case 'background':
+          result.background.push(row.name)
+          break
+        case 'background_commander':
+          result.backgroundCommander.push(row.name)
+          break
+        case 'doctors_companion':
+          result.doctorsCompanion.push(row.name)
+          break
+        case 'friends_forever':
+          result.friendForever.push(row.name)
+          break
+      }
+
+      if (row.keywords.includes('Companion')) {
+        result.companion.push(row.name)
+      }
+    }
+
+    return result
   })
 
-  const isLoading = ref(true)
-  const partnerTypeByName = ref<Map<string, string>>(new Map())
-  const partnerWithMap = ref<Map<string, string>>(new Map())
-
-  async function loadAllLists() {
-    const supabase = useSupabaseClient()
-    isLoading.value = true
-
-    try {
-      const { data, error } = await supabase
-        .from('mtg_commanders')
-        .select('card_name, partner_type, keywords, partner_with_scryfall_id')
-
-      if (error || !data) {
-        console.error('[useCommanderWhitelists] Error fetching commanders:', error?.message)
-        return
-      }
-
-      // Reset
-      whitelists.value.commander = []
-      whitelists.value.partner = []
-      whitelists.value.partnerWith = []
-      whitelists.value.background = []
-      whitelists.value.doctorsCompanion = []
-      whitelists.value.companion = []
-      whitelists.value.friendForever = []
-      partnerTypeByName.value.clear()
-      partnerWithMap.value.clear()
-
-      for (const row of data) {
-        const name = row.card_name
-        whitelists.value.commander.push(name)
-        partnerTypeByName.value.set(name, row.partner_type || 'commander')
-
-        if (row.partner_type === 'partner_with' && row.partner_with_scryfall_id) {
-          partnerWithMap.value.set(name, row.partner_with_scryfall_id)
-        }
-
-        switch (row.partner_type) {
-          case 'partner':
-            whitelists.value.partner.push(name)
-            break
-          case 'partner_with':
-            whitelists.value.partnerWith.push(name)
-            break
-          case 'background':
-          case 'background_commander':
-            whitelists.value.background.push(name)
-            break
-          case 'doctors_companion':
-            whitelists.value.doctorsCompanion.push(name)
-            break
-          case 'friends_forever':
-            whitelists.value.friendForever.push(name)
-            break
-        }
-
-        if (row.keywords?.includes('Companion')) {
-          whitelists.value.companion.push(name)
-        }
-      }
-    } finally {
-      isLoading.value = false
+  const partnerTypeByName = computed(() => {
+    const map = new Map<string, string>()
+    for (const row of catalog.value ?? []) {
+      map.set(row.name, row.partnerType || 'commander')
     }
-  }
+    return map
+  })
+
+  const partnerWithMap = computed(() => {
+    const map = new Map<string, string>()
+    for (const row of catalog.value ?? []) {
+      if (row.partnerType === 'partner_with' && row.partnerWithScryfallId) {
+        map.set(row.name, row.partnerWithScryfallId)
+      }
+    }
+    return map
+  })
 
   /**
    * Get the partner_type for a given commander name.
@@ -99,9 +95,13 @@ export function useCommanderWhitelists() {
         // For "partner with", return all partnerWith cards
         // In the future, this could be narrowed to the exact matching partner
         return [...whitelists.value.partnerWith]
-      case 'background':
       case 'background_commander':
+        // A "Choose a Background" creature needs an actual Background card.
         return [...whitelists.value.background]
+      case 'background':
+        // An actual Background card (rarely picked as commander1 in the UI,
+        // but supported) needs a background-choosing creature.
+        return [...whitelists.value.backgroundCommander]
       case 'friends_forever':
         return [...whitelists.value.friendForever]
       case 'doctors_companion':
@@ -115,9 +115,9 @@ export function useCommanderWhitelists() {
   }
 
   return {
-    whitelists: readonly(whitelists),
-    isLoading: readonly(isLoading),
-    loadAllLists,
+    whitelists,
+    isLoading,
+    refetch,
     getPartnerType,
     getAllowedPartners,
   }
