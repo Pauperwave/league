@@ -1,4 +1,4 @@
-<!-- app\pages\leagues.vue -->
+<!-- app\pages\leagues\index.vue -->
 <script setup lang="ts">
 import type { League } from '#shared/utils/types'
 
