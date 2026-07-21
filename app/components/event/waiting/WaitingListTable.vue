@@ -1,6 +1,6 @@
 <!-- app\components\event\waiting\WaitingListTable.vue -->
 <script setup lang="ts">
-import type { TableColumn } from '@nuxt/ui'
+import type { TableColumn, CheckboxProps } from '@nuxt/ui'
 import { UCheckbox } from '#components'
 import RowActionButtons from '~/components/ui/actions/RowActionButtons.vue'
 
@@ -104,7 +104,7 @@ function setPlayer(playerId: number, field: 'paid' | 'companion', value: boolean
 
 function createToggleColumn(
   id: 'companion' | 'paid',
-  color: 'warning' | 'success',
+  color: CheckboxProps['color'],
   headerKey: string,
   ariaLabelKey: string,
 ): TableColumn<WaitingPlayer> {

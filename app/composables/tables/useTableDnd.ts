@@ -1,5 +1,6 @@
 // app\composables\tables\useTableDnd.ts
 // State and validation layer for table drag-and-drop plus pairing constraints/scoring.
+import type { BadgeProps } from '@nuxt/ui'
 import type {
   PairingForbiddenPair,
   PairingWeights,
@@ -7,6 +8,11 @@ import type {
   Seat,
 } from '#shared/utils/types'
 import type { PairingPlayer, PairingHistoryEntry, PairingScoreDetails } from '~/composables/event-pairing/pairingOptimizer'
+
+export interface TableStatus {
+  color: BadgeProps['color']
+  label: string
+}
 
 function cloneTables(tables: TournamentTable[]): TournamentTable[] {
   return tables.map(table => ({
@@ -254,7 +260,7 @@ export function useTableDnd(initialTables: TournamentTable[], params?: {
     localTables.value = ensureTableSeatShape(cloneTables(tables))
   }
 
-  function tableStatus(table: TournamentTable) {
+  function tableStatus(table: TournamentTable): TableStatus {
     if (conflictingTables.value.has(table.id)) {
       return { color: 'error' as const, label: 'Conflitto' }
     }

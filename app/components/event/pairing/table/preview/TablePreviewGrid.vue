@@ -1,11 +1,7 @@
 <!-- app\components\event\pairing\table\preview\TablePreviewGrid.vue -->
 <script setup lang="ts">
 import type { Seat, TournamentTable } from '#shared/utils/types'
-
-interface TableStatus {
-  color: 'success' | 'warning' | 'error'
-  label: string
-}
+import type { TableStatus } from '~/composables/tables/useTableDnd'
 
 const { tables, isDragging, getTableCardClass, getTableStatus, getTableScore } = defineProps<{
   tables: TournamentTable[]
