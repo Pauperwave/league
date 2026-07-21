@@ -93,7 +93,15 @@ defineExpose({
       v-model="internalStep"
       :items="items"
       class="w-full"
-      :ui="{ content: 'w-full' }"
+      :ui="{
+        content: 'w-full',
+        // Step nav (registration + every round + ended) scrolls horizontally
+        // on narrow screens instead of squeezing every item's title/description
+        // to fit the viewport — only the nav header, not the per-step content
+        // below it, which stays full-width.
+        header: 'overflow-x-auto pb-1',
+        item: 'shrink-0 min-w-28 w-auto',
+      }"
       @update:model-value="handleStepClick"
     >
       <template #content="{ item }">
