@@ -88,14 +88,9 @@ Merged with the "Booster pack reward per round" note below into a single actiona
 
 `EventControlPanel.vue:89` — the advance-round *and* end-event actions share one button whose color is purely `props.canAdvance ? 'success' : 'neutral'` (text changes via `isLastRound` at line 93, color doesn't). Ending the event is a bigger, less-reversible action than advancing a round; consider splitting the color logic so the last-round case renders `warning` instead of `success` regardless of `canAdvance`.
 
-### 11. Bug: final standings wrong after "Termina evento" — round scores double-counted via turn-back-round
+### 11. ~~Bug: final standings wrong after "Termina evento" — round scores double-counted via turn-back-round~~ — fixed 2026-07-21
 
-Confirmed real data bug, not a staleness/cache issue (ruled out: `refreshAfterLifecycle()` in `useEventPage.ts:136-144` does refetch standings correctly after every transition — the data shown is fresh, just wrong at the source). Root cause:
-- `advance-round.post.ts:65-81` scores the *closing* round by **adding** its contribution onto the persisted `standings` row (`shared/utils/roundScoring.ts:88-142` `calculateRoundScores`, `+=` semantics; `:145-175` `updateStandingsAndRanks` writes it back). "Termina evento" is the same code path (`useEventLifecycle.ts:63-67` → `nextRound()` with `hasEnded=true`).
-- `turn-back-round.post.ts:33-100` (round > 1 branch) reopens the previous round by decrementing `event_current_round` and deleting only that round's `pairings`/`round_results` — it never reverses the score already added to `standings` for the round being reopened.
-- Net effect: turn back a round, then re-advance/re-end (even without changing anything) — `calculateRoundScores` re-fetches and **re-adds** that round's score on top of what's already in `standings`. That round's points get counted twice, inflating the final totals.
-
-**This overlaps `docs/BACKLOG.md` #12 (idempotency guards)** — fixing both together makes sense: the real fix is probably making standings a derived `SUM` over per-round scores rather than a stateful `+=`, which would close this bug and remove most of the idempotency risk in #12's `advance-round`/`start` bullet points at once. Touches `turn-back-round.post.ts`'s round>1 branch at minimum.
+Fixed by making standings a full recompute instead of a stateful `+=`: `fetchRoundData` (`shared/utils/roundScoring.ts`) now fetches every pairing/result through `currentRound` (`.lte('pairing_round', currentRound)`, was `.eq(...)`) and seeds the accumulator at zero instead of from the persisted `standings` row. `updateStandingsAndRanks` already wrote absolute values, not increments, so this alone makes `advance-round` idempotent — calling it (or turning back and re-advancing) twice for the same round set now always yields the same totals. `turn-back-round.post.ts`'s round>1 branch needed no change: it already left `standings` untouched, and the next `advance-round` self-corrects. See ADR in `docs/PROGRESS.md`. Also closes `docs/BACKLOG.md` #12's `advance-round` bullet (its `start`/round-result-duplicate bullets are unrelated and still open).
 
 ### 12. Bug: going back to a previous round breaks navigation state — only the UStepper should control "viewing last round results"
 

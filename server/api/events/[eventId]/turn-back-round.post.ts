@@ -31,6 +31,12 @@ export default defineEventHandler(async (event) => {
   }
 
   if (currentRound > 1) {
+    // Standings are NOT touched here on purpose (BACKLOG #11 fix): the next
+    // advance-round call recomputes standings from scratch over whatever
+    // pairings/round_results still exist (see roundScoring.ts's
+    // fetchRoundData), so once this round's rows are deleted below, standings
+    // self-correct on the next advance — no explicit reversal needed.
+
     // Delete this round's results before its pairings — round_results.pairing_id
     // is ON DELETE RESTRICT (2026-07-19 migration), so a pairing can't be
     // removed while results still reference it. Turning back a round that

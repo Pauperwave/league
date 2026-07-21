@@ -61,11 +61,13 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // Score the closing round and accumulate into standings.
+  // Recompute standings from scratch over every round through currentRound
+  // (idempotent — see fetchRoundData's comment for why this replaced the old
+  // add-onto-persisted-value approach, BACKLOG #11/#12).
   try {
     const { ruleset, posValues } = await resolveEventRuleset(supabase, eventId)
     const { pairings, results, standingsMap } = await fetchRoundData(supabase, eventId, currentRound)
-    console.log('[api/advance-round] scoring round', { eventId, currentRound, pairings: pairings.length, results: results.length, players: standingsMap.size })
+    console.log('[api/advance-round] scoring rounds 1..N', { eventId, currentRound, pairings: pairings.length, results: results.length, players: standingsMap.size })
     calculateRoundScores(pairings, results, standingsMap, posValues, ruleset)
     await updateStandingsAndRanks(supabase, eventId, standingsMap)
     console.log('[api/advance-round] standings updated', {

@@ -80,8 +80,9 @@ export const useEventStore = defineStore('events', () => {
 
   /**
    * Advance to the next round via the BFF endpoint (ADR-013): the server owns
-   * the whole atomic transition (score round → accumulate standings → advance
-   * or end the event → insert next pairings from the confirmed playerOrder).
+   * the whole atomic transition (recompute standings from all rounds so far,
+   * idempotently — ADR-020 — → advance or end the event → insert next
+   * pairings from the confirmed playerOrder).
    * The pairing optimizer stays client-side (device-local preferences) — the
    * preview modal's confirmed order travels in the request body.
    */

@@ -52,11 +52,24 @@ export async function resolveEventRuleset(supabase: SupabaseClient<Database>, ev
   return { ruleset, posValues, eventRoundNumber: eventData.event_round_number }
 }
 
-/** Fetch pairings, round results, and current standings for a round */
+/**
+ * Fetch every pairing/result through `currentRound` (not just the round being
+ * closed) and a zeroed accumulator per player, so the caller recomputes the
+ * full standings from scratch instead of adding onto whatever is persisted.
+ *
+ * This is the fix for BACKLOG #11/#12: the previous version seeded the
+ * accumulator from the *already-persisted* standings row and only fetched the
+ * single round being closed, which double-counted a round's score if it was
+ * ever turned back and re-advanced (the persisted value already included it).
+ * Recomputing cumulatively from `round_results` every time is idempotent —
+ * calling this twice for the same round set always yields the same totals —
+ * since `updateStandingsAndRanks` writes the result as an absolute value, not
+ * an increment.
+ */
 export async function fetchRoundData(supabase: SupabaseClient<Database>, eventId: number, currentRound: number) {
   const [{ data: pairingsData, error: pairingsError }, { data: currentStandings, error: currentStandingsError }] = await Promise.all([
-    supabase.from('pairings').select('*').eq('event_id', eventId).eq('pairing_round', currentRound),
-    supabase.from('standings').select('player_id, standing_player_score, victories, brew_received, play_received').eq('event_id', eventId),
+    supabase.from('pairings').select('*').eq('event_id', eventId).lte('pairing_round', currentRound),
+    supabase.from('standings').select('player_id').eq('event_id', eventId),
   ])
 
   if (pairingsError) throw pairingsError
@@ -74,10 +87,10 @@ export async function fetchRoundData(supabase: SupabaseClient<Database>, eventId
   const standingsMap = new Map<number, StandingAccumulator>(
     (currentStandings ?? []).map(s => [s.player_id, {
       player_id: s.player_id,
-      standing_player_score: s.standing_player_score ?? 0,
-      victories: s.victories ?? 0,
-      brew_received: s.brew_received ?? 0,
-      play_received: s.play_received ?? 0,
+      standing_player_score: 0,
+      victories: 0,
+      brew_received: 0,
+      play_received: 0,
     }])
   )
 

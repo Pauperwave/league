@@ -206,13 +206,13 @@ Needs a first concrete use case before pulling in the dependency (don't add a ch
 
 Found 2026-07-20, event-lifecycle fragility audit. None of `advance-round`, `start`, or round-result submission (`upsertRoundResult`) have a DB-level uniqueness constraint or an idempotency check — only a client-trusted "is the round what you think" comparison (TOCTOU, not a lock):
 
-- `advance-round`: round score is **added** to existing standings, not set absolutely — a retried call before `event_current_round` advances double-counts that round's score.
+- ~~`advance-round`: round score is **added** to existing standings, not set absolutely — a retried call before `event_current_round` advances double-counts that round's score.~~ — **fixed 2026-07-21** (see `docs/TODO.md` #11 / ADR in `docs/PROGRESS.md`): `fetchRoundData` now recomputes standings from scratch over every round through `currentRound` instead of adding onto the persisted value, which makes `advance-round` naturally idempotent to retries and turn-back/re-advance cycles alike.
 - `start`: no unique constraint on `standings (event_id, player_id)` — a retried call could insert a second full set of standings rows.
 - Round-result submission: no unique constraint on `round_results (pairing_id, player_id)` — a duplicate row inflates `samePositionCount` in `calculateRoundScores` (`shared/utils/roundScoring.ts`), skewing the rank-split math for every player at that table, not just the duplicate.
 
-Confirmed: zero duplicates exist in production today (checked directly) — this is a latent risk, not a manifested corruption. The main client-side trigger (double-click on the lifecycle buttons) is now closed — see `docs/PROGRESS.md`'s 2026-07-20 entry — but that's a store-level in-memory guard, not a DB constraint: it doesn't protect against two different tabs/sessions, or a direct API retry bypassing the store entirely. This item stays open for that reason.
+Confirmed: zero duplicates exist in production today (checked directly) — this is a latent risk, not a manifested corruption. The main client-side trigger (double-click on the lifecycle buttons) is now closed — see `docs/PROGRESS.md`'s 2026-07-20 entry — but that's a store-level in-memory guard, not a DB constraint: it doesn't protect against two different tabs/sessions, or a direct API retry bypassing the store entirely. This item stays open for the remaining two bullets.
 
-**TDD approach**: write API tests that call each endpoint twice in a row (the realistic double-click/retry scenario) and assert the *second* call is a no-op or a clean rejection, not a second mutation. Fix via unique constraints (`standings (event_id, player_id)`, `round_results (pairing_id, player_id)`) plus upsert-on-conflict logic, and switching `advance-round`'s standings update to set absolute values computed from all rounds so far rather than incrementing.
+**TDD approach**: write API tests that call each endpoint twice in a row (the realistic double-click/retry scenario) and assert the *second* call is a no-op or a clean rejection, not a second mutation. Fix via unique constraints (`standings (event_id, player_id)`, `round_results (pairing_id, player_id)`) plus upsert-on-conflict logic.
 
 ---
 
