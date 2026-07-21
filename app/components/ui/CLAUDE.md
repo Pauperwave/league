@@ -33,6 +33,7 @@ This was a real, shipped bug, not just style: `DeckEditModal.vue`'s `update` emi
 
 ## Other pieces here
 
+- **`actions/QuickFillButton`** — a dev-only "fill with test data" trigger (`tooltip`, `ariaLabel?`, `size?`, `@click`). Renders nothing unless the app-wide developer view (`useDeveloperView.ts`, toggled via `DeveloperViewToggle` in the header) is on — callers don't gate visibility themselves. Used by `PairingsCard.vue` (fill-all) and `TableCardActions.vue` (single table) specifically so both share one icon/color/variant instead of drifting apart, which is what happened before this was extracted (2026-07-21).
 - **`layout/ListPageShell`** — the list-page chrome (breadcrumb, home/title/add header row, error alert, loading spinner, content slot, `#extra` slot for always-mounted modals). Used by `leagues.vue`/`rulesets.vue`. Only reuse for pages that share that exact `min-h-screen bg-default` list-page shape — `decks/index.vue`/`players/index.vue` have a different shell (`container mx-auto p-6 space-y-6` with an inline header row) and weren't forced into this one.
 - **`display/StatTile`** — the icon + big-number + label tile repeated in stat grids (`icon`, `value`, `label`, optional `color`/`background`). Check here before hand-rolling another `flex items-center gap-3 p-3 rounded-lg` stat box.
 - **`display/BaseTable`** — generic wrapper around `UTable` with a standard empty state (`emptyTitle`/`emptyDescription`/`emptyIcon`).
