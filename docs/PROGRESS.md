@@ -2,7 +2,7 @@
 
 Documento vivo per tracciare avanzamento, architettura e decisioni. Aggiornare quando cambiano scope, stack o convenzioni rilevanti.
 
-**Ultimo aggiornamento:** 2026-07-21
+**Ultimo aggiornamento:** 2026-07-22
 
 ---
 
@@ -265,7 +265,26 @@ Gli store di sessione hanno **persistenza ottimistica**: update immediato UI + s
 - **Bug:** dopo un "torna indietro" di round seguito da un nuovo "avanza round" (anche senza modifiche), il punteggio di quel round veniva sommato una seconda volta a `standings` — `fetchRoundData` (`shared/utils/roundScoring.ts`) seedava l'accumulatore dai valori **già persistiti** e recuperava solo il round in chiusura, mentre `turn-back-round.post.ts` non annullava mai quel contributo. Scoperto durante l'audit di `fallow:health` (file senza test), documentato in `docs/TODO.md` #11 prima del fix.
 - **Fix:** `fetchRoundData` ora recupera **tutti** i pairing/round_results fino al round corrente incluso (`.lte('pairing_round', currentRound)`, prima `.eq(...)`) e inizializza l'accumulatore a zero invece che dai valori persistiti — quindi ogni chiamata ricalcola il totale assoluto da zero su tutti i round chiusi finora. `updateStandingsAndRanks` scriveva già valori assoluti (non incrementali), quindi non ha richiesto modifiche: il fix è bastato lato lettura/accumulo. Risultato: `advance-round` è ora idempotente rispetto a retry e a cicli turn-back/re-advance — chiude anche il bullet `advance-round` di BACKLOG #12 (restano aperti solo i bullet `start` e round-result duplicati, senza relazione con questo bug).
 - **`turn-back-round.post.ts` non modificato**: già non toccava `standings` nel branch round>1 — con `advance-round` ora idempotente, il prossimo "avanza round" si autocorregge da solo ricalcolando sui pairing/round_results rimasti dopo la cancellazione del round riaperto. Aggiunto solo un commento esplicativo.
-- **Test**: aggiunti 12 unit test in `test/unit/utils/roundScoring.test.ts` per le funzioni pure (`buildRoundOneTables`, `buildPairingRows`, `calculateRoundScores`) — coprono split tavoli, pareggi di posizione, pesi kill/brew/play. **Non coperte**: le 3 funzioni che chiamano Supabase direttamente (`resolveEventRuleset`, `fetchRoundData`, `updateStandingsAndRanks`) — il progetto non ha ancora un pattern per mockare il client Supabase nei test unitari; lasciato come lavoro futuro separato.
+- **Test**: aggiunti 12 unit test in `test/unit/shared/utils/roundScoring.test.ts` per le funzioni pure (`buildRoundOneTables`, `buildPairingRows`, `calculateRoundScores`) — coprono split tavoli, pareggi di posizione, pesi kill/brew/play. **Non coperte**: le 3 funzioni che chiamano Supabase direttamente (`resolveEventRuleset`, `fetchRoundData`, `updateStandingsAndRanks`) — il progetto non ha ancora un pattern per mockare il client Supabase nei test unitari; lasciato come lavoro futuro separato.
+
+### ADR-021 — `CommanderSearch` migrato a `USelectMenu`, gruppo "mazzi già usati"
+
+- **Contesto:** `CommanderSearch.vue` era un combobox scritto interamente a mano (`UInput` + lista suggerimenti posizionata `absolute`, navigazione da tastiera custom in `handleKeydown`/`navigateSuggestions`/`selectCurrent`/`closeSuggestions`). `useCommanderSearch.ts` già ordinava i comandanti già giocati dal player in cima alla lista (`reorderByPlayerUsage`), ma mescolati nella stessa lista piatta, non separati visivamente.
+- **Decisione:** sostituito con `USelectMenu` di Nuxt UI — `ignore-filter` + `v-model:search-term` per riusare il filtro client-side già esistente sul catalogo cachato, navigazione da tastiera/a11y nativa, `value-key="label"` per mantenere l'API esterna (`v-model` stringa) invariata su `CommanderModal.vue`. `useCommanderSearch.ts` ora produce **gruppi** (`suggestionGroups: CommanderSuggestionItem[][]`) invece di una lista piatta con `suggestionMeta` separato — un gruppo "Mazzi già giocati" (solo se non vuoto) seguito dal resto, sfruttando il supporto nativo di `USelectMenu` per array-di-array con item `type: 'label'` come intestazione.
+- **Bug corretto nello stesso passaggio:** i suggerimenti non comparivano finché l'utente non digitava (query vuota → lista svuotata), e non si aggiornavano se cambiava solo la whitelist (es. cambio comandante1) a query invariata. Ora un `watch([query, whitelist], ..., { immediate: true })` ricopre entrambi i casi — una whitelist corta (es. "30 carte compatibili" per un Background) è sfogliabile subito all'apertura, senza digitare nulla.
+- **Rimosso**: l'evidenziazione del testo cercato (`highlightMatch`) — `USelectMenu` non la supporta nativamente e non è stata considerata essenziale abbastanza da giustificare uno slot custom aggiuntivo.
+
+### ADR-022 — Layout 50/50 + motion per il secondo comandante
+
+- `CommanderModal.vue`: i campi comandante1/comandante2 ora stanno affiancati (`flex-1` ciascuno) invece che impilati, e il badge "N carte compatibili" è stato spostato accanto all'etichetta (era su una riga propria, spingeva il campo di ricerca più in basso).
+- Il campo del secondo comandante compare/scompare con un fade + slide laterale (`<Motion>`/`<AnimatePresence>`, pacchetto `motion-v` — già una dipendenza installata ma mai usata prima in questa sessione) in base al partner type del primo comandante.
+
+### ADR-023 — Bracket level (1-5) per mazzo
+
+- **Cosa:** i giocatori possono ora auto-assegnare un bracket Commander ufficiale (1 Esibizione, 2 Base, 3 Potenziato, 4 Ottimizzato, 5 cEDH) a un proprio mazzo — colonna opzionale `commander_decks.bracket_level` (`SMALLINT`, `CHECK BETWEEN 1 AND 5`, nullable), migrazione `20260722000000_add_deck_bracket_level.sql`.
+- **UI:** un'unica `BracketPickerModal.vue` (5 card selezionabili con nome/esperienza/regole deck-building, tradotte in italiano) raggiungibile da due punti — un chip cliccabile su `CommanderDeckCard.vue` (solo in modalità non-aggregata: il bracket è per-giocatore, non ha senso su `/decks` in vista aggregata multi-giocatore) e una riga in `DeckEditModal.vue`. Entrambi salvano subito tramite la propria mutation, non agganciati al submit del form di `DeckEditModal`.
+- **`app/utils/bracketLevels.ts`**: `BRACKET_LEVELS` generato programmaticamente dal pattern fisso `bracket.level${n}.xxx` (non 5 oggetti scritti a mano — elimina il rischio di un numero/chiave disallineati per un copia-incolla sbagliato), `BRACKET_COLORS` mappa ogni livello a un colore semantico Nuxt UI (success→info→primary→warning→error, progressione casual→competitivo) usando i token già in `app.config.ts`.
+- **Refactor collaterale**: estratto `app/utils/semanticColor.ts` (`SemanticColor`) dal tipo `PlayerColor` di `playerColor.ts`, che duplicava la stessa union di 6 colori — ora entrambi i moduli riusano un'unica definizione.
 
 ---
 
@@ -283,9 +302,10 @@ Gli store di sessione hanno **persistenza ottimistica**: update immediato UI + s
 | URL sync modali evento | ✅ Operativo | Non esteso a `leagues.vue` |
 | Stepper fasi | ✅ Presente | `EventStepper.vue` |
 | Round timer | 🟡 Presente, durata non ancora persistita | `RoundTimer.vue`; legge `event_round_duration`, ma la migrazione non è ancora applicata (vedi ADR-008) |
+| Bracket level per mazzo | ✅ Operativo | `BracketPickerModal.vue`, vedi ADR-023 |
 | Validazione form (valibot) | 🟡 Parziale | In uso in `EventFormModal` e altri (5 file); non su tutti i form |
-| Test e2e Playwright | ☐ Non iniziato | Richiesto in `AGENTS.md`; TODO aggiunto in `docs/TODO.md` (Playwright + Playwright MCP) |
-| Test unitari | 🟡 Parziale | 61 test / 10 file (`pairingOptimizer`, `useTableDnd`, `usePlayersFilter`, `useLiveStandings`, `cardColors`, `RowActionButton`, `StandingsCard`, …) |
+| Test e2e Playwright | 🟡 Parziale | 4 spec (`league-crud`, `player-create`, `deck-create`, `turn-back-round`) — vedi `docs/BACKLOG.md` #1 per i flussi ancora scoperti |
+| Test unitari | 🟡 Parziale | 113 test / 19 file — vedi `docs/architecture/testing.md` per il dettaglio per area |
 
 ---
 
@@ -295,7 +315,7 @@ Gli store di sessione hanno **persistenza ottimistica**: update immediato UI + s
 |---------|--------|
 | `pnpm lint` | ✅ 0 warning, 0 errori (vedi ADR-009) |
 | `pnpm typecheck` | ✅ 0 errori — corretti due bug pre-esistenti non legati a questa sessione: mismatch di casing su `~/components/ui/*` (cartella reale `Ui/`) e alias `#test` mancante in `nuxt.config.ts` (risolveva solo lato vitest, non lato `nuxt typecheck`) |
-| `pnpm test` | ✅ 61 test / 10 file |
+| `pnpm test` | ✅ 113 test / 19 file (2026-07-22) |
 | `pnpm fallow:dupes` | ✅ 0 clone groups (era 128 gruppi / 17.6% al 2026-07-13 mattina — vedi ADR-011) |
 | `pnpm build` | ❌ **Rotto** — fallisce in prerender di `/` (`routeRules: { '/': { prerender: true } }`): `SyntaxError: The requested module 'vue/index.mjs' does not provide an export named 'default'` (ESM/CJS interop in Nitro). Non causato da questa sessione (nessuna modifica a Vue, `/`, o config di prerender) — probabile drift di dipendenze (Renovate). Da investigare. |
 

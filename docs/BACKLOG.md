@@ -58,7 +58,7 @@ Three layers, each with a different target — not "100% everywhere":
 - [ ] `app/utils/error.ts` (`toErrorMessage`, `isConflictError`)
 - [ ] `app/utils/localStorage.ts` (TTL expiry, corrupt/missing cache)
 - [ ] `app/utils/slug.ts`
-- [ ] `app/composables/tables/useTableCalculator.ts` (table-size math feeding the pairing optimizer and waitroom estimate)
+- [x] `app/composables/tables/useTableCalculator.ts` (2026-07-22) — `calculateTables`/`getTableSizes`/`buildPreviewTables`/`formatTableEstimate`
 - [ ] Pinia stores: `app/stores/events.ts` (lifecycle) and the 4 session stores (`rankings`, `kills`, `votes`, `commanders`) have no dedicated test file today — only exercised via hand-built fakes in `useSessionStorePersistence.test.ts`
 
 ### E2E scaffolding notes (2026-07-19)
