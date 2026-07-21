@@ -58,6 +58,9 @@ const remaining = computed(() => Math.max(0, totalSeconds.value - elapsed.value)
 /** True once the countdown hits zero. */
 const isExpired = computed(() => remaining.value === 0)
 
+/** True once the timer has been started at least once and is currently paused (not fresh, not expired). */
+const isPaused = computed(() => !isRunning.value && startTime.value !== null && !isExpired.value)
+
 /** Human-readable MM:SS string for the remaining time. */
 const display = computed(() => formatDuration(remaining.value))
 
@@ -179,7 +182,9 @@ onMounted(() => {
     class="flex items-center"
     :class="isFullscreen
       ? 'relative flex-col justify-center h-screen w-screen bg-default gap-12 @container-size'
-      : 'gap-3'
+      : isPaused
+        ? 'gap-3 border border-warning bg-warning/10 rounded-lg px-4 py-2'
+        : 'gap-3 border border-default rounded-lg px-4 py-2'
     "
   >
     <CurrentTime
@@ -218,89 +223,95 @@ onMounted(() => {
       {{ display }}
     </span>
 
-    <!-- Controls -->
+    <!-- Controls — two groups that wrap independently onto their own line
+         only when there isn't enough horizontal room for both, instead of
+         always stacking or letting individual buttons wrap raggedly. -->
     <div
       class="flex"
-      :class="isFullscreen ? 'flex-row gap-8' : 'gap-1'"
+      :class="isFullscreen ? 'flex-row gap-8' : 'flex-wrap gap-2'"
     >
-      <TimerControlButton
-        v-if="!isRunning"
-        :icon="ICONS.play"
-        color="primary"
-        variant="soft"
-        :disabled="isExpired"
-        :fullscreen="isFullscreen"
-        :tooltip="isExpired ? t('event.roundTimer.expiredTooltip') : t('event.roundTimer.startTooltip')"
-        @click="start"
-      />
-      <TimerControlButton
-        v-else
-        :icon="ICONS.pause"
-        color="neutral"
-        variant="soft"
-        :fullscreen="isFullscreen"
-        :tooltip="t('event.roundTimer.pauseTooltip')"
-        @click="stop"
-      />
+      <div class="flex items-center" :class="isFullscreen ? 'flex-row gap-8' : 'gap-1'">
+        <TimerControlButton
+          v-if="!isRunning"
+          :icon="ICONS.play"
+          color="primary"
+          variant="soft"
+          :disabled="isExpired"
+          :fullscreen="isFullscreen"
+          :tooltip="isExpired ? t('event.roundTimer.expiredTooltip') : t('event.roundTimer.startTooltip')"
+          @click="start"
+        />
+        <TimerControlButton
+          v-else
+          :icon="ICONS.pause"
+          color="neutral"
+          variant="soft"
+          :fullscreen="isFullscreen"
+          :tooltip="t('event.roundTimer.pauseTooltip')"
+          @click="stop"
+        />
 
-      <TimerControlButton
-        :icon="ICONS.reset"
-        color="neutral"
-        variant="ghost"
-        :fullscreen="isFullscreen"
-        :tooltip="t('event.roundTimer.resetTooltip')"
-        @click="showResetConfirm = true"
-      />
+        <TimerControlButton
+          :icon="ICONS.reset"
+          color="error"
+          variant="subtle"
+          :fullscreen="isFullscreen"
+          :tooltip="t('event.roundTimer.resetTooltip')"
+          @click="showResetConfirm = true"
+        />
 
-      <TimerControlButton
-        :icon="ICONS.subtract"
-        color="error"
-        variant="soft"
-        :fullscreen="isFullscreen"
-        :tooltip="t('event.roundTimer.subtract10Tooltip')"
-        label="10:00"
-        @click="subtractMinutes(10)"
-      />
+        <TimerControlButton
+          v-if="!isFullscreen"
+          :icon="ICONS.expand"
+          color="neutral"
+          variant="ghost"
+          :fullscreen="isFullscreen"
+          :tooltip="t('event.roundTimer.fullscreenTooltip')"
+          @click="toggle"
+        />
+      </div>
 
-      <TimerControlButton
-        :icon="ICONS.subtract"
-        color="error"
-        variant="soft"
-        :fullscreen="isFullscreen"
-        :tooltip="t('event.roundTimer.subtract5Tooltip')"
-        label="5:00"
-        @click="subtractMinutes(5)"
-      />
+      <div class="flex items-center" :class="isFullscreen ? 'flex-row gap-8' : 'gap-1'">
+        <TimerControlButton
+          :icon="ICONS.subtract"
+          color="error"
+          variant="outline"
+          :fullscreen="isFullscreen"
+          :tooltip="t('event.roundTimer.subtract10Tooltip')"
+          label="10:00"
+          @click="subtractMinutes(10)"
+        />
 
-      <TimerControlButton
-        :icon="ICONS.add"
-        color="success"
-        variant="soft"
-        :fullscreen="isFullscreen"
-        :tooltip="t('event.roundTimer.add5Tooltip')"
-        label="5:00"
-        @click="addMinutes(5)"
-      />
+        <TimerControlButton
+          :icon="ICONS.subtract"
+          color="error"
+          variant="outline"
+          :fullscreen="isFullscreen"
+          :tooltip="t('event.roundTimer.subtract5Tooltip')"
+          label="5:00"
+          @click="subtractMinutes(5)"
+        />
 
-      <TimerControlButton
-        :icon="ICONS.add"
-        color="success"
-        variant="soft"
-        :fullscreen="isFullscreen"
-        :tooltip="t('event.roundTimer.add10Tooltip')"
-        label="10:00"
-        @click="addMinutes(10)"
-      />
+        <TimerControlButton
+          :icon="ICONS.add"
+          color="success"
+          variant="outline"
+          :fullscreen="isFullscreen"
+          :tooltip="t('event.roundTimer.add5Tooltip')"
+          label="5:00"
+          @click="addMinutes(5)"
+        />
 
-      <TimerControlButton
-        v-if="!isFullscreen"
-        :icon="ICONS.expand"
-        color="neutral"
-        variant="ghost"
-        :fullscreen="isFullscreen"
-        :tooltip="t('event.roundTimer.fullscreenTooltip')"
-        @click="toggle"
-      />
+        <TimerControlButton
+          :icon="ICONS.add"
+          color="success"
+          variant="outline"
+          :fullscreen="isFullscreen"
+          :tooltip="t('event.roundTimer.add10Tooltip')"
+          label="10:00"
+          @click="addMinutes(10)"
+        />
+      </div>
     </div>
 
     <ConfirmModal

@@ -6,10 +6,12 @@
  * a UTooltip-wrapped button outside fullscreen (hover tooltip), a bare oversized
  * button with a native `title` inside fullscreen (UTooltip doesn't fit that layout).
  */
+import type { ButtonProps } from '@nuxt/ui'
+
 defineProps<{
   icon: string
-  color: 'primary' | 'neutral' | 'success' | 'error'
-  variant: 'soft' | 'ghost'
+  color: ButtonProps['color']
+  variant: ButtonProps['variant']
   tooltip: string
   fullscreen: boolean
   disabled?: boolean
