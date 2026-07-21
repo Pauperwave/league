@@ -50,7 +50,7 @@ The event lifecycle state machine — `currentEvent` + BFF `$fetch` actions + th
 
 ## Session Stores
 
-Ephemeral UI state for the event page. No Supabase calls. `Map<number, ...>` patterns. All have `reset()`.
+Ephemeral UI state for the event page. No Supabase calls. `Map<number, ...>` patterns. All have `reset()` and `hydrate()` — the latter is the crash-insurance rehydration entry point fed by `useSessionStorePersistence` (localStorage mirror, one key per event/round). See [`client-caching.md`](client-caching.md) for how this relates to (and differs from) the Colada query cache persistence used elsewhere in the app.
 
 ### `useRankingsStore`
 
@@ -60,7 +60,7 @@ Ephemeral UI state for the event page. No Supabase calls. `Map<number, ...>` pat
 
 **Getters**: `getRankingWithRanks(pairingId)`, `hasRanking(pairingId)`
 
-**Actions**: `setRankingWithRanks`, `removeRanking`, `reset`
+**Actions**: `setRankingWithRanks`, `removeRanking`, `hydrate`, `reset`
 
 ---
 
@@ -68,11 +68,11 @@ Ephemeral UI state for the event page. No Supabase calls. `Map<number, ...>` pat
 
 **Interface**: `Kill { killerId, victimId }`
 
-**State**: `kills` (`Kill[]`), `confirmedPairings` (`Set<number>`)
+**State**: `kills` (`Kill[]`)
 
-**Getters**: `isKillPresent(killer, victim)`, `isReverseKillPresent`, `hasSuicided(playerId)`, `killsByKiller(killerId)`, `deathsByVictim(victimId)`, `isPairingConfirmed(pairingId)`
+**Getters**: `isKillPresent(killer, victim)`, `isReverseKillPresent`, `hasSuicided(playerId)`, `killsByKiller(killerId)`, `deathsByVictim(victimId)`
 
-**Actions**: `addKill` (validates no duplicate/reverse, returns `{success, error?}`), `removeKill`, `confirmPairing`, `unconfirmPairing`, `reset`
+**Actions**: `addKill` (validates no duplicate/reverse, returns `{success, error?}`), `removeKill`, `hydrate`, `reset`
 
 ---
 
@@ -84,7 +84,7 @@ Ephemeral UI state for the event page. No Supabase calls. `Map<number, ...>` pat
 
 **Getters**: `getVotes(playerId)`, `getDeckVote(playerId)`, `getPlayVote(playerId)`, `hasVotes(playerId)`
 
-**Actions**: `setVotes`, `setDeckVote`, `setPlayVote`, `removeVotes`, `reset`
+**Actions**: `setVotes`, `setDeckVote`, `setPlayVote`, `removeVotes`, `hydrate`, `reset`
 
 ---
 
@@ -96,7 +96,7 @@ Ephemeral UI state for the event page. No Supabase calls. `Map<number, ...>` pat
 
 **Getters**: `getCommanders(playerId)`, `getCommander1(playerId)`, `getCommander2(playerId)`
 
-**Actions**: `setCommanders`, `setCommander1`, `setCommander2`, `removeCommanders`, `reset`
+**Actions**: `setCommanders`, `setCommander1`, `setCommander2`, `removeCommanders`, `hydrate`, `reset`
 
 ---
 
