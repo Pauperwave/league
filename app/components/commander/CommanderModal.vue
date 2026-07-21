@@ -79,45 +79,58 @@ defineExpose({ submit })
 
 <template>
   <div class="space-y-4">
-    <!-- Commander 1 -->
-    <div>
-      <div class="flex items-center justify-between mb-1">
-        <label class="block text-sm font-medium">{{ t('commander.label') }}</label>
-        <UButton
-          :icon="ICONS.refresh"
-          :label="isLoading ? t('commander.refreshingCatalog') : t('commander.refreshCatalog')"
-          size="xs"
-          color="neutral"
-          variant="ghost"
-          :loading="isLoading"
-          @click="onRefreshCatalog"
+    <div class="flex gap-4">
+      <!-- Commander 1 — always 50% when commander 2 is showing, full width otherwise -->
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center justify-between mb-1">
+          <label class="block text-sm font-medium">{{ t('commander.label') }}</label>
+          <UButton
+            :icon="ICONS.refresh"
+            :label="isLoading ? t('commander.refreshingCatalog') : t('commander.refreshCatalog')"
+            size="xs"
+            color="neutral"
+            variant="ghost"
+            :loading="isLoading"
+            @click="onRefreshCatalog"
+          />
+        </div>
+        <CommanderSearch
+          v-model="commander1"
+          :player-id="props.playerId"
         />
       </div>
-      <CommanderSearch
-        v-model="commander1"
-        :player-id="props.playerId"
-      />
+
+      <!-- Commander 2 (partner/background/doctor's companion/friends forever) — slides/fades in at 50% -->
+      <AnimatePresence>
+        <Motion
+          v-if="canHaveCommander2"
+          :initial="{ opacity: 0, x: -16 }"
+          :animate="{ opacity: 1, x: 0 }"
+          :exit="{ opacity: 0, x: -16 }"
+          :transition="{ duration: 0.2, ease: 'easeOut' }"
+          class="flex-1 min-w-0"
+        >
+          <div class="flex items-center gap-2 mb-1">
+            <label class="block text-sm font-medium">{{ commander2Label }}</label>
+            <UBadge
+              v-if="commander2Whitelist.length > 0"
+              size="sm"
+              color="info"
+              variant="soft"
+            >
+              {{ t('commander.compatibleCards', { count: commander2Whitelist.length }) }}
+            </UBadge>
+          </div>
+          <CommanderSearch
+            v-model="commander2"
+            :whitelist="commander2Whitelist"
+            :player-id="props.playerId"
+          />
+        </Motion>
+      </AnimatePresence>
     </div>
 
-    <!-- Commander 2 (conditional) -->
-    <div v-if="canHaveCommander2">
-      <label class="block text-sm font-medium mb-1">{{ commander2Label }}</label>
-      <UBadge
-        v-if="commander2Whitelist.length > 0"
-        size="sm"
-        color="info"
-        variant="soft"
-        class="mb-2"
-      >
-        {{ t('commander.compatibleCards', { count: commander2Whitelist.length }) }}
-      </UBadge>
-      <CommanderSearch
-        v-model="commander2"
-        :whitelist="commander2Whitelist"
-        :player-id="props.playerId"
-      />
-    </div>
-    <div v-else-if="commander1" class="text-sm text-gray-500">
+    <div v-if="!canHaveCommander2 && commander1" class="text-sm text-gray-500">
       {{ t('commander.noSecondCommander') }}
     </div>
   </div>
