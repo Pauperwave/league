@@ -332,6 +332,9 @@
     "noSecondCommander": "Questo comandante non supporta un secondo comandante",
     "searchPlaceholder": "Nome del comandante",
     "cardLoadError": "Errore nel caricamento dati carta",
+    "search": {
+      "recentlyUsedGroup": "Mazzi già giocati"
+    },
     "refreshCatalog": "Aggiorna elenco carte",
     "refreshingCatalog": "Aggiornamento in corso...",
     "partnerTypes": {

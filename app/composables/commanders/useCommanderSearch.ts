@@ -3,30 +3,23 @@ import { fetchCommanderByName, type CommanderCard } from './useCommanderCards'
 import type { Database } from '#shared/utils/types/database'
 import type { CommanderCatalogRow } from './useCommanderCatalogQuery'
 
-async function reorderByPlayerUsage(
+async function fetchUsedCommanderNames(
   supabase: ReturnType<typeof useSupabaseClient<Database>>,
-  data: CommanderCatalogRow[],
   playerId: number
-): Promise<CommanderCatalogRow[]> {
-  const { data: usedData, error: usedError } = await supabase
+): Promise<Set<string>> {
+  const { data, error } = await supabase
     .from('round_results')
     .select('commander_1, commander_2')
     .eq('player_id', playerId)
 
-  if (usedError || !usedData) return data
+  if (error || !data) return new Set()
 
   const usedNames = new Set<string>()
-  for (const row of usedData) {
+  for (const row of data) {
     if (row.commander_1) usedNames.add(row.commander_1)
     if (row.commander_2) usedNames.add(row.commander_2)
   }
-
-  return [...data].sort((a, b) => {
-    const aUsed = usedNames.has(a.name) ? 1 : 0
-    const bUsed = usedNames.has(b.name) ? 1 : 0
-    if (aUsed !== bUsed) return bUsed - aUsed
-    return (a.edhrecRank ?? 999999) - (b.edhrecRank ?? 999999)
-  })
+  return usedNames
 }
 
 function parseManaCost(manaCost: string | null): string[] {
@@ -34,22 +27,35 @@ function parseManaCost(manaCost: string | null): string[] {
   return manaCost.match(/{[^}]+}/g) ?? []
 }
 
+/** A selectable commander name, or a non-interactive group heading (`type: 'label'`) for USelectMenu. */
+export interface CommanderSuggestionItem {
+  type?: 'label'
+  label: string
+  tokens?: string[]
+}
+
 export interface UseCommanderSearchOptions {
   whitelist?: MaybeRefOrGetter<string[] | null | undefined>
   playerId?: MaybeRefOrGetter<number | null | undefined>
 }
 
+/**
+ * Commander autocomplete: filters the already-cached catalog (ADR-016)
+ * client-side, no query goes out per keystroke. When `playerId` is given,
+ * results are split into a "recently used" group (commanders this player has
+ * already played, per `round_results`) shown first, and the rest — instead of
+ * just sorting the used ones to the top of one flat list, so USelectMenu can
+ * render them as a visually separate group.
+ */
 export function useCommanderSearch(options: UseCommanderSearchOptions = {}) {
   const supabase = useSupabaseClient<Database>()
   const { data: catalog } = useCommanderCatalogQuery()
+  const { t } = useI18n()
 
   const query = ref('')
-  const suggestions = ref<string[]>([])
-  const suggestionMeta = ref<Record<string, { tokens: string[] }>>({})
+  const suggestionGroups = ref<CommanderSuggestionItem[][]>([])
   const card = ref<CommanderCard | null>(null)
   const isLoading = ref(false)
-  const showSuggestions = ref(false)
-  const selectedIndex = ref(-1)
 
   async function fetchSuggestions(q: string) {
     isLoading.value = true
@@ -69,16 +75,27 @@ export function useCommanderSearch(options: UseCommanderSearchOptions = {}) {
       result.sort((a, b) => (a.edhrecRank ?? 999999) - (b.edhrecRank ?? 999999))
       result = result.slice(0, 50)
 
-      // If a playerId is provided, reorder: used commanders first, then by edhrec_rank
       const playerId = toValue(options.playerId)
-      if (playerId !== null && playerId !== undefined) {
-        result = await reorderByPlayerUsage(supabase, result, playerId)
-      }
+      const usedNames = playerId !== null && playerId !== undefined
+        ? await fetchUsedCommanderNames(supabase, playerId)
+        : new Set<string>()
 
-      suggestions.value = result.map(r => r.name)
-      suggestionMeta.value = Object.fromEntries(
-        result.map(r => [r.name, { tokens: parseManaCost(r.manaCost) }])
-      )
+      const toItem = (row: CommanderCatalogRow): CommanderSuggestionItem => ({
+        label: row.name,
+        tokens: parseManaCost(row.manaCost),
+      })
+
+      const used = result.filter(row => usedNames.has(row.name)).map(toItem)
+      const rest = result.filter(row => !usedNames.has(row.name)).map(toItem)
+
+      const groups: CommanderSuggestionItem[][] = []
+      if (used.length > 0) {
+        groups.push([{ type: 'label', label: t('commander.search.recentlyUsedGroup') }, ...used])
+      }
+      if (rest.length > 0) {
+        groups.push(rest)
+      }
+      suggestionGroups.value = groups
     } finally {
       isLoading.value = false
     }
@@ -89,59 +106,23 @@ export function useCommanderSearch(options: UseCommanderSearchOptions = {}) {
     card.value = data
   }
 
-  function navigateSuggestions(direction: 'up' | 'down') {
-    if (suggestions.value.length === 0) return
-    if (direction === 'down') {
-      selectedIndex.value = (selectedIndex.value + 1) % suggestions.value.length
-    } else {
-      selectedIndex.value = selectedIndex.value <= 0
-        ? suggestions.value.length - 1
-        : selectedIndex.value - 1
-    }
-  }
-
-  function selectCurrent() {
-    if (selectedIndex.value >= 0 && selectedIndex.value < suggestions.value.length) {
-      const name = suggestions.value[selectedIndex.value]
-      if (!name) return
-      query.value = name
-      handleSelect(name)
-      showSuggestions.value = false
-    }
-  }
-
-  function closeSuggestions() {
-    showSuggestions.value = false
-    selectedIndex.value = -1
-  }
-
   const debouncedFetch = useDebounceFn((q: string) => {
     fetchSuggestions(q)
   }, 150)
 
-  watch(query, (newQuery) => {
-    selectedIndex.value = -1
-    if (newQuery.length === 0) {
-      suggestions.value = []
-      suggestionMeta.value = {}
-      showSuggestions.value = false
-      return
-    }
-    showSuggestions.value = true
+  // Also re-fetch when the whitelist changes (e.g. commander1's partner type
+  // flips, narrowing commander2's options) even if the query text itself
+  // didn't change — and fires immediately so a short whitelist (e.g. "30
+  // carte compatibili") is already browsable before typing anything.
+  watch([query, () => toValue(options.whitelist)], ([newQuery]) => {
     debouncedFetch(newQuery)
-  })
+  }, { immediate: true })
 
   return {
     query,
-    suggestions,
-    showSuggestions,
-    selectedIndex,
+    suggestionGroups,
     isLoading,
     handleSelect,
     card,
-    suggestionMeta,
-    navigateSuggestions,
-    selectCurrent,
-    closeSuggestions,
   }
 }
