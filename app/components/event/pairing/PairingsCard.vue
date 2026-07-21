@@ -171,6 +171,9 @@ const hasRanking = (pairingId: number): boolean => {
 const hasKills = (pairing: PairingWithResults): boolean =>
   (pairing.round_results ?? []).some(r => r.number_of_kills !== null)
 
+const isDraw = (pairing: PairingWithResults): boolean =>
+  isPairingDraw(pairing, rankingsStore.getRankingWithRanks(pairing.pairing_id))
+
 /**
  * Returns true if all required data has been entered for a pairing:
  * - Rankings are saved
@@ -288,15 +291,11 @@ function fillTable(pairingId: number) {
         <div class="flex items-center gap-2">
           <UIcon :name="ICONS.gridView" class="size-5 text-primary" />
           <h2 class="text-lg font-semibold">{{ t('event.pairing.tablesHeading') }}</h2>
-          <UTooltip v-if="!readonly" :content="{ side: 'top' }" :text="t('event.pairing.fillAllTooltip')">
-            <UButton
-              :icon="ICONS.quickAction"
-              color="neutral"
-              variant="ghost"
-              :aria-label="t('event.pairing.fillAllTooltip')"
-              @click="handleQuickTestFillAll"
-            />
-          </UTooltip>
+          <QuickFillButton
+            v-if="!readonly"
+            :tooltip="t('event.pairing.fillAllTooltip')"
+            @click="handleQuickTestFillAll"
+          />
           <UTooltip :content="{ side: 'top' }" :text="t('event.pairing.fullscreenTooltip')">
             <UButton
               :icon="ICONS.expand"
@@ -311,14 +310,15 @@ function fillTable(pairingId: number) {
 
       <div
         v-if="pairings.length > 0"
-        class="grid grid-cols-1 md:grid-cols-2 gap-4"
+        class="grid grid-cols-1 md:grid-cols-2 gap-3"
       >
         <UCard
           v-for="(pairing, index) in pairings"
           :key="pairing.pairing_id"
+          :ui="{ header: 'p-2 sm:px-3', body: 'p-2 sm:p-3', footer: 'p-2 sm:px-3' }"
         >
           <!-- Table actions (view scores, reset, quick fill) — hidden in readonly mode -->
-          <div v-if="!readonly" class="flex items-center justify-between mb-3">
+          <template v-if="!readonly" #header>
             <TableCardActions
               :pairing="pairing"
               :table-index="index"
@@ -327,10 +327,10 @@ function fillTable(pairingId: number) {
               @reset-table="handleResetTable"
               @quick-fill="handleQuickTestFill"
             />
-          </div>
+          </template>
 
           <!-- Player rows -->
-          <div class="space-y-2">
+          <div class="space-y-1.5">
             <PairingPlayerRow
               v-for="playerId in pairingPlayerIds(pairing)"
               :key="playerId"
@@ -347,16 +347,18 @@ function fillTable(pairingId: number) {
           </div>
 
           <!-- Table-level action buttons — hidden in readonly mode -->
-          <PairingTableActions
-            v-if="!readonly"
-            :pairing-id="pairing.pairing_id"
-            :table-index="index"
-            :has-ranking="hasRanking(pairing.pairing_id)"
-            :has-kills="hasKills(pairing)"
-            @open-score-modal="handleOpenScoreModal"
-            @open-kill-modal="emit('openKillModal', $event)"
-            @draw="handleDrawTable"
-          />
+          <template v-if="!readonly" #footer>
+            <PairingTableActions
+              :pairing-id="pairing.pairing_id"
+              :table-index="index"
+              :has-ranking="hasRanking(pairing.pairing_id)"
+              :has-kills="hasKills(pairing)"
+              :is-draw="isDraw(pairing)"
+              @open-score-modal="handleOpenScoreModal"
+              @open-kill-modal="emit('openKillModal', $event)"
+              @draw="handleDrawTable"
+            />
+          </template>
         </UCard>
       </div>
 

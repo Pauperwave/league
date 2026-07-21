@@ -220,6 +220,11 @@ const tournamentPlayers = computed<TournamentPlayer[]>(() =>
   }))
 )
 
+// "Who's won this table" checklist (BACKLOG #15) — winners derived live from
+// rankingsStore, booster hand-out check-off state persisted per event+round.
+const winners = useWinners(displayedPairings, tournamentPlayers, rankingsStore)
+const { checked: winnersChecked, toggle: toggleWinnerChecked } = useWinnerChecklist(eventId, currentRound)
+
 const pairingPlayersForScoring = computed<PairingPlayer[]>(() => {
   const table3Counter = new Map<number, number>()
   for (const entry of pairingHistory.value) {
@@ -494,12 +499,20 @@ function handleResetTable(pairingId: number) {
                 @draw="(pairingId, playerIds) => submitHandlers.handleDrawSubmit(pairingId, playerIds)"
               />
             </div>
-            <StandingsCard
-              :standings="liveStandings"
-              :loading="loading"
-              :title="standingsTitle"
-              :submitted-by-player-id="submittedByPlayerId"
-            />
+            <div class="space-y-4">
+              <WinnerChecklist
+                v-if="!isViewingPastRound"
+                :winners="winners"
+                :checked="winnersChecked"
+                @toggle="toggleWinnerChecked"
+              />
+              <StandingsCard
+                :standings="liveStandings"
+                :loading="loading"
+                :title="standingsTitle"
+                :submitted-by-player-id="submittedByPlayerId"
+              />
+            </div>
           </div>
         </template>
       </EventControlPanel>

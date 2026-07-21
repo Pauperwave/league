@@ -21,6 +21,7 @@ Committed, actionable work items, ranked by priority with a rough effort estimat
 | 10 | [Single-commander list, aggregated across partner pairs](#10-single-commander-list-aggregated-across-partner-pairs) | P3 | M |
 | 12 | [Idempotency guards on advance-round/start/round-result submission](#12-idempotency-guards-on-advance-roundstartround-result-submission) | P1 | M |
 | 14 | [Persist an explicit table number instead of deriving it from array order](#14-persist-an-explicit-table-number-instead-of-deriving-it-from-array-order) | P3 | M |
+| 15 | [Winner checklist + `table_wins` stat (booster pack reward per round)](#15-winner-checklist--table_wins-stat-booster-pack-reward-per-round) | P2 | M |
 
 ---
 
@@ -235,6 +236,17 @@ This works reliably **today** because: `usePairingsQuery` explicitly orders by `
 **Needs a decision, not just a migration**: adding a real `pairing_table_number` column touches every read site that currently computes it from index (`PairingsCard.vue`, `TableCardActions`, `PairingTableActions`, `ConfirmModal` subjects in the reset/fill dialogs, `PairingsFullscreenView.vue`, and the pairing-generation code in `shared/utils/roundScoring.ts`'s `buildPairingRows`/`buildRoundOneTables` that would need to actually set it). Before implementing: audit **all** of these together (the user asked specifically to review how this fits with everything else) rather than adding the column and fixing sites piecemeal — a half-migrated state (some reads using the new column, others still on array index) would be worse than the current fully-consistent-but-implicit convention.
 
 **P3/someday**, deferred behind the event lifecycle priority same as #7/#8/#10 — the current behavior is verified correct, this is a robustness improvement, not a live bug.
+
+---
+
+## 15. Winner checklist + `table_wins` stat (booster pack reward per round)
+
+Raised 2026-07-14, promoted from `docs/TODO.md` 2026-07-21 (was tracked in two places there — the "Booster pack reward per round" note and event-lifecycle-audit item #9 — merged into this single entry).
+
+After **every** round (including the last one), the winner of each table receives a booster pack. Two parts:
+
+- **In-room checklist**: an always-present "who's won this table" panel/component, populated live as each pairing's ranking is submitted (same `hasRanking` signal `PairingTableActions.vue` already reads) — a "boosters to hand out" list per round, generated from each table's rank-1 player, with a check-off state so the organizer knows who's already received theirs. Probably an event-page panel or modal shown after round scores are confirmed. The checklist's check-off state, if it must survive a refresh, can live in localStorage like the round timer (`RoundTimer.vue`'s pattern) or the waiting-list paid/companion flags (`useWaitingListFlags.ts`).
+- **Stat persistence**: record it on player stats as "table wins". Verify what already exists before adding anything: `standings.victories` already accumulates `position === 1` per event, and `player_stats` is trigger-computed from `round_results` — a table win is derivable as `round_results.position = 1`, so this may need **zero new columns**, just a `table_wins` aggregate in the `player_stats` trigger (or even a query).
 
 ---
 

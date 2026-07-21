@@ -8,6 +8,7 @@ defineProps<{
   tableIndex: number
   hasRanking: boolean
   hasKills: boolean
+  isDraw: boolean
 }>()
 
 const emit = defineEmits<{
@@ -19,7 +20,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="flex gap-2 mt-3">
+  <div class="flex gap-2">
     <!-- Rankings button -->
     <UTooltip :content="{ side: 'top' }" :text="hasRanking ? t('event.pairing.rankingSetTooltip') : t('event.pairing.rankingNotSetTooltip')">
       <UButton
@@ -48,11 +49,11 @@ const emit = defineEmits<{
 
     <!-- Draw ("Patta") — sits outside both the ranking and kills modals since
          it sets both at once (zero kills, everyone tied for first). -->
-    <UTooltip :content="{ side: 'top' }" :text="t('event.killModal.drawHint')">
+    <UTooltip :content="{ side: 'top' }" :text="isDraw ? t('event.pairing.drawnTooltip') : t('event.killModal.drawHint')">
       <UButton
-        color="neutral"
+        :color="isDraw ? 'success' : 'neutral'"
         class="flex-1"
-        :icon="ICONS.draw"
+        :icon="isDraw ? ICONS.confirm : ICONS.draw"
         variant="outline"
         @click="emit('draw', pairingId)"
       >
