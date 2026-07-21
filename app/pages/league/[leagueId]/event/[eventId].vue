@@ -103,6 +103,7 @@ useEventUrlSync({
 // ── Lifecycle Handlers ───────────────────────────────────────────────────
 
 const lifecycle = useEventLifecycle({
+  eventId,
   nextRound,
   turnBackRound,
   startEvent,
@@ -323,10 +324,6 @@ const breadcrumbItems = useBreadcrumb(() => [
   { label: eventName.value },
 ])
 
-const playerNames = computed<Record<number, string>>(() =>
-  Object.fromEntries(players.value.map(p => [p.player_id, `${p.player_name} ${p.player_surname}`]))
-)
-
 // ── Modal Open Handlers ──────────────────────────────────────────────────
 
 function handleOpenScoreModal(pairingId: number, tableIndex: number) {
@@ -437,7 +434,8 @@ function handleResetTable(pairingId: number) {
             <div v-if="eventStatus === 'registration'" class="space-y-4">
               <WaitingList
                 :waiting-players="waitingPlayers"
-                :player-names="playerNames"
+                :players="players"
+                :event-id="eventId"
                 :waitroom-entries="waitroomEntries"
                 :table-estimate="tableEstimate"
                 @update="playersHandlers.handlePlayerStatusUpdate"

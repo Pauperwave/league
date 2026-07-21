@@ -3,6 +3,7 @@
 import type { TableColumn, CheckboxProps } from '@nuxt/ui'
 import { UCheckbox } from '#components'
 import RowActionButtons from '~/components/ui/actions/RowActionButtons.vue'
+import PlayerNameTag from '~/components/player/PlayerNameTag.vue'
 
 const { t } = useI18n()
 
@@ -10,9 +11,14 @@ interface WaitingPlayer {
   index: number
   playerId: number
   name: string
+  surname: string
   time: string
   paid: boolean
   companion: boolean
+}
+
+function fullName(player: WaitingPlayer): string {
+  return `${player.name} ${player.surname}`.trim()
 }
 
 const props = defineProps<{
@@ -57,9 +63,10 @@ const showRemoveConfirm = computed({
   get: () => playerIdToRemove.value !== null,
   set: (v) => { if (!v) playerIdToRemove.value = null },
 })
-const playerNameToRemove = computed(() =>
-  props.data.find((p) => p.playerId === playerIdToRemove.value)?.name ?? '',
-)
+const playerNameToRemove = computed(() => {
+  const player = props.data.find((p) => p.playerId === playerIdToRemove.value)
+  return player ? fullName(player) : ''
+})
 
 function handleConfirmRemove() {
   if (playerIdToRemove.value === null) return
@@ -118,7 +125,7 @@ function createToggleColumn(
         modelValue: playerState[row.original.playerId]?.[id] ?? false,
         color,
         size: 'sm',
-        'aria-label': t(ariaLabelKey, { name: row.original.name }),
+        'aria-label': t(ariaLabelKey, { name: fullName(row.original) }),
         'onUpdate:modelValue': () => togglePlayer(row.original.playerId, id),
       }),
   }
@@ -143,7 +150,7 @@ const columns = computed<TableColumn<WaitingPlayer>[]>(() => [
         modelValue: row.getIsSelected(),
         'onUpdate:modelValue': (value: unknown) => row.toggleSelected(!!(value as boolean)),
         onClick: (e: Event) => e.stopPropagation(),
-        'aria-label': t('event.waitingListTable.selectRowAriaLabel', { name: row.original.name }),
+        'aria-label': t('event.waitingListTable.selectRowAriaLabel', { name: fullName(row.original) }),
       }),
   },
   {
@@ -162,6 +169,12 @@ const columns = computed<TableColumn<WaitingPlayer>[]>(() => [
     accessorKey: 'name',
     header: t('event.waitingListTable.playerColumn'),
     meta: { class: { td: 'font-medium' } },
+    cell: ({ row }) => h(PlayerNameTag, {
+      name: row.original.name,
+      surname: row.original.surname,
+      playerId: row.original.playerId,
+      avatarSize: 'md',
+    }),
   },
   {
     accessorKey: 'time',
@@ -192,7 +205,7 @@ const filteredData = computed(() => {
   if (!searchQuery.value) return props.data
   const query = searchQuery.value.toLowerCase()
   return props.data.filter(p =>
-    p.name.toLowerCase().includes(query) || p.playerId.toString().includes(query)
+    fullName(p).toLowerCase().includes(query) || p.playerId.toString().includes(query)
   )
 })
 
@@ -222,7 +235,7 @@ const meta = computed(() => ({
 
 <template>
   <div class="flex flex-col gap-2">
-    <div class="flex items-center justify-between gap-2">
+    <div class="flex flex-wrap items-center justify-between gap-2">
       <UInput v-model="searchQuery" :placeholder="t('event.waitingListTable.searchPlaceholder')" class="max-w-sm" />
       <UDropdownMenu :items="columnVisibilityItems" :content="{ align: 'end' }">
         <UButton :label="t('event.waitingListTable.columnsButton')" color="neutral" :trailing-icon="ICONS.chevronDown" />
@@ -230,7 +243,7 @@ const meta = computed(() => ({
     </div>
 
     <div class="min-h-12 flex items-center">
-      <div class="flex items-center gap-2 p-2 bg-muted/50 rounded transition-all duration-200">
+      <div class="flex flex-wrap items-center gap-2 p-2 bg-muted/50 rounded transition-all duration-200">
         <span class="text-sm text-muted min-w-32">
           <template v-if="hasSelection">
             {{ t('event.waitingListTable.selectedCount', { count: selectedPlayerIds.length }) }}
@@ -239,7 +252,7 @@ const meta = computed(() => ({
             {{ t('event.waitingListTable.selectPlayersHint') }}
           </span>
         </span>
-        <div class="flex items-center gap-1 ml-auto">
+        <div class="flex flex-wrap items-center gap-1 sm:ml-auto">
           <UButton
             size="xs" color="success" variant="soft" :icon="ICONS.paid"
             :disabled="!hasSelection"
@@ -265,29 +278,47 @@ const meta = computed(() => ({
       </div>
     </div>
 
-    <UTable
-      v-model:row-selection="rowSelection"
-      v-model:column-visibility="columnVisibility"
-      :data="filteredData"
-      :columns="columns"
-      :meta="meta"
-      sticky
-      class="w-full max-h-150"
-      :ui="{
-        root: 'border border-default',
-        th: 'border-b border-default py-2',
-        td: 'border-b border-default py-1',
-      }"
-      :get-row-id="(row) => String(row.playerId)"
-    >
-      <template #empty>
-        <div v-if="searchQuery" class="flex flex-col items-center gap-1 py-4 text-muted">
-          <UIcon :name="ICONS.noResults" class="text-4xl mb-1" />
-          <p>{{ t('event.waitingListTable.noResultsFor', { query: searchQuery }) }}</p>
-        </div>
-        <UEmpty v-else :title="t('event.waitingListTable.emptyTitle')" :icon="ICONS.players" />
-      </template>
-    </UTable>
+    <div class="w-full overflow-x-auto">
+      <UTable
+        v-model:row-selection="rowSelection"
+        v-model:column-visibility="columnVisibility"
+        :data="filteredData"
+        :columns="columns"
+        :meta="meta"
+        sticky
+        class="max-h-150"
+        :ui="{
+          root: 'border border-default',
+          // Nuxt UI's default `base` is `min-w-full`, forcing the table to
+          // stretch to fill its container even when the content (short
+          // columns like '#'/checkboxes/time) doesn't need the space —
+          // dropping min-w-full lets it size to content instead, while the
+          // wrapping overflow-x-auto div still scrolls it on narrow screens.
+          base: 'overflow-clip',
+          th: 'border-b border-default py-2',
+          td: 'border-b border-default py-1',
+        }"
+        :get-row-id="(row) => String(row.playerId)"
+      >
+        <template #empty>
+          <div
+            v-if="searchQuery"
+            class="flex flex-col items-center gap-1 py-4 text-muted"
+          >
+            <UIcon
+              :name="ICONS.noResults"
+              class="text-4xl mb-1"
+            />
+            <p>{{ t('event.waitingListTable.noResultsFor', { query: searchQuery }) }}</p>
+          </div>
+          <UEmpty
+            v-else
+            :title="t('event.waitingListTable.emptyTitle')"
+            :icon="ICONS.players"
+          />
+        </template>
+      </UTable>
+    </div>
 
     <ConfirmModal
       v-model:open="showRemoveConfirm"

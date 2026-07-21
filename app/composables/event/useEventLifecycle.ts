@@ -3,6 +3,7 @@ import type { EventUpdatePayload } from '~/components/event/modal/EventFormModal
 
 interface LifecycleDeps {
   // Event actions from useEventPage
+  eventId: number
   nextRound: (playerOrder?: number[]) => Promise<boolean>
   turnBackRound: () => Promise<boolean>
   startEvent: (playerOrder: number[]) => Promise<boolean>
@@ -35,7 +36,7 @@ interface LifecycleDeps {
  */
 export function useEventLifecycle(deps: LifecycleDeps) {
   const {
-    nextRound, turnBackRound, startEvent, updateEvent,
+    eventId, nextRound, turnBackRound, startEvent, updateEvent,
     showNextRoundModal, showEndEventConfirm, showStartPreviewModal, showCancelRoundConfirm, showEventEditModal,
     isLastRound, currentRound, eventStatus,
     syncUrl,
@@ -69,7 +70,10 @@ export function useEventLifecycle(deps: LifecycleDeps) {
   async function handlePreviewConfirm(playerOrder: number[]) {
     if (eventStatus.value === 'registration') {
       const ok = await startEvent(playerOrder)
-      if (ok) showStartPreviewModal.value = false
+      if (ok) {
+        clearWaitingListFlags(eventId)
+        showStartPreviewModal.value = false
+      }
     } else {
       const ok = await nextRound(playerOrder)
       if (ok) {
