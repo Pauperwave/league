@@ -31,7 +31,6 @@ export function useEventModals() {
   const showCommanderModal = ref(false)
   const selectedPlayerId = ref<number | null>(null)
   const selectedCommanderPairingId = ref<number | null>(null)
-  const commanderModalRef = ref<InstanceType<typeof import('~/components/commander/CommanderModal.vue').default> | null>(null)
 
   // ─── Scores Modal State ─────────────────────────────────────────────────────
 
@@ -74,7 +73,6 @@ export function useEventModals() {
     showCommanderModal,
     selectedPlayerId,
     selectedCommanderPairingId,
-    commanderModalRef,
 
     // Votes modal
     showVotesModal,

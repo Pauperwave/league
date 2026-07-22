@@ -46,7 +46,6 @@ const {
   showCommanderModal,
   selectedPlayerId,
   selectedCommanderPairingId,
-  commanderModalRef,
   showScoresModal,
   selectedScoresPairingId,
   showVotesModal,
@@ -579,7 +578,6 @@ function handleResetTable(pairingId: number) {
       :show-commander-modal="showCommanderModal"
       :selected-player-id="selectedPlayerId"
       :selected-commander-pairing-id="selectedCommanderPairingId"
-      :commander-modal-ref="commanderModalRef"
       :get-player-name="getPlayerName"
       :commanders-store="commandersStore"
       @submit="(commander1, commander2) => {

@@ -1,21 +1,22 @@
 <!-- app\components\event\modal\EventCommanderModal.vue -->
 <script setup lang="ts">
+import type CommanderModal from '~/components/commander/CommanderModal.vue'
 
 const { t } = useI18n()
 
 const {
   showCommanderModal,
   selectedPlayerId,
-  commanderModalRef,
   getPlayerName,
   commandersStore,
 } = defineProps<{
   showCommanderModal: boolean
   selectedPlayerId: number | null
-  commanderModalRef: InstanceType<typeof import('~/components/commander/CommanderModal.vue').default> | null
   getPlayerName: (playerId: number) => string
   commandersStore: ReturnType<typeof import('~/stores/commanders').useCommandersStore>
 }>()
+
+const commanderModalRef = useTemplateRef<InstanceType<typeof CommanderModal>>('commanderModalRef')
 
 const emit = defineEmits<{
   submit: [commander1: string | null, commander2: string | null]
@@ -28,7 +29,7 @@ const open = computed({
 })
 
 function onSubmit() {
-  commanderModalRef?.submit()
+  commanderModalRef.value?.submit()
 }
 </script>
 
