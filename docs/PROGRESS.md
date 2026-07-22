@@ -292,6 +292,13 @@ Gli store di sessione hanno **persistenza ottimistica**: update immediato UI + s
 - **Decisione:** unificato tutto su `StandingsCard.vue` — `LeagueRanking.vue` e `LeagueStandingsCard.vue` eliminati, `league/[id].vue` ora chiama `<StandingsCard :title :standings>` direttamente, stesso componente usato dalla pagina evento. `StandingsCard.vue` importa `StandingWithPlayer` invece di ridefinirlo. Rimosso il wrapper `h-full`/`overflow-hidden` che forzava l'altezza della vecchia card di lega a corrispondere alla lista eventi accanto — `StandingsCard` non ha quel comportamento (si adatta al contenuto come già fa nella pagina evento), scelto di non reintrodurlo per non complicare il componente condiviso con un layout specifico di un solo consumer.
 - **Chiavi i18n rimosse** (orfane dopo la rimozione di `LeagueRanking.vue`): `league.ranking.rank`, `league.ranking.points`, `league.ranking.pointsAbbrev`. `league.ranking.player`/`playerFallback`/`empty` restano — usate anche altrove (`EventRanking.vue`, `WaitingList.vue`, ecc.).
 
+### ADR-025 — Lifecycle hardening: `viewedRound` reset + vincoli di idempotenza DB (BACKLOG #12, TODO #12)
+
+- **`viewedRound` non si resettava** (TODO #12): `useEventLifecycle.ts`'s `resetSessionStores()` (già chiamata dopo ogni transizione `nextRound`/`turnBackRound`/`startEvent` riuscita) ora chiama anche una nuova dipendenza `clearViewedRound` — un solo punto invece di tre call-site separati, dato che `resetSessionStores()` era già il filo comune tra `confirmEndEvent`, il ramo avanza-round di `handlePreviewConfirm`, e `confirmCancelRound`.
+- **Vincoli `UNIQUE` mancanti** (BACKLOG #12): aggiunti `standings(event_id, player_id)` e `round_results(pairing_id, player_id)` (migrazione `20260722010000_...`). **Non era più solo un rischio teorico**: trovate 2 righe duplicate reali già in produzione (`round_results`, `pairing_id 1152`, evento disposable "TEST EVENTO") — copie byte-identiche, ripulite (tenuto l'id più basso) prima di applicare il vincolo.
+- **`start.post.ts`**: cattura il codice Postgres `23505` (unique_violation) sull'insert di `standings` e risponde con un 409 pulito invece di un 500 grezzo — un retry/doppio-click ora fallisce in modo prevedibile.
+- **`upsertRoundResult`** (`server/utils/roundResults.ts`): riscritto da select-then-insert-or-update (race TOCTOU reale, causa della duplicazione trovata sopra) a un singolo `.upsert(..., { onConflict: 'pairing_id,player_id' })` atomico, appoggiato sul nuovo vincolo.
+
 ---
 
 ## Funzionalità per area

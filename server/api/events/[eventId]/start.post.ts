@@ -77,6 +77,16 @@ export default defineEventHandler(async (event) => {
 
   const { error: standingsError } = await supabase.from('standings').insert(standingsData)
   if (standingsError) {
+    // 23505 = unique_violation on standings(event_id, player_id) — a
+    // concurrent/retried start already inserted these rows (BACKLOG #12,
+    // TOCTOU between the event_playing guard above and this insert). Clean
+    // rejection, not a scary 500: the event did in fact already start.
+    if (standingsError.code === '23505') {
+      throw createError({
+        statusCode: 409,
+        statusMessage: 'Event has already started'
+      })
+    }
     console.error('[api/start] standings insert failed', { eventId, standingsError })
     throw createError({
       statusCode: 500,

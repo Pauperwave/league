@@ -36,6 +36,14 @@ export async function fetchPairingPlayerIds(
 /**
  * Upsert a round_results row by (pairing_id, player_id): update the existing
  * row's given fields or insert a new one. Throws on any DB error.
+ *
+ * A single atomic `ON CONFLICT (pairing_id, player_id) DO UPDATE`, backed by
+ * the unique constraint added in `20260722010000_...sql` (BACKLOG #12) —
+ * previously a select-then-insert-or-update, which raced two concurrent
+ * calls (e.g. a double-click) into inserting two rows for the same seat.
+ * That race already produced a real duplicate in production (pairing_id
+ * 1152), inflating samePositionCount in calculateRoundScores for everyone at
+ * that table, not just the duplicate.
  */
 export async function upsertRoundResult(
   supabase: SupabaseClient<Database>,
@@ -43,29 +51,13 @@ export async function upsertRoundResult(
   playerId: number,
   patch: RoundResultPatch,
 ): Promise<void> {
-  const { data: existing, error: selectError } = await supabase
+  const { error } = await supabase
     .from('round_results')
-    .select('id')
-    .eq('pairing_id', pairingId)
-    .eq('player_id', playerId)
-    .maybeSingle()
-
-  if (selectError) throw selectError
-
-  if (existing) {
-    const { error } = await supabase
-      .from('round_results')
-      .update(patch)
-      .eq('pairing_id', pairingId)
-      .eq('player_id', playerId)
-    if (error) throw error
-  }
-  else {
-    const { error } = await supabase
-      .from('round_results')
-      .insert({ pairing_id: pairingId, player_id: playerId, ...patch })
-    if (error) throw error
-  }
+    .upsert(
+      { pairing_id: pairingId, player_id: playerId, ...patch },
+      { onConflict: 'pairing_id,player_id' }
+    )
+  if (error) throw error
 }
 
 /**
