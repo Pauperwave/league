@@ -117,6 +117,7 @@ const lifecycle = useEventLifecycle({
   currentRound,
   eventStatus,
   syncUrl,
+  clearViewedRound,
   killsStore,
   rankingsStore,
   commandersStore,

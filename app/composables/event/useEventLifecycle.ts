@@ -24,6 +24,11 @@ interface LifecycleDeps {
   // URL sync
   syncUrl: (phase: 'registration' | 'playing' | 'ended', round: number) => void
 
+  // Viewed-round state (TODO #12): must be cleared on every lifecycle
+  // transition, or a stale viewedRound survives a turn-back and ends up
+  // querying a round number that no longer means what it used to.
+  clearViewedRound: () => void
+
   // Session stores
   killsStore: ReturnType<typeof import('~/stores/kills').useKillsStore>
   rankingsStore: ReturnType<typeof import('~/stores/rankings').useRankingsStore>
@@ -39,15 +44,18 @@ export function useEventLifecycle(deps: LifecycleDeps) {
     eventId, nextRound, turnBackRound, startEvent, updateEvent,
     showNextRoundModal, showEndEventConfirm, showStartPreviewModal, showCancelRoundConfirm, showEventEditModal,
     isLastRound, currentRound, eventStatus,
-    syncUrl,
+    syncUrl, clearViewedRound,
     killsStore, rankingsStore, commandersStore, votesStore,
   } = deps
 
+  // Every lifecycle transition (advance/end/turn-back) forces the view back
+  // to "current round" — only an explicit stepper click may leave it again.
   function resetSessionStores() {
     killsStore.reset()
     rankingsStore.reset()
     commandersStore.reset()
     votesStore.reset()
+    clearViewedRound()
   }
 
   /**
