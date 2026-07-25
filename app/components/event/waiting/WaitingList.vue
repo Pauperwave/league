@@ -123,7 +123,7 @@ const tableData = computed(() => {
       />
       <UButton
         color="neutral"
-        variant="ghost"
+        variant="soft"
         :icon="ICONS.addPlayer"
         :label="t('player.searchModal.createNew')"
         @click="handleCreateNew"

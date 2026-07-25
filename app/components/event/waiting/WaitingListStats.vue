@@ -23,6 +23,12 @@ watchDebounced(
   { debounce: 500 }
 )
 
+// Table breakdown only makes sense once the count yields a valid table split (3, 4, or 6+ players).
+const hasValidTableSplit = computed(() => {
+  const count = debouncedCount.value
+  return count >= 3 && count !== 5
+})
+
 const statsState = computed(() => {
   const count = debouncedCount.value
 
@@ -51,26 +57,27 @@ const statsState = computed(() => {
   }
 
   // 3, 4, or 6+ giocatori
-  const parts: string[] = []
-  parts.push(t('event.waitingListStats.playersCount', { count }))
-  if (debouncedEstimate.value) parts.push(debouncedEstimate.value)
-
   return {
-    label: parts.join(' = '),
+    label: t('event.waitingListStats.playersCount', { count }),
     color: 'info' as const,
     show: true
   }
 })
+
+const tableEstimateTooltip = computed(() =>
+  hasValidTableSplit.value ? debouncedEstimate.value : undefined
+)
 </script>
 
 <template>
-  <UBadge
-    v-if="statsState.show"
-    :color="statsState.color"
-    size="lg"
-    variant="subtle"
-    :ui="{ base: 'px-2.5 py-1.5 text-sm font-medium' }"
-  >
-    {{ statsState.label }}
-  </UBadge>
+  <UTooltip v-if="statsState.show" :content="{ side: 'top' }" :text="tableEstimateTooltip">
+    <UBadge
+      :color="statsState.color"
+      size="lg"
+      variant="subtle"
+      :ui="{ base: 'px-2.5 py-1.5 text-sm font-medium' }"
+    >
+      {{ statsState.label }}
+    </UBadge>
+  </UTooltip>
 </template>
