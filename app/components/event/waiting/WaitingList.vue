@@ -92,20 +92,15 @@ const tableData = computed(() => {
 
 <template>
   <div class="bg-muted/30 rounded-lg p-4 space-y-4">
-    <div class="flex flex-wrap items-center justify-between gap-3">
-      <div class="flex items-center gap-2">
-        <h2 class="font-semibold text-xl flex items-center gap-2">
-          <UIcon :name="ICONS.players" size="lg" class="text-muted" />
-          {{ t('event.waitingList.heading') }}
-        </h2>
-      </div>
-
-      <div class="flex flex-wrap items-center gap-3">
-        <WaitingListStats
-          :player-count="waitingPlayers.length"
-          :table-estimate="tableEstimate"
-        />
-      </div>
+    <div class="flex flex-wrap items-center gap-3">
+      <h2 class="font-semibold text-xl flex items-center gap-2">
+        <UIcon :name="ICONS.players" size="lg" class="text-muted" />
+        {{ t('event.waitingList.heading') }}
+      </h2>
+      <WaitingListStats
+        :player-count="waitingPlayers.length"
+        :table-estimate="tableEstimate"
+      />
     </div>
 
     <div class="flex flex-wrap items-center gap-2">
