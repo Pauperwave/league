@@ -36,7 +36,6 @@ const emit = defineEmits<{
 
 const searchQuery = ref('')
 const rowSelection = ref<Record<string, boolean>>({})
-const columnVisibility = ref({ playerId: false })
 
 const playerState = reactive<Record<number, { paid: boolean }>>(
   Object.fromEntries(props.data.map(p => [p.playerId, { paid: p.paid }]))
@@ -82,6 +81,10 @@ const selectedPlayerIds = computed(() =>
 
 const hasSelection = computed(() => selectedPlayerIds.value.length > 0)
 
+const allSelectedPaid = computed(() =>
+  hasSelection.value && selectedPlayerIds.value.every(id => playerState[id]?.paid)
+)
+
 function executeBatch(updateFn: ((id: number) => void) | null, batchEmitFn: (ids: number[]) => void) {
   if (!hasSelection.value) return
   const ids = selectedPlayerIds.value
@@ -90,6 +93,11 @@ function executeBatch(updateFn: ((id: number) => void) | null, batchEmitFn: (ids
   }
   batchEmitFn(ids)
   rowSelection.value = {}
+}
+
+function handleToggleMarkPaid() {
+  const newValue = !allSelectedPaid.value
+  executeBatch(id => setPlayer(id, 'paid', newValue), ids => emit('batchMarkPaid', ids))
 }
 
 // --- Batch removal confirmation ---
@@ -171,13 +179,6 @@ const columns = computed<TableColumn<WaitingPlayer>[]>(() => [
     meta: { class: { th: 'w-10 text-right', td: 'w-10 text-right' } },
   },
   {
-    id: 'playerId',
-    accessorKey: 'playerId',
-    header: t('league.table.id'),
-    enableHiding: true,
-    meta: { class: { th: 'w-16 text-center', td: 'w-16 text-center font-mono' } },
-  },
-  {
     accessorKey: 'name',
     header: t('event.waitingListTable.playerColumn'),
     meta: { class: { td: 'font-medium' } },
@@ -220,18 +221,6 @@ const filteredData = computed(() => {
   )
 })
 
-const columnVisibilityItems = computed(() => [
-  {
-    label: t('league.table.id'),
-    type: 'checkbox' as const,
-    checked: columnVisibility.value.playerId !== false,
-    onUpdateChecked(checked: boolean) {
-      columnVisibility.value = { playerId: checked }
-    },
-    onSelect(e: Event) { e.preventDefault() },
-  },
-])
-
 const meta = computed(() => ({
   class: {
     tr: (row: { original: WaitingPlayer }) => {
@@ -246,15 +235,9 @@ const meta = computed(() => ({
 <template>
   <div class="flex flex-col gap-2">
     <div class="flex flex-wrap items-center justify-between gap-2">
-      <UInput v-model="searchQuery" :placeholder="t('event.waitingListTable.searchPlaceholder')" class="max-w-sm" />
-      <UDropdownMenu :items="columnVisibilityItems" :content="{ align: 'end' }">
-        <UButton :label="t('event.waitingListTable.columnsButton')" color="neutral" :trailing-icon="ICONS.chevronDown" />
-      </UDropdownMenu>
-    </div>
-
-    <div class="min-h-12 flex items-center">
-      <div class="flex flex-wrap items-center gap-2 p-2 bg-muted/50 rounded transition-all duration-200">
-        <span class="text-sm text-muted min-w-32">
+      <UInput v-model="searchQuery" :icon="ICONS.search" :placeholder="t('event.waitingListTable.searchPlaceholder')" class="max-w-sm" />
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="text-sm text-muted">
           <template v-if="hasSelection">
             {{ t('event.waitingListTable.selectedCount', { count: selectedPlayerIds.length }) }}
           </template>
@@ -262,29 +245,26 @@ const meta = computed(() => ({
             {{ t('event.waitingListTable.selectPlayersHint') }}
           </span>
         </span>
-        <div class="flex flex-wrap items-center gap-1 sm:ml-auto">
-          <UButton
-            size="xs" color="success" variant="soft" :icon="ICONS.paid"
-            :disabled="!hasSelection"
-            @click="executeBatch(id => setPlayer(id, 'paid', true), ids => emit('batchMarkPaid', ids))"
-          >
-            {{ t('event.waitingListTable.markPaid') }}
-          </UButton>
-          <UButton
-            size="xs" color="error" variant="soft" :icon="ICONS.delete"
-            :disabled="!hasSelection"
-            @click="handleBatchRemoveClick"
-          >
-            {{ t('event.waitingListTable.removeSelected') }}
-          </UButton>
-        </div>
+        <UButton
+          size="xs" :color="allSelectedPaid ? 'neutral' : 'success'" variant="soft" :icon="ICONS.paid"
+          :disabled="!hasSelection"
+          @click="handleToggleMarkPaid"
+        >
+          {{ allSelectedPaid ? t('event.waitingListTable.unmarkPaid') : t('event.waitingListTable.markPaid') }}
+        </UButton>
+        <UButton
+          size="xs" color="error" variant="soft" :icon="ICONS.delete"
+          :disabled="!hasSelection"
+          @click="handleBatchRemoveClick"
+        >
+          {{ t('event.waitingListTable.removeSelected') }}
+        </UButton>
       </div>
     </div>
 
     <div class="w-full overflow-x-auto">
       <UTable
         v-model:row-selection="rowSelection"
-        v-model:column-visibility="columnVisibility"
         :data="filteredData"
         :columns="columns"
         :meta="meta"
