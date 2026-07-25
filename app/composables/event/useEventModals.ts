@@ -12,7 +12,6 @@ export function useEventModals() {
   const showCancelRoundConfirm = ref(false)
   const showEndEventConfirm = ref(false)
   const showKillModal = ref(false)
-  const showPlayerSearchModal = ref(false)
   const showCreatePlayerModal = ref(false)
   const showScoresModal = ref(false)
 
@@ -54,7 +53,6 @@ export function useEventModals() {
     showCancelRoundConfirm,
     showEndEventConfirm,
     showKillModal,
-    showPlayerSearchModal,
     showCreatePlayerModal,
     showScoresModal,
 

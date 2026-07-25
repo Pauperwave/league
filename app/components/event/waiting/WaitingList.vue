@@ -38,14 +38,34 @@ const emit = defineEmits<{
   remove: [playerId: number]
   batchRemove: [playerIds: number[]]
   batchMarkPaid: [playerIds: number[]]
-  addPlayer: []
+  select: [playerIds: number[]]
+  createNew: []
 }>()
 
-const addPlayerLogging = useButtonLogging('Add Player')
+// — Add players (inline search + create) —
 
-function handleAddPlayer() {
-  addPlayerLogging.logClick()
-  emit('addPlayer')
+const selectedPlayerIds = ref<string[]>([])
+const hasSelection = computed(() => selectedPlayerIds.value.length > 0)
+
+const availablePlayers = computed(() =>
+  props.players.filter(p => !props.waitingPlayers.includes(p.player_id))
+)
+const addPlayersItems = usePlayerOptions(availablePlayers)
+const allPlayersInQueue = computed(() =>
+  props.players.length > 0 && props.players.every(p => props.waitingPlayers.includes(p.player_id))
+)
+
+const addPlayersLogging = useButtonLogging('Add Players')
+function handleAddSelected() {
+  addPlayersLogging.logClick()
+  emit('select', selectedPlayerIds.value.map(Number))
+  selectedPlayerIds.value = []
+}
+
+const createNewLogging = useButtonLogging('Create New Player')
+function handleCreateNew() {
+  createNewLogging.logClick()
+  emit('createNew')
 }
 
 // — Table data —
@@ -85,16 +105,40 @@ const tableData = computed(() => {
           :player-count="waitingPlayers.length"
           :table-estimate="tableEstimate"
         />
-        <UButton
-          color="warning"
-          variant="subtle"
-          size="lg"
-          :icon="ICONS.addPlayer"
-          :label="t('event.waitingList.addPlayers')"
-          class="font-semibold"
-          @click="handleAddPlayer"
-        />
       </div>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-2">
+      <USelectMenu
+        v-model="selectedPlayerIds"
+        :items="addPlayersItems"
+        value-key="value"
+        multiple
+        :icon="ICONS.addPlayer"
+        :placeholder="t('player.searchModal.addPlayersPlaceholder')"
+        :search-input="{ placeholder: t('player.searchModal.searchInputPlaceholder') }"
+        class="w-full sm:w-120"
+      />
+      <UButton
+        color="primary"
+        :icon="ICONS.playerConfirmed"
+        :label="t('player.searchModal.addCount', { count: selectedPlayerIds.length })"
+        :disabled="!hasSelection"
+        @click="handleAddSelected"
+      />
+      <UButton
+        color="neutral"
+        variant="ghost"
+        :icon="ICONS.addPlayer"
+        :label="t('player.searchModal.createNew')"
+        @click="handleCreateNew"
+      />
+      <span v-if="players.length === 0" class="text-sm text-muted">
+        {{ t('player.searchModal.noPlayersRegistered') }}
+      </span>
+      <span v-else-if="allPlayersInQueue" class="text-sm text-muted">
+        {{ t('player.searchModal.allInQueue') }}
+      </span>
     </div>
 
     <WaitingListTable

@@ -217,12 +217,10 @@
       "noPlayersDescription": "Inizia creando il primo giocatore"
     },
     "searchModal": {
-      "title": "Aggiungi giocatori alla lista d'attesa",
-      "searchPlaceholder": "Cerca giocatori...",
+      "addPlayersPlaceholder": "Aggiungi giocatori",
       "searchInputPlaceholder": "Cerca per nome...",
       "noPlayersRegistered": "Nessun giocatore registrato",
       "allInQueue": "Tutti i giocatori sono già nella lista d'attesa",
-      "selectedCount": "{count} giocatore/i selezionato/i",
       "createNew": "Crea nuovo",
       "addCount": "Aggiungi ({count})"
     },
@@ -482,8 +480,7 @@
       }
     },
     "waitingList": {
-      "heading": "Lista d'Attesa",
-      "addPlayers": "Aggiungi Giocatori"
+      "heading": "Lista d'Attesa"
     },
     "waitingListTable": {
       "selectAllAriaLabel": "Seleziona tutti",

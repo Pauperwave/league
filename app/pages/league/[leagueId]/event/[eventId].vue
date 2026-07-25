@@ -37,7 +37,6 @@ const {
   showCancelRoundConfirm,
   showEndEventConfirm,
   showKillModal,
-  showPlayerSearchModal,
   showCreatePlayerModal,
   playerToEdit,
   showScoreModal,
@@ -130,7 +129,6 @@ const playersHandlers = useEventPlayers({
   removeFromWaitingList,
   players,
   showCreatePlayerModal,
-  showPlayerSearchModal,
   playerToEdit,
   toast,
 })
@@ -442,13 +440,6 @@ function handleResetTable(pairingId: number) {
                 @remove="(playerId: number) => removeFromWaitingList([playerId])"
                 @batch-remove="playersHandlers.handleBatchRemove"
                 @edit="playersHandlers.handleEditPlayer"
-                @add-player="showPlayerSearchModal = true"
-              />
-
-              <PlayerSearchModal
-                v-model:open="showPlayerSearchModal"
-                :players="players"
-                :waiting-players="waitingPlayers"
                 @select="addToWaitingList"
                 @create-new="playersHandlers.handleCreateNewPlayer"
               />
