@@ -492,7 +492,6 @@
       "actionsColumn": "Azioni",
       "searchPlaceholder": "Cerca giocatori",
       "selectedCount": "{count} giocatori selezionati",
-      "selectPlayersHint": "Seleziona giocatori per azioni batch",
       "markPaid": "Marca pagati",
       "unmarkPaid": "Smarca pagati",
       "removeSelected": "Rimuovi selezionati",

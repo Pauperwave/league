@@ -236,25 +236,18 @@ const meta = computed(() => ({
   <div class="flex flex-col gap-2">
     <div class="flex flex-wrap items-center justify-between gap-2">
       <UInput v-model="searchQuery" :icon="ICONS.search" :placeholder="t('event.waitingListTable.searchPlaceholder')" class="max-w-sm" />
-      <div class="flex flex-wrap items-center gap-2">
+      <div v-if="hasSelection" class="flex flex-wrap items-center gap-2">
         <span class="text-sm text-muted">
-          <template v-if="hasSelection">
-            {{ t('event.waitingListTable.selectedCount', { count: selectedPlayerIds.length }) }}
-          </template>
-          <span v-else class="text-muted/50">
-            {{ t('event.waitingListTable.selectPlayersHint') }}
-          </span>
+          {{ t('event.waitingListTable.selectedCount', { count: selectedPlayerIds.length }) }}
         </span>
         <UButton
           size="xs" :color="allSelectedPaid ? 'neutral' : 'success'" variant="soft" :icon="ICONS.paid"
-          :disabled="!hasSelection"
           @click="handleToggleMarkPaid"
         >
           {{ allSelectedPaid ? t('event.waitingListTable.unmarkPaid') : t('event.waitingListTable.markPaid') }}
         </UButton>
         <UButton
           size="xs" color="error" variant="soft" :icon="ICONS.delete"
-          :disabled="!hasSelection"
           @click="handleBatchRemoveClick"
         >
           {{ t('event.waitingListTable.removeSelected') }}
