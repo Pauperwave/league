@@ -17,10 +17,10 @@ const playersById = computed(() => new Map(props.players.map(p => [p.player_id, 
 
 const { flags } = useWaitingListFlags(props.eventId)
 
-function handleUpdate(payload: { playerId: number, paid: boolean, companion: boolean }) {
+function handleUpdate(payload: { playerId: number, paid: boolean }) {
   flags.value = {
     ...flags.value,
-    [payload.playerId]: { paid: payload.paid, companion: payload.companion },
+    [payload.playerId]: { paid: payload.paid },
   }
   emit('update', payload)
 }
@@ -33,12 +33,11 @@ function forgetFlags(playerIds: number[]) {
 }
 
 const emit = defineEmits<{
-  update: [{ playerId: number, paid: boolean, companion: boolean }]
+  update: [{ playerId: number, paid: boolean }]
   edit: [playerId: number]
   remove: [playerId: number]
   batchRemove: [playerIds: number[]]
   batchMarkPaid: [playerIds: number[]]
-  batchMarkCompanion: [playerIds: number[]]
   addPlayer: []
 }>()
 
@@ -65,7 +64,6 @@ const tableData = computed(() => {
       surname: player?.player_surname ?? '',
       time: formatTime(props.waitroomEntries?.get(playerId)),
       paid: flags.value[playerId]?.paid ?? false,
-      companion: flags.value[playerId]?.companion ?? false,
     }
   })
 })
@@ -106,7 +104,6 @@ const tableData = computed(() => {
       @remove="(playerId: number) => { forgetFlags([playerId]); emit('remove', playerId) }"
       @batch-remove="(playerIds: number[]) => { forgetFlags(playerIds); emit('batchRemove', playerIds) }"
       @batch-mark-paid="emit('batchMarkPaid', $event)"
-      @batch-mark-companion="emit('batchMarkCompanion', $event)"
     />
   </div>
 </template>

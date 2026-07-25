@@ -95,7 +95,7 @@ export function useEventPlayers(deps: EventPlayersDeps) {
     toast.add({ title: t('event.playerAddedTitle'), description: t('event.playerAddedDescription'), color: 'success' })
   }
 
-  function handlePlayerStatusUpdate(payload: { playerId: number, paid: boolean, companion: boolean }) {
+  function handlePlayerStatusUpdate(payload: { playerId: number, paid: boolean }) {
     logDebug('useEventPlayers', 'Player status updated:', payload)
   }
 

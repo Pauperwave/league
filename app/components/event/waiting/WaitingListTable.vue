@@ -14,7 +14,6 @@ interface WaitingPlayer {
   surname: string
   time: string
   paid: boolean
-  companion: boolean
 }
 
 function fullName(player: WaitingPlayer): string {
@@ -26,12 +25,11 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  update: [{ playerId: number; paid: boolean; companion: boolean }]
+  update: [{ playerId: number; paid: boolean }]
   edit: [playerId: number]
   remove: [playerId: number]
   batchRemove: [playerIds: number[]]
   batchMarkPaid: [playerIds: number[]]
-  batchMarkCompanion: [playerIds: number[]]
 }>()
 
 // --- State ---
@@ -40,20 +38,20 @@ const searchQuery = ref('')
 const rowSelection = ref<Record<string, boolean>>({})
 const columnVisibility = ref({ playerId: false })
 
-const playerState = reactive<Record<number, { paid: boolean; companion: boolean }>>(
-  Object.fromEntries(props.data.map(p => [p.playerId, { paid: p.paid, companion: p.companion }]))
+const playerState = reactive<Record<number, { paid: boolean }>>(
+  Object.fromEntries(props.data.map(p => [p.playerId, { paid: p.paid }]))
 )
 
 watch(() => props.data, (data) => {
   data.forEach(p => {
-    playerState[p.playerId] = { paid: p.paid, companion: p.companion }
+    playerState[p.playerId] = { paid: p.paid }
   })
 }, { deep: true })
 
 function emitUpdate(playerId: number) {
   const state = playerState[playerId]
   if (!state) return
-  emit('update', { playerId, paid: state.paid, companion: state.companion })
+  emit('update', { playerId, paid: state.paid })
 }
 
 // --- Removal confirmation ---
@@ -94,13 +92,13 @@ function executeBatch(updateFn: ((id: number) => void) | null, batchEmitFn: (ids
   rowSelection.value = {}
 }
 
-function togglePlayer(playerId: number, field: 'paid' | 'companion') {
+function togglePlayer(playerId: number, field: 'paid') {
   const state = playerState[playerId]
   if (!state) return
   setPlayer(playerId, field, !state[field])
 }
 
-function setPlayer(playerId: number, field: 'paid' | 'companion', value: boolean) {
+function setPlayer(playerId: number, field: 'paid', value: boolean) {
   const state = playerState[playerId]
   if (!state) return
   state[field] = value
@@ -110,7 +108,7 @@ function setPlayer(playerId: number, field: 'paid' | 'companion', value: boolean
 // --- Columns ---
 
 function createToggleColumn(
-  id: 'companion' | 'paid',
+  id: 'paid',
   color: CheckboxProps['color'],
   headerKey: string,
   ariaLabelKey: string,
@@ -181,7 +179,6 @@ const columns = computed<TableColumn<WaitingPlayer>[]>(() => [
     header: t('event.waitingListTable.timeColumn'),
     meta: { class: { th: 'text-center', td: 'text-center' } },
   },
-  createToggleColumn('companion', 'warning', 'event.waitingListTable.companionColumn', 'event.waitingListTable.companionAriaLabel'),
   createToggleColumn('paid', 'success', 'event.waitingListTable.paidColumn', 'event.waitingListTable.paidAriaLabel'),
   {
     id: 'actions',
@@ -225,8 +222,7 @@ const meta = computed(() => ({
   class: {
     tr: (row: { original: WaitingPlayer }) => {
       const state = playerState[row.original.playerId]
-      if (state?.paid && state?.companion) return 'bg-success/10 hover:bg-success/20'
-      if (state?.paid || state?.companion) return 'bg-warning/10 hover:bg-warning/20'
+      if (state?.paid) return 'bg-success/10 hover:bg-success/20'
       return 'hover:bg-muted/50'
     },
   },
@@ -259,13 +255,6 @@ const meta = computed(() => ({
             @click="executeBatch(id => setPlayer(id, 'paid', true), ids => emit('batchMarkPaid', ids))"
           >
             {{ t('event.waitingListTable.markPaid') }}
-          </UButton>
-          <UButton
-            size="xs" color="warning" variant="soft" :icon="ICONS.players"
-            :disabled="!hasSelection"
-            @click="executeBatch(id => setPlayer(id, 'companion', true), ids => emit('batchMarkCompanion', ids))"
-          >
-            {{ t('event.waitingListTable.markCompanion') }}
           </UButton>
           <UButton
             size="xs" color="error" variant="soft" :icon="ICONS.delete"

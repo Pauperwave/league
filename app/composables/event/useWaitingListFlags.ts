@@ -2,7 +2,6 @@
 
 export interface WaitingListFlags {
   paid: boolean
-  companion: boolean
 }
 
 function waitingListFlagsKey(eventId: number): string {
@@ -15,7 +14,7 @@ function waitingListFlagsKey(eventId: number): string {
 const FLAGS_TTL_MS = 30 * 24 * 60 * 60 * 1000
 
 /**
- * Per-event "pagato"/"companion" checkbox state for the waiting list —
+ * Per-event "pagato" checkbox state for the waiting list —
  * ephemeral by design (confirmed 2026-07-14: "just for remembering right in
  * that moment", see docs/TODO.md), but persisted to localStorage so a page
  * refresh during registration doesn't silently reset every checkbox. Cleared
