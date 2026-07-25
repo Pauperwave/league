@@ -92,6 +92,20 @@ function executeBatch(updateFn: ((id: number) => void) | null, batchEmitFn: (ids
   rowSelection.value = {}
 }
 
+// --- Batch removal confirmation ---
+
+const showBatchRemoveConfirm = ref(false)
+
+function handleBatchRemoveClick() {
+  if (!hasSelection.value) return
+  showBatchRemoveConfirm.value = true
+}
+
+function handleConfirmBatchRemove() {
+  showBatchRemoveConfirm.value = false
+  executeBatch(null, ids => emit('batchRemove', ids))
+}
+
 function togglePlayer(playerId: number, field: 'paid') {
   const state = playerState[playerId]
   if (!state) return
@@ -259,7 +273,7 @@ const meta = computed(() => ({
           <UButton
             size="xs" color="error" variant="soft" :icon="ICONS.delete"
             :disabled="!hasSelection"
-            @click="executeBatch(null, ids => emit('batchRemove', ids))"
+            @click="handleBatchRemoveClick"
           >
             {{ t('event.waitingListTable.removeSelected') }}
           </UButton>
@@ -316,6 +330,14 @@ const meta = computed(() => ({
       :question="t('event.waitingListTable.removeConfirm.question')"
       :subject="playerNameToRemove"
       @confirm="handleConfirmRemove"
+    />
+
+    <ConfirmModal
+      v-model:open="showBatchRemoveConfirm"
+      :title="t('event.waitingListTable.batchRemoveConfirm.title')"
+      :description="t('event.waitingListTable.batchRemoveConfirm.description')"
+      :question="t('event.waitingListTable.batchRemoveConfirm.question', { count: selectedPlayerIds.length })"
+      @confirm="handleConfirmBatchRemove"
     />
   </div>
 </template>

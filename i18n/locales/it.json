@@ -505,6 +505,11 @@
         "title": "Conferma Rimozione",
         "description": "Stai per rimuovere questo giocatore dalla lista d'attesa",
         "question": "Sei sicuro di voler rimuovere"
+      },
+      "batchRemoveConfirm": {
+        "title": "Conferma Rimozione",
+        "description": "Stai per rimuovere più giocatori dalla lista d'attesa",
+        "question": "Sei sicuro di voler rimuovere {count} giocatori selezionati"
       }
     },
     "waitingListStats": {
