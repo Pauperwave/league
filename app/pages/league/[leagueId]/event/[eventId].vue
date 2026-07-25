@@ -383,7 +383,14 @@ function handleResetTable(pairingId: number) {
     <!-- Header -->
     <div class="p-6 pb-0 space-y-2">
       <UBreadcrumb :items="breadcrumbItems" />
-      <h1 class="text-2xl font-bold">{{ eventName }}</h1>
+      <EventHeaderCard
+        v-if="eventStatus !== 'playing' && !isViewingPastRound"
+        :event-name="eventName"
+        :event-date="formattedDate"
+        :event-status="eventStatus"
+        @edit="showEventEditModal = true"
+      />
+      <h1 v-else class="text-2xl font-bold">{{ eventName }}</h1>
     </div>
 
     <!-- Main Content -->
@@ -422,13 +429,7 @@ function handleResetTable(pairingId: number) {
           </div>
 
           <!-- Registration / Ended Phase -->
-          <EventHeaderCard
-            v-if="eventStatus !== 'playing' && !isViewingPastRound"
-            :event-name="eventName"
-            :event-date="formattedDate"
-            :event-status="eventStatus"
-            @edit="showEventEditModal = true"
-          >
+          <div v-if="eventStatus !== 'playing' && !isViewingPastRound">
             <div v-if="eventStatus === 'registration'" class="space-y-4">
               <WaitingList
                 :waiting-players="waitingPlayers"
@@ -462,7 +463,7 @@ function handleResetTable(pairingId: number) {
                 :loading="loading"
               />
             </div>
-          </EventHeaderCard>
+          </div>
 
           <!-- Playing Phase -->
           <div

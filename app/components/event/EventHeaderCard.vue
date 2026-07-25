@@ -29,35 +29,29 @@ const statusBadge = computed(() => {
 </script>
 
 <template>
-  <UCard variant="outline">
-    <template #header>
-      <div class="flex items-start justify-between gap-4">
-        <div class="flex items-center gap-3">
-          <UIcon :name="ICONS.calendar" class="size-5 text-primary mt-1" />
-          <div>
-            <div class="flex items-center gap-2">
-              <h1 class="text-xl font-semibold">{{ eventName }}</h1>
-              <UButton
-                color="neutral"
-                variant="ghost"
-                :icon="ICONS.edit"
-                size="xs"
-                :aria-label="t('event.editAriaLabel')"
-                @click="handleEdit"
-              />
-            </div>
-            <p class="text-sm text-muted">{{ eventDate }}</p>
-          </div>
+  <div class="flex items-start justify-between gap-4">
+    <div class="flex items-center gap-3">
+      <UIcon :name="ICONS.calendar" class="size-5 text-primary mt-1" />
+      <div>
+        <div class="flex items-center gap-2">
+          <h1 class="text-2xl font-bold">{{ eventName }}</h1>
+          <UButton
+            color="neutral"
+            variant="ghost"
+            :icon="ICONS.edit"
+            size="xs"
+            :aria-label="t('event.editAriaLabel')"
+            @click="handleEdit"
+          />
         </div>
-
-        <div class="flex flex-row items-end gap-1">
-          <UBadge :color="statusBadge.color" :icon="eventStatus === 'ended' ? ICONS.flag : undefined">
-            {{ statusBadge.label }}
-          </UBadge>
-        </div>
+        <p class="text-sm text-muted">{{ eventDate }}</p>
       </div>
-    </template>
+    </div>
 
-    <slot />
-  </UCard>
+    <div class="flex flex-row items-end gap-1">
+      <UBadge :color="statusBadge.color" :icon="eventStatus === 'ended' ? ICONS.flag : undefined">
+        {{ statusBadge.label }}
+      </UBadge>
+    </div>
+  </div>
 </template>
