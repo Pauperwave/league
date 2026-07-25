@@ -144,7 +144,6 @@ function createToggleColumn(
       h(UCheckbox, {
         modelValue: playerState[row.original.playerId]?.[id] ?? false,
         color,
-        size: 'sm',
         'aria-label': t(ariaLabelKey, { name: fullName(row.original) }),
         'onUpdate:modelValue': () => togglePlayer(row.original.playerId, id),
       }),
@@ -182,12 +181,21 @@ const columns = computed<TableColumn<WaitingPlayer>[]>(() => [
     accessorKey: 'name',
     header: t('event.waitingListTable.playerColumn'),
     meta: { class: { td: 'font-medium' } },
-    cell: ({ row }) => h(PlayerNameTag, {
-      name: row.original.name,
-      surname: row.original.surname,
-      playerId: row.original.playerId,
-      avatarSize: 'md',
-    }),
+    cell: ({ row }) => {
+      const { name, surname } = row.original
+      const match = searchQuery.value ? fuzzyMatch(fullName(row.original), searchQuery.value) : null
+      if (!match) {
+        return h(PlayerNameTag, { name, surname, playerId: row.original.playerId, avatarSize: 'md' })
+      }
+      // fullName() joins as `${name} ${surname}` — split the combined match
+      // indices back onto each part (-1 for the joining space).
+      const nameIndices = match.indices.filter(i => i < name.length)
+      const surnameIndices = match.indices.filter(i => i > name.length).map(i => i - name.length - 1)
+      return h(PlayerNameTag, { name, surname, playerId: row.original.playerId, avatarSize: 'md' }, {
+        name: () => highlightFuzzyChars(name, nameIndices),
+        surname: () => highlightFuzzyChars(surname, surnameIndices),
+      })
+    },
   },
   {
     accessorKey: 'time',
@@ -215,10 +223,13 @@ const columns = computed<TableColumn<WaitingPlayer>[]>(() => [
 
 const filteredData = computed(() => {
   if (!searchQuery.value) return props.data
-  const query = searchQuery.value.toLowerCase()
-  return props.data.filter(p =>
-    fullName(p).toLowerCase().includes(query) || p.playerId.toString().includes(query)
-  )
+
+  const query = searchQuery.value
+  return props.data
+    .map(p => ({ player: p, match: fuzzyMatch(fullName(p), query) }))
+    .filter(({ player, match }) => match !== null || player.playerId.toString().includes(query))
+    .sort((a, b) => (b.match?.score ?? 0) - (a.match?.score ?? 0))
+    .map(({ player }) => player)
 })
 
 const meta = computed(() => ({

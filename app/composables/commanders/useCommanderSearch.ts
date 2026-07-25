@@ -2,6 +2,7 @@
 import { fetchCommanderByName, type CommanderCard } from './useCommanderCards'
 import type { Database } from '#shared/utils/types/database'
 import type { CommanderCatalogRow } from './useCommanderCatalogQuery'
+import type { FuzzyMatchResult } from '~/utils/fuzzyMatch'
 
 async function fetchUsedCommanderNames(
   supabase: ReturnType<typeof useSupabaseClient<Database>>,
@@ -32,6 +33,8 @@ export interface CommanderSuggestionItem {
   type?: 'label'
   label: string
   tokens?: string[]
+  /** Fuzzy-matched character indices (into `label`) to highlight — see `fuzzyMatch` in `app/utils/fuzzyMatch.ts`. */
+  matchIndices?: number[]
 }
 
 export interface UseCommanderSearchOptions {
@@ -60,15 +63,25 @@ export function useCommanderSearch(options: UseCommanderSearchOptions = {}) {
   async function fetchSuggestions(q: string) {
     isLoading.value = true
     try {
-      const trimmed = q.trim().toLowerCase()
+      const trimmed = q.trim()
       const whitelist = toValue(options.whitelist)
       const whitelistSet = whitelist && whitelist.length > 0
         ? new Set(whitelist)
         : null
 
+      // Fuzzy (subsequence) match instead of a plain substring check — "arl"
+      // matches "Karlov", not just contiguous typing. Match indices are kept
+      // per name so CommanderSearch.vue can highlight them. A 1-2 char query
+      // matches nearly the whole catalog (subsequence matching is lenient),
+      // so `result`/the sort below can be catalog-sized in that case — still
+      // fine at this catalog size (low thousands) behind the 150ms debounce.
+      const matches = new Map<string, FuzzyMatchResult>()
       const result = (catalog.value ?? []).filter((row) => {
         if (whitelistSet && !whitelistSet.has(row.name)) return false
-        if (trimmed.length >= 1 && !row.name.toLowerCase().includes(trimmed)) return false
+        if (trimmed.length === 0) return true
+        const match = fuzzyMatch(row.name, trimmed)
+        if (!match) return false
+        matches.set(row.name, match)
         return true
       })
 
@@ -77,10 +90,16 @@ export function useCommanderSearch(options: UseCommanderSearchOptions = {}) {
         ? await fetchUsedCommanderNames(supabase, playerId)
         : new Set<string>()
 
-      const byRank = (a: CommanderCatalogRow, b: CommanderCatalogRow) => (a.edhrecRank ?? 999999) - (b.edhrecRank ?? 999999)
+      // Best fuzzy match first, edhrecRank (popularity) as the tiebreaker —
+      // and the only sort when there's no query (score is 0 for everyone).
+      const byRelevance = (a: CommanderCatalogRow, b: CommanderCatalogRow) => {
+        const scoreDiff = (matches.get(b.name)?.score ?? 0) - (matches.get(a.name)?.score ?? 0)
+        return scoreDiff !== 0 ? scoreDiff : (a.edhrecRank ?? 999999) - (b.edhrecRank ?? 999999)
+      }
       const toItem = (row: CommanderCatalogRow): CommanderSuggestionItem => ({
         label: row.name,
         tokens: parseManaCost(row.manaCost),
+        matchIndices: matches.get(row.name)?.indices,
       })
 
       // Split BEFORE capping to 50 — a niche/unpopular commander the player
@@ -88,8 +107,8 @@ export function useCommanderSearch(options: UseCommanderSearchOptions = {}) {
       // its "already used" status is even checked (a real bug: it used to
       // slice-by-edhrecRank first, so an obscure played commander could
       // never surface here regardless of usage).
-      const used = result.filter(row => usedNames.has(row.name)).sort(byRank).map(toItem)
-      const rest = result.filter(row => !usedNames.has(row.name)).sort(byRank).slice(0, 50).map(toItem)
+      const used = result.filter(row => usedNames.has(row.name)).sort(byRelevance).map(toItem)
+      const rest = result.filter(row => !usedNames.has(row.name)).sort(byRelevance).slice(0, 50).map(toItem)
 
       const groups: CommanderSuggestionItem[][] = []
       if (used.length > 0) {

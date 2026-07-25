@@ -48,8 +48,8 @@ const displayAvatar = computed(() => avatarUrl || generatePlayerAvatar(playerId 
         linkable ? 'hover:underline hover:text-primary transition-colors' : ''
       ]"
     >
-      <span class="whitespace-nowrap">{{ name }}</span>
-      <span class="font-bold text-primary whitespace-nowrap">{{ surname }}</span>
+      <span class="whitespace-nowrap"><slot name="name">{{ name }}</slot></span>
+      <span class="font-bold text-primary whitespace-nowrap"><slot name="surname">{{ surname }}</slot></span>
     </component>
   </div>
 </template>

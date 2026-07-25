@@ -33,21 +33,6 @@ const selected = computed({
 watch(modelValue, (name) => {
   if (name) handleSelect(name)
 })
-
-/** Highlights the part of an item's label that matches the current search text. */
-function highlightMatch(text: string, search: string) {
-  if (!search) return text
-
-  const regex = new RegExp(`(${search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'ig')
-  const parts = text.split(regex)
-
-  return parts.map((part) => {
-    if (part.toLowerCase() === search.toLowerCase()) {
-      return h('span', { class: 'bg-rose-100 text-black rounded px-0.5' }, part)
-    }
-    return part
-  })
-}
 </script>
 
 <template>
@@ -71,7 +56,7 @@ function highlightMatch(text: string, search: string) {
             <ManaCost :mana-cost="item.tokens.join('')" size="sm" />
           </span>
           <span class="truncate">
-            <component :is="() => highlightMatch(item.label, query)" />
+            <component :is="() => highlightFuzzyChars(item.label, item.matchIndices ?? [])" />
           </span>
         </span>
       </template>
