@@ -64,13 +64,13 @@ const statsState = computed(() => {
   }
 })
 
-const tableEstimateTooltip = computed(() =>
+const tableEstimateLabel = computed(() =>
   hasValidTableSplit.value ? debouncedEstimate.value : undefined
 )
 </script>
 
 <template>
-  <UTooltip v-if="statsState.show" :content="{ side: 'top' }" :text="tableEstimateTooltip">
+  <div v-if="statsState.show" class="flex items-center gap-2">
     <UBadge
       :color="statsState.color"
       size="lg"
@@ -79,5 +79,6 @@ const tableEstimateTooltip = computed(() =>
     >
       {{ statsState.label }}
     </UBadge>
-  </UTooltip>
+    <span v-if="tableEstimateLabel" class="text-sm font-medium text-highlighted">{{ tableEstimateLabel }}</span>
+  </div>
 </template>
