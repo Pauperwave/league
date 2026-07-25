@@ -61,6 +61,7 @@ function handleSearch(query: string) {
     :description="modalDescription"
     :icon="modalIcon"
     :submit-label="submitLabel"
+    :submit-icon="ICONS.addPlayer"
     form-id="player-form"
     :disabled="!isFormValid"
     @cancel="handleCancel"

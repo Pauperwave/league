@@ -155,7 +155,7 @@ function handleSearchExisting(name: string) {
     <UCard
       v-if="!isEditing && hasSimilarPlayers"
       variant="outline"
-      class="border-warning"
+      class="border-warning bg-warning/10"
     >
       <div class="space-y-3">
         <div class="flex items-center gap-2 text-warning">
