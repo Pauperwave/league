@@ -11,6 +11,7 @@ export interface LeagueFormPayload {
   startsAt: string | null
   endsAt: string | null
   rulesetId: number | null
+  validEvents: number | null
 }
 
 /** The update payload emitted by LeagueFormModal. */

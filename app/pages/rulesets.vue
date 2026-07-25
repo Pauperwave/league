@@ -167,17 +167,6 @@ const ACTION_ROWS = [
                       {{ formatScore(ruleset[row.key] as number | null) }}
                     </td>
                   </tr>
-                  <tr v-if="ruleset.rule_set_valid_events">
-                    <td class="py-2 flex items-center gap-2">
-                      <UIcon :name="ICONS.calendarConfirmed" class="size-4 text-default" />
-                      <UTooltip :text="t('ruleset.validEventsTooltip')">
-                        <span class="cursor-help text-default">{{ t('ruleset.validEventsRow') }}</span>
-                      </UTooltip>
-                    </td>
-                    <td class="py-2 text-right font-semibold pl-4">
-                      {{ ruleset.rule_set_valid_events }}
-                    </td>
-                  </tr>
                 </tbody>
               </table>
             </div>

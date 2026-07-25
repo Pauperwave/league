@@ -41,6 +41,7 @@ export const leagueFormBodySchema = v.object({
   startsAt: v.nullable(v.string()),
   endsAt: v.nullable(v.string()),
   rulesetId: v.nullable(v.pipe(v.number(), v.integer(), v.minValue(1))),
+  validEvents: v.nullable(v.pipe(v.number(), v.integer(), v.minValue(1))),
 })
 
 /**
@@ -57,7 +58,6 @@ export const rulesetFormBodySchema = v.object({
   rule_set_rank2: v.nullable(v.number()),
   rule_set_rank3: v.nullable(v.number()),
   rule_set_rank4: v.nullable(v.number()),
-  rule_set_valid_events: v.nullable(v.number()),
 })
 
 /**

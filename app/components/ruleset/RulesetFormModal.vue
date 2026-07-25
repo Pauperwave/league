@@ -31,7 +31,6 @@ const RulesetCreateSchema = v.object({
   rule_set_rank2: v.number(),
   rule_set_rank3: v.number(),
   rule_set_rank4: v.number(),
-  rule_set_valid_events: v.number(),
 })
 
 const RulesetUpdateSchema = v.object({
@@ -44,7 +43,6 @@ const RulesetUpdateSchema = v.object({
   rule_set_rank2: v.nullable(v.number()),
   rule_set_rank3: v.nullable(v.number()),
   rule_set_rank4: v.nullable(v.number()),
-  rule_set_valid_events: v.nullable(v.number()),
 })
 
 const isEditing = computed(() => !!props.ruleset)
@@ -66,7 +64,6 @@ const defaultForm = () => ({
   rank2: undefined as number | undefined,
   rank3: undefined as number | undefined,
   rank4: undefined as number | undefined,
-  validEvents: undefined as number | undefined,
 })
 
 const form = reactive(defaultForm())
@@ -74,7 +71,7 @@ const form = reactive(defaultForm())
 const isValid = computed(() => {
   if (!form.name.trim()) return false
   if (!isEditing.value) {
-    return [form.partecipation, form.kill, form.brew, form.play, form.rank1, form.rank2, form.rank3, form.rank4, form.validEvents]
+    return [form.partecipation, form.kill, form.brew, form.play, form.rank1, form.rank2, form.rank3, form.rank4]
       .every(v => v !== undefined && v !== null)
   }
   return true
@@ -94,7 +91,6 @@ watch(open, (isOpen) => {
       rank2: r.rule_set_rank2 ?? undefined,
       rank3: r.rule_set_rank3 ?? undefined,
       rank4: r.rule_set_rank4 ?? undefined,
-      validEvents: r.rule_set_valid_events ?? undefined,
     })
   } else {
     Object.assign(form, defaultForm())
@@ -130,7 +126,6 @@ function handleSubmit() {
     rule_set_rank2: form.rank2 ?? null,
     rule_set_rank3: form.rank3 ?? null,
     rule_set_rank4: form.rank4 ?? null,
-    rule_set_valid_events: form.validEvents ?? null,
   }
 
   const schema = isEditing.value ? RulesetUpdateSchema : RulesetCreateSchema
@@ -191,19 +186,6 @@ function handleSubmit() {
           :form="form"
           @update-field="handleFieldUpdate"
         />
-
-        <!-- Valid events required -->
-        <div class="flex flex-col items-center gap-1">
-          <label class="flex text-xs font-medium text-muted items-center gap-1.5">
-            <UIcon :name="ICONS.calendarConfirmed" class="size-3" /> {{ t('ruleset.form.validEventsLabel') }}
-          </label>
-          <UInputNumber
-            id="field-valid-events"
-            v-model="form.validEvents"
-            :min="0"
-            placeholder="0"
-          />
-        </div>
 
       </form>
   </FormModal>

@@ -299,6 +299,12 @@ Gli store di sessione hanno **persistenza ottimistica**: update immediato UI + s
 - **`start.post.ts`**: cattura il codice Postgres `23505` (unique_violation) sull'insert di `standings` e risponde con un 409 pulito invece di un 500 grezzo — un retry/doppio-click ora fallisce in modo prevedibile.
 - **`upsertRoundResult`** (`server/utils/roundResults.ts`): riscritto da select-then-insert-or-update (race TOCTOU reale, causa della duplicazione trovata sopra) a un singolo `.upsert(..., { onConflict: 'pairing_id,player_id' })` atomico, appoggiato sul nuovo vincolo.
 
+### ADR-026 — "Eventi validi" spostato da `rulesets` a `leagues`
+
+- **Perché**: un ruleset è condiviso da più leghe (`leagues.ruleset_id`, relazione many-to-one — confermato da `LeaguesUsingRulesetModal.vue`), ma due leghe con lo stesso regolamento di punteggio possono avere stagioni di lunghezza completamente diversa (una fa 4 tappe, un'altra 10). Il numero minimo di eventi validi per la classifica finale è quindi una proprietà della stagione (lega), non delle regole di punteggio (ruleset) — tenerlo sul ruleset forzava ogni lega che lo condivide alla stessa soglia.
+- **Cosa**: migrazione `20260726000000_move_valid_events_to_leagues.sql` — aggiunge `leagues.valid_events` (integer, nullable), fa il backfill dal `rule_set_valid_events` del ruleset attualmente associato a ciascuna lega, poi elimina `rulesets.rule_set_valid_events`. Il campo non era ancora agganciato al calcolo della classifica finale (`useLeagueStandingsQuery` somma tutti gli eventi senza filtrare) — spostamento a costo zero lato logica di scoring.
+- **UI**: il campo "Eventi validi richiesti" si è spostato da `RulesetFormModal.vue`/dettaglio regolamento (`rulesets.vue`) al form lega (`LeagueFormModal.vue`); `LeagueFormPayload`/`leagueFormBodySchema` estesi con `validEvents`. Chiavi i18n spostate da namespace `ruleset.*` a `league.form.validEventsLabel`.
+
 ---
 
 ## Funzionalità per area

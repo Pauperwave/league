@@ -173,6 +173,7 @@ export type Database = {
           ruleset_id: number | null
           starts_at: string | null
           status: string
+          valid_events: number | null
         }
         Insert: {
           ends_at?: string | null
@@ -181,6 +182,7 @@ export type Database = {
           ruleset_id?: number | null
           starts_at?: string | null
           status: string
+          valid_events?: number | null
         }
         Update: {
           ends_at?: string | null
@@ -189,6 +191,7 @@ export type Database = {
           ruleset_id?: number | null
           starts_at?: string | null
           status?: string
+          valid_events?: number | null
         }
         Relationships: [
           {
@@ -543,7 +546,6 @@ export type Database = {
           rule_set_rank2: number | null
           rule_set_rank3: number | null
           rule_set_rank4: number | null
-          rule_set_valid_events: number | null
           ruleset_id: number
         }
         Insert: {
@@ -556,7 +558,6 @@ export type Database = {
           rule_set_rank2?: number | null
           rule_set_rank3?: number | null
           rule_set_rank4?: number | null
-          rule_set_valid_events?: number | null
           ruleset_id?: number
         }
         Update: {
@@ -569,7 +570,6 @@ export type Database = {
           rule_set_rank2?: number | null
           rule_set_rank3?: number | null
           rule_set_rank4?: number | null
-          rule_set_valid_events?: number | null
           ruleset_id?: number
         }
         Relationships: []

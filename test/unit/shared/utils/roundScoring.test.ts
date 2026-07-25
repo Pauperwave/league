@@ -16,7 +16,6 @@ function makeRuleset(overrides: Partial<Ruleset> = {}): Ruleset {
     rule_set_brew: 1,
     rule_set_play: 1,
     rule_set_partecipation: 0,
-    rule_set_valid_events: null,
     ...overrides,
   }
 }

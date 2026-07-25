@@ -65,7 +65,8 @@
       "startsLabel": "Data Inizio",
       "endsLabel": "Data Fine",
       "rulesetLabel": "Regolamento",
-      "rulesetFallback": "Ruleset {id}"
+      "rulesetFallback": "Ruleset {id}",
+      "validEventsLabel": "Eventi validi richiesti"
     },
     "ranking": {
       "player": "Giocatore",
@@ -105,8 +106,6 @@
     "positions": "Posizioni",
     "actionsHeading": "Azioni",
     "pointsUnit": "pt",
-    "validEventsRow": "Eventi validi",
-    "validEventsTooltip": "Minimo eventi per la classifica finale",
     "confirmDeleteDescription": "Stai per eliminare un regolamento",
     "confirmDeleteQuestion": "Sei sicuro di voler eliminare il regolamento",
     "actions": {
@@ -139,8 +138,7 @@
       "nameLabel": "Nome",
       "namePlaceholder": "Es. Regolamento Standard",
       "gameActionsHeading": "Punti per azioni di gioco",
-      "positionsHeading": "Punti per posizione",
-      "validEventsLabel": "Eventi validi richiesti"
+      "positionsHeading": "Punti per posizione"
     }
   },
   "player": {

@@ -13,6 +13,7 @@ const LeagueFormSchema = v.object({
   startsAt: v.nullable(v.string()),
   endsAt: v.nullable(v.string()),
   rulesetId: v.nullable(v.number()),
+  validEvents: v.nullable(v.pipe(v.number(), v.integer(), v.minValue(1))),
 })
 
 const props = defineProps<{
@@ -44,6 +45,7 @@ const defaultForm = () => ({
   startsAt: getToday(),
   endsAt: null as CalendarDate | null,
   rulesetId: undefined as number | undefined,
+  validEvents: undefined as number | undefined,
 })
 
 const form = shallowReactive(defaultForm())
@@ -77,6 +79,7 @@ watch(open, (isOpen) => {
       startsAt: parseDateString(l.starts_at),
       endsAt: parseDateString(l.ends_at),
       rulesetId: l.ruleset_id ?? undefined,
+      validEvents: l.valid_events ?? undefined,
     })
   } else {
     Object.assign(form, defaultForm())
@@ -93,6 +96,7 @@ function handleSubmit() {
     startsAt: form.startsAt?.toString() ?? null,
     endsAt: form.endsAt?.toString() ?? null,
     rulesetId: form.rulesetId ?? null,
+    validEvents: form.validEvents ?? null,
   }
 
   const parsed = v.safeParse(LeagueFormSchema, data)
@@ -157,6 +161,15 @@ function handleSubmit() {
           :loading="rulesetsLoading"
           class="w-full"
           :ui="{ base: 'whitespace-normal', item: 'whitespace-normal' }"
+        />
+      </UFormField>
+
+      <UFormField :label="t('league.form.validEventsLabel')">
+        <UInputNumber
+          id="field-valid-events"
+          v-model="form.validEvents"
+          :min="1"
+          placeholder="0"
         />
       </UFormField>
     </form>
