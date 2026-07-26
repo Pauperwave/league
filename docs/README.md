@@ -18,6 +18,7 @@ Master index of all project documentation.
 | `architecture/event-flow.md` | Event lifecycle: creation → registration → playing → ended, DB mutations per phase | Event logic |
 | `architecture/modal-url-sync.md` | URL query parameter sync for event page modals | URL state |
 | `architecture/routes.md` | Complete route inventory, nested route gotchas, navigation patterns | Routing |
+| `architecture/sound-effects.md` | uisfx sound-effects singleton, cue mapping for RoundTimer.vue, how to extend to other components | UI feedback |
 | `architecture/state-flow.md` | DB → store → composable → component data flow, caching strategy | Architecture |
 | `architecture/stores.md` | Pinia store overview, Setup API pattern, state categories, error handling | State management |
 | `architecture/testing.md` | Test coverage matrix by area (unit/component/E2E): what's tested today, what isn't, where to add the next test | Test reference |
@@ -80,6 +81,7 @@ docs/
 ├── README.md                    ← you are here
 ├── AGENTS.md
 ├── architecture/
+│   ├── api.md
 │   ├── async-data-keys.md
 │   ├── client-caching.md
 │   ├── commander-whitelists.md
@@ -88,6 +90,7 @@ docs/
 │   ├── event-flow.md
 │   ├── modal-url-sync.md
 │   ├── routes.md
+│   ├── sound-effects.md
 │   ├── state-flow.md
 │   ├── stores.md
 │   └── testing.md
