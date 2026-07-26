@@ -10,7 +10,13 @@ export default defineAppConfig({
     button: {
       defaultVariants: {
         variant: 'outline',
-      }
+      },
+      // Grayscale (not just the theme's default opacity-75) so a disabled
+      // button reads as muted regardless of its color/variant, instead of
+      // just a slightly faded version of its normal color.
+      slots: {
+        base: 'disabled:grayscale aria-disabled:grayscale',
+      },
     },
     // Semantic theme color mapping:
     // - primary: main color (indigo) - primary buttons, links
