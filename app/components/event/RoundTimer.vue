@@ -24,7 +24,12 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
-const { play } = useSoundEffects()
+const { play, playLoop, stopLoop } = useSoundEffects()
+
+// Once the round expires, keep the alarm repeating until any key is
+// pressed — a single "complete" chime is easy to miss when nobody's
+// looking at the screen at the exact moment the timer hits zero.
+useEventListener(window, 'keydown', stopLoop)
 
 // ---------------------------------------------------------------------------
 // State
@@ -110,7 +115,7 @@ const { pause, resume } = useIntervalFn(() => {
   if (isExpired.value) {
     pause()
     isRunning.value = false
-    play('complete')
+    playLoop('warning')
     emit('expired')
   }
 }, 1000, { immediate: false })
@@ -145,6 +150,7 @@ function reset() {
   elapsed.value = 0
   isRunning.value = false
   timeBonus.value = 0
+  stopLoop()
   play('undo')
 }
 
@@ -165,6 +171,7 @@ function addMinutes(minutes: number) {
     elapsed.value = 0
     startTime.value = null
     isRunning.value = false
+    stopLoop()
   }
   play('select')
 }

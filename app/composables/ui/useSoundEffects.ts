@@ -1,5 +1,5 @@
 // app\composables\ui\useSoundEffects.ts
-import { createUISFX, type CueName, type UISFXPlayer } from 'uisfx'
+import { createUISFX, type CueName, type PlayingSFX, type UISFXPlayer } from 'uisfx'
 
 // Module-scope singleton: one AudioContext for the whole app, lazily created
 // on first use (never on the server — Web Audio doesn't exist there, and
@@ -13,6 +13,11 @@ function getPlayer(): UISFXPlayer | null {
   return player
 }
 
+// Tracks the single currently-looping cue (e.g. the round-timer expiry
+// alarm), so `stopLoop` can silence it even if called from an unrelated
+// component instance.
+let activeLoop: PlayingSFX | null = null
+
 /** Semantic UI sound effects (uisfx). Call `play` directly from an event
  *  handler — every call also (re-)unlocks the AudioContext first, which is
  *  cheap/idempotent once already running, so callers don't need to sequence
@@ -24,5 +29,20 @@ export function useSoundEffects() {
     void instance.unlock().then(() => instance.play(cue))
   }
 
-  return { play }
+  /** Play `cue` on repeat until `stopLoop` is called. */
+  function playLoop(cue: CueName) {
+    const instance = getPlayer()
+    if (!instance) return
+    void instance.unlock().then(() => {
+      activeLoop = instance.play(cue, { loop: true })
+    })
+  }
+
+  /** Stop the cue started by `playLoop`, if any is still playing. */
+  function stopLoop() {
+    activeLoop?.stop()
+    activeLoop = null
+  }
+
+  return { play, playLoop, stopLoop }
 }
