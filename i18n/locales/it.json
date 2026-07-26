@@ -490,7 +490,7 @@
       "paidColumn": "Pagato",
       "actionsColumn": "Azioni",
       "searchPlaceholder": "Cerca giocatori",
-      "selectedCount": "{count} giocatori selezionati",
+      "selectedCount": "1 giocatore selezionato | {count} giocatori selezionati",
       "markPaid": "Marca pagati",
       "unmarkPaid": "Smarca pagati",
       "removeSelected": "Rimuovi selezionati",
