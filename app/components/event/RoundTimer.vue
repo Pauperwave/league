@@ -82,6 +82,16 @@ const { isFullscreen, toggle } = useFullscreen(timerRef)
 const showResetConfirm = ref(false)
 
 // ---------------------------------------------------------------------------
+// Subtract-to-zero confirmation
+// ---------------------------------------------------------------------------
+// Subtracting minutes is otherwise unconfirmed (reversible via Add, unlike
+// Reset) — but a subtraction that would *immediately* expire the round is
+// the one consequential case, so it gets a lighter, warning-colored confirm
+// rather than Reset's heavier error-colored one.
+const showSubtractExpireConfirm = ref(false)
+const pendingSubtractMinutes = ref(0)
+
+// ---------------------------------------------------------------------------
 // Interval
 // ---------------------------------------------------------------------------
 
@@ -150,6 +160,21 @@ function addMinutes(minutes: number) {
 /** Remove minutes from the current round, floored so the total duration never goes below zero. */
 function subtractMinutes(minutes: number) {
   timeBonus.value = clampSubtractedBonus(timeBonus.value, minutes, props.durationMinutes)
+}
+
+/** Subtract, gated behind a confirm only when it would immediately expire the round. */
+function onSubtractClick(minutes: number) {
+  if (wouldSubtractExpireTimer(elapsed.value, timeBonus.value, minutes, props.durationMinutes)) {
+    pendingSubtractMinutes.value = minutes
+    showSubtractExpireConfirm.value = true
+    return
+  }
+  subtractMinutes(minutes)
+}
+
+function confirmSubtractExpire() {
+  subtractMinutes(pendingSubtractMinutes.value)
+  showSubtractExpireConfirm.value = false
 }
 
 // ---------------------------------------------------------------------------
@@ -279,7 +304,7 @@ onMounted(() => {
           :fullscreen="isFullscreen"
           :tooltip="t('event.roundTimer.subtract10Tooltip')"
           label="10:00"
-          @click="subtractMinutes(10)"
+          @click="onSubtractClick(10)"
         />
 
         <TimerControlButton
@@ -289,7 +314,7 @@ onMounted(() => {
           :fullscreen="isFullscreen"
           :tooltip="t('event.roundTimer.subtract5Tooltip')"
           label="5:00"
-          @click="subtractMinutes(5)"
+          @click="onSubtractClick(5)"
         />
 
         <TimerControlButton
@@ -323,6 +348,18 @@ onMounted(() => {
       :confirm-icon="ICONS.reset"
       :portal="!isFullscreen"
       @confirm="confirmReset"
+    />
+
+    <ConfirmModal
+      v-model:open="showSubtractExpireConfirm"
+      :title="t('event.roundTimer.subtractExpireConfirm.title')"
+      :description="t('event.roundTimer.subtractExpireConfirm.description')"
+      :question="t('event.roundTimer.subtractExpireConfirm.question')"
+      :confirm-label="t('event.roundTimer.subtractExpireConfirm.confirmLabel')"
+      :confirm-icon="ICONS.subtract"
+      confirm-color="warning"
+      :portal="!isFullscreen"
+      @confirm="confirmSubtractExpire"
     />
   </div>
 </template>

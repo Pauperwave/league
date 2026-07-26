@@ -481,6 +481,12 @@
         "description": "Stai per resettare il timer del round",
         "question": "Sei sicuro di voler resettare il timer",
         "confirmLabel": "Reset"
+      },
+      "subtractExpireConfirm": {
+        "title": "Il timer scadrà",
+        "description": "Stai per togliere tempo al round",
+        "question": "Questa sottrazione farà scadere subito il timer, continuare",
+        "confirmLabel": "Sottrai"
       }
     },
     "waitingList": {

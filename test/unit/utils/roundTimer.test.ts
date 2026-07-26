@@ -7,6 +7,7 @@ import {
   isTimerPaused,
   calculateResumeStartTime,
   clampSubtractedBonus,
+  wouldSubtractExpireTimer,
 } from '~/utils/roundTimer'
 
 describe('calculateTotalSeconds', () => {
@@ -84,5 +85,27 @@ describe('clampSubtractedBonus', () => {
 
   it('clamps exactly at the boundary (total would hit zero)', () => {
     expect(clampSubtractedBonus(0, 50, 50)).toBe(-50)
+  })
+})
+
+describe('wouldSubtractExpireTimer', () => {
+  it('is true when the subtraction lands remaining exactly at 0', () => {
+    // 50 min duration, 45 min (2700s) elapsed → 5 min left. Subtracting 5
+    // brings total down to 45 min, matching elapsed exactly.
+    expect(wouldSubtractExpireTimer(2700, 0, 5, 50)).toBe(true)
+  })
+
+  it('is false when time remains after the subtraction', () => {
+    expect(wouldSubtractExpireTimer(2700, 0, 1, 50)).toBe(false)
+  })
+
+  it('is false when the timer is already expired — not a new consequence', () => {
+    expect(wouldSubtractExpireTimer(3000, 0, 5, 50)).toBe(false)
+  })
+
+  it('is true when the subtraction is clamped but the clamped total still expires it', () => {
+    // Subtracting far more than the round's own duration clamps the bonus
+    // at -durationMinutes, zeroing the total outright.
+    expect(wouldSubtractExpireTimer(0, 0, 100, 50)).toBe(true)
   })
 })

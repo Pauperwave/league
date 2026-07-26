@@ -35,3 +35,23 @@ export function calculateResumeStartTime(nowMs: number, elapsedSeconds: number):
 export function clampSubtractedBonus(currentBonusMinutes: number, minutesToSubtract: number, durationMinutes: number): number {
   return Math.max(currentBonusMinutes - minutesToSubtract, -durationMinutes)
 }
+
+/**
+ * True when subtracting `minutesToSubtract` would immediately expire the
+ * timer (remaining hits 0) — the trigger for a lighter subtract-to-zero
+ * confirmation. False if it's already expired: that's not a *new*
+ * consequence of this subtraction.
+ */
+export function wouldSubtractExpireTimer(
+  elapsedSeconds: number,
+  currentBonusMinutes: number,
+  minutesToSubtract: number,
+  durationMinutes: number,
+): boolean {
+  if (isTimerExpired(calculateRemainingSeconds(calculateTotalSeconds(durationMinutes, currentBonusMinutes), elapsedSeconds))) {
+    return false
+  }
+  const newBonus = clampSubtractedBonus(currentBonusMinutes, minutesToSubtract, durationMinutes)
+  const newTotal = calculateTotalSeconds(durationMinutes, newBonus)
+  return isTimerExpired(calculateRemainingSeconds(newTotal, elapsedSeconds))
+}
