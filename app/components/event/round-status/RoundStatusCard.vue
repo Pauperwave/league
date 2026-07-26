@@ -109,14 +109,6 @@ function selectVote(item: { pairingId: number; playerId: number }) {
         @click="filter = 'pending'"
       />
       <UButton
-        :label="t('event.roundStatus.filterInProgress')"
-        size="xs"
-        class="flex-1 justify-center"
-        :color="filter === 'inProgress' ? 'primary' : 'neutral'"
-        :variant="filter === 'inProgress' ? 'solid' : 'outline'"
-        @click="filter = 'inProgress'"
-      />
-      <UButton
         :label="t('event.roundStatus.filterDone')"
         size="xs"
         class="flex-1 justify-center"

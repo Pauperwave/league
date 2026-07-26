@@ -17,11 +17,6 @@ describe('matchesRoundStatusFilter', () => {
     expect(matchesRoundStatusFilter(false, 'pending')).toBe(true)
     expect(matchesRoundStatusFilter(true, 'pending')).toBe(false)
   })
-
-  it('"inProgress" collapses to the same predicate as "pending" (no realtime signal yet)', () => {
-    expect(matchesRoundStatusFilter(false, 'inProgress')).toBe(true)
-    expect(matchesRoundStatusFilter(true, 'inProgress')).toBe(false)
-  })
 })
 
 describe('matchesRoundStatusSearch', () => {

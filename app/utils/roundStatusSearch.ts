@@ -1,13 +1,12 @@
 // app\utils\roundStatusSearch.ts
 
 /**
- * The 3-state status filter for RoundStatusCard.vue. 'inProgress' has no
- * distinct signal today (no real-time "who is filling this in right now"
- * data) — it collapses to the same "not done" predicate as 'pending' until
- * a future realtime source can tell them apart (see docs/PROGRESS.md ADR
- * on this card).
+ * The status filter for RoundStatusCard.vue. No "in progress" state today —
+ * there's no real-time "who is filling this in right now" data, only a
+ * binary done/not-done per row (see docs/PROGRESS.md ADR-031 on this card,
+ * and BACKLOG.md for reintroducing it once that data exists).
  */
-export type RoundStatusFilter = 'all' | 'pending' | 'inProgress' | 'done'
+export type RoundStatusFilter = 'all' | 'pending' | 'done'
 
 /** True if `done` should be shown under the given status filter. */
 export function matchesRoundStatusFilter(done: boolean, filter: RoundStatusFilter): boolean {
