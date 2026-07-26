@@ -45,7 +45,10 @@ watch(modelValue, (name) => {
       value-key="label"
       :loading="isLoading"
       :placeholder="t('commander.searchPlaceholder')"
+      default-open
+      autofocus
       class="w-full"
+      :ui="{ content: 'max-h-96' }"
     >
       <template #item-label="{ item }">
         <span class="flex items-center gap-2 min-w-0">

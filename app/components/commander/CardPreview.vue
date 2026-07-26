@@ -29,24 +29,31 @@ watch(() => props.card, (newCard) => {
 </script>
 
 <template>
+  <!-- Always rendered (opacity-toggled, not v-if) so this block reserves its
+       exact footprint — mt-4 + p-4 + a w-64 card at its real 5:7 aspect
+       ratio (358px tall) — whether or not a card is selected yet, instead of
+       the modal jumping in height the moment a commander gets picked. -->
   <div
-    v-if="card"
-    class="mt-4 p-4 rounded-lg shadow-lg flex gap-4 justify-center"
-    :class="colorBgClass"
+    class="mt-4 p-4 rounded-lg shadow-lg flex gap-4 justify-center transition-opacity"
+    :class="[colorBgClass, card ? 'opacity-100' : 'opacity-0 pointer-events-none']"
   >
-    <NuxtImg
-      v-if="frontImage"
-      :src="frontImage"
-      :alt="card.name"
-      class="w-64 rounded-lg shadow-xl"
-      loading="lazy"
-    />
-    <NuxtImg
-      v-if="backImage"
-      :src="backImage"
-      :alt="card.name + ' (back)'"
-      class="w-64 rounded-lg shadow-xl"
-      loading="lazy"
-    />
+    <div class="w-64 aspect-5/7">
+      <NuxtImg
+        v-if="frontImage"
+        :src="frontImage"
+        :alt="card?.name"
+        class="size-full rounded-lg shadow-xl object-cover"
+        loading="lazy"
+      />
+    </div>
+    <div v-if="isDoubleFaced" class="w-64 aspect-5/7">
+      <NuxtImg
+        v-if="backImage"
+        :src="backImage"
+        :alt="(card?.name ?? '') + ' (back)'"
+        class="size-full rounded-lg shadow-xl object-cover"
+        loading="lazy"
+      />
+    </div>
   </div>
 </template>

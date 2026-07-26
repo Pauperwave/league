@@ -130,7 +130,9 @@ defineExpose({ submit })
       </AnimatePresence>
     </div>
 
-    <div v-if="!canHaveCommander2 && commander1" class="text-sm text-gray-500">
+    <!-- Always rendered (opacity-toggled) at its real line-height (h-5) so
+         it doesn't add its own layout jump on top of CardPreview's. -->
+    <div class="h-5 text-sm text-gray-500" :class="(!canHaveCommander2 && commander1) ? 'opacity-100' : 'opacity-0'">
       {{ t('commander.noSecondCommander') }}
     </div>
   </div>

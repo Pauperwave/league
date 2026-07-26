@@ -41,7 +41,7 @@ function onSubmit() {
     :scrollable="true"
     :ui="{
       content: 'w-[calc(100vw-2rem)] max-w-4xl rounded-lg shadow-lg ring ring-default',
-      body: 'flex-1 p-4 sm:p-6 min-h-[60vh]'
+      body: 'flex-1 p-4 sm:p-6'
     }"
   >
     <template #body>

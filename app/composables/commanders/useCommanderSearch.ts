@@ -4,23 +4,46 @@ import type { Database } from '#shared/utils/types/database'
 import type { CommanderCatalogRow } from './useCommanderCatalogQuery'
 import type { FuzzyMatchResult } from '~/utils/fuzzyMatch'
 
-async function fetchUsedCommanderNames(
+/** Per-commander play history for one player, used to order the "già
+ *  giocati" group (ADR-027): most recently played first, ties on the same
+ *  calendar day broken by how many times it's been played. */
+interface CommanderUsage {
+  /** ISO `YYYY-MM-DD` (UTC) of the most recent pairing this commander was
+   *  played in — plain string comparison sorts these chronologically. */
+  lastPlayedDay: string
+  count: number
+}
+
+function recordUsage(usage: Map<string, CommanderUsage>, name: string | null, pairingDatetime: string | null) {
+  if (!name) return
+  const day = pairingDatetime?.slice(0, 10) ?? ''
+  const existing = usage.get(name)
+  if (!existing) {
+    usage.set(name, { lastPlayedDay: day, count: 1 })
+    return
+  }
+  existing.count += 1
+  if (day > existing.lastPlayedDay) existing.lastPlayedDay = day
+}
+
+async function fetchUsedCommanders(
   supabase: ReturnType<typeof useSupabaseClient<Database>>,
   playerId: number
-): Promise<Set<string>> {
+): Promise<Map<string, CommanderUsage>> {
   const { data, error } = await supabase
     .from('round_results')
-    .select('commander_1, commander_2')
+    .select('commander_1, commander_2, pairings(pairing_datetime)')
     .eq('player_id', playerId)
 
-  if (error || !data) return new Set()
+  const usage = new Map<string, CommanderUsage>()
+  if (error || !data) return usage
 
-  const usedNames = new Set<string>()
   for (const row of data) {
-    if (row.commander_1) usedNames.add(row.commander_1)
-    if (row.commander_2) usedNames.add(row.commander_2)
+    const pairing = Array.isArray(row.pairings) ? row.pairings[0] : row.pairings
+    recordUsage(usage, row.commander_1, pairing?.pairing_datetime ?? null)
+    recordUsage(usage, row.commander_2, pairing?.pairing_datetime ?? null)
   }
-  return usedNames
+  return usage
 }
 
 function parseManaCost(manaCost: string | null): string[] {
@@ -86,15 +109,21 @@ export function useCommanderSearch(options: UseCommanderSearchOptions = {}) {
       })
 
       const playerId = toValue(options.playerId)
-      const usedNames = playerId !== null && playerId !== undefined
-        ? await fetchUsedCommanderNames(supabase, playerId)
-        : new Set<string>()
+      const usage = playerId !== null && playerId !== undefined
+        ? await fetchUsedCommanders(supabase, playerId)
+        : new Map<string, CommanderUsage>()
 
       // Best fuzzy match first, edhrecRank (popularity) as the tiebreaker —
       // and the only sort when there's no query (score is 0 for everyone).
       const byRelevance = (a: CommanderCatalogRow, b: CommanderCatalogRow) => {
         const scoreDiff = (matches.get(b.name)?.score ?? 0) - (matches.get(a.name)?.score ?? 0)
         return scoreDiff !== 0 ? scoreDiff : (a.edhrecRank ?? 999999) - (b.edhrecRank ?? 999999)
+      }
+      // ADR-027: "già giocati" ignores relevance/popularity entirely — most
+      // recently played day first, ties on the same day broken by play count.
+      const byRecency = (a: CommanderCatalogRow, b: CommanderCatalogRow) => {
+        const dayDiff = (usage.get(b.name)?.lastPlayedDay ?? '').localeCompare(usage.get(a.name)?.lastPlayedDay ?? '')
+        return dayDiff !== 0 ? dayDiff : (usage.get(b.name)?.count ?? 0) - (usage.get(a.name)?.count ?? 0)
       }
       const toItem = (row: CommanderCatalogRow): CommanderSuggestionItem => ({
         label: row.name,
@@ -107,15 +136,15 @@ export function useCommanderSearch(options: UseCommanderSearchOptions = {}) {
       // its "already used" status is even checked (a real bug: it used to
       // slice-by-edhrecRank first, so an obscure played commander could
       // never surface here regardless of usage).
-      const used = result.filter(row => usedNames.has(row.name)).sort(byRelevance).map(toItem)
-      const rest = result.filter(row => !usedNames.has(row.name)).sort(byRelevance).slice(0, 50).map(toItem)
+      const used = result.filter(row => usage.has(row.name)).sort(byRecency).map(toItem)
+      const rest = result.filter(row => !usage.has(row.name)).sort(byRelevance).slice(0, 50).map(toItem)
 
       const groups: CommanderSuggestionItem[][] = []
       if (used.length > 0) {
         groups.push([{ type: 'label', label: t('commander.search.recentlyUsedGroup') }, ...used])
       }
       if (rest.length > 0) {
-        groups.push(rest)
+        groups.push([{ type: 'label', label: t('commander.search.allCommandersGroup') }, ...rest])
       }
       suggestionGroups.value = groups
     } finally {
