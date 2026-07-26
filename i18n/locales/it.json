@@ -557,7 +557,7 @@
       "tableDescription": "Tavolo {n}"
     },
     "commanderModal": {
-      "title": "Inserisci comandanti"
+      "title": "Inserisci comandante"
     },
     "nextRoundModal": {
       "title": "Prossimo Round",
@@ -571,7 +571,7 @@
       "noTablesAvailable": "Nessun tavolo disponibile",
       "scoreLabel": "Punteggio: {score}",
       "commanderSetTooltip": "Commander inserito",
-      "commanderNotSetTooltip": "Inserisci commander",
+      "commanderNotSetTooltip": "Inserisci comandante",
       "commanderAriaLabel": "Imposta comandanti",
       "voteSetTooltip": "Voto inserito",
       "voteNotSetTooltip": "Inserisci voto",
