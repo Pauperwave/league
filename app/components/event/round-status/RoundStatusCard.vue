@@ -127,7 +127,7 @@ function selectVote(item: { pairingId: number; playerId: number }) {
       class="w-full"
     />
 
-    <div class="space-y-2">
+    <div class="space-y-1">
       <RoundStatusSection
         :title="t('event.roundStatus.sections.rankings')"
         :icon="ICONS.standings"

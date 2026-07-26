@@ -21,7 +21,7 @@ const percent = computed(() => totalCount === 0 ? 0 : Math.round((doneCount / to
 </script>
 
 <template>
-  <div class="bg-elevated rounded-xl p-2.5 border border-default">
+  <div class="bg-default rounded-xl p-2.5">
     <UCollapsible v-model:open="isOpen">
       <button type="button" class="flex items-center gap-1.5 mb-1.5 w-full cursor-pointer">
         <UIcon :name="icon" class="size-4 text-primary" />
@@ -30,13 +30,13 @@ const percent = computed(() => totalCount === 0 ? 0 : Math.round((doneCount / to
         <UIcon :name="ICONS.chevronDown" class="size-3.5 text-muted transition-transform" :class="isOpen ? '' : '-rotate-90'" />
       </button>
 
+      <UProgress :model-value="percent" size="sm" class="mb-1.5" />
+
       <template #content>
         <div class="space-y-1">
           <slot />
         </div>
       </template>
     </UCollapsible>
-
-    <UProgress :model-value="percent" size="sm" class="mt-1.5" />
   </div>
 </template>
