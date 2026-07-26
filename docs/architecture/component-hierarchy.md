@@ -366,9 +366,7 @@ app/components/
 │   │       └── score/            — score-entry grid and its modals
 │   │           ├── TableScoreBreakdownModal.vue
 │   │           ├── TableScoreGrid.vue
-│   │           ├── TableScoreModal.vue
-│   │           ├── TableScoresModal.vue
-│   │           └── TableScoreTeamRow.vue
+│   │           └── TableScoresModal.vue
 │   └── waiting/
 │       ├── WaitingList.vue
 │       ├── WaitingListStats.vue

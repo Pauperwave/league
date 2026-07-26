@@ -703,11 +703,6 @@
       "instructions": "Trascina le chip dei giocatori per definire l'ordine di classifica (da sinistra a destra, dall'alto in basso)",
       "confirmRanking": "Conferma Classifica"
     },
-    "tableScoreModal": {
-      "headingTemplate": "Inserisci Punteggi - Tavolo {n}",
-      "team1": "Squadra 1",
-      "team2": "Squadra 2"
-    },
     "tableScoresModal": {
       "placementColumn": "Posizionamento",
       "deckColumn": "Mazzo",
