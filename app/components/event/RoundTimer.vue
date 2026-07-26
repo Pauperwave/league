@@ -24,6 +24,7 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+const { play } = useSoundEffects()
 
 // ---------------------------------------------------------------------------
 // State
@@ -71,6 +72,12 @@ const display = computed(() => formatDuration(remaining.value))
 const timerRef = useTemplateRef<HTMLDivElement>('timerRef')
 const { isFullscreen, toggle } = useFullscreen(timerRef)
 
+// Watched (not click-handler-wrapped) so Escape-key exits get the same
+// "collapse" feedback as clicking the exit button.
+watch(isFullscreen, (value) => {
+  play(value ? 'expand' : 'collapse')
+})
+
 // ---------------------------------------------------------------------------
 // Reset confirmation
 // ---------------------------------------------------------------------------
@@ -103,6 +110,7 @@ const { pause, resume } = useIntervalFn(() => {
   if (isExpired.value) {
     pause()
     isRunning.value = false
+    play('complete')
     emit('expired')
   }
 }, 1000, { immediate: false })
@@ -120,12 +128,14 @@ function start() {
   startTime.value = calculateResumeStartTime(Date.now(), elapsed.value)
   isRunning.value = true
   resume()
+  play('play')
 }
 
 /** Pause the timer, preserving elapsed time for a later resume. */
 function stop() {
   pause()
   isRunning.value = false
+  play('pause')
 }
 
 /** Stop the timer and reset all state back to zero (including added time). */
@@ -135,6 +145,7 @@ function reset() {
   elapsed.value = 0
   isRunning.value = false
   timeBonus.value = 0
+  play('undo')
 }
 
 /**
@@ -155,11 +166,13 @@ function addMinutes(minutes: number) {
     startTime.value = null
     isRunning.value = false
   }
+  play('select')
 }
 
 /** Remove minutes from the current round, floored so the total duration never goes below zero. */
 function subtractMinutes(minutes: number) {
   timeBonus.value = clampSubtractedBonus(timeBonus.value, minutes, props.durationMinutes)
+  play('deselect')
 }
 
 /** Subtract, gated behind a confirm only when it would immediately expire the round. */
