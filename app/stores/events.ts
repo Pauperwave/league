@@ -182,6 +182,20 @@ export const useEventStore = defineStore('events', () => {
     }
   }
 
+  /** Undo a "Patta" declaration via the BFF endpoint (ADR-013) — clears
+   * number_of_kills/position back to unset for every seated player. */
+  async function undrawPairing(pairingId: number): Promise<{ success: boolean; error?: string }> {
+    try {
+      await $fetch(`/api/pairings/${pairingId}/undraw`, { method: 'POST' })
+      console.log('[useEventStore] draw undone', { pairingId })
+      return { success: true }
+    }
+    catch (err) {
+      console.error('[useEventStore] undrawPairing error:', err)
+      return { success: false, error: toErrorMessage(err, t('store.event.undrawError')) }
+    }
+  }
+
   /** Save a player's commanders via the BFF endpoint (ADR-013) */
   async function saveCommander(pairingId: number, playerId: number, commander1: string | null, commander2: string | null = null): Promise<{ success: boolean; error?: string }> {
     try {
@@ -229,5 +243,6 @@ export const useEventStore = defineStore('events', () => {
     saveCommander,
     savePairingRankings,
     savePairingKills,
+    undrawPairing,
   }
 })

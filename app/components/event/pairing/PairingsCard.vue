@@ -40,6 +40,8 @@ const emit = defineEmits<{
   resetTable: [pairingId: number]
   /** Declares a draw for a pairing: zero kills, every seated player ties for first. */
   draw: [pairingId: number, playerIds: number[]]
+  /** Undoes a previously declared draw — clears the pairing's ranking and kills. */
+  undraw: [pairingId: number]
 }>()
 
 // ─── State ────────────────────────────────────────────────────────────────────
@@ -49,7 +51,7 @@ const emit = defineEmits<{
  * draw), along with the type of action. Null when no dialog is open.
  * 'fill-all' has no single pairingId — it applies to every table in the round.
  */
-const confirmDialog = ref<{ type: 'reset' | 'fill' | 'draw'; pairingId: number } | { type: 'fill-all' } | null>(null)
+const confirmDialog = ref<{ type: 'reset' | 'fill' | 'draw' | 'undraw'; pairingId: number } | { type: 'fill-all' } | null>(null)
 
 /** Used by useButtonLogging to track the last pairing the score modal was opened for. */
 const currentPairingId = ref<number | null>(null)
@@ -140,6 +142,23 @@ const tableToDraw = computed(() =>
   confirmDialog.value?.type === 'draw' ? confirmDialog.value.pairingId : null
 )
 
+/**
+ * Two-way computed for the "undo draw" confirmation modal's open state.
+ * Setting it to false clears the active confirmDialog.
+ */
+const showUndrawConfirm = computed({
+  get: () => confirmDialog.value?.type === 'undraw',
+  set: (v: boolean) => { if (!v) confirmDialog.value = null }
+})
+
+/**
+ * The pairing ID currently pending an "undo draw" confirmation, derived from confirmDialog.
+ * Used to resolve the table label in the undraw ConfirmModal.
+ */
+const tableToUndraw = computed(() =>
+  confirmDialog.value?.type === 'undraw' ? confirmDialog.value.pairingId : null
+)
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 /**
@@ -206,9 +225,12 @@ function handleQuickTestFillAll() {
   confirmDialog.value = { type: 'fill-all' }
 }
 
-/** Queues a draw ("Patta") confirmation for the given pairing. */
+/** Queues a draw ("Patta") confirmation for the given pairing, or an "undo
+ *  draw" one if the table is already marked as a draw — the button toggles. */
 function handleDrawTable(pairingId: number) {
-  confirmDialog.value = { type: 'draw', pairingId }
+  const pairing = props.pairings.find(p => p.pairing_id === pairingId)
+  const alreadyDrawn = !!pairing && isDraw(pairing)
+  confirmDialog.value = { type: alreadyDrawn ? 'undraw' : 'draw', pairingId }
 }
 
 /**
@@ -226,6 +248,8 @@ function handleConfirm() {
     const pairingId = confirmDialog.value.pairingId
     const pairing = props.pairings.find(p => p.pairing_id === pairingId)
     if (pairing) emit('draw', pairingId, getPairingPlayerIds(pairing))
+  } else if (confirmDialog.value.type === 'undraw') {
+    emit('undraw', confirmDialog.value.pairingId)
   } else {
     for (const pairing of props.pairings) {
       fillTable(pairing.pairing_id)
@@ -401,6 +425,18 @@ function fillTable(pairingId: number) {
         :warning="t('event.pairing.drawConfirm.warning')"
         :confirm-label="t('event.pairing.drawConfirm.confirmLabel')"
         :confirm-icon="ICONS.draw"
+        @confirm="handleConfirm"
+      />
+
+      <!-- "Annulla Patta" confirmation dialog -->
+      <ConfirmModal
+        v-model:open="showUndrawConfirm"
+        :title="t('event.pairing.undrawConfirm.title')"
+        :description="t('event.pairing.undrawConfirm.description')"
+        :question="t('event.pairing.undrawConfirm.question')"
+        :subject="t('event.pairing.tableHeading', { n: pairings.findIndex(p => p.pairing_id === tableToUndraw) + 1 })"
+        :confirm-label="t('event.pairing.undrawConfirm.confirmLabel')"
+        :confirm-icon="ICONS.undo"
         @confirm="handleConfirm"
       />
     </UCard>

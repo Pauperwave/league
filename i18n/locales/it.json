@@ -340,7 +340,8 @@
     "searchPlaceholder": "Nome del comandante",
     "cardLoadError": "Errore nel caricamento dati carta",
     "search": {
-      "recentlyUsedGroup": "Mazzi già giocati"
+      "recentlyUsedGroup": "Mazzi già giocati",
+      "allCommandersGroup": "Tutti i comandanti"
     },
     "refreshCatalog": "Aggiorna elenco carte",
     "refreshingCatalog": "Aggiornamento in corso...",
@@ -519,6 +520,7 @@
     "playerAddedDescription": "Giocatore esistente aggiunto alla lista d'attesa",
     "rankingsSavedTitle": "Classifica salvata",
     "killsSavedTitle": "Uccisioni salvate",
+    "undrawnTitle": "Patta annullata",
     "commandersSavedTitle": "Comandanti salvati",
     "voteSavedTitle": "Voto salvato",
     "form": {
@@ -571,6 +573,8 @@
       "killsButton": "Uccisioni",
       "drawButton": "Patta",
       "drawnTooltip": "Patta registrata",
+      "drawUndoTooltip": "Patta registrata — clicca per annullarla",
+      "drawDisabledTooltip": "Resetta il tavolo prima di dichiarare una patta",
       "resetConfirm": {
         "title": "Conferma Reset",
         "description": "Stai per resettare tutti i valori del tavolo",
@@ -597,6 +601,12 @@
         "question": "Sei sicuro di voler dichiarare una patta per",
         "warning": "Questa azione sovrascriverà uccisioni e classifica già inserite per questo tavolo.",
         "confirmLabel": "Patta"
+      },
+      "undrawConfirm": {
+        "title": "Annulla Patta",
+        "description": "Stai per annullare la patta e cancellare uccisioni e classifica di questo tavolo",
+        "question": "Sei sicuro di voler annullare la patta per",
+        "confirmLabel": "Annulla Patta"
       },
       "fillAllTooltip": "Compila tutti i tavoli con dati di test",
       "viewScoresTooltip": "Visualizza punteggi",
@@ -776,6 +786,7 @@
       "commanderSaveError": "Errore nel salvataggio dei comandanti",
       "rankingsSaveError": "Errore nel salvataggio delle posizioni",
       "killsSaveError": "Errore nel salvataggio delle uccisioni",
+      "undrawError": "Errore nell'annullare la patta",
       "nextRoundError": "Errore nel prossimo round",
       "turnBackError": "Errore nel tornare indietro",
       "submissionError": "Errore nella sottomissione dei risultati",

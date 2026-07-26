@@ -5,6 +5,7 @@ import type { Seat, TournamentPlayer, TournamentTable } from '#shared/utils/type
 import type { PairingHistoryEntry, PairingPlayer } from '~/composables/event-pairing/pairingOptimizer'
 
 const { t } = useI18n()
+const router = useRouter()
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -376,13 +377,53 @@ function handleResetTable(pairingId: number) {
     votesStore.removeVotes(playerId)
   })
 }
+
+/** Undoes a "Patta" declaration: clears the ranking/kills it set, both
+ *  locally and server-side (round_results back to unset), restoring the
+ *  table to the empty state it was in before the draw — Patta can only be
+ *  declared on an empty table, so that's always the correct prior state.
+ *  Leaves commanders/votes untouched (draw never touched those either). */
+async function handleUndrawTable(pairingId: number) {
+  const pairing = pairings.value.find(p => p.pairing_id === pairingId)
+  if (!pairing) return
+
+  const playerIds = getPairingPlayerIds(pairing)
+
+  rankingsStore.removeRanking(pairingId)
+
+  const tableKills = killsStore.kills.filter((k) =>
+    playerIds.includes(k.killerId) && playerIds.includes(k.victimId)
+  )
+  tableKills.forEach((kill) => {
+    const index = killsStore.kills.findIndex((k) => k.killerId === kill.killerId && k.victimId === kill.victimId)
+    if (index !== -1) killsStore.kills.splice(index, 1)
+  })
+
+  const result = await eventStore.undrawPairing(pairingId)
+  if (!result.success) {
+    toast.add({ title: t('deck.toast.errorTitle'), description: result.error, color: 'error' })
+    return
+  }
+  toast.add({ title: t('event.undrawnTitle'), color: 'success' })
+  await refreshDisplayedPairings()
+}
 </script>
 
 <template>
   <div class="min-h-screen bg-default">
     <!-- Header -->
     <div class="p-6 pb-0 space-y-2">
-      <UBreadcrumb :items="breadcrumbItems" />
+      <div class="flex items-center gap-3">
+        <UButton
+          color="neutral"
+          :icon="ICONS.back"
+          :aria-label="t('league.backAriaLabel')"
+          @click="() => { router.push(`/league/${leagueId}`) }"
+        >
+          {{ t('common.back') }}
+        </UButton>
+        <UBreadcrumb :items="breadcrumbItems" />
+      </div>
       <EventHeaderCard
         v-if="eventStatus !== 'playing' && !isViewingPastRound"
         :event-name="eventName"
@@ -488,6 +529,7 @@ function handleResetTable(pairingId: number) {
                 @open-kill-modal="handleOpenKillModal"
                 @reset-table="handleResetTable"
                 @draw="(pairingId, playerIds) => submitHandlers.handleDrawSubmit(pairingId, playerIds)"
+                @undraw="handleUndrawTable"
               />
             </div>
             <div class="space-y-4">
