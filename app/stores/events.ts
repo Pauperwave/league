@@ -196,6 +196,21 @@ export const useEventStore = defineStore('events', () => {
     }
   }
 
+  /** "Resetta tavolo" via the BFF endpoint (ADR-013) — clears every persisted
+   * value for a pairing (kills, ranking/position, commander, votes), unlike
+   * `undrawPairing` which deliberately leaves commander/votes untouched. */
+  async function resetPairing(pairingId: number): Promise<{ success: boolean; error?: string }> {
+    try {
+      await $fetch(`/api/pairings/${pairingId}/reset`, { method: 'POST' })
+      console.log('[useEventStore] pairing reset', { pairingId })
+      return { success: true }
+    }
+    catch (err) {
+      console.error('[useEventStore] resetPairing error:', err)
+      return { success: false, error: toErrorMessage(err, t('store.event.resetError')) }
+    }
+  }
+
   /** Save a player's commanders via the BFF endpoint (ADR-013) */
   async function saveCommander(pairingId: number, playerId: number, commander1: string | null, commander2: string | null = null): Promise<{ success: boolean; error?: string }> {
     try {
@@ -244,5 +259,6 @@ export const useEventStore = defineStore('events', () => {
     savePairingRankings,
     savePairingKills,
     undrawPairing,
+    resetPairing,
   }
 })

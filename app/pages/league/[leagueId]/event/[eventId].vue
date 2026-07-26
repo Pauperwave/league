@@ -380,7 +380,12 @@ function handleOpenKillModal(pairingId: number) {
 
 // ── Reset / Utility ──────────────────────────────────────────────────────
 
-function handleResetTable(pairingId: number) {
+/** Resets a table's local session state AND persists the clear server-side
+ *  (`eventStore.resetPairing`, kills+ranking+commander+votes) — without the
+ *  server call, `round_results` kept the previously-submitted values, so
+ *  e.g. "Uccisioni" kept showing as reviewed after a reset even though the
+ *  local stores were cleared. */
+async function handleResetTable(pairingId: number) {
   const pairing = pairings.value.find(p => p.pairing_id === pairingId)
   if (!pairing) return
 
@@ -400,6 +405,13 @@ function handleResetTable(pairingId: number) {
     commandersStore.removeCommanders(playerId)
     votesStore.removeVotes(playerId)
   })
+
+  const result = await eventStore.resetPairing(pairingId)
+  if (!result.success) {
+    toast.add({ title: t('deck.toast.errorTitle'), description: result.error, color: 'error' })
+    return
+  }
+  await refreshDisplayedPairings()
 }
 
 /** Undoes a "Patta" declaration: clears the ranking/kills it set, both
