@@ -2,6 +2,12 @@
 
 Loose observations and open questions — not yet committed, ranked work. For that, see `docs/BACKLOG.md`.
 
+## Prefetch commander usage per table instead of per modal open (2026-07-26)
+
+`useCommanderSearch.ts`'s `fetchUsedCommanders(supabase, playerId)` fires a fresh `round_results` (+ embedded `pairings`) query, filtered to one `player_id`, every time a commander modal opens — a brief loading spinner in the USelectMenu each time (network round-trip). Could instead batch-fetch usage for every seated player at a table (`.in('player_id', playerIds)`, one request) when the table/pairing card renders — before the user ever opens a modal — and have `useCommanderSearch` read from that cache instead of querying itself.
+
+**Trade-off, why not done now:** genuinely removes the spinner (prefetch finishes long before the user clicks, table is visible well before interaction), but needs a new shared cache layer (composable or Colada query keyed per round/event) plus invalidation — today each open refetches fresh, so a commander saved earlier in the same session is always reflected immediately; a prefetched cache would need explicit invalidation on save to keep that guarantee. Tables are 3-4 players and the spinner is sub-second, so this is polish, not a bottleneck — worth doing if/when someone wants it, not urgent.
+
 ## Upgrade Nuxt to 4.5 and Nuxt UI to 4.10 (2026-07-21)
 
 Currently on `nuxt@^4.4.8` / `@nuxt/ui@^4.9.0`. Do this as its own isolated pass (`pnpm typecheck` + `pnpm lint` clean, then a manual smoke pass through the event lifecycle) rather than folding it into an unrelated feature change — Nuxt UI has broken component APIs across minor versions before. Check `@nuxt/ui`'s peer `typescript` range hasn't moved past `^5.9.x` before bumping (see root `CLAUDE.md`'s note on staying off TypeScript 6.x/7.0 for now).
