@@ -329,6 +329,12 @@ Gli store di sessione hanno **persistenza ottimistica**: update immediato UI + s
 
 - **Cosa**: `useLeaguesQuery.ts` ordina `leagues` per `starts_at` discendente (`{ ascending: false }`) — la lega con la `starts_at` più recente (tipicamente la stagione corrente o la prossima) compare per prima nell'elenco, le più vecchie in fondo. Era già il comportamento di default; confermato esplicitamente dopo un tentativo di invertirlo a `ascending: true` (crescente in senso stretto = più vecchie per prime), scartato perché non corrispondeva all'intento reale ("mostra prima le più vicine/recenti"). `useLeaguesQuery` è la cache unica per le leghe (ADR-015); nessun consumatore (`useLeaguesPage.ts`, `useRulesetsPage.ts`) riordina o inverte il risultato, quindi l'ordinamento si propaga a ogni vista senza altre modifiche.
 
+### ADR-031 — Modali round separati (Score/Kill/Patta vs Commander/Votes) in vista della futura auto-compilazione lato player (2026-07-26)
+
+- **Perché**: discutendo una possibile semplificazione della UI di round (`/league/:leagueId/event/:eventId?phase=playing`), è emerso che la scelta di avere modali indipendenti per Score, Commander, Votes e Kill (`EventScoreModal`, `EventCommanderModal`, `EventVotesModal`, `EventKillModal`, aperti da `PairingsCard.vue`) non è casuale: è pensata per una direzione futura in cui **comandante e voti (deck/play) verranno compilati direttamente dai giocatori**, mentre l'admin di sala continuerà a gestire solo piazzamento (Score), uccisioni (Kill) e Patta. I confini dei modali attuali rispecchiano già quel futuro confine di responsabilità admin/player.
+- **Cosa (deciso, non implementato)**: non consolidare `EventCommanderModal`/`EventVotesModal` in un flusso admin unico — andrebbe smontato di nuovo quando il self-service lato player sarà implementato. Un'eventuale semplificazione della UI di round va cercata solo nella parte che resta stabilmente admin (Score + Kill + Patta), ad es. valutando se questi due/tre possano condividere un solo modale invece di restare separati.
+- **Da rivedere quando**: il self-service player per comandante/voti verrà effettivamente implementato — a quel punto verificare chi apre `EventCommanderModal.vue`/`EventVotesModal.vue` prima di assumere che questo ADR sia ancora valido.
+
 ---
 
 ## Funzionalità per area
