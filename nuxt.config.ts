@@ -67,7 +67,17 @@ export default defineNuxtConfig({
   vite: {
     build: {
       // Disable sourcemaps in production to avoid warnings
-      sourcemap: false
+      sourcemap: false,
+      // Default (500 kB) flags pages/commander/[commanderSlug].vue's own
+      // page chunk (~576 kB) — that chunk is echarts (BaseChart.vue, the
+      // only consumer), already isolated via Nuxt's route-based code
+      // splitting and loaded only when visiting that one page (confirmed via
+      // client.manifest.mjs: isDynamicEntry true, not referenced by any
+      // other route). echarts' core is just inherently this size even fully
+      // tree-shaken (nuxt-echarts config below already limits it to the SVG
+      // renderer + 3 chart types + 4 components) — raise the limit instead
+      // of chasing a warning about an already-correctly-split chunk.
+      chunkSizeWarningLimit: 600
     },
     css: {
       // Suppress CSS sourcemap warnings
