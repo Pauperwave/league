@@ -50,16 +50,16 @@ const timeBonus = useLocalStorage<number>(`round-timer-bonus-${props.round}`, 0)
 // ---------------------------------------------------------------------------
 
 /** Total duration in seconds (base + any added time). */
-const totalSeconds = computed(() => props.durationMinutes * 60 + timeBonus.value * 60)
+const totalSeconds = computed(() => calculateTotalSeconds(props.durationMinutes, timeBonus.value))
 
 /** Seconds remaining, clamped to [0, totalSeconds]. */
-const remaining = computed(() => Math.max(0, totalSeconds.value - elapsed.value))
+const remaining = computed(() => calculateRemainingSeconds(totalSeconds.value, elapsed.value))
 
 /** True once the countdown hits zero. */
-const isExpired = computed(() => remaining.value === 0)
+const isExpired = computed(() => isTimerExpired(remaining.value))
 
 /** True once the timer has been started at least once and is currently paused (not fresh, not expired). */
-const isPaused = computed(() => !isRunning.value && startTime.value !== null && !isExpired.value)
+const isPaused = computed(() => isTimerPaused(isRunning.value, startTime.value !== null, isExpired.value))
 
 /** Human-readable MM:SS string for the remaining time. */
 const display = computed(() => formatDuration(remaining.value))
@@ -107,7 +107,7 @@ const { pause, resume } = useIntervalFn(() => {
  * so that paused time is correctly excluded.
  */
 function start() {
-  startTime.value = Date.now() - elapsed.value * 1000
+  startTime.value = calculateResumeStartTime(Date.now(), elapsed.value)
   isRunning.value = true
   resume()
 }
@@ -149,7 +149,7 @@ function addMinutes(minutes: number) {
 
 /** Remove minutes from the current round, floored so the total duration never goes below zero. */
 function subtractMinutes(minutes: number) {
-  timeBonus.value = Math.max(timeBonus.value - minutes, -props.durationMinutes)
+  timeBonus.value = clampSubtractedBonus(timeBonus.value, minutes, props.durationMinutes)
 }
 
 // ---------------------------------------------------------------------------
@@ -181,7 +181,7 @@ onMounted(() => {
     ref="timerRef"
     class="flex items-center"
     :class="isFullscreen
-      ? 'relative flex-col justify-center h-screen w-screen bg-default gap-12 @container-size'
+      ? ['relative flex-col justify-center h-screen w-screen gap-12 @container-size', isPaused ? 'bg-warning/10' : 'bg-default']
       : isPaused
         ? 'gap-3 border border-warning bg-warning/10 rounded-lg px-4 py-2'
         : 'gap-3 border border-default rounded-lg px-4 py-2'
