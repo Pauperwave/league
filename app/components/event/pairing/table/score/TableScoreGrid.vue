@@ -111,36 +111,39 @@ function getCellClass(row: number, col: number): string {
       {{ t('event.scoreGrid.instructions') }}
     </p>
 
-    <div
-      class="grid gap-2"
-      :class="gridSize === 3 ? 'grid-cols-3' : 'grid-cols-4'"
-    >
-      <template v-for="row in gridRange" :key="`row-${row}`">
-        <template v-for="col in gridRange" :key="`row-${row}-col-${col}`">
-          <div
-            :class="getCellClass(row, col)"
-            @dragover="handleDragOver"
-            @drop="handleDrop($event, row, col)"
-          >
-            <!--
-              ✅ draggable="true" is on this wrapper div, NOT on TableSeatItem.
-              The dragstart/dragend events are here too, receiving the native event.
-            -->
+    <div class="space-y-2">
+      <div v-for="row in gridRange" :key="`row-${row}`" class="flex items-center gap-3">
+        <span class="w-6 shrink-0 text-right text-xl font-bold text-muted">{{ row + 1 }}</span>
+        <div
+          class="grid flex-1 gap-2"
+          :class="gridSize === 3 ? 'grid-cols-3' : 'grid-cols-4'"
+        >
+          <template v-for="col in gridRange" :key="`row-${row}-col-${col}`">
             <div
-              v-if="grid[row]?.[col]"
-              draggable="true"
-              class="w-full h-full cursor-grab active:cursor-grabbing"
-              @dragstart="handleDragStart($event, row, col)"
-              @dragend="handleDragEnd"
+              :class="getCellClass(row, col)"
+              @dragover="handleDragOver"
+              @drop="handleDrop($event, row, col)"
             >
-              <TableSeatItem
-                :seat="grid[row]![col]!"
-                :is-dragging="isDragging"
-              />
+              <!--
+                ✅ draggable="true" is on this wrapper div, NOT on TableSeatItem.
+                The dragstart/dragend events are here too, receiving the native event.
+              -->
+              <div
+                v-if="grid[row]?.[col]"
+                draggable="true"
+                class="w-full h-full cursor-grab active:cursor-grabbing"
+                @dragstart="handleDragStart($event, row, col)"
+                @dragend="handleDragEnd"
+              >
+                <TableSeatItem
+                  :seat="grid[row]![col]!"
+                  :is-dragging="isDragging"
+                />
+              </div>
             </div>
-          </div>
-        </template>
-      </template>
+          </template>
+        </div>
+      </div>
     </div>
 
     <!-- Actions -->
