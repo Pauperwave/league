@@ -15,3 +15,5 @@ minimumReleaseAgeExclude:
   - '@iconify-json/simple-icons@1.2.90'
 onlyBuiltDependencies:
   - sharp
+overrides:
+  '@supabase/supabase-js': '2.110.8'
