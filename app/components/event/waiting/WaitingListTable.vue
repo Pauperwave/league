@@ -246,7 +246,10 @@ const meta = computed(() => ({
 <template>
   <div class="flex flex-col gap-2">
     <div class="flex flex-wrap items-center justify-between gap-2">
-      <UInput v-model="searchQuery" :icon="ICONS.search" :placeholder="t('event.waitingListTable.searchPlaceholder')" class="max-w-sm" />
+      <div class="flex flex-wrap items-center gap-2">
+        <UInput v-model="searchQuery" :icon="ICONS.search" :placeholder="t('event.waitingListTable.searchPlaceholder')" class="max-w-sm" />
+        <slot name="search-actions" />
+      </div>
       <div v-if="hasSelection" class="flex flex-wrap items-center gap-2">
         <span class="text-sm font-medium text-highlighted">
           {{ t('event.waitingListTable.selectedCount', { count: selectedPlayerIds.length }) }}

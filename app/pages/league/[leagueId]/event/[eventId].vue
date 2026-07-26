@@ -3,9 +3,11 @@
 import { getPairingPlayerIds } from '#shared/utils/types'
 import type { Seat, TournamentPlayer, TournamentTable } from '#shared/utils/types'
 import type { PairingHistoryEntry, PairingPlayer } from '~/composables/event-pairing/pairingOptimizer'
+import type EventStepper from '~/components/event/EventStepper.vue'
 
 const { t } = useI18n()
 const router = useRouter()
+const stepper = useTemplateRef<InstanceType<typeof EventStepper>>('stepper')
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -323,6 +325,16 @@ const breadcrumbItems = useBreadcrumb(() => [
   { label: eventName.value },
 ])
 
+// EventActionBar and EventStepper are now siblings (extracted from the old
+// EventControlPanel so the actions can live in their own row under the
+// header — see ADR/session 2026-07-26) — the page has to coordinate the
+// stepper's immediate visual step-back itself instead of that living inside
+// one wrapper component.
+function handleCancelRoundClick() {
+  lifecycle.handleCancelRound()
+  stepper.value?.prev()
+}
+
 // ── Modal Open Handlers ──────────────────────────────────────────────────
 
 function handleOpenScoreModal(pairingId: number, tableIndex: number) {
@@ -418,17 +430,15 @@ async function handleUndrawTable(pairingId: number) {
   <div class="min-h-screen bg-default">
     <!-- Header -->
     <div class="p-6 pb-0 space-y-2">
-      <div class="flex items-center gap-3">
-        <UButton
-          color="neutral"
-          :icon="ICONS.back"
-          :aria-label="t('league.backAriaLabel')"
-          @click="() => { router.push(`/league/${leagueId}`) }"
-        >
-          {{ t('common.back') }}
-        </UButton>
-        <UBreadcrumb :items="breadcrumbItems" />
-      </div>
+      <UBreadcrumb :items="breadcrumbItems" />
+      <UButton
+        color="neutral"
+        :icon="ICONS.back"
+        :aria-label="t('league.backAriaLabel')"
+        @click="() => { router.push(`/league/${leagueId}`) }"
+      >
+        {{ t('common.back') }}
+      </UButton>
       <EventHeaderCard
         v-if="eventStatus !== 'playing' && !isViewingPastRound"
         :event-name="eventName"
@@ -441,7 +451,7 @@ async function handleUndrawTable(pairingId: number) {
 
     <!-- Main Content -->
     <div class="flex flex-col gap-6 p-6">
-      <EventControlPanel
+      <EventActionBar
         :current-round="currentRound"
         :total-rounds="totalRounds"
         :event-status="eventStatus"
@@ -450,8 +460,15 @@ async function handleUndrawTable(pairingId: number) {
         @start="showStartPreviewModal = true"
         @advance="lifecycle.handleAdvance"
         @end="showEndEventConfirm = true"
+        @cancel-round="handleCancelRoundClick"
+      />
+
+      <EventStepper
+        ref="stepper"
+        :current-round="currentRound"
+        :total-rounds="totalRounds"
+        :event-status="eventStatus"
         @step-changed="lifecycle.handleStepChanged"
-        @cancel-round="lifecycle.handleCancelRound"
         @view-round="viewRound"
       >
         <template #content>
@@ -553,7 +570,7 @@ async function handleUndrawTable(pairingId: number) {
             </div>
           </div>
         </template>
-      </EventControlPanel>
+      </EventStepper>
     </div>
 
     <!-- ── Modals ─────────────────────────────────────────────────────────── -->

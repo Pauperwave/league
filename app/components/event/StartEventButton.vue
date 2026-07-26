@@ -3,7 +3,7 @@
 <!--
   StartEventButton
 
-  A full-width primary button used to start an event.
+  A fixed-width primary button used to start an event.
   Displays a play icon with the label "Avvia Evento".
 
   Props:
@@ -38,7 +38,7 @@ const { t } = useI18n()
     color="primary"
     :variant="disabled ? 'outline' : 'solid'"
     size="lg"
-    block
+    class="w-48"
     :disabled
     :loading
     :icon="ICONS.play"

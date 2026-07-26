@@ -121,13 +121,6 @@ const tableData = computed(() => {
         :disabled="!hasSelection"
         @click="handleAddSelected"
       />
-      <UButton
-        color="neutral"
-        variant="soft"
-        :icon="ICONS.addPlayer"
-        :label="t('player.searchModal.createNew')"
-        @click="handleCreateNew"
-      />
       <span v-if="players.length === 0" class="text-sm text-muted">
         {{ t('player.searchModal.noPlayersRegistered') }}
       </span>
@@ -143,6 +136,16 @@ const tableData = computed(() => {
       @remove="(playerId: number) => { forgetFlags([playerId]); emit('remove', playerId) }"
       @batch-remove="(playerIds: number[]) => { forgetFlags(playerIds); emit('batchRemove', playerIds) }"
       @batch-mark-paid="emit('batchMarkPaid', $event)"
-    />
+    >
+      <template #search-actions>
+        <UButton
+          color="neutral"
+          variant="soft"
+          :icon="ICONS.addPlayer"
+          :label="t('player.searchModal.createNew')"
+          @click="handleCreateNew"
+        />
+      </template>
+    </WaitingListTable>
   </div>
 </template>
