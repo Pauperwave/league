@@ -336,7 +336,6 @@
   "commander": {
     "label": "Comandante",
     "compatibleCards": "{count} carte compatibili",
-    "noSecondCommander": "Questo comandante non supporta un secondo comandante",
     "searchPlaceholder": "Nome del comandante",
     "cardLoadError": "Errore nel caricamento dati carta",
     "search": {
@@ -345,6 +344,12 @@
     },
     "refreshCatalog": "Aggiorna elenco carte",
     "refreshingCatalog": "Aggiornamento in corso...",
+    "refreshCatalogConfirm": {
+      "title": "Aggiornare l'elenco carte?",
+      "description": "Ricarica l'intero elenco dei comandanti disponibili (nomi, costi di mana, tipi di partner) dal catalogo esterno.",
+      "question": "Vuoi procedere con l'aggiornamento",
+      "warning": "Potrebbe richiedere qualche secondo ed è utile solo se mancano carte uscite di recente — nell'uso normale non serve premerlo."
+    },
     "partnerTypes": {
       "commander2Unavailable": "Comandante 2 (non disponibile)",
       "partner": "Partner",
@@ -546,7 +551,7 @@
       "tableDescription": "Tavolo {n}"
     },
     "commanderModal": {
-      "title": "Imposta Comandanti"
+      "title": "Inserisci comandanti"
     },
     "nextRoundModal": {
       "title": "Prossimo Round",

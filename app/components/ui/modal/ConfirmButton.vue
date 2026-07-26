@@ -7,7 +7,7 @@ const {
   label,
   type = 'button',
   form,
-  trailingIcon,
+  trailingIcon = ICONS.confirm,
   loading = false,
   disabled = false,
 } = defineProps<{

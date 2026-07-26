@@ -18,7 +18,7 @@ const stepper = useTemplateRef<InstanceType<typeof EventStepper>>('stepper')
 const {
   leagueId, eventId, currentLeague, currentEvent, currentRound, totalRounds,
   eventStatus, canStartEvent, waitingPlayers, waitroomEntries, pairings, standings,
-  players, tableEstimate, getPlayerName,
+  players, tableEstimate, getPlayerName, getPlayer,
   addToWaitingList, removeFromWaitingList, startEvent, nextRound, turnBackRound, updateEvent,
   pairingHistory, loading, previewTables, viewedRound, isViewingPastRound, viewRound, clearViewedRound,
   displayedPairings, refreshDisplayedPairings,
@@ -635,6 +635,7 @@ async function handleUndrawTable(pairingId: number) {
       :selected-player-id="selectedPlayerId"
       :selected-commander-pairing-id="selectedCommanderPairingId"
       :get-player-name="getPlayerName"
+      :get-player="getPlayer"
       :commanders-store="commandersStore"
       :table-player-ids="commanderModalTablePlayerIds"
       @submit="(commander1, commander2) => {

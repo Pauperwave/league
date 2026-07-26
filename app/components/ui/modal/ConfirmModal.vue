@@ -11,6 +11,7 @@ const {
   cancelLabel,
   confirmIcon = ICONS.confirm,
   cancelIcon = ICONS.undo,
+  confirmColor = 'error',
   loading = false,
   dismissible = true,
   portal = true,
@@ -24,6 +25,10 @@ const {
   cancelLabel?: string
   confirmIcon?: string
   cancelIcon?: string
+  /** Most confirmations are destructive (delete) hence the 'error' default —
+   *  override to 'warning' for a heavier-but-non-destructive action (e.g.
+   *  refreshing a shared catalog) that still deserves a confirm step. */
+  confirmColor?: 'error' | 'warning'
   loading?: boolean
   dismissible?: boolean
   /**
@@ -105,7 +110,7 @@ function onCancel() {
 
     <template #footer>
       <UButton
-        color="error"
+        :color="confirmColor"
         :icon="confirmIcon"
         :loading="loading"
         @click="onConfirm"

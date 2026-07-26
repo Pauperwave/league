@@ -104,6 +104,10 @@ export function useEventPage() {
     return player ? `${player.player_name} ${player.player_surname}` : t('league.ranking.playerFallback', { id: playerId })
   }
 
+  function getPlayer(playerId: number): Player | undefined {
+    return players.value?.find((p: Player) => p.player_id === playerId)
+  }
+
   function isInWaitingList(playerId: number) {
     return waitingPlayers.value.includes(playerId)
   }
@@ -250,6 +254,7 @@ export function useEventPage() {
     loading,
     players: computed(() => players.value ?? []),
     getPlayerName,
+    getPlayer,
     isInWaitingList,
     addToWaitingList,
     removeFromWaitingList,

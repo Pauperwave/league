@@ -22,14 +22,10 @@ const commander2 = ref(props.commander2 || '')
 
 // Whitelists — backed by a shared, localStorage-persisted Pinia Colada query
 // (useCommanderCatalogQuery): fetches once app-wide, no manual load needed.
-const { whitelists, isLoading, refetch, getPartnerType, getAllowedPartners } = useCommanderWhitelists()
-
-const refreshCatalogLogging = useButtonLogging('Refresh Commander Catalog')
-
-async function onRefreshCatalog() {
-  refreshCatalogLogging.logClick()
-  await refetch()
-}
+// isLoading/refetch for the "Aggiorna elenco carte" button live in
+// EventCommanderModal (footer), which calls this same composable — the
+// underlying query is shared/cached, so both stay in sync.
+const { whitelists, getPartnerType, getAllowedPartners } = useCommanderWhitelists()
 
 // Computed: what partner type does commander1 have?
 const commander1PartnerType = computed(() => {
@@ -85,17 +81,8 @@ defineExpose({ submit })
     <div class="flex gap-4">
       <!-- Commander 1 — always 50% when commander 2 is showing, full width otherwise -->
       <div class="flex-1 min-w-0">
-        <div class="flex items-center justify-between mb-1">
+        <div class="flex items-center min-h-6 mb-1">
           <label class="block text-sm font-medium">{{ t('commander.label') }}</label>
-          <UButton
-            :icon="ICONS.refresh"
-            :label="isLoading ? t('commander.refreshingCatalog') : t('commander.refreshCatalog')"
-            size="xs"
-            color="neutral"
-            variant="ghost"
-            :loading="isLoading"
-            @click="onRefreshCatalog"
-          />
         </div>
         <CommanderSearch
           v-model="commander1"
@@ -114,7 +101,7 @@ defineExpose({ submit })
           :transition="{ duration: 0.2, ease: 'easeOut' }"
           class="flex-1 min-w-0"
         >
-          <div class="flex items-center gap-2 mb-1">
+          <div class="flex items-center gap-2 min-h-6 mb-1">
             <label class="block text-sm font-medium">{{ commander2Label }}</label>
             <UBadge
               v-if="commander2Whitelist.length > 0"
@@ -133,12 +120,6 @@ defineExpose({ submit })
           />
         </Motion>
       </AnimatePresence>
-    </div>
-
-    <!-- Always rendered (opacity-toggled) at its real line-height (h-5) so
-         it doesn't add its own layout jump on top of CardPreview's. -->
-    <div class="h-5 text-sm text-gray-500" :class="(!canHaveCommander2 && commander1) ? 'opacity-100' : 'opacity-0'">
-      {{ t('commander.noSecondCommander') }}
     </div>
   </div>
 </template>
