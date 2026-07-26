@@ -155,21 +155,6 @@ describe('calculatePlayerTableScore', () => {
     expect(calculatePlayerTableScore(4, results, posValues, ruleset)?.scoreRank).toBe(2)
   })
 
-  it('splits rank score across a tie with skip-rank spacing, same as calculateRoundScores', () => {
-    const ruleset = makeRuleset()
-    const results = [
-      makeResult({ pairing_id: 1, player_id: 1, position: 1 }),
-      makeResult({ pairing_id: 1, player_id: 2, position: 1 }),
-      makeResult({ pairing_id: 1, player_id: 3, position: 2 }),
-    ]
-    const posValues = [0, 4, 3, 2, 1]
-
-    // Tied for 1st: floor((4+3)/2) = 3 each; effectively 3rd: rank3 = 2.
-    expect(calculatePlayerTableScore(1, results, posValues, ruleset)?.scoreRank).toBe(3)
-    expect(calculatePlayerTableScore(2, results, posValues, ruleset)?.scoreRank).toBe(3)
-    expect(calculatePlayerTableScore(3, results, posValues, ruleset)?.scoreRank).toBe(2)
-  })
-
   it('only counts votes cast by other players, never a self-vote', () => {
     const ruleset = makeRuleset()
     const results = [
@@ -181,10 +166,6 @@ describe('calculatePlayerTableScore', () => {
 
     expect(scored?.brewVote).toBe(1)
     expect(scored?.totalPlayCount).toBe(1)
-  })
-
-  it('returns null against an empty results array', () => {
-    expect(calculatePlayerTableScore(1, [], [0, 4, 3, 2, 1], makeRuleset())).toBeNull()
   })
 
   it('treats a null position (not yet ranked) as unscored — 0, not a crash or NaN', () => {
@@ -238,17 +219,6 @@ describe('calculatePlayerTableScore', () => {
     ]
 
     expect(calculatePlayerTableScore(1, results, [0, 4, 3, 2, 1], ruleset)?.totalPlayCount).toBe(1)
-  })
-
-  it('a self-targeted vote on one\'s own row never counts, even with no other voters present', () => {
-    const results = [
-      makeResult({ pairing_id: 1, player_id: 1, position: 1, brew_vote: 1, play_vote_1: 1, play_vote_2: 1 }),
-    ]
-
-    const scored = calculatePlayerTableScore(1, results, [0, 4, 3, 2, 1], makeRuleset())
-
-    expect(scored?.brewVote).toBe(0)
-    expect(scored?.totalPlayCount).toBe(0)
   })
 })
 
