@@ -1,5 +1,6 @@
 <!-- app\components\player\PlayerNameTag.vue -->
 <script setup lang="ts">
+import { NuxtLink } from '#components'
 
 const {
   name,
@@ -40,7 +41,7 @@ const displayAvatar = computed(() => avatarUrl || generatePlayerAvatar(playerId 
       :alt="name"
     />
     <component
-      :is="linkable ? 'NuxtLink' : 'span'"
+      :is="linkable ? NuxtLink : 'span'"
       :to="linkable ? playerLink : undefined"
       class="inline-flex items-baseline gap-1 leading-tight"
       :class="[
