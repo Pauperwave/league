@@ -3,6 +3,9 @@
 const props = defineProps<{
   whitelist?: string[] | null
   playerId?: number | null
+  /** Every player seated at the same table/round — see useCommanderSearch's
+   *  `tablePlayerIds` option for why this is worth passing. */
+  tablePlayerIds?: number[]
 }>()
 
 const modelValue = defineModel<string | null>()
@@ -18,6 +21,7 @@ const {
 } = useCommanderSearch({
   whitelist: () => props.whitelist,
   playerId: () => props.playerId,
+  tablePlayerIds: () => props.tablePlayerIds ?? [],
 })
 
 // USelectMenu's modelValue is `string | undefined` (labelKey values aren't

@@ -23,6 +23,14 @@ const commandersStore = useCommandersStore()
 const killsStore = useKillsStore()
 const votesStore = useVotesStore()
 
+// Prefetch: warms useCommanderUsageQuery's cache for every seated player in
+// the round as soon as the pairings render, so opening any table's commander
+// modal (page passes this same player-id list — see [eventId].vue's
+// commanderModalTablePlayerIds) hits an already-resolved cache instead of
+// firing its own request. Return value intentionally unused here.
+const roundPlayerIds = computed(() => props.pairings.flatMap(getPairingPlayerIds))
+useCommanderUsageQuery(roundPlayerIds)
+
 // ─── Emits ────────────────────────────────────────────────────────────────────
 
 const emit = defineEmits<{

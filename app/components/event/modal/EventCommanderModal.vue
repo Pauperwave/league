@@ -9,11 +9,15 @@ const {
   selectedPlayerId,
   getPlayerName,
   commandersStore,
+  tablePlayerIds = [],
 } = defineProps<{
   showCommanderModal: boolean
   selectedPlayerId: number | null
   getPlayerName: (playerId: number) => string
   commandersStore: ReturnType<typeof import('~/stores/commanders').useCommandersStore>
+  /** Every player seated at the same table/round as `selectedPlayerId` — see
+   *  useCommanderSearch's `tablePlayerIds` option for why this is worth passing. */
+  tablePlayerIds?: number[]
 }>()
 
 const commanderModalRef = useTemplateRef<InstanceType<typeof CommanderModal>>('commanderModalRef')
@@ -52,6 +56,7 @@ function onSubmit() {
         :player-name="getPlayerName(selectedPlayerId)"
         :commander1="commandersStore.getCommander1(selectedPlayerId)"
         :commander2="commandersStore.getCommander2(selectedPlayerId)"
+        :table-player-ids="tablePlayerIds"
         @submit="(cmd1, cmd2) => emit('submit', cmd1, cmd2)"
       />
     </template>

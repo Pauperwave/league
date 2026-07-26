@@ -337,6 +337,11 @@ function handleOpenCommanderModal(pairingId: number, playerId: number) {
   showCommanderModal.value = true
 }
 
+// Every player seated anywhere in the current round — same list
+// PairingsCard.vue prefetches with, so this resolves from cache instead of
+// firing its own request (see useCommanderUsageQuery).
+const commanderModalTablePlayerIds = computed(() => pairings.value.flatMap(getPairingPlayerIds))
+
 function handleOpenScoresModal(pairingId: number) {
   selectedScoresPairingId.value = pairingId
   showScoresModal.value = true
@@ -614,6 +619,7 @@ async function handleUndrawTable(pairingId: number) {
       :selected-commander-pairing-id="selectedCommanderPairingId"
       :get-player-name="getPlayerName"
       :commanders-store="commandersStore"
+      :table-player-ids="commanderModalTablePlayerIds"
       @submit="(commander1, commander2) => {
         if (submitHandlers.handleCommanderSubmit(commander1, commander2))
           showCommanderModal = false

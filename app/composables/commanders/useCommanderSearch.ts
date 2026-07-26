@@ -1,50 +1,9 @@
 // app\composables\commanders\useCommanderSearch.ts
 import { fetchCommanderByName, type CommanderCard } from './useCommanderCards'
+import { useCommanderUsageQuery, type CommanderUsage } from './useCommanderUsageQuery'
 import type { Database } from '#shared/utils/types/database'
 import type { CommanderCatalogRow } from './useCommanderCatalogQuery'
 import type { FuzzyMatchResult } from '~/utils/fuzzyMatch'
-
-/** Per-commander play history for one player, used to order the "già
- *  giocati" group (ADR-027): most recently played first, ties on the same
- *  calendar day broken by how many times it's been played. */
-interface CommanderUsage {
-  /** ISO `YYYY-MM-DD` (UTC) of the most recent pairing this commander was
-   *  played in — plain string comparison sorts these chronologically. */
-  lastPlayedDay: string
-  count: number
-}
-
-function recordUsage(usage: Map<string, CommanderUsage>, name: string | null, pairingDatetime: string | null) {
-  if (!name) return
-  const day = pairingDatetime?.slice(0, 10) ?? ''
-  const existing = usage.get(name)
-  if (!existing) {
-    usage.set(name, { lastPlayedDay: day, count: 1 })
-    return
-  }
-  existing.count += 1
-  if (day > existing.lastPlayedDay) existing.lastPlayedDay = day
-}
-
-async function fetchUsedCommanders(
-  supabase: ReturnType<typeof useSupabaseClient<Database>>,
-  playerId: number
-): Promise<Map<string, CommanderUsage>> {
-  const { data, error } = await supabase
-    .from('round_results')
-    .select('commander_1, commander_2, pairings(pairing_datetime)')
-    .eq('player_id', playerId)
-
-  const usage = new Map<string, CommanderUsage>()
-  if (error || !data) return usage
-
-  for (const row of data) {
-    const pairing = Array.isArray(row.pairings) ? row.pairings[0] : row.pairings
-    recordUsage(usage, row.commander_1, pairing?.pairing_datetime ?? null)
-    recordUsage(usage, row.commander_2, pairing?.pairing_datetime ?? null)
-  }
-  return usage
-}
 
 function parseManaCost(manaCost: string | null): string[] {
   if (!manaCost) return []
@@ -63,6 +22,11 @@ export interface CommanderSuggestionItem {
 export interface UseCommanderSearchOptions {
   whitelist?: MaybeRefOrGetter<string[] | null | undefined>
   playerId?: MaybeRefOrGetter<number | null | undefined>
+  /** Every player seated at the same table/round as `playerId` — passed so
+   *  the usage lookup below batches into one shared request (see
+   *  useCommanderUsageQuery) instead of firing a query per player every
+   *  time a commander modal opens. */
+  tablePlayerIds?: MaybeRefOrGetter<number[]>
 }
 
 /**
@@ -78,13 +42,26 @@ export function useCommanderSearch(options: UseCommanderSearchOptions = {}) {
   const { data: catalog } = useCommanderCatalogQuery()
   const { t } = useI18n()
 
+  // Batches this player's usage lookup with the rest of the table roster
+  // (if given) — see useCommanderUsageQuery's cache-sharing note.
+  const usageRosterIds = computed(() => {
+    const roster = toValue(options.tablePlayerIds) ?? []
+    const playerId = toValue(options.playerId)
+    if (playerId !== null && playerId !== undefined && !roster.includes(playerId)) {
+      return [...roster, playerId]
+    }
+    return roster
+  })
+  const { data: usageByPlayer, isLoading: usageLoading } = useCommanderUsageQuery(usageRosterIds)
+
   const query = ref('')
   const suggestionGroups = ref<CommanderSuggestionItem[][]>([])
   const card = ref<CommanderCard | null>(null)
-  const isLoading = ref(false)
+  const isComputing = ref(false)
+  const isLoading = computed(() => isComputing.value || usageLoading.value)
 
-  async function fetchSuggestions(q: string) {
-    isLoading.value = true
+  function computeSuggestions(q: string) {
+    isComputing.value = true
     try {
       const trimmed = q.trim()
       const whitelist = toValue(options.whitelist)
@@ -109,9 +86,9 @@ export function useCommanderSearch(options: UseCommanderSearchOptions = {}) {
       })
 
       const playerId = toValue(options.playerId)
-      const usage = playerId !== null && playerId !== undefined
-        ? await fetchUsedCommanders(supabase, playerId)
-        : new Map<string, CommanderUsage>()
+      const usage: Map<string, CommanderUsage> = (playerId !== null && playerId !== undefined
+        ? usageByPlayer.value?.get(playerId)
+        : undefined) ?? new Map()
 
       // Best fuzzy match first, edhrecRank (popularity) as the tiebreaker —
       // and the only sort when there's no query (score is 0 for everyone).
@@ -148,7 +125,7 @@ export function useCommanderSearch(options: UseCommanderSearchOptions = {}) {
       }
       suggestionGroups.value = groups
     } finally {
-      isLoading.value = false
+      isComputing.value = false
     }
   }
 
@@ -157,22 +134,21 @@ export function useCommanderSearch(options: UseCommanderSearchOptions = {}) {
     card.value = data
   }
 
-  const debouncedFetch = useDebounceFn((q: string) => {
-    fetchSuggestions(q)
+  const debouncedCompute = useDebounceFn((q: string) => {
+    computeSuggestions(q)
   }, 150)
 
-  // Also re-fetch when the whitelist changes (e.g. commander1's partner type
-  // flips, narrowing commander2's options) even if the query text itself
-  // didn't change — and fires immediately so a short whitelist (e.g. "30
-  // carte compatibili") is already browsable before typing anything.
-  //
-  // Also re-fetch once `catalog` itself arrives: on a cold cache the modal
-  // can open (and this immediate fetch can run) before useCommanderCatalogQuery
-  // resolves, so that first pass filters an empty catalog and "già giocati"
-  // never appears — recomputing when catalog changes is what previously
-  // required typing a character and deleting it to force a second pass.
-  watch([query, () => toValue(options.whitelist), catalog], ([newQuery]) => {
-    debouncedFetch(newQuery)
+  // Recomputes on every dependency that can change the result set: the query
+  // text, the whitelist (e.g. commander1's partner type flips, narrowing
+  // commander2's options), the catalog itself (on a cold cache the modal can
+  // open before useCommanderCatalogQuery resolves, so the first pass would
+  // otherwise filter an empty catalog), and the usage lookup (same race for
+  // useCommanderUsageQuery — previously only fixable by typing a character
+  // and deleting it to force a second pass). Fires immediately so a short
+  // whitelist (e.g. "30 carte compatibili") is already browsable before
+  // typing anything.
+  watch([query, () => toValue(options.whitelist), catalog, usageByPlayer], ([newQuery]) => {
+    debouncedCompute(newQuery)
   }, { immediate: true })
 
   return {

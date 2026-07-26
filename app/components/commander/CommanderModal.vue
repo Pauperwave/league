@@ -6,6 +6,9 @@ const props = defineProps<{
   playerName: string
   commander1?: string | null
   commander2?: string | null
+  /** Every player seated at the same table/round as `playerId` — see
+   *  useCommanderSearch's `tablePlayerIds` option for why this is worth passing. */
+  tablePlayerIds?: number[]
 }>()
 
 const { t } = useI18n()
@@ -97,6 +100,7 @@ defineExpose({ submit })
         <CommanderSearch
           v-model="commander1"
           :player-id="props.playerId"
+          :table-player-ids="props.tablePlayerIds"
         />
       </div>
 
@@ -125,6 +129,7 @@ defineExpose({ submit })
             v-model="commander2"
             :whitelist="commander2Whitelist"
             :player-id="props.playerId"
+            :table-player-ids="props.tablePlayerIds"
           />
         </Motion>
       </AnimatePresence>

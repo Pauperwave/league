@@ -29,6 +29,7 @@ export function useEventSubmitHandlers(deps: SubmitHandlerDeps) {
   } = deps
 
   const { t } = useI18n()
+  const queryCache = useQueryCache()
 
   /** Shared by handleScoreSubmit and handleDrawSubmit — sets the local
    * ranking state and persists it, with the same toast/error handling. */
@@ -71,7 +72,15 @@ export function useEventSubmitHandlers(deps: SubmitHandlerDeps) {
       toast.add({ title: t('event.commandersSavedTitle'), color: 'success' })
       eventStore.saveCommander(selectedCommanderPairingId.value, selectedPlayerId.value, commander1, commander2)
         .then(result => {
-          if (!result.success) toast.add({ title: t('deck.toast.errorTitle'), description: result.error, color: 'error' })
+          if (!result.success) {
+            toast.add({ title: t('deck.toast.errorTitle'), description: result.error, color: 'error' })
+            return
+          }
+          // useCommanderUsageQuery's cache is shared/prefetched per round
+          // (2026-07-26 follow-up to ADR-027) — invalidate it so a commander
+          // saved just now shows up in "già giocati" the next time any
+          // player's modal opens, instead of waiting out staleTime.
+          queryCache.invalidateQueries({ key: ['commander-usage'] })
         })
     }
     return true
