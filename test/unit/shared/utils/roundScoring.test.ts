@@ -1,6 +1,6 @@
 // test\unit\shared\utils\roundScoring.test.ts
 import { describe, expect, it } from 'vitest'
-import { buildPairingRows, buildRoundOneTables, calculateRoundScores } from '#shared/utils/roundScoring'
+import { buildPairingRows, buildRoundOneTables, calculatePlayerTableScore, calculateRoundScores } from '#shared/utils/roundScoring'
 import type { Pairing, RoundResult, Ruleset } from '#shared/utils/types'
 import type { StandingAccumulator } from '#shared/utils/roundScoring'
 
@@ -112,6 +112,143 @@ describe('buildPairingRows', () => {
     const rows = buildPairingRows(1, 1, [[10, 20], [10, 20, 30]])
     expect(rows).toHaveLength(1)
     expect(rows[0]?.pairing_player1_id).toBe(10)
+  })
+})
+
+describe('calculatePlayerTableScore', () => {
+  it('returns null when the player has no submitted result', () => {
+    const results = [makeResult({ pairing_id: 1, player_id: 1, position: 1 })]
+    expect(calculatePlayerTableScore(2, results, [0, 4, 3, 2, 1], makeRuleset())).toBeNull()
+  })
+
+  it('weights kills, brew votes, and play votes by the ruleset — not raw counts', () => {
+    const ruleset = makeRuleset({ rule_set_kill: 2, rule_set_brew: 5, rule_set_play: 3 })
+    const results = [
+      makeResult({ pairing_id: 1, player_id: 1, position: 1, number_of_kills: 3 }),
+      makeResult({ pairing_id: 1, player_id: 2, position: 2, brew_vote: 1, play_vote_1: 1, play_vote_2: 1 }),
+    ]
+
+    const scored = calculatePlayerTableScore(1, results, [0, 4, 3, 2, 1], ruleset)
+
+    expect(scored).toMatchObject({
+      playerId: 1,
+      position: 1,
+      scoreRank: 4,
+      numberOfKills: 3,
+      killScore: 6, // 3 kills * 2
+      brewVote: 1,
+      brewScore: 5, // 1 vote * 5
+      totalPlayCount: 1,
+      playScore: 3, // 1 vote * 3
+      totalScore: 18, // 4 + 6 + 5 + 3
+    })
+  })
+
+  it('uses the ruleset\'s actual rank values, matching a real 8/6/4/2 configuration', () => {
+    const ruleset = makeRuleset({ rule_set_rank1: 8, rule_set_rank2: 6, rule_set_rank3: 4, rule_set_rank4: 2 })
+    const results = [1, 2, 3, 4].map(playerId => makeResult({ pairing_id: 1, player_id: playerId, position: playerId }))
+    const posValues = [0, 8, 6, 4, 2]
+
+    expect(calculatePlayerTableScore(1, results, posValues, ruleset)?.scoreRank).toBe(8)
+    expect(calculatePlayerTableScore(2, results, posValues, ruleset)?.scoreRank).toBe(6)
+    expect(calculatePlayerTableScore(3, results, posValues, ruleset)?.scoreRank).toBe(4)
+    expect(calculatePlayerTableScore(4, results, posValues, ruleset)?.scoreRank).toBe(2)
+  })
+
+  it('splits rank score across a tie with skip-rank spacing, same as calculateRoundScores', () => {
+    const ruleset = makeRuleset()
+    const results = [
+      makeResult({ pairing_id: 1, player_id: 1, position: 1 }),
+      makeResult({ pairing_id: 1, player_id: 2, position: 1 }),
+      makeResult({ pairing_id: 1, player_id: 3, position: 2 }),
+    ]
+    const posValues = [0, 4, 3, 2, 1]
+
+    // Tied for 1st: floor((4+3)/2) = 3 each; effectively 3rd: rank3 = 2.
+    expect(calculatePlayerTableScore(1, results, posValues, ruleset)?.scoreRank).toBe(3)
+    expect(calculatePlayerTableScore(2, results, posValues, ruleset)?.scoreRank).toBe(3)
+    expect(calculatePlayerTableScore(3, results, posValues, ruleset)?.scoreRank).toBe(2)
+  })
+
+  it('only counts votes cast by other players, never a self-vote', () => {
+    const ruleset = makeRuleset()
+    const results = [
+      makeResult({ pairing_id: 1, player_id: 1, position: 1, brew_vote: 1, play_vote_1: 1 }),
+      makeResult({ pairing_id: 1, player_id: 2, position: 2, brew_vote: 1, play_vote_1: 1 }),
+    ]
+
+    const scored = calculatePlayerTableScore(1, results, [0, 4, 3, 2, 1], ruleset)
+
+    expect(scored?.brewVote).toBe(1)
+    expect(scored?.totalPlayCount).toBe(1)
+  })
+
+  it('returns null against an empty results array', () => {
+    expect(calculatePlayerTableScore(1, [], [0, 4, 3, 2, 1], makeRuleset())).toBeNull()
+  })
+
+  it('treats a null position (not yet ranked) as unscored — 0, not a crash or NaN', () => {
+    const results = [makeResult({ pairing_id: 1, player_id: 1, position: null })]
+    const scored = calculatePlayerTableScore(1, results, [0, 4, 3, 2, 1], makeRuleset())
+    expect(scored?.position).toBe(0)
+    expect(scored?.scoreRank).toBe(0)
+  })
+
+  it('treats a null number_of_kills as 0 kills, not NaN', () => {
+    const results = [makeResult({ pairing_id: 1, player_id: 1, position: 1, number_of_kills: null })]
+    const scored = calculatePlayerTableScore(1, results, [0, 4, 3, 2, 1], makeRuleset())
+    expect(scored?.numberOfKills).toBe(0)
+    expect(scored?.killScore).toBe(0)
+  })
+
+  it('scores rank from posValues even with a null ruleset — only kill/brew/play weights need it', () => {
+    const results = [
+      makeResult({ pairing_id: 1, player_id: 1, position: 1, number_of_kills: 5 }),
+      // Player 2 votes brew for player 1.
+      makeResult({ pairing_id: 1, player_id: 2, position: 2, brew_vote: 1, play_vote_1: 1 }),
+    ]
+    const scored = calculatePlayerTableScore(1, results, [0, 4, 3, 2, 1], null)
+    expect(scored?.scoreRank).toBe(4)
+    expect(scored?.killScore).toBe(0)
+    expect(scored?.brewVote).toBe(1)
+    expect(scored?.brewScore).toBe(0)
+    expect(scored?.totalScore).toBe(4)
+  })
+
+  it('a 4-way tie for 1st averages and clamps against the shortest posValues array', () => {
+    // Every rank slot (1st..4th) gets consumed by the tie; effectivePosition
+    // + i walks past the array's last real index (4) for i=3 — Math.min(...,
+    // 4) must clamp instead of reading undefined/NaN off the end.
+    const ruleset = makeRuleset()
+    const results = [1, 2, 3, 4].map(playerId => makeResult({ pairing_id: 1, player_id: playerId, position: 1 }))
+    const posValues = [0, 4, 3, 2, 1]
+
+    // floor((4+3+2+1)/4) = 2, identical for all four tied players.
+    for (const playerId of [1, 2, 3, 4]) {
+      expect(calculatePlayerTableScore(playerId, results, posValues, ruleset)?.scoreRank).toBe(2)
+    }
+  })
+
+  it('counts a single other-player row once even if both play votes target the same player', () => {
+    const ruleset = makeRuleset()
+    const results = [
+      makeResult({ pairing_id: 1, player_id: 1, position: 1 }),
+      // Player 2's two play-vote slots both point at player 1 — still one row.
+      makeResult({ pairing_id: 1, player_id: 2, position: 2, play_vote_1: 1, play_vote_2: 1 }),
+    ]
+
+    expect(calculatePlayerTableScore(1, results, [0, 4, 3, 2, 1], ruleset)?.totalPlayCount).toBe(1)
+  })
+
+  it('a self-targeted vote on one\'s own row never counts, even with no other voters present', () => {
+    const results = [
+      makeResult({ pairing_id: 1, player_id: 1, position: 1, brew_vote: 1, play_vote_1: 1, play_vote_2: 1 }),
+    ]
+
+    const scored = calculatePlayerTableScore(1, results, [0, 4, 3, 2, 1], makeRuleset())
+
+    expect(scored?.brewVote).toBe(0)
+    expect(scored?.totalPlayCount).toBe(0)
   })
 })
 
