@@ -97,6 +97,88 @@ export async function fetchRoundData(supabase: SupabaseClient<Database>, eventId
   return { pairings: pairingsData ?? [], results: allResults ?? [], standingsMap }
 }
 
+export interface PlayerTableScore {
+  playerId: number
+  /** Raw dense position as stored (0 = no result submitted yet). */
+  position: number
+  scoreRank: number
+  numberOfKills: number
+  killScore: number
+  brewVote: number
+  brewScore: number
+  totalPlayCount: number
+  playScore: number
+  totalScore: number
+}
+
+/**
+ * Score a single player's result at one table. Shared by calculateRoundScores
+ * (bulk standings recompute) and TableScoresModal ("Punteggi Tavolo" — the
+ * read-only per-table breakdown) so the two can never drift, which is exactly
+ * what happened before this was extracted: the modal had its own hardcoded
+ * [3,2,1,0] placement table and unweighted kill/vote counts instead of the
+ * ruleset's actual point values.
+ */
+export function calculatePlayerTableScore(
+  playerId: number,
+  tableResults: RoundResult[],
+  posValues: number[],
+  ruleset: Ruleset | null,
+): PlayerTableScore | null {
+  const myResult = tableResults.find(r => r.player_id === playerId)
+  if (!myResult) return null
+
+  const position = myResult.position ?? 0
+  const numberOfKills = myResult.number_of_kills ?? 0
+
+  const otherResults = tableResults.filter(r => r.player_id !== playerId)
+  const brewVote = otherResults.filter(r => r.brew_vote === playerId).length
+  const totalPlayCount = otherResults.filter(
+    r => r.play_vote_1 === playerId || r.play_vote_2 === playerId,
+  ).length
+
+  const samePositionCount = position !== 0
+    ? tableResults.filter(r => r.position === position).length
+    : 1
+
+  // Positions are stored "dense" (TableScoreGrid/useRankingGrid enforces
+  // a gapless 1,1,2,3 — never a skip-rank 1,1,3,4: "ranks used must form
+  // a consecutive sequence starting from 1"). Standard tournament
+  // scoring needs skip-rank spacing though: after a 2-way tie for 1st,
+  // the next player is effectively 3rd, since two point-slots (1st and
+  // 2nd) were already consumed by the tie. Re-derive that effective
+  // starting slot from how many players rank strictly above this one
+  // instead of trusting the raw dense position — this is what makes
+  // 1,1,2,3 score identically to its skip-rank equivalent 1,1,3,4 (and
+  // 1,1,1,2 to 1,1,1,4, 1,2,2,3 to 1,2,2,4).
+  const effectivePosition = position !== 0
+    ? 1 + tableResults.filter(r => r.position !== null && r.position !== 0 && r.position < position).length
+    : 0
+
+  let rankSum = 0
+  for (let i = 0; i < samePositionCount; i++) {
+    rankSum += posValues[Math.min(effectivePosition + i, 4)] ?? 0
+  }
+  const scoreRank = Math.floor(rankSum / samePositionCount)
+
+  const killScore = numberOfKills * (ruleset?.rule_set_kill ?? 0)
+  const brewScore = brewVote * (ruleset?.rule_set_brew ?? 0)
+  const playScore = totalPlayCount * (ruleset?.rule_set_play ?? 0)
+
+  return {
+    playerId,
+    position,
+    scoreRank,
+    numberOfKills,
+    killScore,
+    brewVote,
+    brewScore,
+    totalPlayCount,
+    playScore,
+    totalScore: scoreRank + killScore + brewScore + playScore,
+  }
+}
+
 /** Calculate scores from round results and update accumulator */
 export function calculateRoundScores(
   pairings: Pairing[],
@@ -126,53 +208,15 @@ export function calculateRoundScores(
       && tableResults.every(r => (r.number_of_kills ?? 0) === 0)
 
     for (const playerId of playerIds) {
-      const myResult = tableResults.find(r => r.player_id === playerId)
-      if (!myResult) continue
-
-      const position = myResult.position ?? 0
-      const numberOfKills = myResult.number_of_kills ?? 0
-
-      const otherResults = tableResults.filter(r => r.player_id !== playerId)
-      const brewVote = otherResults.filter(r => r.brew_vote === playerId).length
-      const totalPlayCount = otherResults.filter(
-        r => r.play_vote_1 === playerId || r.play_vote_2 === playerId,
-      ).length
-
-      const samePositionCount = position !== 0
-        ? tableResults.filter(r => r.position === position).length
-        : 1
-
-      // Positions are stored "dense" (TableScoreGrid/useRankingGrid enforces
-      // a gapless 1,1,2,3 — never a skip-rank 1,1,3,4: "ranks used must form
-      // a consecutive sequence starting from 1"). Standard tournament
-      // scoring needs skip-rank spacing though: after a 2-way tie for 1st,
-      // the next player is effectively 3rd, since two point-slots (1st and
-      // 2nd) were already consumed by the tie. Re-derive that effective
-      // starting slot from how many players rank strictly above this one
-      // instead of trusting the raw dense position — this is what makes
-      // 1,1,2,3 score identically to its skip-rank equivalent 1,1,3,4 (and
-      // 1,1,1,2 to 1,1,1,4, 1,2,2,3 to 1,2,2,4).
-      const effectivePosition = position !== 0
-        ? 1 + tableResults.filter(r => r.position !== null && r.position !== 0 && r.position < position).length
-        : 0
-
-      let rankSum = 0
-      for (let i = 0; i < samePositionCount; i++) {
-        rankSum += posValues[Math.min(effectivePosition + i, 4)] ?? 0
-      }
-      const scoreRank = Math.floor(rankSum / samePositionCount)
-
-      const totalScore = scoreRank
-        + numberOfKills * (ruleset?.rule_set_kill ?? 0)
-        + brewVote * (ruleset?.rule_set_brew ?? 0)
-        + totalPlayCount * (ruleset?.rule_set_play ?? 0)
+      const scored = calculatePlayerTableScore(playerId, tableResults, posValues, ruleset)
+      if (!scored) continue
 
       const acc = standingsMap.get(playerId)
       if (acc) {
-        acc.standing_player_score += totalScore
-        acc.victories += (position === 1 && !isDraw) ? 1 : 0
-        acc.brew_received += brewVote
-        acc.play_received += totalPlayCount
+        acc.standing_player_score += scored.totalScore
+        acc.victories += (scored.position === 1 && !isDraw) ? 1 : 0
+        acc.brew_received += scored.brewVote
+        acc.play_received += scored.totalPlayCount
       }
     }
   }

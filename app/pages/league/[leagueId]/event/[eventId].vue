@@ -24,6 +24,13 @@ const {
   displayedPairings, refreshDisplayedPairings,
 } = useEventPage()
 
+// Ruleset for the "Punteggi Tavolo" breakdown (EventScoresModal) — rulesets
+// are a single shared cache (useRulesetsQuery, ADR-015), find this league's.
+const { data: rulesetsData } = useRulesetsQuery()
+const currentRuleset = computed(() =>
+  rulesetsData.value?.find(r => r.ruleset_id === currentLeague.value?.ruleset_id) ?? null
+)
+
 const {
   syncUrl, phaseFromQuery,
   syncPreview, previewFromQuery,
@@ -650,9 +657,7 @@ async function handleUndrawTable(pairingId: number) {
       :selected-scores-pairing-id="selectedScoresPairingId"
       :pairings="pairings"
       :tournament-players="tournamentPlayers"
-      :rankings-store="rankingsStore"
-      :kills-store="killsStore"
-      :votes-store="votesStore"
+      :ruleset="currentRuleset"
       @cancel="showScoresModal = false"
     />
 
