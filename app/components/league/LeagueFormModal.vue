@@ -154,24 +154,27 @@ function handleSubmit() {
         />
       </div>
 
-      <UFormField :label="t('league.form.rulesetLabel')">
-        <USelect
-          v-model="form.rulesetId"
-          :items="rulesetItems"
-          :loading="rulesetsLoading"
-          class="w-full"
-          :ui="{ base: 'whitespace-normal', item: 'whitespace-normal' }"
-        />
-      </UFormField>
+      <div class="grid grid-cols-2 gap-4">
+        <UFormField :label="t('league.form.rulesetLabel')">
+          <USelect
+            v-model="form.rulesetId"
+            :items="rulesetItems"
+            :loading="rulesetsLoading"
+            class="w-full"
+            :ui="{ base: 'whitespace-normal', item: 'whitespace-normal' }"
+          />
+        </UFormField>
 
-      <UFormField :label="t('league.form.validEventsLabel')">
-        <UInputNumber
-          id="field-valid-events"
-          v-model="form.validEvents"
-          :min="1"
-          placeholder="0"
-        />
-      </UFormField>
+        <UFormField :label="t('league.form.validEventsLabel')">
+          <UInputNumber
+            id="field-valid-events"
+            v-model="form.validEvents"
+            :min="1"
+            placeholder="0"
+            class="w-full"
+          />
+        </UFormField>
+      </div>
     </form>
   </FormModal>
 </template>
