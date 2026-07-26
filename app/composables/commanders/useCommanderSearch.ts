@@ -165,7 +165,13 @@ export function useCommanderSearch(options: UseCommanderSearchOptions = {}) {
   // flips, narrowing commander2's options) even if the query text itself
   // didn't change — and fires immediately so a short whitelist (e.g. "30
   // carte compatibili") is already browsable before typing anything.
-  watch([query, () => toValue(options.whitelist)], ([newQuery]) => {
+  //
+  // Also re-fetch once `catalog` itself arrives: on a cold cache the modal
+  // can open (and this immediate fetch can run) before useCommanderCatalogQuery
+  // resolves, so that first pass filters an empty catalog and "già giocati"
+  // never appears — recomputing when catalog changes is what previously
+  // required typing a character and deleting it to force a second pass.
+  watch([query, () => toValue(options.whitelist), catalog], ([newQuery]) => {
     debouncedFetch(newQuery)
   }, { immediate: true })
 
