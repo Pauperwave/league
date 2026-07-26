@@ -41,7 +41,7 @@ export function useRoundStatus(
       pairingId: pairing.pairing_id,
       tableIndex: index,
       tableNumber: index + 1,
-      done: hasRanking(pairing.pairing_id),
+      done: hasRanking(pairing),
     })))
 
   const killItems = computed<RoundStatusTableItem[]>(() =>

@@ -338,7 +338,7 @@ function fillTable(pairingId: number) {
             <PairingTableActions
               :pairing-id="pairing.pairing_id"
               :table-index="index"
-              :has-ranking="hasRanking(pairing.pairing_id)"
+              :has-ranking="hasRanking(pairing)"
               :has-kills="hasKills(pairing)"
               :is-draw="isDraw(pairing)"
               @open-score-modal="handleOpenScoreModal"

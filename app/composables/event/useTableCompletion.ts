@@ -13,10 +13,15 @@ export function useTableCompletion(
   commandersStore: ReturnType<typeof useCommandersStore>,
   votesStore: ReturnType<typeof useVotesStore>,
 ) {
-  /** Returns true if the pairing has at least one ranking entry saved. */
-  const hasRanking = (pairingId: number): boolean => {
-    const ranking = rankingsStore.getRankingWithRanks(pairingId)
-    return !!ranking && ranking.length > 0
+  /**
+   * Returns true once every seated player in `pairing` has a ranking entry —
+   * shared with `buildStandingsSubmissionMap` (`standingsSubmission.ts`) via
+   * `hasCompleteRanking` so the round-status sidebar and the standings
+   * "Inserito" badge agree on what counts as a ranked table.
+   */
+  const hasRanking = (pairing: Pairing): boolean => {
+    const ranking = rankingsStore.getRankingWithRanks(pairing.pairing_id) ?? []
+    return hasCompleteRanking(getPairingPlayerIds(pairing), ranking.map(r => r.playerId))
   }
 
   /**
@@ -42,7 +47,7 @@ export function useTableCompletion(
   const isTableComplete = (pairing: Pairing): boolean => {
     const playerIds = getPairingPlayerIds(pairing)
     return (
-      hasRanking(pairing.pairing_id) &&
+      hasRanking(pairing) &&
       playerIds.every(id => commandersStore.getCommander1(id) !== null) &&
       playerIds.every(id => votesStore.hasVotes(id))
     )

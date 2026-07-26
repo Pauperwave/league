@@ -64,12 +64,18 @@ function setupCompletion() {
 }
 
 describe('useTableCompletion', () => {
-  it('hasRanking is false until a ranking is saved for the pairing', () => {
+  it('hasRanking is false until every seated player has a ranking entry', () => {
     const { hasRanking, rankingsStore } = setupCompletion()
+    const pairing = makePairing()
 
-    expect(hasRanking(1)).toBe(false)
-    rankingsStore.setRankingWithRanks(1, [{ playerId: 1, rank: 1 }])
-    expect(hasRanking(1)).toBe(true)
+    expect(hasRanking(pairing)).toBe(false)
+
+    // Only 2 of the 4 seated players ranked — not complete yet.
+    rankingsStore.setRankingWithRanks(1, [{ playerId: 1, rank: 1 }, { playerId: 2, rank: 2 }])
+    expect(hasRanking(pairing)).toBe(false)
+
+    rankingsStore.setRankingWithRanks(1, [1, 2, 3, 4].map(playerId => ({ playerId, rank: playerId })))
+    expect(hasRanking(pairing)).toBe(true)
   })
 
   it('hasKills is true once round_results has any non-null number_of_kills, independent of killsStore', () => {

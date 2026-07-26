@@ -1,6 +1,20 @@
 // test\unit\utils\standingsSubmission.test.ts
 import { describe, expect, it } from 'vitest'
-import { buildStandingsSubmissionMap } from '~/utils/standingsSubmission'
+import { buildStandingsSubmissionMap, hasCompleteRanking } from '~/utils/standingsSubmission'
+
+describe('hasCompleteRanking', () => {
+  it('is false when no one has been ranked yet', () => {
+    expect(hasCompleteRanking([1, 2, 3, 4], [])).toBe(false)
+  })
+
+  it('is false when only some seated players have been ranked', () => {
+    expect(hasCompleteRanking([1, 2, 3, 4], [1, 2])).toBe(false)
+  })
+
+  it('is true once every seated player has been ranked, regardless of extra order', () => {
+    expect(hasCompleteRanking([1, 2, 3, 4], [4, 2, 1, 3])).toBe(true)
+  })
+})
 
 describe('buildStandingsSubmissionMap', () => {
   it('marks players as submitted when they have a ranking in current round pairings', () => {
