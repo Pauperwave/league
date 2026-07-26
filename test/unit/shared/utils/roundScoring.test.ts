@@ -168,6 +168,94 @@ describe('calculateRoundScores', () => {
     expect(standingsMap.get(1)?.play_received).toBe(1)
   })
 
+  it('scores a 2-way tie for 1st with skip-rank spacing, not the raw dense position', () => {
+    // TableScoreGrid/useRankingGrid only ever stores dense ranks (1,1,2,3 —
+    // "ranks used must form a consecutive sequence"), never a skip-rank
+    // 1,1,3,4. The two must score identically: after a 2-way tie for 1st,
+    // the next player is effectively 3rd (two point-slots already consumed
+    // by the tie), not 2nd.
+    const ruleset = makeRuleset()
+    const pairing = makePairing()
+    const results = [
+      makeResult({ pairing_id: 1, player_id: 1, position: 1 }),
+      makeResult({ pairing_id: 1, player_id: 2, position: 1 }),
+      makeResult({ pairing_id: 1, player_id: 3, position: 2 }),
+      makeResult({ pairing_id: 1, player_id: 4, position: 3 }),
+    ]
+    const standingsMap = makeStandingsMap([1, 2, 3, 4])
+
+    calculateRoundScores([pairing], results, standingsMap, [0, 4, 3, 2, 1], ruleset)
+
+    // Tied for 1st: floor((rank1=4 + rank2=3) / 2) = 3 each.
+    expect(standingsMap.get(1)?.standing_player_score).toBe(3)
+    expect(standingsMap.get(2)?.standing_player_score).toBe(3)
+    // Effectively 3rd (not 2nd): rank3 = 2.
+    expect(standingsMap.get(3)?.standing_player_score).toBe(2)
+    // Effectively 4th (not 3rd): rank4 = 1.
+    expect(standingsMap.get(4)?.standing_player_score).toBe(1)
+  })
+
+  it('scores a 3-way tie for 1st with skip-rank spacing', () => {
+    const ruleset = makeRuleset()
+    const pairing = makePairing()
+    const results = [
+      makeResult({ pairing_id: 1, player_id: 1, position: 1 }),
+      makeResult({ pairing_id: 1, player_id: 2, position: 1 }),
+      makeResult({ pairing_id: 1, player_id: 3, position: 1 }),
+      makeResult({ pairing_id: 1, player_id: 4, position: 2 }),
+    ]
+    const standingsMap = makeStandingsMap([1, 2, 3, 4])
+
+    calculateRoundScores([pairing], results, standingsMap, [0, 4, 3, 2, 1], ruleset)
+
+    // Tied for 1st: floor((rank1=4 + rank2=3 + rank3=2) / 3) = 3 each.
+    expect(standingsMap.get(1)?.standing_player_score).toBe(3)
+    expect(standingsMap.get(2)?.standing_player_score).toBe(3)
+    expect(standingsMap.get(3)?.standing_player_score).toBe(3)
+    // Effectively 4th (not 2nd): rank4 = 1.
+    expect(standingsMap.get(4)?.standing_player_score).toBe(1)
+  })
+
+  it('scores a 2-way tie for 2nd (after a clear 1st) with skip-rank spacing', () => {
+    const ruleset = makeRuleset()
+    const pairing = makePairing()
+    const results = [
+      makeResult({ pairing_id: 1, player_id: 1, position: 1 }),
+      makeResult({ pairing_id: 1, player_id: 2, position: 2 }),
+      makeResult({ pairing_id: 1, player_id: 3, position: 2 }),
+      makeResult({ pairing_id: 1, player_id: 4, position: 3 }),
+    ]
+    const standingsMap = makeStandingsMap([1, 2, 3, 4])
+
+    calculateRoundScores([pairing], results, standingsMap, [0, 4, 3, 2, 1], ruleset)
+
+    expect(standingsMap.get(1)?.standing_player_score).toBe(4)
+    // Tied for 2nd: floor((rank2=3 + rank3=2) / 2) = 2 each.
+    expect(standingsMap.get(2)?.standing_player_score).toBe(2)
+    expect(standingsMap.get(3)?.standing_player_score).toBe(2)
+    // Effectively 4th (not 3rd): rank4 = 1.
+    expect(standingsMap.get(4)?.standing_player_score).toBe(1)
+  })
+
+  it('credits no victories for a "Patta" (draw) — nobody was last standing', () => {
+    // handleDrawSubmit's shape: zero kills for everyone, everyone tied for
+    // 1st. Unlike a genuine multi-way tie for 1st, nobody actually won this
+    // table (the winner is whoever's alive at round end, and a draw means
+    // nobody was) — so, unlike the tie tests above, victories stay at 0.
+    const ruleset = makeRuleset()
+    const pairing = makePairing()
+    const results = [1, 2, 3, 4].map(playerId => makeResult({ pairing_id: 1, player_id: playerId, position: 1, number_of_kills: 0 }))
+    const standingsMap = makeStandingsMap([1, 2, 3, 4])
+
+    calculateRoundScores([pairing], results, standingsMap, [0, 4, 3, 2, 1], ruleset)
+
+    // Still scores as a 4-way tie: floor((4+3+2+1)/4) = 2 each.
+    for (const playerId of [1, 2, 3, 4]) {
+      expect(standingsMap.get(playerId)?.standing_player_score).toBe(2)
+      expect(standingsMap.get(playerId)?.victories).toBe(0)
+    }
+  })
+
   it('skips a seated player with no submitted result', () => {
     const ruleset = makeRuleset()
     const pairing = makePairing({ pairing_player3_id: null, pairing_player4_id: null })

@@ -115,6 +115,16 @@ export function calculateRoundScores(
 
     const tableResults = results.filter(r => r.pairing_id === pairing.pairing_id)
 
+    // "Patta" (draw, see handleDrawSubmit/PairingTableActions.vue): zero
+    // kills for everyone and everyone tied for 1st. Nobody actually *won*
+    // the table in this case — the winner is whoever's still alive at the
+    // end of the round, and a draw means nobody was — so unlike a genuine
+    // 2+-way tie for 1st (which still credits every tied player a victory),
+    // a draw credits nobody.
+    const isDraw = tableResults.length > 0
+      && tableResults.every(r => r.position === 1)
+      && tableResults.every(r => (r.number_of_kills ?? 0) === 0)
+
     for (const playerId of playerIds) {
       const myResult = tableResults.find(r => r.player_id === playerId)
       if (!myResult) continue
@@ -132,9 +142,23 @@ export function calculateRoundScores(
         ? tableResults.filter(r => r.position === position).length
         : 1
 
+      // Positions are stored "dense" (TableScoreGrid/useRankingGrid enforces
+      // a gapless 1,1,2,3 — never a skip-rank 1,1,3,4: "ranks used must form
+      // a consecutive sequence starting from 1"). Standard tournament
+      // scoring needs skip-rank spacing though: after a 2-way tie for 1st,
+      // the next player is effectively 3rd, since two point-slots (1st and
+      // 2nd) were already consumed by the tie. Re-derive that effective
+      // starting slot from how many players rank strictly above this one
+      // instead of trusting the raw dense position — this is what makes
+      // 1,1,2,3 score identically to its skip-rank equivalent 1,1,3,4 (and
+      // 1,1,1,2 to 1,1,1,4, 1,2,2,3 to 1,2,2,4).
+      const effectivePosition = position !== 0
+        ? 1 + tableResults.filter(r => r.position !== null && r.position !== 0 && r.position < position).length
+        : 0
+
       let rankSum = 0
       for (let i = 0; i < samePositionCount; i++) {
-        rankSum += posValues[Math.min(position + i, 4)] ?? 0
+        rankSum += posValues[Math.min(effectivePosition + i, 4)] ?? 0
       }
       const scoreRank = Math.floor(rankSum / samePositionCount)
 
@@ -146,7 +170,7 @@ export function calculateRoundScores(
       const acc = standingsMap.get(playerId)
       if (acc) {
         acc.standing_player_score += totalScore
-        acc.victories += position === 1 ? 1 : 0
+        acc.victories += (position === 1 && !isDraw) ? 1 : 0
         acc.brew_received += brewVote
         acc.play_received += totalPlayCount
       }
