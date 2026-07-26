@@ -743,6 +743,20 @@
       "hint": "Spunta quando il booster è stato consegnato",
       "handedOutAriaLabel": "Booster consegnato a {name}"
     },
+    "roundStatus": {
+      "title": "Stato inserimento",
+      "searchPlaceholder": "Cerca per nome o tavolo",
+      "filterAll": "Tutti",
+      "filterPending": "Da fare",
+      "filterInProgress": "In corso",
+      "filterDone": "Fatto",
+      "sections": {
+        "rankings": "Classifiche",
+        "kills": "Uccisioni",
+        "commanders": "Comandanti",
+        "votes": "Voti"
+      }
+    },
     "toast": {
       "createErrorTitle": "Errore creazione evento",
       "createErrorFallback": "Impossibile creare l'evento",

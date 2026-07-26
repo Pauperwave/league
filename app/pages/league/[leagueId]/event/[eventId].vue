@@ -562,6 +562,15 @@ async function handleUndrawTable(pairingId: number) {
               />
             </div>
             <div class="space-y-4">
+              <RoundStatusCard
+                v-if="!isViewingPastRound"
+                :pairings="displayedPairings"
+                :tournament-players="tournamentPlayers"
+                @open-score-modal="handleOpenScoreModal"
+                @open-kill-modal="handleOpenKillModal"
+                @open-commander-modal="handleOpenCommanderModal"
+                @open-votes-modal="handleOpenVotesModal"
+              />
               <WinnerChecklist
                 v-if="!isViewingPastRound"
                 :winners="winners"

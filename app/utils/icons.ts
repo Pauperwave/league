@@ -121,6 +121,7 @@ export const ICONS = {
   statsEmpty: 'i-lucide-bar-chart',
   terminal: 'i-lucide-terminal',
   booster: 'i-lucide-gift',
+  roundStatus: 'i-lucide-list-checks',
 } as const
 
 export type IconName = (typeof ICONS)[keyof typeof ICONS]

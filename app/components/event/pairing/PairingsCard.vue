@@ -169,42 +169,7 @@ const tableToUndraw = computed(() =>
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-/**
- * Returns true if the pairing has at least one ranking entry saved.
- */
-const hasRanking = (pairingId: number): boolean => {
-  const ranking = rankingsStore.getRankingWithRanks(pairingId)
-  return !!ranking && ranking.length > 0
-}
-
-/**
- * True once the kill modal has been confirmed at least once for this pairing
- * (even with zero kills) — read from `round_results.number_of_kills`, which
- * `kills.post.ts` only ever writes on a confirm, staying `null` until then.
- * Not from `killsStore` (the session store): it's a single flat array shared
- * across whichever pairing's modal is currently open, not scoped per pairing,
- * so it can't answer "has this *other* table's kills been reviewed".
- */
-const hasKills = (pairing: PairingWithResults): boolean =>
-  (pairing.round_results ?? []).some(r => r.number_of_kills !== null)
-
-const isDraw = (pairing: PairingWithResults): boolean =>
-  isPairingDraw(pairing, rankingsStore.getRankingWithRanks(pairing.pairing_id))
-
-/**
- * Returns true if all required data has been entered for a pairing:
- * - Rankings are saved
- * - All players have a commander set
- * - All players have submitted a vote
- */
-const isTableComplete = (pairing: Pairing): boolean => {
-  const playerIds = getPairingPlayerIds(pairing)
-  return (
-    hasRanking(pairing.pairing_id) &&
-    playerIds.every(id => commandersStore.getCommander1(id) !== null) &&
-    playerIds.every(id => votesStore.hasVotes(id))
-  )
-}
+const { hasRanking, hasKills, isDraw, isTableComplete } = useTableCompletion(rankingsStore, commandersStore, votesStore)
 
 // ─── Handlers ─────────────────────────────────────────────────────────────────
 
