@@ -10,6 +10,12 @@ const props = defineProps<{
 
 const modelValue = defineModel<string | null>()
 
+// Captured once at mount, not reactive: a commander already set (modal
+// reopened on an existing entry) shouldn't yank focus/pop the dropdown open
+// on top of the illustration the user just wanted to see — only an empty
+// field (adding a new commander) should.
+const hadInitialValue = !!modelValue.value
+
 const { t } = useI18n()
 
 const {
@@ -36,7 +42,7 @@ const selected = computed({
 // the selected value in its own trigger button, not in the search input).
 watch(modelValue, (name) => {
   if (name) handleSelect(name)
-})
+}, { immediate: true })
 </script>
 
 <template>
@@ -49,8 +55,8 @@ watch(modelValue, (name) => {
       value-key="label"
       :loading="isLoading"
       :placeholder="t('commander.searchPlaceholder')"
-      default-open
-      autofocus
+      :default-open="!hadInitialValue"
+      :autofocus="!hadInitialValue"
       class="w-full"
       :ui="{ content: 'max-h-96' }"
     >
