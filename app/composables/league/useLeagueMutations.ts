@@ -5,6 +5,8 @@
 // Italian copy and the surrounding UI state.
 import type { League } from '#shared/utils/types'
 
+export type LeagueStatus = 'scheduled' | 'active' | 'ended'
+
 /** The form payload emitted by LeagueFormModal (create and update alike). */
 export interface LeagueFormPayload {
   name: string
@@ -12,6 +14,9 @@ export interface LeagueFormPayload {
   endsAt: string | null
   rulesetId: number | null
   validEvents: number | null
+  /** Only editable while editing an existing league — create always starts
+   *  as 'scheduled' server-side regardless of what's sent here. */
+  status: LeagueStatus
 }
 
 /** The update payload emitted by LeagueFormModal. */

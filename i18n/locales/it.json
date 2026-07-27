@@ -70,7 +70,8 @@
       "endsLabel": "Data Fine",
       "rulesetLabel": "Regolamento",
       "rulesetFallback": "Ruleset {id}",
-      "validEventsLabel": "Eventi validi richiesti"
+      "validEventsLabel": "Eventi validi richiesti",
+      "statusLabel": "Stato lega"
     },
     "ranking": {
       "player": "Giocatore",

@@ -3,7 +3,7 @@
 // fallow-ignore-file code-duplication -- FormModal invocation boilerplate, see app/components/ui/CLAUDE.md
 import type { CalendarDate } from '@internationalized/date'
 import type { Ruleset, League } from '#shared/utils/types'
-import type { LeagueFormPayload, LeagueUpdatePayload } from '~/composables/league/useLeagueMutations'
+import type { LeagueFormPayload, LeagueStatus, LeagueUpdatePayload } from '~/composables/league/useLeagueMutations'
 import * as v from 'valibot'
 
 const { t } = useI18n()
@@ -14,6 +14,7 @@ const LeagueFormSchema = v.object({
   endsAt: v.nullable(v.string()),
   rulesetId: v.nullable(v.number()),
   validEvents: v.nullable(v.pipe(v.number(), v.integer(), v.minValue(1))),
+  status: v.picklist(['scheduled', 'active', 'ended']),
 })
 
 const props = defineProps<{
@@ -46,7 +47,14 @@ const defaultForm = () => ({
   endsAt: null as CalendarDate | null,
   rulesetId: undefined as number | undefined,
   validEvents: undefined as number | undefined,
+  status: 'scheduled' as LeagueStatus,
 })
+
+const statusItems: { label: string, value: LeagueStatus }[] = [
+  { label: t('league.status.scheduled'), value: 'scheduled' },
+  { label: t('league.status.active'), value: 'active' },
+  { label: t('league.status.ended'), value: 'ended' },
+]
 
 const form = shallowReactive(defaultForm())
 
@@ -80,6 +88,7 @@ watch(open, (isOpen) => {
       endsAt: parseDateString(l.ends_at),
       rulesetId: l.ruleset_id ?? undefined,
       validEvents: l.valid_events ?? undefined,
+      status: (l.status as LeagueStatus) ?? 'scheduled',
     })
   } else {
     Object.assign(form, defaultForm())
@@ -97,6 +106,7 @@ function handleSubmit() {
     endsAt: form.endsAt?.toString() ?? null,
     rulesetId: form.rulesetId ?? null,
     validEvents: form.validEvents ?? null,
+    status: form.status,
   }
 
   const parsed = v.safeParse(LeagueFormSchema, data)
@@ -134,14 +144,24 @@ function handleSubmit() {
     @cancel="handleCancel"
   >
     <form id="league-form" class="space-y-4" @submit.prevent="handleSubmit">
-      <UFormField :label="t('league.form.nameLabel')" required>
-        <UInput
-          id="field-name"
-          v-model="form.name"
-          :placeholder="t('league.form.namePlaceholder')"
-          class="w-full"
-        />
-      </UFormField>
+      <div class="grid gap-4" :class="isEditing ? 'grid-cols-2' : 'grid-cols-1'">
+        <UFormField :label="t('league.form.nameLabel')" required>
+          <UInput
+            id="field-name"
+            v-model="form.name"
+            :placeholder="t('league.form.namePlaceholder')"
+            class="w-full"
+          />
+        </UFormField>
+
+        <UFormField v-if="isEditing" :label="t('league.form.statusLabel')">
+          <USelect
+            v-model="form.status"
+            :items="statusItems"
+            class="w-full"
+          />
+        </UFormField>
+      </div>
 
       <div class="grid grid-cols-2 gap-4">
         <DatePicker

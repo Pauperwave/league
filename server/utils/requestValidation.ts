@@ -42,6 +42,9 @@ export const leagueFormBodySchema = v.object({
   endsAt: v.nullable(v.string()),
   rulesetId: v.nullable(v.pipe(v.number(), v.integer(), v.minValue(1))),
   validEvents: v.nullable(v.pipe(v.number(), v.integer(), v.minValue(1))),
+  // Only written by the update endpoint (create always hardcodes 'scheduled')
+  // — see LeagueFormModal.vue's status USelect, only shown while editing.
+  status: v.picklist(['scheduled', 'active', 'ended']),
 })
 
 /**
