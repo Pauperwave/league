@@ -200,6 +200,15 @@ function handleDragEnd() {
   setDragging(false)
 
   if (!isValid.value && dragSnapshot.value) {
+    // Moving a single player between two full tables is never valid on its
+    // own (one ends up with 5) — try turning it into a two-way swap first
+    // (see useTableDnd.ts's attemptTableSwap) before falling back to a
+    // full revert.
+    const swapped = attemptTableSwap(dragSnapshot.value, localTables.value)
+    if (swapped) restoreTables(swapped)
+  }
+
+  if (!isValid.value && dragSnapshot.value) {
     restoreTables(dragSnapshot.value)
     toast.add({
       title: t('event.tablePreview.invalidMoveTitle'),

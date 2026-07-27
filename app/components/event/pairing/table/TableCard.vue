@@ -36,6 +36,7 @@ const seatsModel = computed({
 
 <template>
   <UCard
+    :data-testid="`table-card-${table.tableNumber}`"
     :class="tableCardClass"
     :ui="{ header: 'px-2 py-1.5 sm:px-2 sm:py-1.5', body: 'px-2 py-2 sm:px-2 sm:py-2' }"
   >
@@ -70,6 +71,7 @@ const seatsModel = computed({
         :group="{ name: 'seats', pull: true, put: true }"
         handle=".drag-handle"
         :animation="180"
+        :force-fallback="true"
         ghost-class="!opacity-0"
         chosen-class="scale-95"
         @start="emit('dragStart')"

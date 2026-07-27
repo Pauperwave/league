@@ -54,6 +54,59 @@ function normalizeSeats(tableId: string, seats: Seat[]): Seat[] {
   return normalized
 }
 
+/**
+ * Detects the "moved a player into an already-full table" shape (one table
+ * grew to 5 occupants, the player's previous table now has 3) and turns it
+ * into a two-way swap instead — the destination table's dragged-in player
+ * trades places with one of its pre-existing occupants, so both tables end
+ * up back at 4/4. Without this, dragging between two full tables (the
+ * realistic "move a player" case) was silently rejected: a straight move
+ * with nobody coming back the other way is never a valid arrangement on its
+ * own (see docs/PROGRESS.md ADR-037).
+ *
+ * Returns the swapped table list, or `null` if the shape doesn't match (in
+ * which case the caller falls back to its normal invalid-move handling).
+ */
+export function attemptTableSwap(before: TournamentTable[], after: TournamentTable[]): TournamentTable[] | null {
+  const overflowIndex = after.findIndex(table => table.seats.filter(seat => seat.player !== null).length > 4)
+  if (overflowIndex === -1) return null
+
+  const overflowTable = after[overflowIndex]!
+  const beforeOverflowTable = before.find(table => table.id === overflowTable.id)
+  if (!beforeOverflowTable) return null
+
+  const beforeIds = new Set(
+    beforeOverflowTable.seats.map(seat => seat.player?.id).filter((id): id is number => id !== undefined)
+  )
+  const overflowOccupants = overflowTable.seats.filter(seat => seat.player !== null)
+
+  // The one occupant not already in this table before the drag = the player who just moved in.
+  const movedSeat = overflowOccupants.find(seat => !beforeIds.has(seat.player!.id))
+  if (!movedSeat) return null
+  const movedPlayerId = movedSeat.player!.id
+
+  // The table that player used to sit at, before the drag.
+  const sourceIndex = before.findIndex(table => table.id !== overflowTable.id && table.seats.some(seat => seat.player?.id === movedPlayerId))
+  if (sourceIndex === -1) return null
+  const sourceTableAfter = after[sourceIndex]
+  if (!sourceTableAfter || sourceTableAfter.seats.filter(seat => seat.player !== null).length >= 4) return null
+
+  // Any other occupant already seated at the overflow table trades places.
+  const swapSeat = overflowOccupants.find(seat => seat.player!.id !== movedPlayerId && beforeIds.has(seat.player!.id))
+  if (!swapSeat) return null
+  const swapPartner = swapSeat.player!
+
+  return after.map((table, index) => {
+    if (index === overflowIndex) {
+      return { ...table, seats: normalizeSeats(table.id, table.seats.filter(seat => seat.player?.id !== swapPartner.id)) as [Seat, Seat, Seat, Seat] }
+    }
+    if (index === sourceIndex) {
+      return { ...table, seats: normalizeSeats(table.id, [...table.seats, { id: `${table.id}-seat-swap`, player: swapPartner }]) as [Seat, Seat, Seat, Seat] }
+    }
+    return table
+  })
+}
+
 function extractPlayerIds(tables: TournamentTable[]): number[] {
   return tables
     .flatMap(table => table.seats)
