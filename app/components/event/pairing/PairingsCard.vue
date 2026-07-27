@@ -31,6 +31,17 @@ const votesStore = useVotesStore()
 const roundPlayerIds = computed(() => props.pairings.flatMap(getPairingPlayerIds))
 useCommanderUsageQuery(roundPlayerIds)
 
+// "Compila" (quick test-fill) picks a real commander instead of a fake name,
+// so the filled table renders actual card art/mana cost like a real entry
+// would — same "most popular first" order CommanderSearch.vue shows for an
+// empty query (sorted by edhrecRank), so it's literally the first option a
+// player would see if they opened the search themselves.
+const { data: commanderCatalog } = useCommanderCatalogQuery()
+const firstCommanderName = computed(() => {
+  const sorted = [...(commanderCatalog.value ?? [])].sort((a, b) => (a.edhrecRank ?? 999999) - (b.edhrecRank ?? 999999))
+  return sorted[0]?.name ?? 'Test Commander'
+})
+
 // ─── Emits ────────────────────────────────────────────────────────────────────
 
 const emit = defineEmits<{
@@ -236,7 +247,7 @@ function handleConfirm() {
  * Fills a pairing table with dummy test data:
  * - Sets sequential rankings for all players
  * - Adds a kill from player 1 → player 2 and confirms the pairing
- * - Assigns a placeholder commander to each player
+ * - Assigns the catalog's top commander (see firstCommanderName) to each player
  * - Sets circular votes (each player votes for the next)
  */
 function fillTable(pairingId: number) {
@@ -254,7 +265,7 @@ function fillTable(pairingId: number) {
   killsStore.addKill(playerIds[0]!, playerIds[1]!)
 
   for (const id of playerIds) {
-    commandersStore.setCommanders(id, 'Test Commander', null)
+    commandersStore.setCommanders(id, firstCommanderName.value, null)
   }
 
   for (let i = 0; i < playerIds.length; i++) {
