@@ -23,7 +23,11 @@
     "switchToLightMode": "Passa al tema chiaro",
     "switchToDarkMode": "Passa al tema scuro",
     "enableDeveloperView": "Attiva vista sviluppatore",
-    "disableDeveloperView": "Disattiva vista sviluppatore"
+    "disableDeveloperView": "Disattiva vista sviluppatore",
+    "developerViewPasswordDescription": "Attiva modalità sviluppatore",
+    "developerViewPasswordPlaceholder": "Password",
+    "developerViewPasswordConfirm": "Sblocca",
+    "developerViewPasswordError": "Password errata"
   },
   "league": {
     "breadcrumb": "Leghe",
