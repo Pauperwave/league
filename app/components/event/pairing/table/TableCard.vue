@@ -22,14 +22,15 @@ const emit = defineEmits<{
   openBreakdown: [tableIndex: number]
 }>()
 
+// Rendered directly in the template's v-for below — vue-draggable-plus
+// requires the v-model source and the rendered list to be the exact same
+// array; a separately-derived list (as this used to be, filtering out
+// player-less seats once "full") desyncs cross-table drag-and-drop (see
+// useTableDnd.ts's updateTableSeats doc comment for the actual bug this was
+// part of).
 const seatsModel = computed({
   get: () => props.table.seats,
   set: (nextSeats: Seat[]) => emit('updateSeats', props.tableIndex, nextSeats as [Seat, Seat, Seat, Seat]),
-})
-
-const visibleSeats = computed(() => {
-  const occupiedCount = props.table.seats.filter(seat => seat.player !== null).length
-  return occupiedCount >= 4 ? props.table.seats.filter(seat => seat.player !== null) : props.table.seats
 })
 </script>
 
@@ -75,7 +76,7 @@ const visibleSeats = computed(() => {
         @end="emit('dragEnd')"
       >
         <TableSeatItem
-          v-for="seat in visibleSeats"
+          v-for="seat in seatsModel"
           :key="seat.id"
           :seat="seat"
           :is-dragging="isDragging"

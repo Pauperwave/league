@@ -6,20 +6,13 @@ Loose observations and open questions — not yet committed, ranked work. For th
 
 Currently on `nuxt@^4.4.8` / `@nuxt/ui@^4.9.0`. Do this as its own isolated pass (`pnpm typecheck` + `pnpm lint` clean, then a manual smoke pass through the event lifecycle) rather than folding it into an unrelated feature change — Nuxt UI has broken component APIs across minor versions before. Check `@nuxt/ui`'s peer `typescript` range hasn't moved past `^5.9.x` before bumping (see root `CLAUDE.md`'s note on staying off TypeScript 6.x/7.0 for now).
 
-## 🔴 HIGH PRIORITY — Bug: can't move a player from one table to another in the pairing preview (2026-07-21)
+## ~~🔴 HIGH PRIORITY — Bug: can't move a player from one table to another in the pairing preview~~ — fixed 2026-07-27 (ADR-035)
 
-User-reported, confirmed still broken as of this session (not yet root-caused/fixed). Drag-and-drop between tables lives in `TableCard.vue` (`VueDraggable`, `:group="{ name: 'seats', pull: true, put: true }"`, shared `group.name` across every `TableCard` instance so cross-table drops should work in principle) inside `TablePreviewGrid.vue`/`TablePreviewModal.vue`, with `useTableDnd.ts` (`app/composables/tables/useTableDnd.ts`) holding the `localTables` state that each `TableCard`'s `seatsModel` reads/writes via `updateSeats`.
+Root-caused and fixed by live browser reproduction (throwaway test league, deleted afterward). Two real bugs, not one:
+1. `TableCard.vue`'s `visibleSeats` computed rendered a list *derived from* `props.table.seats` while `v-model="seatsModel"` bound to `props.table.seats` directly — `vue-draggable-plus` requires the rendered `v-for` source and the `v-model` source to be the exact same array. Fixed by rendering `seatsModel` directly and deleting `visibleSeats`.
+2. `TablePreviewModal.vue`'s `updateTableSeats` set a table's `seats` to whatever raw array `VueDraggable` emitted, with no re-padding — dragging a player OUT of a table left it short a `player: null` placeholder seat, so `TableSeatItem.vue` rendered no "drop here" drop target there for a *later* drag, even though the table wasn't actually full. Fixed by moving `updateTableSeats` into `useTableDnd.ts` and re-running every update through the existing `normalizeSeats` (pads back to 4 with a `player: null` seat). See `test/unit/composables/tables/useTableDnd.test.ts`'s `updateTableSeats` describe block.
 
-One concrete lead spotted while reading `TableCard.vue`, not yet confirmed as *the* cause: `visibleSeats` (line 34-37) filters a full (4/4) table down to **only its occupied seats** when rendering the draggable list:
-```ts
-const visibleSeats = computed(() => {
-  const occupiedCount = props.table.seats.filter(seat => seat.player !== null).length
-  return occupiedCount >= 4 ? props.table.seats.filter(seat => seat.player !== null) : props.table.seats
-})
-```
-For a table that already has 4 players, this removes any empty-seat drop target from the DOM entirely — `VueDraggable`'s `put`/cross-list dragging generally needs *some* element (even an empty slot) to drop onto/into. If the source table is dragging a player OUT (making room) this shouldn't matter, but if the *target* table is full, there may be nowhere in the DOM to drop onto. Needs to actually be tested against a live repro (drag from a non-full table into a full one vs. non-full-to-non-full vs. full-to-non-full) to confirm which direction(s) fail before touching this.
-
-Next step: reproduce with the dev server + browser tools (not done yet this session — Chrome extension wasn't connected) to pin down exactly which drag direction/table-occupancy combination fails, then fix in `TableCard.vue`/`useTableDnd.ts`.
+Confirmed live: full (4/4) table → table with an empty slot now completes correctly and the source table's empty-slot placeholder reappears.
 
 ## Event lifecycle UX/bug audit (2026-07-20)
 

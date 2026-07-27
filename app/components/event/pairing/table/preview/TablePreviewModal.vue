@@ -3,7 +3,6 @@
 // Table preview modal with drag-and-drop editing, pairing constraints,
 // optimizer controls, and transparent score breakdown.
 import type {
-  Seat,
   PairingWeights,
   TournamentPlayer,
   TournamentTable,
@@ -64,6 +63,7 @@ const {
   reset,
   syncFromSource,
   normalizeLocalTables,
+  updateTableSeats,
   cloneCurrentTables,
   restoreTables,
   runOptimizer,
@@ -242,12 +242,6 @@ const selectedTablePlayerRows = computed(() => {
 const modalMaxWidth = computed(() => {
   return localTables.value.length <= 1 ? 'max-w-3xl' : 'max-w-6xl'
 })
-
-function updateTableSeats(tableIndex: number, seats: [Seat, Seat, Seat, Seat]) {
-  const targetTable = localTables.value[tableIndex]
-  if (!targetTable) return
-  targetTable.seats = seats
-}
 
 function tableScoreForIndex(tableIndex: number): number {
   return scoreDetails.value.tableScores[tableIndex]?.total ?? 0

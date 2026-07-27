@@ -354,6 +354,14 @@ Gli store di sessione hanno **persistenza ottimistica**: update immediato UI + s
 - **Perché non un terzo tie-breaker**: `Array.prototype.sort` è stabile (garantito da ES2019), quindi un pareggio anche su `placementPoints` (es. patta con classifica dense) mantiene l'ordine naturale precedente (seat order) invece di un ordine indefinito — sufficiente per una tabella di sola visualizzazione, non serve altro criterio.
 - **Nota**: questo è solo l'ordinamento della vista di dettaglio di un tavolo — non tocca `calculateRoundScores`/le standing reali dell'evento, che restano calcolate altrove con la propria logica di parità (vedi ADR-029).
 
+### ADR-035 — Fix: drag-and-drop tra tavoli nella preview pairing (docs/TODO.md, HIGH PRIORITY) (2026-07-27)
+
+- **Bug**: segnalato dall'utente, non ancora root-causato in sessioni precedenti (mancava accesso al browser). Riprodotto dal vivo con una lega/evento usa-e-getta (creati e poi eliminati) popolando la lista d'attesa con giocatori reali e testando il drag nella modale "Anteprima Tavoli".
+- **Causa 1**: `TableCard.vue`'s `visibleSeats` renderizzava un array *derivato* da `props.table.seats`, mentre `v-model="seatsModel"` era legato a `props.table.seats` direttamente — `vue-draggable-plus` richiede che la lista renderizzata (`v-for`) e la lista del `v-model` siano lo stesso identico array. Fix: renderizzare `seatsModel` direttamente, `visibleSeats` eliminato (era comunque un no-op nell'invariante normale: una tabella piena non ha mai seat `player: null` da filtrare).
+- **Causa 2**: `TablePreviewModal.vue`'s `updateTableSeats` assegnava l'array grezzo emesso da `VueDraggable` senza ri-normalizzarlo — trascinare un giocatore FUORI da un tavolo lo lasciava senza il seat placeholder `player: null`, quindi `TableSeatItem.vue` non renderizzava più nessuna "drop here" per un trascinamento *successivo*, anche se il tavolo non era pieno (solo apparentemente compatto). Fix: `updateTableSeats` spostata dentro `useTableDnd.ts`, ogni aggiornamento passa di nuovo per `normalizeSeats` (già usata da `ensureTableSeatShape`), che ripristina il padding a 4 posti.
+- **Verificato dal vivo**: trascinamento da tavolo pieno (4/4) a tavolo con slot libero (3/4) completa correttamente in entrambe le direzioni; il tavolo sorgente ripristina il proprio slot libero. Il caso tavolo-pieno→tavolo-pieno resta correttamente rifiutato dal validator esistente (dimensioni tavolo non valide), non è un bug.
+- **Test**: `test/unit/composables/tables/useTableDnd.test.ts`'s nuovo blocco `updateTableSeats` copre il re-padding dopo rimozione, l'inserimento fino a 5 occupanti mid-drag, e l'idempotenza su una forma già corretta.
+
 ---
 
 ## Funzionalità per area

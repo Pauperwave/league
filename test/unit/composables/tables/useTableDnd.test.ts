@@ -112,6 +112,54 @@ describe('useTableDnd', () => {
     })
   })
 
+  describe('updateTableSeats', () => {
+    it('re-pads a table with an empty-slot placeholder after a player is dragged out', () => {
+      // Table starts full (4/4, no null seat at all) — dragging player 4 out
+      // (as VueDraggable would emit) leaves only 3 occupied seats.
+      const tables = [
+        table('t1', 1, [1, 2, 3, 4]),
+        table('t2', 2, [5, 6, 7]),
+      ]
+      const { updateTableSeats, localTables } = setupTableDnd(tables)
+
+      const shrunk = localTables.value[0]!.seats.filter(s => s.player?.id !== 4)
+      updateTableSeats(0, shrunk)
+
+      const seats = localTables.value[0]!.seats
+      expect(seats).toHaveLength(4)
+      expect(seats.filter(s => s.player !== null).map(s => s.player!.id)).toEqual([1, 2, 3])
+      // The 4th seat must be a real `player: null` placeholder — this is
+      // what renders TableSeatItem.vue's "drop here" drop target; without
+      // it a later cross-table drag has nowhere in the DOM to land.
+      expect(seats.some(s => s.player === null)).toBe(true)
+    })
+
+    it('accepts up to 5 occupied seats mid-drag into an already-full table without dropping the incoming player', () => {
+      const tables = [
+        table('t1', 1, [1, 2, 3, 4]),
+        table('t2', 2, [5, 6, 7]),
+      ]
+      const { updateTableSeats, localTables } = setupTableDnd(tables)
+
+      const grown = [...localTables.value[0]!.seats, { id: 'incoming', player: { id: 9, name: 'P9', surname: 'Test' } }]
+      updateTableSeats(0, grown)
+
+      const seats = localTables.value[0]!.seats
+      expect(seats.map(s => s.player?.id)).toEqual([1, 2, 3, 4, 9])
+    })
+
+    it('leaves an already-correctly-shaped table unchanged', () => {
+      const tables = [table('t1', 1, [1, 2, null, null])]
+      const { updateTableSeats, localTables } = setupTableDnd(tables)
+
+      updateTableSeats(0, localTables.value[0]!.seats)
+
+      const seats = localTables.value[0]!.seats
+      expect(seats).toHaveLength(4)
+      expect(seats.map(s => s.player?.id ?? null)).toEqual([1, 2, null, null])
+    })
+  })
+
   describe('replaceByPlayerOrder (buildTablesFromOrder)', () => {
     it('reassigns seated players in the given order while preserving each table\'s occupied count', () => {
       const tables = [

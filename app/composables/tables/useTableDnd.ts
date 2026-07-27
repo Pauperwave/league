@@ -247,6 +247,25 @@ export function useTableDnd(initialTables: TournamentTable[], params?: {
     localTables.value = ensureTableSeatShape(cloneTables(localTables.value))
   }
 
+  /**
+   * Applies a single table's seat list after a drag-and-drop update
+   * (`TableCard.vue`'s `VueDraggable` `v-model` emit) — re-runs it through
+   * `normalizeSeats` so the table's shape invariant (occupied seats first,
+   * padded with `player: null` placeholders up to 4) is restored immediately.
+   *
+   * Without this, dragging a player OUT of a table left that table's seats
+   * array shrunk to just its remaining occupants with no trailing empty
+   * placeholder — `TableSeatItem.vue` only renders a "drop here" drop target
+   * for a `player: null` seat, so a table missing that placeholder had no
+   * empty slot in the DOM for a *later* cross-table drag to land in, even
+   * though it wasn't actually full (see TODO.md's cross-table drag bug).
+   */
+  function updateTableSeats(tableIndex: number, seats: Seat[]) {
+    const targetTable = localTables.value[tableIndex]
+    if (!targetTable) return
+    targetTable.seats = normalizeSeats(targetTable.id, seats) as [Seat, Seat, Seat, Seat]
+  }
+
   function replaceByPlayerOrder(order: number[]) {
     const normalized = ensureTableSeatShape(buildTablesFromOrder(localTables.value, order))
     localTables.value = normalized
@@ -331,6 +350,7 @@ export function useTableDnd(initialTables: TournamentTable[], params?: {
     reset,
     syncFromSource,
     normalizeLocalTables,
+    updateTableSeats,
     replaceByPlayerOrder,
     cloneCurrentTables,
     restoreTables,
