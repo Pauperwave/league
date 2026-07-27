@@ -38,16 +38,16 @@ Three layers, each with a different target — not "100% everywhere":
 
 ### Missing tests — concrete checklist
 
-**API/integration (new tier — 0 of 23 endpoints covered directly):**
-- [ ] `POST /api/events/*` — create, update, delete (with the new 409 in-use guard), start, advance-round, turn-back-round, register-player, unregister-player
-- [ ] `POST /api/pairings/:id/*` — rankings, kills, commander, votes
+**API/integration (new tier):**
+- [x] `POST /api/events/*` — create, start, advance-round, turn-back-round (both branches), register-player covered end-to-end by `test/e2e/event-lifecycle.e2e.spec.ts` (2026-07-27, see ADR-036) and `test/e2e/turn-back-round.e2e.spec.ts`; `update`/`delete`/`unregister-player` still uncovered
+- [x] `POST /api/pairings/:id/*` — rankings, kills, commander, votes all covered by `event-lifecycle.e2e.spec.ts`'s round-submission step
 - [ ] `POST /api/decks/*` — create, update, delete (409 in-use guard)
 - [ ] `POST /api/players/*` — create, update
 - [ ] `POST /api/rulesets/*` — create, update, delete (409 in-use guard)
 - [ ] `POST /api/auth/login` — success + wrong-password cases
 
 **E2E (3 of ~5 major flows covered, 2 fully, 1 create-only):**
-- [ ] Event lifecycle: create event → register players → start (round-1 pairings generated) → submit round scores (rankings/kills/commander/votes) → advance-round → turn-back-round → end event
+- [x] Event lifecycle (2026-07-27, see ADR-036) — covered as an API-level spec (`test/e2e/event-lifecycle.e2e.spec.ts`, no `page`/browser UI, same pattern as `turn-back-round.e2e.spec.ts`) rather than a full UI-driven E2E: create → register → start → submit a full round (rankings/kills/commander/votes) → advance-round → turn-back-round from round 2 (the "reopen previous round" branch, not covered elsewhere) → re-advance → advance past the final round (event end). A UI-driven variant (drag-and-drop pairing preview, round timer, modals) is still open if that's wanted later — this closes the state-transition/data-integrity gap, which was the actual risk.
 - [ ] Ruleset CRUD (mirror of `league-crud.e2e.spec.ts`)
 - [x] Deck create (`deck-create.e2e.spec.ts`, 2026-07-19) — edit and the 409 in-use guard when a deck has been played still open
 - [x] Player create (`player-create.e2e.spec.ts`, 2026-07-19) — no edit UI exists on `/players` and no delete endpoint exists (see `api.md`), so this flow is now fully covered

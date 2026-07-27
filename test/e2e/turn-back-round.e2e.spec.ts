@@ -76,7 +76,7 @@ test('turn-back-round succeeds and clears round_results when scores were already
   }
 
   const leagueRes = await request.post('/api/leagues/create', {
-    data: { name: testTag('League'), startsAt: null, endsAt: null, rulesetId: null },
+    data: { name: testTag('League'), startsAt: null, endsAt: null, rulesetId: null, validEvents: null },
   })
   expect(leagueRes.ok()).toBe(true)
   const { league } = await leagueRes.json() as { league: { id: number } }
