@@ -45,8 +45,13 @@ function getRegistrationStatus(open: boolean | null): {
   return { label: t('event.table.registrationClosed'), color: 'error', icon: ICONS.clear }
 }
 
+// event_current_round is set to event_round_number + 1 as the internal
+// "ended" sentinel (see useEventStore's isEventEnded/getEventStatus above) —
+// clamp it for display so a finished event reads "2/2", not "3/2".
 function formatRound(current: number | null, total: number | null): string {
-  return `${current || 0}/${total || 0}`
+  const safeTotal = total || 0
+  const safeCurrent = Math.min(current || 0, safeTotal)
+  return `${safeCurrent}/${safeTotal}`
 }
 
 const tableMeta = {
