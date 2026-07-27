@@ -92,55 +92,81 @@ async function onBracketConfirm(level: number) {
 </script>
 
 <template>
-  <UCard class="overflow-hidden hover:shadow-lg transition-shadow">
+  <UCard
+    class="overflow-hidden hover:shadow-lg transition-shadow"
+    :ui="{
+      body: 'p-0 sm:p-0',
+      footer: 'px-3 py-2'
+    }">
     <template #header>
-      <div class="flex justify-end items-center gap-2 shrink-0">
-        <!-- Aggregate badges (player count, match count) -->
-        <template v-if="isAggregate && aggregate">
+      <div class="flex items-center gap-2">
+        <!-- Bracket / companion / lender (player-specific mode only) -->
+        <div v-if="!isAggregate" class="flex flex-col gap-1">
           <UBadge
-            v-if="aggregate.player_count > 0"
-            size="xs"
-            variant="soft"
-            color="info"
-            class="flex items-center gap-1"
+            :color="bracketDefinition ? BRACKET_COLORS[bracketDefinition.level] : 'neutral'"
+            :variant="bracketDefinition ? 'soft' : 'outline'"
+            size="sm"
+            class="w-fit cursor-pointer"
+            @click="openBracketPicker"
           >
-            <UIcon :name="ICONS.players" class="size-3" />
-            {{ aggregate.player_count }}
+            {{ bracketChipLabel }}
           </UBadge>
-          <UBadge
-            v-if="aggregate.match_count > 0"
-            size="xs"
-            variant="soft"
-            color="primary"
-            class="flex items-center gap-1"
-          >
-            <UIcon :name="ICONS.battle" class="size-3" />
-            {{ aggregate.match_count }}
-          </UBadge>
-        </template>
+          <div v-if="hasCompanion" class="text-sm text-muted flex items-center gap-1.5">
+            <UIcon :name="ICONS.favorite" class="size-3.5 text-error" />
+            <span>{{ deck.companion_name }}</span>
+          </div>
+          <div v-if="lenderName" class="text-sm text-warning flex items-center gap-1.5">
+            <UIcon :name="ICONS.assist" class="size-3.5" />
+            <span>{{ lenderName }}</span>
+          </div>
+        </div>
 
-        <!-- Event count badge (player-specific mode) -->
-        <UTooltip v-else :text="eventCountLabel">
-          <UButton
-            v-if="isUsedInEvents"
-            size="xs"
-            variant="soft"
-            color="info"
-            :icon="ICONS.standings"
-            disabled
-          >
-            {{ eventCount }}
-          </UButton>
-        </UTooltip>
+        <div class="flex items-center gap-2 shrink-0 ms-auto">
+          <!-- Aggregate badges (player count, match count) -->
+          <template v-if="isAggregate && aggregate">
+            <UBadge
+              v-if="aggregate.player_count > 0"
+              variant="soft"
+              color="info"
+              class="flex items-center gap-1"
+            >
+              <UIcon :name="ICONS.players" class="size-3" />
+              {{ aggregate.player_count }}
+            </UBadge>
+            <UBadge
+              v-if="aggregate.match_count > 0"
+              variant="soft"
+              color="primary"
+              class="flex items-center gap-1"
+            >
+              <UIcon :name="ICONS.battle" class="size-3" />
+              {{ aggregate.match_count }}
+            </UBadge>
+          </template>
 
-        <!-- Edit / Delete actions (only when showActions is true) -->
-        <DeckCardActions
-          v-if="showActions"
-          :deck="deck"
-          :is-used-in-events="isUsedInEvents"
-          @edit="emit('edit', $event)"
-          @delete="emit('delete', $event)"
-        />
+          <!-- Event count badge (player-specific mode) -->
+          <UTooltip v-else :text="eventCountLabel">
+            <UButton
+              v-if="isUsedInEvents"
+              size="xs"
+              variant="soft"
+              color="info"
+              :icon="ICONS.standings"
+              disabled
+            >
+              {{ eventCount }}
+            </UButton>
+          </UTooltip>
+
+          <!-- Edit / Delete actions (only when showActions is true) -->
+          <DeckCardActions
+            v-if="showActions"
+            :deck="deck"
+            :is-used-in-events="isUsedInEvents"
+            @edit="emit('edit', $event)"
+            @delete="emit('delete', $event)"
+          />
+        </div>
       </div>
     </template>
 
@@ -162,36 +188,13 @@ async function onBracketConfirm(level: number) {
     </div>
 
     <template #footer>
-      <div class="flex items-center justify-between p-4">
-        <div class="flex flex-col gap-1">
-          <div v-if="hasCompanion && !isAggregate" class="text-sm text-muted flex items-center gap-1.5">
-            <UIcon :name="ICONS.favorite" class="size-3.5 text-error" />
-            <span>{{ deck.companion_name }}</span>
-          </div>
-          <div v-if="lenderName && !isAggregate" class="text-sm text-warning flex items-center gap-1.5">
-            <UIcon :name="ICONS.assist" class="size-3.5" />
-            <span>{{ lenderName }}</span>
-          </div>
-          <UBadge
-            v-if="!isAggregate"
-            :color="bracketDefinition ? BRACKET_COLORS[bracketDefinition.level] : 'neutral'"
-            :variant="bracketDefinition ? 'soft' : 'outline'"
-            size="sm"
-            class="w-fit cursor-pointer"
-            @click="openBracketPicker"
-          >
-            {{ bracketChipLabel }}
-          </UBadge>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <UButton size="xs" variant="soft" color="primary" :icon="ICONS.statsLink" :to="statsPageUrl">
-            {{ isAggregate ? t('deck.viewDetails') : t('deck.viewStats') }}
-          </UButton>
-          <UButton size="xs" variant="ghost" :icon="ICONS.externalLink" :to="scryfallSearchUrl" target="_blank">
-            Scryfall
-          </UButton>
-        </div>
+      <div class="flex items-center justify-end gap-2">
+        <UButton size="xs" variant="soft" color="primary" :icon="ICONS.statsLink" :to="statsPageUrl">
+          {{ isAggregate ? t('deck.viewDetails') : t('deck.viewStats') }}
+        </UButton>
+        <UButton size="xs" variant="ghost" :icon="ICONS.externalLink" :to="scryfallSearchUrl" target="_blank">
+          Scryfall
+        </UButton>
       </div>
     </template>
   </UCard>
