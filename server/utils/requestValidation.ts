@@ -44,7 +44,9 @@ export const leagueFormBodySchema = v.object({
   validEvents: v.nullable(v.pipe(v.number(), v.integer(), v.minValue(1))),
   // Only written by the update endpoint (create always hardcodes 'scheduled')
   // — see LeagueFormModal.vue's status USelect, only shown while editing.
-  status: v.picklist(['scheduled', 'active', 'ended']),
+  // Optional so create callers (including the E2E specs) aren't forced to
+  // pass a value that create ignores anyway.
+  status: v.optional(v.picklist(['scheduled', 'active', 'ended']), 'scheduled'),
 })
 
 /**
