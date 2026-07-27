@@ -64,7 +64,7 @@ export function buildTableScoreRows(
   ]
   const tableResults = pairing.round_results ?? []
 
-  return getPairingPlayerIds(pairing)
+  const rows = getPairingPlayerIds(pairing)
     .map(id => allPlayers.find(p => p.id === id))
     .filter((p): p is TournamentPlayer => !!p)
     .map((player) => {
@@ -87,4 +87,8 @@ export function buildTableScoreRows(
         total: scored?.totalScore ?? 0,
       }
     })
+
+  // Highest total first; ties broken by placement (the actual in-game
+  // finish order) instead of arbitrary seat order.
+  return rows.sort((a, b) => b.total - a.total || b.placementPoints - a.placementPoints)
 }

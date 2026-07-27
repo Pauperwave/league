@@ -348,6 +348,12 @@ Gli store di sessione hanno **persistenza ottimistica**: update immediato UI + s
 - **Fix**: nuovo endpoint `server/api/pairings/[pairingId]/reset.post.ts` (azzera `round_kills` + tutte le colonne nullable di `round_results` per ogni seduto), nuova action `eventStore.resetPairing(pairingId)`, richiamata da `handleResetTable` dopo la pulizia locale (stesso pattern già usato da `handleUndrawTable`/`undrawPairing`, che invece lascia apposta comandante/voti intatti perché una Patta non li tocca mai — i due endpoint restano distinti per questo).
 - **Controllo dati esistenti**: eseguita una query diagnostica una tantum (poi scartata) sul DB di produzione per cercare righe orfane/incoerenti prodotte dal bug (`round_results` con `pairing_id` nullo, righe con kills/posizione azzerati ma comandante/voti ancora presenti, `player_id` non seduto al tavolo della riga, `round_kills` che punta a pairing inesistenti) — **nessuna riga sporca trovata**, il bug non ha ancora lasciato residui in produzione.
 
+### ADR-034 — Righe della modale "Punteggi Tavolo" ordinate per totale, con tie-breaker sul piazzamento (2026-07-27)
+
+- **Cosa**: `buildTableScoreRows` (`app/utils/tableScoreRows.ts`) ora ordina le righe per `total` decrescente invece di lasciarle nell'ordine dei posti a sedere (`pairing_playerN_id`). A parità di totale, il criterio secondario è `placementPoints` decrescente — riflette il piazzamento reale in game (1°/2°/3°/4°) invece di un ordine arbitrario legato a dove il giocatore si è seduto.
+- **Perché non un terzo tie-breaker**: `Array.prototype.sort` è stabile (garantito da ES2019), quindi un pareggio anche su `placementPoints` (es. patta con classifica dense) mantiene l'ordine naturale precedente (seat order) invece di un ordine indefinito — sufficiente per una tabella di sola visualizzazione, non serve altro criterio.
+- **Nota**: questo è solo l'ordinamento della vista di dettaglio di un tavolo — non tocca `calculateRoundScores`/le standing reali dell'evento, che restano calcolate altrove con la propria logica di parità (vedi ADR-029).
+
 ---
 
 ## Funzionalità per area

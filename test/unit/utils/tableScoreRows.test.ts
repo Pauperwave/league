@@ -158,6 +158,34 @@ describe('buildTableScoreRows', () => {
     expect(rows).toHaveLength(3)
   })
 
+  it('sorts rows by total descending', () => {
+    const pairing = makePairing({
+      round_results: [
+        makeResult({ player_id: 1, position: 4, number_of_kills: 0 }),
+        makeResult({ player_id: 2, position: 1, number_of_kills: 0 }),
+        makeResult({ player_id: 3, position: 3, number_of_kills: 0 }),
+        makeResult({ player_id: 4, position: 2, number_of_kills: 0 }),
+      ],
+    })
+    const rows = buildTableScoreRows(pairing, allPlayers, makeRuleset())
+    expect(rows.map(r => r.playerId)).toEqual([2, 4, 3, 1])
+  })
+
+  it('breaks a total tie using placement (higher placementPoints first), not seat order', () => {
+    const pairing = makePairing({
+      round_results: [
+        makeResult({ player_id: 1, position: 1, number_of_kills: 0 }),
+        makeResult({ player_id: 2, position: 3, number_of_kills: 3 }), // placement 4 + 3 kills = 7
+        makeResult({ player_id: 3, position: 2, number_of_kills: 1 }), // placement 6 + 1 kill = 7
+        makeResult({ player_id: 4, position: 4, number_of_kills: 0 }),
+      ],
+    })
+    const rows = buildTableScoreRows(pairing, allPlayers, makeRuleset())
+    const tied = rows.filter(r => r.playerId === 2 || r.playerId === 3)
+    expect(tied.map(r => r.total)).toEqual([7, 7])
+    expect(tied.map(r => r.playerId)).toEqual([3, 2])
+  })
+
   it('skips a seated player id that has no matching TournamentPlayer', () => {
     const pairing = makePairing()
     const rows = buildTableScoreRows(pairing, allPlayers.filter(p => p.id !== 2), makeRuleset())
