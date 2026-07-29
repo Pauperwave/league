@@ -1,7 +1,7 @@
 <!-- app\components\event\modal\EventFormModal.vue -->
 <script setup lang="ts">
 // fallow-ignore-file code-duplication -- FormModal invocation boilerplate, see app/components/ui/CLAUDE.md
-import { type CalendarDate, getLocalTimeZone } from '@internationalized/date'
+import type { CalendarDate } from '@internationalized/date'
 import type { Event } from '#shared/utils/types'
 import * as v from 'valibot'
 
@@ -96,7 +96,7 @@ watch(open, (isOpen) => {
 })
 
 function toIsoDate(date: CalendarDate | null): string | null {
-  return date?.toDate(getLocalTimeZone()).toISOString().split('T')[0] ?? null
+  return date?.toString() ?? null
 }
 
 function handleSubmit() {
