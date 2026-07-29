@@ -24,6 +24,7 @@ export const ICONS = {
   noResults: 'i-lucide-search-x',
   shuffle: 'i-lucide-shuffle',
   generate: 'i-lucide-wand-2',
+  optimize: 'i-lucide-sparkles',
   settings: 'i-lucide-settings-2',
   filters: 'i-lucide-sliders-horizontal',
   logout: 'i-lucide-log-out',

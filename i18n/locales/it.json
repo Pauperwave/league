@@ -682,7 +682,8 @@
     "tablePreviewToolbar": {
       "totalScoreLabel": "Punteggio totale:",
       "weightsAndConstraints": "Pesi e Vincoli",
-      "optimize": "Ottimizza"
+      "optimize": "Ottimizza",
+      "random": "Random"
     },
     "optimizer": {
       "noImprovements": "Non sono stati trovati miglioramenti con i vincoli correnti",

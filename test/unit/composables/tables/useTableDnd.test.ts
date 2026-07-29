@@ -220,4 +220,23 @@ describe('useTableDnd', () => {
       expect(seatedIds(localTables.value[1]!)).toEqual([3, 2, 1])
     })
   })
+
+  describe('randomizeTables', () => {
+    it('keeps every seated player and each table\'s occupied count, only reshuffling identities', () => {
+      const tables = [
+        table('t1', 1, [1, 2, 3, 4]),
+        table('t2', 2, [5, 6, 7]),
+      ]
+
+      const { randomizeTables, localTables } = setupTableDnd(tables)
+
+      randomizeTables()
+
+      const seatedIds = (t: TournamentTable) => t.seats.map(s => s.player?.id).filter((id): id is number => id !== undefined)
+
+      expect(seatedIds(localTables.value[0]!)).toHaveLength(4)
+      expect(seatedIds(localTables.value[1]!)).toHaveLength(3)
+      expect([...seatedIds(localTables.value[0]!), ...seatedIds(localTables.value[1]!)].sort()).toEqual([1, 2, 3, 4, 5, 6, 7])
+    })
+  })
 })

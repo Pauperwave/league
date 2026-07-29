@@ -12,6 +12,7 @@ const {
 const emit = defineEmits<{
   openSettings: []
   optimize: []
+  random: []
 }>()
 
 const { t } = useI18n()
@@ -27,8 +28,11 @@ const { t } = useI18n()
       <UButton size="sm" color="neutral" variant="soft" :icon="ICONS.settings" @click="emit('openSettings')">
         {{ t('event.tablePreviewToolbar.weightsAndConstraints') }}
       </UButton>
-      <UButton size="sm" color="neutral" variant="outline" :icon="ICONS.shuffle" :disabled="loading" @click="emit('optimize')">
+      <UButton size="sm" color="neutral" variant="outline" :icon="ICONS.optimize" :disabled="loading" @click="emit('optimize')">
         {{ t('event.tablePreviewToolbar.optimize') }}
+      </UButton>
+      <UButton size="sm" color="neutral" variant="outline" :icon="ICONS.shuffle" :disabled="loading" @click="emit('random')">
+        {{ t('event.tablePreviewToolbar.random') }}
       </UButton>
     </div>
   </div>

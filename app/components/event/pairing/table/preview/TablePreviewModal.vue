@@ -67,6 +67,7 @@ const {
   cloneCurrentTables,
   restoreTables,
   runOptimizer,
+  randomizeTables,
   scoreDetails,
   weights,
   forbiddenPairs,
@@ -191,6 +192,11 @@ function optimizeNow() {
   optimizePreviewTables()
 }
 
+function randomizeNow() {
+  if (loading) return
+  randomizeTables()
+}
+
 function handleDragStart() {
   dragSnapshot.value = cloneCurrentTables()
   setDragging(true)
@@ -277,6 +283,7 @@ function openTableScoreBreakdown(tableIndex: number) {
           :loading="loading"
           @open-settings="showSettings = true"
           @optimize="optimizeNow"
+          @random="randomizeNow"
         />
 
         <TablePreviewGrid

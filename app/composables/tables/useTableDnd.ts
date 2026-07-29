@@ -107,6 +107,16 @@ export function attemptTableSwap(before: TournamentTable[], after: TournamentTab
   })
 }
 
+/** Fisher-Yates shuffle — doesn't mutate the input array. */
+function shuffleArray<T>(items: T[]): T[] {
+  const result = [...items]
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[result[i], result[j]] = [result[j]!, result[i]!]
+  }
+  return result
+}
+
 function extractPlayerIds(tables: TournamentTable[]): number[] {
   return tables
     .flatMap(table => table.seats)
@@ -392,6 +402,11 @@ export function useTableDnd(initialTables: TournamentTable[], params?: {
     return true
   }
 
+  /** Reassigns every seated player to a random table/seat, keeping each table's occupant count unchanged. */
+  function randomizeTables() {
+    replaceByPlayerOrder(shuffleArray(localPlayerIds.value))
+  }
+
   return {
     localTables,
     isDragging,
@@ -408,6 +423,7 @@ export function useTableDnd(initialTables: TournamentTable[], params?: {
     cloneCurrentTables,
     restoreTables,
     runOptimizer,
+    randomizeTables,
     scoreDetails,
     weights,
     forbiddenPairs,
