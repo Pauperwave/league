@@ -659,6 +659,7 @@ async function handleUndrawTable(pairingId: number) {
       :show-votes-modal="showVotesModal"
       :selected-votes-player-id="selectedVotesPlayerId"
       :get-player-name="getPlayerName"
+      :get-player="getPlayer"
       :votes-store="votesStore"
       :table-players-for-votes="tablePlayersForVotes"
       @submit="(deckVotePlayerId, playVotePlayerId) => {

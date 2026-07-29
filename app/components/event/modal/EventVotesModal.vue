@@ -1,6 +1,6 @@
 <!-- app\components\event\modal\EventVotesModal.vue -->
 <script setup lang="ts">
-import type { TournamentPlayer } from '#shared/utils/types'
+import type { Player, TournamentPlayer } from '#shared/utils/types'
 
 const { t } = useI18n()
 
@@ -8,12 +8,14 @@ const {
   showVotesModal,
   selectedVotesPlayerId,
   getPlayerName,
+  getPlayer,
   votesStore,
   tablePlayersForVotes,
 } = defineProps<{
   showVotesModal: boolean
   selectedVotesPlayerId: number | null
   getPlayerName: (playerId: number) => string
+  getPlayer: (playerId: number) => Player | undefined
   votesStore: ReturnType<typeof import('~/stores/votes').useVotesStore>
   tablePlayersForVotes: TournamentPlayer[]
 }>()
@@ -33,9 +35,19 @@ const open = computed({
   <UModal
     v-model:open="open"
     :title="t('event.votesModal.title')"
-    :description="selectedVotesPlayerId ? getPlayerName(selectedVotesPlayerId) : ''"
     :ui="{ content: 'sm:max-w-md' }"
   >
+    <template #description>
+      <PlayerNameTag
+        v-if="selectedVotesPlayerId && getPlayer(selectedVotesPlayerId)"
+        :name="getPlayer(selectedVotesPlayerId)!.player_name"
+        :surname="getPlayer(selectedVotesPlayerId)!.player_surname"
+        :player-id="selectedVotesPlayerId"
+        avatar-size="xs"
+      />
+      <span v-else-if="selectedVotesPlayerId">{{ getPlayerName(selectedVotesPlayerId) }}</span>
+    </template>
+
     <template #body>
       <DeckPlayVotesModal
         v-if="selectedVotesPlayerId"

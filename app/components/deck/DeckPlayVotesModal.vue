@@ -31,30 +31,40 @@ watch(
   <div class="space-y-4">
     <div>
       <label class="block text-sm font-medium mb-2">{{ t('deck.votes.preferredDeck') }}</label>
-      <div class="flex gap-2">
+      <div class="flex flex-wrap gap-2">
         <UButton
           v-for="player in otherPlayers"
           :key="`deck-${player.id}`"
           :variant="localDeckVotePlayerId === player.id ? 'solid' : 'outline'"
           :color="localDeckVotePlayerId === player.id ? 'primary' : 'neutral'"
+          class="h-auto"
           @click="() => { localDeckVotePlayerId = player.id }"
         >
-          {{ `${player.name} ${player.surname}` }}
+          <UAvatar size="xs" :src="player.avatarUrl || generatePlayerAvatar(player.id)" :alt="player.name" />
+          <span class="flex flex-col items-start leading-tight text-left">
+            <span>{{ player.name }}</span>
+            <span class="font-semibold">{{ player.surname }}</span>
+          </span>
         </UButton>
       </div>
     </div>
 
     <div>
       <label class="block text-sm font-medium mb-2">{{ t('deck.votes.bestPlay') }}</label>
-      <div class="flex gap-2">
+      <div class="flex flex-wrap gap-2">
         <UButton
           v-for="player in otherPlayers"
           :key="`play-${player.id}`"
           :variant="localPlayVotePlayerId === player.id ? 'solid' : 'outline'"
           :color="localPlayVotePlayerId === player.id ? 'primary' : 'neutral'"
+          class="h-auto"
           @click="() => { localPlayVotePlayerId = player.id }"
         >
-          {{ `${player.name} ${player.surname}` }}
+          <UAvatar size="xs" :src="player.avatarUrl || generatePlayerAvatar(player.id)" :alt="player.name" />
+          <span class="flex flex-col items-start leading-tight text-left">
+            <span>{{ player.name }}</span>
+            <span class="font-semibold">{{ player.surname }}</span>
+          </span>
         </UButton>
       </div>
     </div>
