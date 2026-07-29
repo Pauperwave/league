@@ -1,6 +1,7 @@
 <!-- app\components\event\waiting\WaitingListTable.vue -->
 <script setup lang="ts">
 import type { TableColumn, CheckboxProps } from '@nuxt/ui'
+import type { Row, Table } from '@tanstack/vue-table'
 import { UCheckbox } from '#components'
 import RowActionButtons from '~/components/ui/actions/RowActionButtons.vue'
 import PlayerNameTag from '~/components/player/PlayerNameTag.vue'
@@ -73,6 +74,36 @@ function handleConfirmRemove() {
 
 // --- Selection ---
 
+// Shift+click range selection (row checkboxes only) — plain closure vars,
+// not refs, since they don't drive any template rendering themselves.
+let lastSelectedRowIndex: number | null = null
+let shiftKeyHeld = false
+
+function handleRowCheckboxClick(e: MouseEvent) {
+  e.stopPropagation()
+  shiftKeyHeld = e.shiftKey
+}
+
+/**
+ * Toggles a single row on plain click; on shift+click, toggles every row
+ * between the last-clicked row and this one (inclusive) to `value`, using
+ * `row.index` — the row's position in the current filtered/sorted model —
+ * so the range matches what's visually between the two checkboxes.
+ */
+function toggleRowSelection(table: Table<WaitingPlayer>, row: Row<WaitingPlayer>, value: boolean) {
+  if (shiftKeyHeld && lastSelectedRowIndex !== null) {
+    const rows = table.getRowModel().rows
+    const [start, end] = lastSelectedRowIndex < row.index
+      ? [lastSelectedRowIndex, row.index]
+      : [row.index, lastSelectedRowIndex]
+    for (let i = start; i <= end; i++) rows[i]?.toggleSelected(value)
+  } else {
+    row.toggleSelected(value)
+  }
+  lastSelectedRowIndex = row.index
+  shiftKeyHeld = false
+}
+
 const selectedPlayerIds = computed(() =>
   Object.entries(rowSelection.value)
     .filter(([, selected]) => selected)
@@ -93,6 +124,7 @@ function executeBatch(updateFn: ((id: number) => void) | null, batchEmitFn: (ids
   }
   batchEmitFn(ids)
   rowSelection.value = {}
+  lastSelectedRowIndex = null
 }
 
 function handleToggleMarkPaid() {
@@ -164,11 +196,11 @@ const columns = computed<TableColumn<WaitingPlayer>[]>(() => [
         'onUpdate:modelValue': (value: unknown) => table.toggleAllPageRowsSelected(!!(value as boolean)),
         'aria-label': t('event.waitingListTable.selectAllAriaLabel'),
       }),
-    cell: ({ row }) =>
+    cell: ({ row, table }) =>
       h(UCheckbox, {
         modelValue: row.getIsSelected(),
-        'onUpdate:modelValue': (value: unknown) => row.toggleSelected(!!(value as boolean)),
-        onClick: (e: Event) => e.stopPropagation(),
+        'onUpdate:modelValue': (value: unknown) => toggleRowSelection(table, row, !!(value as boolean)),
+        onClick: handleRowCheckboxClick,
         'aria-label': t('event.waitingListTable.selectRowAriaLabel', { name: fullName(row.original) }),
       }),
   },
