@@ -1,4 +1,4 @@
-// server\api\events\[eventId]\start.post.ts
+// server\api\events\[tournamentId]\start.post.ts
 // fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
 // BFF slice (ADR-013): atomic event start. Owns the whole transition —
 // validate the waitroom, create zeroed standings, flip the event to playing,
@@ -13,17 +13,17 @@ const bodySchema = v.object({
 })
 
 export default defineEventHandler(async (event) => {
-  const eventId = requireIdParam(event, 'eventId')
+  const tournamentId = requireIdParam(event, 'tournamentId')
   const { playerOrder } = await requireValidBody(event, bodySchema)
 
-  console.log('[api/start] request', { eventId, playerOrderLength: playerOrder?.length ?? 0 })
+  console.log('[api/start] request', { tournamentId, playerOrderLength: playerOrder?.length ?? 0 })
 
   // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this endpoint is the authorization boundary now, not a DB policy.
   const supabase = serverSupabaseServiceRole<Database>(event)
 
   // Domain guards: the event must exist and not be running already.
-  const eventRow = await requireEventRow(supabase, eventId)
-  if (eventRow.event_playing || (eventRow.event_current_round ?? 0) > 0) {
+  const tournamentRow = await requireTournamentRow(supabase, tournamentId)
+  if (tournamentRow.tournament_playing || (tournamentRow.tournament_current_round ?? 0) > 0) {
     throw createError({
       statusCode: 409,
       statusMessage: 'Event has already started'
@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
   const { data: waitingPlayers, error: waitingError } = await supabase
     .from('waitroom')
     .select('player_id')
-    .eq('event_id', eventId)
+    .eq('tournament_id', tournamentId)
     .order('inserted_at', { ascending: true })
 
   if (waitingError) {
@@ -66,7 +66,7 @@ export default defineEventHandler(async (event) => {
 
   // Zeroed standings for every player, ranked by the confirmed order.
   const standingsData = selectedOrder.map((playerId, index) => ({
-    event_id: eventId,
+    tournament_id: tournamentId,
     player_id: playerId,
     standing_player_score: 0,
     standing_player_rank: index + 1,
@@ -77,9 +77,9 @@ export default defineEventHandler(async (event) => {
 
   const { error: standingsError } = await supabase.from('standings').insert(standingsData)
   if (standingsError) {
-    // 23505 = unique_violation on standings(event_id, player_id) — a
+    // 23505 = unique_violation on standings(tournament_id, player_id) — a
     // concurrent/retried start already inserted these rows (BACKLOG #12,
-    // TOCTOU between the event_playing guard above and this insert). Clean
+    // TOCTOU between the tournament_playing guard above and this insert). Clean
     // rejection, not a scary 500: the event did in fact already start.
     if (standingsError.code === '23505') {
       throw createError({
@@ -87,23 +87,23 @@ export default defineEventHandler(async (event) => {
         statusMessage: 'Event has already started'
       })
     }
-    console.error('[api/start] standings insert failed', { eventId, standingsError })
+    console.error('[api/start] standings insert failed', { tournamentId, standingsError })
     throw createError({
       statusCode: 500,
       statusMessage: standingsError.message
     })
   }
-  console.log('[api/start] standings created', { eventId, players: standingsData.length })
+  console.log('[api/start] standings created', { tournamentId, players: standingsData.length })
 
-  const { data: updatedEvent, error: updateError } = await supabase
-    .from('events')
-    .update({ event_playing: true, event_current_round: 1, event_registration_open: false })
-    .eq('event_id', eventId)
+  const { data: updatedTournament, error: updateError } = await supabase
+    .from('tournaments')
+    .update({ tournament_playing: true, tournament_current_round: 1, tournament_registration_open: false })
+    .eq('tournament_id', tournamentId)
     .select()
     .single()
 
-  if (updateError || !updatedEvent) {
-    console.error('[api/start] event update failed', { eventId, updateError })
+  if (updateError || !updatedTournament) {
+    console.error('[api/start] event update failed', { tournamentId, updateError })
     throw createError({
       statusCode: 500,
       statusMessage: updateError?.message ?? 'Event update failed'
@@ -111,7 +111,7 @@ export default defineEventHandler(async (event) => {
   }
 
   // Round 1 uses the confirmed player order — no optimizer re-run.
-  const rows = buildPairingRows(eventId, 1, buildRoundOneTables(selectedOrder))
+  const rows = buildPairingRows(tournamentId, 1, buildRoundOneTables(selectedOrder))
   if (!rows.length) {
     throw createError({
       statusCode: 400,
@@ -120,24 +120,24 @@ export default defineEventHandler(async (event) => {
   }
 
   const [{ error: waitroomError }, { error: pairingsError }] = await Promise.all([
-    supabase.from('waitroom').delete().eq('event_id', eventId),
+    supabase.from('waitroom').delete().eq('tournament_id', tournamentId),
     supabase.from('pairings').insert(rows),
   ])
   if (waitroomError) {
-    console.error('[api/start] waitroom clear failed', { eventId, waitroomError })
+    console.error('[api/start] waitroom clear failed', { tournamentId, waitroomError })
     throw createError({
       statusCode: 500,
       statusMessage: waitroomError.message
     })
   }
   if (pairingsError) {
-    console.error('[api/start] pairings insert failed', { eventId, pairingsError })
+    console.error('[api/start] pairings insert failed', { tournamentId, pairingsError })
     throw createError({
       statusCode: 500,
       statusMessage: pairingsError.message
     })
   }
 
-  console.log('[api/start] event started', { eventId, tables: rows.length })
-  return { event: updatedEvent }
+  console.log('[api/start] event started', { tournamentId, tables: rows.length })
+  return { event: updatedTournament }
 })

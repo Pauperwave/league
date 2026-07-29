@@ -11,7 +11,7 @@ describe('StandingsCard', () => {
         title: 'Classifica Parziale',
         standings: [{
           standing_id: 1,
-          event_id: 1,
+          tournament_id: 1,
           player_id: 1,
           standing_player_score: 10,
           standing_player_rank: 1,

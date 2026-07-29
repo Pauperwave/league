@@ -16,9 +16,9 @@ export default defineEventHandler(async (event) => {
   // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this endpoint is the authorization boundary now, not a DB policy.
   const supabase = serverSupabaseServiceRole<Database>(event)
 
-  // Domain guard: refuse to delete a league that still has events.
+  // Domain guard: refuse to delete a league that still has tournaments.
   const { count, error: usageError } = await supabase
-    .from('events')
+    .from('tournaments')
     .select('*', { count: 'exact', head: true })
     .eq('league_id', leagueId)
 
@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
   if ((count ?? 0) > 0) {
     throw createError({
       statusCode: 409,
-      statusMessage: 'League still has events'
+      statusMessage: 'League still has tournaments'
     })
   }
 

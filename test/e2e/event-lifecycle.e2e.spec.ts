@@ -23,16 +23,16 @@ function supabaseHeaders() {
   return { apikey: SUPABASE_SECRET_KEY, Authorization: `Bearer ${SUPABASE_SECRET_KEY}` }
 }
 
-async function fetchPairingIds(eventId: number, round: number): Promise<number[]> {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/pairings?event_id=eq.${eventId}&pairing_round=eq.${round}&select=pairing_id`, {
+async function fetchPairingIds(tournamentId: number, round: number): Promise<number[]> {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/pairings?event_id=eq.${tournamentId}&pairing_round=eq.${round}&select=pairing_id`, {
     headers: supabaseHeaders(),
   })
   const rows = await res.json() as { pairing_id: number }[]
   return rows.map(r => r.pairing_id)
 }
 
-async function fetchEvent(eventId: number) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/events?event_id=eq.${eventId}&select=*`, {
+async function fetchEvent(tournamentId: number) {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/events?event_id=eq.${tournamentId}&select=*`, {
     headers: supabaseHeaders(),
   })
   const rows = await res.json() as Record<string, unknown>[]
@@ -54,8 +54,8 @@ async function countRoundResults(pairingIds: number[]): Promise<number> {
  *  endpoint) — this test deliberately leaves real round data behind, so
  *  cleanup goes straight to Supabase, same class of test-only exception as
  *  cleanup.ts's player deletion. */
-async function deepCleanEvent(eventId: number) {
-  const pairingIds = [...await fetchPairingIds(eventId, 1), ...await fetchPairingIds(eventId, 2)]
+async function deepCleanEvent(tournamentId: number) {
+  const pairingIds = [...await fetchPairingIds(tournamentId, 1), ...await fetchPairingIds(tournamentId, 2)]
   const headers = supabaseHeaders()
 
   if (pairingIds.length > 0) {
@@ -63,21 +63,21 @@ async function deepCleanEvent(eventId: number) {
     await fetch(`${SUPABASE_URL}/rest/v1/round_kills?or=(${filter})`, { method: 'DELETE', headers })
     await fetch(`${SUPABASE_URL}/rest/v1/round_results?or=(${filter})`, { method: 'DELETE', headers })
   }
-  await fetch(`${SUPABASE_URL}/rest/v1/pairings?event_id=eq.${eventId}`, { method: 'DELETE', headers })
-  await fetch(`${SUPABASE_URL}/rest/v1/standings?event_id=eq.${eventId}`, { method: 'DELETE', headers })
-  await fetch(`${SUPABASE_URL}/rest/v1/waitroom?event_id=eq.${eventId}`, { method: 'DELETE', headers })
+  await fetch(`${SUPABASE_URL}/rest/v1/pairings?event_id=eq.${tournamentId}`, { method: 'DELETE', headers })
+  await fetch(`${SUPABASE_URL}/rest/v1/standings?event_id=eq.${tournamentId}`, { method: 'DELETE', headers })
+  await fetch(`${SUPABASE_URL}/rest/v1/waitroom?event_id=eq.${tournamentId}`, { method: 'DELETE', headers })
 }
 
 let playerIds: number[] = []
 let leagueId: number | undefined
-let eventId: number | undefined
+let tournamentId: number | undefined
 let rulesetId: number | undefined
 
 test.afterEach(async ({ request }) => {
-  if (eventId !== undefined) {
-    await deepCleanEvent(eventId).catch((err) => { console.error('[e2e cleanup] deepCleanEvent threw:', err) })
-    await cleanup.event(request, eventId)
-    eventId = undefined
+  if (tournamentId !== undefined) {
+    await deepCleanEvent(tournamentId).catch((err) => { console.error('[e2e cleanup] deepCleanEvent threw:', err) })
+    await cleanup.event(request, tournamentId)
+    tournamentId = undefined
   }
   if (leagueId !== undefined) {
     await cleanup.league(request, leagueId)
@@ -104,7 +104,7 @@ test('full event lifecycle: register, start, submit a round, advance, turn back,
     playerIds.push(player.player_id)
   }
 
-  // advance-round scores the closing round (resolveEventRuleset requires a
+  // advance-round scores the closing round (resolveTournamentRuleset requires a
   // real ruleset_id on the league — unlike start.post.ts, which doesn't
   // score anything yet), so this needs a disposable ruleset too.
   const rulesetRes = await request.post('/api/rulesets/create', {
@@ -125,7 +125,7 @@ test('full event lifecycle: register, start, submit a round, advance, turn back,
   rulesetId = ruleset.ruleset_id
 
   const leagueRes = await request.post('/api/leagues/create', {
-    data: { name: testTag('League'), startsAt: null, endsAt: null, rulesetId, validEvents: null },
+    data: { name: testTag('League'), startsAt: null, endsAt: null, rulesetId, validTournaments: null },
   })
   expect(leagueRes.ok()).toBe(true)
   const { league } = await leagueRes.json() as { league: { id: number } }
@@ -144,20 +144,20 @@ test('full event lifecycle: register, start, submit a round, advance, turn back,
   })
   expect(eventRes.ok()).toBe(true)
   const { event } = await eventRes.json() as { event: { event_id: number } }
-  eventId = event.event_id
+  tournamentId = event.event_id
 
-  const registerRes = await request.post(`/api/events/${eventId}/register-player`, { data: { playerIds } })
+  const registerRes = await request.post(`/api/events/${tournamentId}/register-player`, { data: { playerIds } })
   expect(registerRes.ok()).toBe(true)
 
   // ── Start: round 1 pairings generated ─────────────────────────────────────
-  const startRes = await request.post(`/api/events/${eventId}/start`, { data: { playerOrder: playerIds } })
+  const startRes = await request.post(`/api/events/${tournamentId}/start`, { data: { playerOrder: playerIds } })
   if (!startRes.ok()) throw new Error(`start failed: ${startRes.status()} ${await startRes.text()}`)
 
-  let eventRow = await fetchEvent(eventId)
+  let eventRow = await fetchEvent(tournamentId)
   expect(eventRow?.event_playing).toBe(true)
   expect(eventRow?.event_current_round).toBe(1)
 
-  const round1PairingIds = await fetchPairingIds(eventId, 1)
+  const round1PairingIds = await fetchPairingIds(tournamentId, 1)
   expect(round1PairingIds).toHaveLength(1)
   const [round1PairingId] = round1PairingIds
 
@@ -190,18 +190,18 @@ test('full event lifecycle: register, start, submit a round, advance, turn back,
   expect(await countRoundResults(round1PairingIds)).toBe(playerIds.length)
 
   // ── Advance to round 2 ─────────────────────────────────────────────────────
-  const advanceRes = await request.post(`/api/events/${eventId}/advance-round`, {
+  const advanceRes = await request.post(`/api/events/${tournamentId}/advance-round`, {
     data: { currentRound: 1, playerOrder: playerIds },
   })
   if (!advanceRes.ok()) throw new Error(`advance-round failed: ${advanceRes.status()} ${await advanceRes.text()}`)
   const { hasEnded: hasEndedAfterRound1 } = await advanceRes.json() as { hasEnded: boolean }
   expect(hasEndedAfterRound1).toBe(false)
 
-  eventRow = await fetchEvent(eventId)
+  eventRow = await fetchEvent(tournamentId)
   expect(eventRow?.event_current_round).toBe(2)
   expect(eventRow?.event_playing).toBe(true)
 
-  const round2PairingIds = await fetchPairingIds(eventId, 2)
+  const round2PairingIds = await fetchPairingIds(tournamentId, 2)
   expect(round2PairingIds).toHaveLength(1)
 
   // Submit round 2's ranking too, so turning it back has real data to clear
@@ -216,32 +216,32 @@ test('full event lifecycle: register, start, submit a round, advance, turn back,
   //    turn-back-round.e2e.spec.ts, which only exercises round-1-to-
   //    registration) — round 2's pairings/results must be gone afterward,
   //    round 1's must be untouched. ────────────────────────────────────────
-  const turnBackRes = await request.post(`/api/events/${eventId}/turn-back-round`, { data: { currentRound: 2 } })
+  const turnBackRes = await request.post(`/api/events/${tournamentId}/turn-back-round`, { data: { currentRound: 2 } })
   if (!turnBackRes.ok()) throw new Error(`turn-back-round failed: ${turnBackRes.status()} ${await turnBackRes.text()}`)
 
-  eventRow = await fetchEvent(eventId)
+  eventRow = await fetchEvent(tournamentId)
   expect(eventRow?.event_current_round).toBe(1)
   expect(eventRow?.event_playing).toBe(true)
 
-  expect(await fetchPairingIds(eventId, 2)).toHaveLength(0)
+  expect(await fetchPairingIds(tournamentId, 2)).toHaveLength(0)
   expect(await countRoundResults(round1PairingIds)).toBe(playerIds.length)
 
   // ── Re-advance to round 2, then advance past the final round: the event
   //    must end (event_playing=false, event_current_round beyond the total
   //    round count). ──────────────────────────────────────────────────────
-  const readvanceRes = await request.post(`/api/events/${eventId}/advance-round`, {
+  const readvanceRes = await request.post(`/api/events/${tournamentId}/advance-round`, {
     data: { currentRound: 1, playerOrder: playerIds },
   })
   if (!readvanceRes.ok()) throw new Error(`re-advance-round failed: ${readvanceRes.status()} ${await readvanceRes.text()}`)
 
-  const finalAdvanceRes = await request.post(`/api/events/${eventId}/advance-round`, {
+  const finalAdvanceRes = await request.post(`/api/events/${tournamentId}/advance-round`, {
     data: { currentRound: 2 },
   })
   if (!finalAdvanceRes.ok()) throw new Error(`final advance-round failed: ${finalAdvanceRes.status()} ${await finalAdvanceRes.text()}`)
   const { hasEnded: hasEndedAfterRound2 } = await finalAdvanceRes.json() as { hasEnded: boolean }
   expect(hasEndedAfterRound2).toBe(true)
 
-  eventRow = await fetchEvent(eventId)
+  eventRow = await fetchEvent(tournamentId)
   expect(eventRow?.event_playing).toBe(false)
   expect(eventRow?.event_current_round).toBe(3)
 })

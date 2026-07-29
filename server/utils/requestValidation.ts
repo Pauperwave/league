@@ -8,7 +8,7 @@ import { Constants } from '#shared/utils/types/database'
 
 /**
  * Parse a positive-integer id from the route params, throwing the uniform
- * 400 on anything else ("eventId" → "Invalid event id").
+ * 400 on anything else ("tournamentId" → "Invalid event id").
  */
 export function requireIdParam(event: H3Event, name: string): number {
   const id = Number(getRouterParam(event, name))
@@ -41,7 +41,7 @@ export const leagueFormBodySchema = v.object({
   startsAt: v.nullable(v.string()),
   endsAt: v.nullable(v.string()),
   rulesetId: v.nullable(v.pipe(v.number(), v.integer(), v.minValue(1))),
-  validEvents: v.nullable(v.pipe(v.number(), v.integer(), v.minValue(1))),
+  validTournaments: v.nullable(v.pipe(v.number(), v.integer(), v.minValue(1))),
   // Only written by the update endpoint (create always hardcodes 'scheduled')
   // — see LeagueFormModal.vue's status USelect, only shown while editing.
   // Optional so create callers (including the E2E specs) aren't forced to
@@ -90,16 +90,16 @@ export const deckFormBodySchema = v.object({
 })
 
 /**
- * Body schema shared by the event create/update endpoints (update validates
+ * Body schema shared by the tournament create/update endpoints (update validates
  * against its partial).
  */
-export const eventFormBodySchema = v.object({
-  event_name: v.pipe(v.string(), v.trim(), v.minLength(1)),
+export const tournamentFormBodySchema = v.object({
+  tournament_name: v.pipe(v.string(), v.trim(), v.minLength(1)),
   league_id: v.pipe(v.number(), v.integer(), v.minValue(1)),
-  event_datetime: v.nullish(v.string()),
-  event_round_number: v.pipe(v.number(), v.integer(), v.minValue(1)),
-  event_round_duration: v.pipe(v.number(), v.integer(), v.minValue(1)),
-  event_registration_open: v.optional(v.boolean(), true),
+  tournament_datetime: v.nullish(v.string()),
+  tournament_round_number: v.pipe(v.number(), v.integer(), v.minValue(1)),
+  tournament_round_duration: v.pipe(v.number(), v.integer(), v.minValue(1)),
+  tournament_registration_open: v.optional(v.boolean(), true),
 })
 
 /**

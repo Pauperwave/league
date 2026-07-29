@@ -8,16 +8,16 @@
 /** Query-key prefix for per-event waitroom lists — invalidated by useWaitroomMutations. */
 export const WAITROOM_KEY = ['waitroom']
 
-export function useWaitroom(eventId: number) {
+export function useWaitroom(tournamentId: number) {
   const supabase = useSupabaseClient()
 
   const { data, isLoading, error, refetch } = useQuery({
-    key: [...WAITROOM_KEY, eventId],
+    key: [...WAITROOM_KEY, tournamentId],
     query: async (): Promise<{ player_id: number, inserted_at: string | null }[]> => {
       const { data: rows, error: waitroomError } = await supabase
         .from('waitroom')
         .select('player_id, inserted_at')
-        .eq('event_id', eventId)
+        .eq('tournament_id', tournamentId)
         .order('inserted_at', { ascending: true })
 
       if (waitroomError) throw waitroomError
@@ -35,15 +35,15 @@ export function useWaitroom(eventId: number) {
   return { waitingPlayers, waitroomEntries, isLoading, error, refetch }
 }
 
-export function useWaitroomMutations(eventId: number) {
+export function useWaitroomMutations(tournamentId: number) {
   const queryCache = useQueryCache()
-  const invalidate = () => queryCache.invalidateQueries({ key: [...WAITROOM_KEY, eventId] })
+  const invalidate = () => queryCache.invalidateQueries({ key: [...WAITROOM_KEY, tournamentId] })
 
   // Template-literal URLs are cast to string — see usePlayerMutations for why.
   const registerPlayers = useMutation({
     mutation: (playerIds: number[]) =>
       $fetch<{ registered: { player_id: number, inserted_at: string | null }[], alreadyRegistered: number[] }>(
-        `/api/events/${eventId}/register-player` as string,
+        `/api/events/${tournamentId}/register-player` as string,
         { method: 'POST', body: { playerIds } },
       ),
     onSettled: invalidate,
@@ -52,7 +52,7 @@ export function useWaitroomMutations(eventId: number) {
   const unregisterPlayers = useMutation({
     mutation: (playerIds: number[]) =>
       $fetch<{ removed: number[] }>(
-        `/api/events/${eventId}/unregister-player` as string,
+        `/api/events/${tournamentId}/unregister-player` as string,
         { method: 'POST', body: { playerIds } },
       ),
     onSettled: invalidate,

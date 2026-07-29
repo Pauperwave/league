@@ -86,7 +86,7 @@ const columns: TableColumn<Player>[] = [
     accessorFn: (row) => props.getDeckCount(row.player_id),
     header: sortableHeader(t('player.table.decks'), UButton)
   },
-  statColumn('events', t('player.table.events'), 'events_played'),
+  statColumn('events', t('player.table.events'), 'tournaments_played'),
   statColumn('matches', t('player.table.matches'), 'total_matches'),
   statColumn('wins', t('player.table.wins'), 'total_wins'),
   statColumn('kills', t('player.table.kills'), 'total_kills'),

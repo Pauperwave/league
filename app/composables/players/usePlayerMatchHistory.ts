@@ -79,17 +79,17 @@ export async function fetchPlayerMatchHistory(
     const pairings = row.pairings
     if (!pairings) continue
 
-    const eventId = pairings.event_id
+    const tournamentId = pairings.event_id
 
     // Reset table counter when event changes
-    if (eventId !== currentEventId) {
-      currentEventId = eventId
+    if (tournamentId !== currentEventId) {
+      currentEventId = tournamentId
       tableCounter = 0
     }
     tableCounter++
 
     results.push({
-      event_id: eventId,
+      event_id: tournamentId,
       league_id: pairings.events?.league_id ?? 0,
       event_name: pairings.events?.event_name ?? unknownEventName,
       pairing_id: row.pairing_id,

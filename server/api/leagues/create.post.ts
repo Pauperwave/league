@@ -7,9 +7,9 @@ import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 
 export default defineEventHandler(async (event) => {
-  const { name, startsAt, endsAt, rulesetId, validEvents } = await requireValidBody(event, leagueFormBodySchema)
+  const { name, startsAt, endsAt, rulesetId, validTournaments } = await requireValidBody(event, leagueFormBodySchema)
 
-  console.log('[api/leagues/create] request', { name, startsAt, endsAt, rulesetId, validEvents })
+  console.log('[api/leagues/create] request', { name, startsAt, endsAt, rulesetId, validTournaments })
 
   // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this endpoint is the authorization boundary now, not a DB policy.
   const supabase = serverSupabaseServiceRole<Database>(event)
@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
       ends_at: endsAt ?? undefined,
       status: 'scheduled',
       ruleset_id: rulesetId ?? undefined,
-      valid_events: validEvents ?? undefined,
+      valid_tournaments: validTournaments ?? undefined,
     })
     .select()
     .single()

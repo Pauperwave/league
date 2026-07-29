@@ -4,31 +4,31 @@
 // extracted into useTableUtils.ts so each table's column list stays fully readable in one place
 import type { Component } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
-import type { Event } from '#shared/utils/types'
+import type { Tournament } from '#shared/utils/types'
 import type { StatusColor } from '~/composables/tables/useTableUtils'
 
 const { t } = useI18n()
 
 defineProps<{
-  events: Event[]
+  events: Tournament[]
   loading?: boolean
 }>()
 
 const emit = defineEmits<{
-  view: [event: Event]
-  edit: [event: Event]
-  delete: [event: Event]
+  view: [event: Tournament]
+  edit: [event: Tournament]
+  delete: [event: Tournament]
 }>()
 
 const UBadge = resolveComponent('UBadge') as Component
 const UButton = resolveComponent('UButton') as Component
 const RowActionButtons = resolveComponent('RowActionButtons') as Component
 
-function getEventStatus(event: Event): { key: 'ended' | 'playing' | 'registration', label: string, color: StatusColor, icon: string } {
-  if ((event.event_current_round || 0) > (event.event_round_number || 0)) {
+function getEventStatus(event: Tournament): { key: 'ended' | 'playing' | 'registration', label: string, color: StatusColor, icon: string } {
+  if ((event.tournament_current_round || 0) > (event.tournament_round_number || 0)) {
     return { key: 'ended', label: t('event.status.ended'), color: 'error', icon: ICONS.clear }
   }
-  if (event.event_playing) {
+  if (event.tournament_playing) {
     return { key: 'playing', label: t('event.status.playing'), color: 'success', icon: ICONS.success }
   }
   return { key: 'registration', label: t('event.status.registration'), color: 'warning', icon: ICONS.clock }
@@ -45,9 +45,9 @@ function getRegistrationStatus(open: boolean | null): {
   return { label: t('event.table.registrationClosed'), color: 'error', icon: ICONS.clear }
 }
 
-// event_current_round is set to event_round_number + 1 as the internal
-// "ended" sentinel (see useEventStore's isEventEnded/getEventStatus above) —
-// clamp it for display so a finished event reads "2/2", not "3/2".
+// tournament_current_round is set to tournament_round_number + 1 as the internal
+// "ended" sentinel (see useTournamentStore's isTournamentEnded/getEventStatus above) —
+// clamp it for display so a finished tournament reads "2/2", not "3/2".
 function formatRound(current: number | null, total: number | null): string {
   const safeTotal = total || 0
   const safeCurrent = Math.min(current || 0, safeTotal)
@@ -66,28 +66,28 @@ const tableMeta = {
   }
 }
 
-const columns: TableColumn<Event>[] = [
+const columns: TableColumn<Tournament>[] = [
   {
-    accessorKey: 'event_id',
+    accessorKey: 'tournament_id',
     header: sortableHeader(t('league.table.id'), UButton),
     meta: { class: { th: 'w-16', td: 'font-mono text-muted' } }
   },
   {
-    accessorKey: 'event_name',
+    accessorKey: 'tournament_name',
     header: sortableHeader(t('league.table.name'), UButton),
-    cell: ({ row }) => h('span', { class: 'font-semibold' }, row.getValue('event_name'))
+    cell: ({ row }) => h('span', { class: 'font-semibold' }, row.getValue('tournament_name'))
   },
   {
-    accessorKey: 'event_datetime',
+    accessorKey: 'tournament_datetime',
     header: sortableHeader(t('event.table.date'), UButton),
-    cell: ({ row }) => formatDate(row.getValue('event_datetime'))
+    cell: ({ row }) => formatDate(row.getValue('tournament_datetime'))
   },
   {
     id: 'round',
     header: sortableHeader(t('event.table.round'), UButton),
     cell: ({ row }) => {
-      const current = row.original.event_current_round
-      const total = row.original.event_round_number
+      const current = row.original.tournament_current_round
+      const total = row.original.tournament_round_number
       return h('span', { class: 'font-mono' }, formatRound(current, total))
     }
   },
@@ -107,11 +107,11 @@ const columns: TableColumn<Event>[] = [
     id: 'registration',
     header: sortableHeader(t('event.table.registration'), UButton),
     cell: ({ row }) => {
-      const reg = getRegistrationStatus(row.original.event_registration_open)
+      const reg = getRegistrationStatus(row.original.tournament_registration_open)
       return h(UBadge, { color: reg.color, variant: 'subtle', icon: reg.icon }, () => reg.label)
     }
   },
-  createActionsColumn<Event>(UButton, RowActionButtons, {
+  createActionsColumn<Tournament>(UButton, RowActionButtons, {
     onView: (event) => emit('view', event),
     onEdit: (event) => emit('edit', event),
     onDelete: (event) => emit('delete', event),
@@ -125,7 +125,7 @@ const columns: TableColumn<Event>[] = [
     :columns="columns"
     :meta="tableMeta"
     :loading="loading"
-    :sorting="[{ id: 'event_datetime', desc: false }]"
+    :sorting="[{ id: 'tournament_datetime', desc: false }]"
     :empty-title="t('event.table.emptyTitle')"
     :empty-description="t('event.table.emptyDescription')"
     :empty-icon="ICONS.calendarCancel"

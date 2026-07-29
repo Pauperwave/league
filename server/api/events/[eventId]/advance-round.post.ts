@@ -1,4 +1,4 @@
-// server\api\events\[eventId]\advance-round.post.ts
+// server\api\events\[tournamentId]\advance-round.post.ts
 // fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
 // BFF slice (ADR-013): atomic round transition. Owns the whole sequence that
 // the client used to orchestrate — score the closing round, accumulate
@@ -13,7 +13,7 @@ import * as v from 'valibot'
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 import {
-  resolveEventRuleset,
+  resolveTournamentRuleset,
   fetchRoundData,
   calculateRoundScores,
   updateStandingsAndRanks,
@@ -27,10 +27,10 @@ const bodySchema = v.object({
 })
 
 export default defineEventHandler(async (event) => {
-  const eventId = requireIdParam(event, 'eventId')
+  const tournamentId = requireIdParam(event, 'tournamentId')
   const { currentRound, playerOrder } = await requireValidBody(event, bodySchema)
 
-  console.log('[api/advance-round] request', { eventId, currentRound, playerOrderLength: playerOrder?.length ?? 0 })
+  console.log('[api/advance-round] request', { tournamentId, currentRound, playerOrderLength: playerOrder?.length ?? 0 })
 
   // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this endpoint is the authorization boundary now, not a DB policy.
   const supabase = serverSupabaseServiceRole<Database>(event)
@@ -38,22 +38,22 @@ export default defineEventHandler(async (event) => {
   // Domain guards: playing phase, and the round the client thinks it is
   // closing must be the round the event is actually at (double-submit/stale
   // tab protection).
-  const eventRow = await requireEventRow(supabase, eventId)
-  if (!eventRow.event_playing) {
+  const tournamentRow = await requireTournamentRow(supabase, tournamentId)
+  if (!tournamentRow.tournament_playing) {
     throw createError({
       statusCode: 409,
       statusMessage: 'Event is not in the playing phase'
     })
   }
-  if (eventRow.event_current_round !== currentRound) {
+  if (tournamentRow.tournament_current_round !== currentRound) {
     throw createError({
       statusCode: 409,
-      statusMessage: `Round mismatch: event is at round ${eventRow.event_current_round}, request is closing round ${currentRound}`
+      statusMessage: `Round mismatch: event is at round ${tournamentRow.tournament_current_round}, request is closing round ${currentRound}`
     })
   }
 
   const newRound = currentRound + 1
-  const hasEnded = newRound > (eventRow.event_round_number ?? 0)
+  const hasEnded = newRound > (tournamentRow.tournament_round_number ?? 0)
   if (!hasEnded && !playerOrder?.length) {
     throw createError({
       statusCode: 400,
@@ -65,43 +65,43 @@ export default defineEventHandler(async (event) => {
   // (idempotent — see fetchRoundData's comment for why this replaced the old
   // add-onto-persisted-value approach, BACKLOG #11/#12).
   try {
-    const { ruleset, posValues } = await resolveEventRuleset(supabase, eventId)
-    const { pairings, results, standingsMap } = await fetchRoundData(supabase, eventId, currentRound)
-    console.log('[api/advance-round] scoring rounds 1..N', { eventId, currentRound, pairings: pairings.length, results: results.length, players: standingsMap.size })
+    const { ruleset, posValues } = await resolveTournamentRuleset(supabase, tournamentId)
+    const { pairings, results, standingsMap } = await fetchRoundData(supabase, tournamentId, currentRound)
+    console.log('[api/advance-round] scoring rounds 1..N', { tournamentId, currentRound, pairings: pairings.length, results: results.length, players: standingsMap.size })
     calculateRoundScores(pairings, results, standingsMap, posValues, ruleset)
-    await updateStandingsAndRanks(supabase, eventId, standingsMap)
+    await updateStandingsAndRanks(supabase, tournamentId, standingsMap)
     console.log('[api/advance-round] standings updated', {
-      eventId,
+      tournamentId,
       scores: Array.from(standingsMap.values()).map(s => ({ player: s.player_id, score: s.standing_player_score })),
     })
   } catch (err) {
-    console.error('[api/advance-round] scoring failed', { eventId, currentRound, err })
+    console.error('[api/advance-round] scoring failed', { tournamentId, currentRound, err })
     throw createError({
       statusCode: 500,
       statusMessage: err instanceof Error ? err.message : 'Round scoring failed'
     })
   }
 
-  // Advance (or end) the event in a single update.
-  const { data: updatedEvent, error: updateError } = await supabase
-    .from('events')
-    .update({ event_current_round: newRound, ...(hasEnded ? { event_playing: false } : {}) })
-    .eq('event_id', eventId)
+  // Advance (or end) the tournament in a single update.
+  const { data: updatedTournament, error: updateError } = await supabase
+    .from('tournaments')
+    .update({ tournament_current_round: newRound, ...(hasEnded ? { tournament_playing: false } : {}) })
+    .eq('tournament_id', tournamentId)
     .select()
     .single()
 
-  if (updateError || !updatedEvent) {
-    console.error('[api/advance-round] event update failed', { eventId, newRound, updateError })
+  if (updateError || !updatedTournament) {
+    console.error('[api/advance-round] tournament update failed', { tournamentId, newRound, updateError })
     throw createError({
       statusCode: 500,
-      statusMessage: updateError?.message ?? 'Event update failed'
+      statusMessage: updateError?.message ?? 'Tournament update failed'
     })
   }
-  console.log('[api/advance-round] event advanced', { eventId, newRound, hasEnded })
+  console.log('[api/advance-round] tournament advanced', { tournamentId, newRound, hasEnded })
 
   // Insert the next round's pairings from the confirmed order.
   if (!hasEnded && playerOrder) {
-    const rows = buildPairingRows(eventId, newRound, buildRoundOneTables(playerOrder))
+    const rows = buildPairingRows(tournamentId, newRound, buildRoundOneTables(playerOrder))
     if (!rows.length) {
       throw createError({
         statusCode: 400,
@@ -110,14 +110,14 @@ export default defineEventHandler(async (event) => {
     }
     const { error: pairingsError } = await supabase.from('pairings').insert(rows)
     if (pairingsError) {
-      console.error('[api/advance-round] pairings insert failed', { eventId, newRound, pairingsError })
+      console.error('[api/advance-round] pairings insert failed', { tournamentId, newRound, pairingsError })
       throw createError({
         statusCode: 500,
         statusMessage: pairingsError.message
       })
     }
-    console.log('[api/advance-round] pairings created', { eventId, newRound, tables: rows.length })
+    console.log('[api/advance-round] pairings created', { tournamentId, newRound, tables: rows.length })
   }
 
-  return { event: updatedEvent, hasEnded }
+  return { event: updatedTournament, hasEnded }
 })

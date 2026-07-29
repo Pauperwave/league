@@ -1,14 +1,14 @@
 <!-- app\components\event\EventActionBar.vue -->
 <script setup lang="ts">
-import type { EventStatus } from '#shared/utils/types'
+import type { TournamentStatus } from '#shared/utils/types'
 
 const { t } = useI18n()
 
 const props = defineProps<{
   currentRound: number
   totalRounds: number
-  eventStatus: EventStatus
-  canStartEvent: boolean
+  eventStatus: TournamentStatus
+  canStartTournament: boolean
   canAdvance: boolean
 }>()
 
@@ -30,7 +30,7 @@ const cancelRoundLogging = useButtonLogging('Annulla round', {
 
 const startEventLogging = useButtonLogging('Avvia evento', {
   eventStatus: () => props.eventStatus,
-  canStartEvent: () => props.canStartEvent,
+  canStartTournament: () => props.canStartTournament,
 })
 
 function cancelRound() {
@@ -47,7 +47,7 @@ function handleStartEvent() {
 <template>
   <div v-if="showStartButton" class="flex justify-center">
     <StartEventButton
-      :disabled="!canStartEvent"
+      :disabled="!canStartTournament"
       @click="handleStartEvent"
     />
   </div>

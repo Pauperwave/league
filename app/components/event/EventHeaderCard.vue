@@ -1,11 +1,11 @@
 <!-- app\components\event\EventHeaderCard.vue -->
 <script setup lang="ts">
-import type { EventStatus } from '#shared/utils/types'
+import type { TournamentStatus } from '#shared/utils/types'
 
 const props = defineProps<{
   eventName: string
   eventDate: string
-  eventStatus: EventStatus
+  eventStatus: TournamentStatus
 }>()
 
 const emit = defineEmits<{

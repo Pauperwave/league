@@ -1,6 +1,6 @@
 // app\composables\event\useEventPage.ts
 import type { Player } from '#shared/utils/types'
-import type { EventUpdatePayload } from '~/components/event/modal/EventFormModal.vue'
+import type { TournamentUpdatePayload } from '~/components/event/modal/EventFormModal.vue'
 import { useEventUrl } from './useEventUrl'
 
 export function useEventPage() {
@@ -9,12 +9,12 @@ export function useEventPage() {
   const { t } = useI18n()
 
   const leagueId = parseInt(route.params.leagueId as string)
-  const eventId = parseInt(route.params.eventId as string)
+  const tournamentId = parseInt(route.params.tournamentId as string)
 
   // URL management
   const { phaseFromQuery, roundFromQuery, syncUrl } = useEventUrl()
 
-  const eventStore = useEventStore()
+  const tournamentStore = useTournamentStore()
   const { calculateTables, buildPreviewTables, formatTableEstimate } = useTableCalculator()
   const queryCache = useQueryCache()
 
@@ -26,37 +26,37 @@ export function useEventPage() {
     waitroomEntries,
     isLoading: waitroomLoading,
     refetch: refreshWaitroom,
-  } = useWaitroom(eventId)
-  const { registerPlayers, unregisterPlayers } = useWaitroomMutations(eventId)
+  } = useWaitroom(tournamentId)
+  const { registerPlayers, unregisterPlayers } = useWaitroomMutations(tournamentId)
   const { updateEvent: updateEventMutation } = useEventMutations()
   const { data: eventsData, isLoading: eventsLoading, refetch: refreshEventsQuery } = useEventsQuery(leagueId)
-  const { data: standingsData, refetch: refreshStandingsQuery } = useEventStandingsQuery(eventId)
-  const { data: pairingHistoryData } = usePairingHistoryQuery(eventId)
+  const { data: standingsData, refetch: refreshStandingsQuery } = useEventStandingsQuery(tournamentId)
+  const { data: pairingHistoryData } = usePairingHistoryQuery(tournamentId)
 
   // Colada resolves the league from the cached list (SSR-prefetched) — no
   // store, no manual fetch fallback (ADR-015).
   const { league: currentLeague } = useLeagueById(leagueId)
 
-  // Keep the lifecycle store's currentEvent in sync with the events list —
+  // Keep the lifecycle store's currentTournament in sync with the events list —
   // successor of the sync the store's fetchEvents used to do. Lifecycle
   // actions overwrite it with their (fresher) server response right after.
   watch(eventsData, (list) => {
-    const found = list?.find(e => e.event_id === eventId)
-    if (found) eventStore.setCurrentEvent(found)
+    const found = list?.find(e => e.tournament_id === tournamentId)
+    if (found) tournamentStore.setCurrentTournament(found)
   }, { immediate: true })
 
-  const currentEvent = computed(() => eventStore.currentEvent)
-  const currentRound = computed(() => currentEvent.value?.event_current_round ?? 0)
-  const totalRounds = computed(() => currentEvent.value?.event_round_number ?? 0)
+  const currentTournament = computed(() => tournamentStore.currentTournament)
+  const currentRound = computed(() => currentTournament.value?.tournament_current_round ?? 0)
+  const totalRounds = computed(() => currentTournament.value?.tournament_round_number ?? 0)
 
-  // Single source of truth for event state
+  // Single source of truth for tournament state
   const eventStatus = computed<'registration' | 'playing' | 'ended'>(() => {
-    if (eventStore.isEventEnded) return 'ended'
-    if (currentEvent.value?.event_playing) return 'playing'
+    if (tournamentStore.isTournamentEnded) return 'ended'
+    if (currentTournament.value?.tournament_playing) return 'playing'
     return 'registration'
   })
 
-  const canStartEvent = computed(() => {
+  const canStartTournament = computed(() => {
     const count = waitingPlayers.value.length
     return count >= 3 && count !== 5
   })
@@ -142,15 +142,15 @@ export function useEventPage() {
       refreshEventsQuery(),
       refreshStandingsQuery(),
       refreshWaitroom(),
-      queryCache.invalidateQueries({ key: [...PAIRINGS_KEY, eventId] }),
-      queryCache.invalidateQueries({ key: [...PAIRING_HISTORY_KEY, eventId] }),
+      queryCache.invalidateQueries({ key: [...PAIRINGS_KEY, tournamentId] }),
+      queryCache.invalidateQueries({ key: [...PAIRING_HISTORY_KEY, tournamentId] }),
     ])
   }
 
-  async function startEvent(playerOrder?: number[]) {
-    if (!canStartEvent.value) return false
+  async function startTournament(playerOrder?: number[]) {
+    if (!canStartTournament.value) return false
 
-    const result = await eventStore.startEvent(eventId, playerOrder)
+    const result = await tournamentStore.startTournament(tournamentId, playerOrder)
     if (!result.success) return false
 
     await refreshAfterLifecycle()
@@ -158,7 +158,7 @@ export function useEventPage() {
   }
 
   async function nextRound(playerOrder?: number[]) {
-    const result = await eventStore.nextRound(eventId, currentRound.value, playerOrder)
+    const result = await tournamentStore.nextRound(tournamentId, currentRound.value, playerOrder)
     if (!result.success) return false
 
     await refreshAfterLifecycle()
@@ -166,22 +166,22 @@ export function useEventPage() {
   }
 
   async function turnBackRound() {
-    const result = await eventStore.turnBackRound(eventId, currentRound.value)
+    const result = await tournamentStore.turnBackRound(tournamentId, currentRound.value)
     if (!result.success) return false
 
     await refreshAfterLifecycle()
     return true
   }
 
-  async function updateEvent({ id, data }: EventUpdatePayload) {
+  async function updateEvent({ id, data }: TournamentUpdatePayload) {
     try {
       await updateEventMutation.mutateAsync({
         id,
         data: {
-          event_name: data.eventName,
-          event_datetime: data.eventDate ?? undefined,
-          event_round_number: data.numRound,
-          event_round_duration: data.roundDuration,
+          tournament_name: data.eventName,
+          tournament_datetime: data.eventDate ?? undefined,
+          tournament_round_number: data.numRound,
+          tournament_round_duration: data.roundDuration,
         },
       })
       return true
@@ -193,7 +193,7 @@ export function useEventPage() {
 
   async function navigateToScore(pairingId: number, playerId: number, tableId: number) {
     await navigateTo({
-      path: `/league/${leagueId}/event/${eventId}/round/${currentRound.value}/score`,
+      path: `/league/${leagueId}/event/${tournamentId}/round/${currentRound.value}/score`,
       query: {
         pairingId: String(pairingId),
         playerId: String(playerId),
@@ -210,8 +210,8 @@ export function useEventPage() {
   // Two instances of the pairings query: the current round (live-standings
   // input) and the displayed round (past-round viewing). When the keys match
   // they share one cache entry; setting viewedRound refetches by key change.
-  const { data: pairingsData } = usePairingsQuery(eventId, () => currentRound.value)
-  const { data: displayedPairingsData, refetch: refreshDisplayedPairings } = usePairingsQuery(eventId, () => viewedRound.value ?? currentRound.value)
+  const { data: pairingsData } = usePairingsQuery(tournamentId, () => currentRound.value)
+  const { data: displayedPairingsData, refetch: refreshDisplayedPairings } = usePairingsQuery(tournamentId, () => viewedRound.value ?? currentRound.value)
 
   function viewRound(round: number) {
     viewedRound.value = round === currentRound.value ? null : round
@@ -224,17 +224,17 @@ export function useEventPage() {
   const pairings = computed(() => pairingsData.value ?? [])
   const effectivePairings = computed(() => displayedPairingsData.value ?? [])
 
-  const loading = computed(() => eventStore.loading || waitroomLoading.value || eventsLoading.value)
+  const loading = computed(() => tournamentStore.loading || waitroomLoading.value || eventsLoading.value)
 
   return {
     leagueId,
-    eventId,
+    tournamentId,
     currentLeague,
-    currentEvent,
+    currentTournament,
     currentRound,
     totalRounds,
     eventStatus,
-    canStartEvent,
+    canStartTournament,
     currentPhase,
     phaseFromQuery,
     roundFromQuery,
@@ -258,7 +258,7 @@ export function useEventPage() {
     isInWaitingList,
     addToWaitingList,
     removeFromWaitingList,
-    startEvent,
+    startTournament,
     nextRound,
     turnBackRound,
     updateEvent,

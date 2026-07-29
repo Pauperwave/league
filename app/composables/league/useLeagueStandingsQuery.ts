@@ -7,9 +7,9 @@
 import type { StandingWithPlayer, Player } from '#shared/utils/types'
 import type { Database } from '#shared/utils/types/database'
 
-async function fetchStandingsForEvents<T>(
+async function fetchStandingsForTournaments<T>(
   supabase: ReturnType<typeof useSupabaseClient<Database>>,
-  eventIds: number[],
+  tournamentIds: number[],
   selectColumns: string
 ): Promise<T[]> {
   // selectColumns is a dynamic string, so Supabase can't statically type the
@@ -17,7 +17,7 @@ async function fetchStandingsForEvents<T>(
   const { data, error } = await supabase
     .from('standings')
     .select(selectColumns)
-    .in('event_id', eventIds)
+    .in('tournament_id', tournamentIds)
 
   if (error) throw error
   return (data ?? []) as unknown as T[]
@@ -26,22 +26,22 @@ async function fetchStandingsForEvents<T>(
 /** Query key for a league's summed standings. */
 export const LEAGUE_STANDINGS_KEY = ['league-standings']
 
-/** Simple sum aggregation of standings across all of a league's events. */
+/** Simple sum aggregation of standings across all of a league's tournaments. */
 export function useLeagueStandingsQuery(leagueId: number) {
   const supabase = useSupabaseClient()
 
   return useQuery({
     key: [...LEAGUE_STANDINGS_KEY, leagueId],
     query: async (): Promise<StandingWithPlayer[]> => {
-      const { data: eventsData, error: eventsError } = await supabase
-        .from('events')
-        .select('event_id')
+      const { data: tournamentsData, error: tournamentsError } = await supabase
+        .from('tournaments')
+        .select('tournament_id')
         .eq('league_id', leagueId)
 
-      if (eventsError) throw eventsError
-      if (!eventsData?.length) return []
+      if (tournamentsError) throw tournamentsError
+      if (!tournamentsData?.length) return []
 
-      const eventIds = eventsData.map(e => e.event_id)
+      const tournamentIds = tournamentsData.map(e => e.tournament_id)
 
       interface LeagueStandingRow {
         player_id: number
@@ -52,9 +52,9 @@ export function useLeagueStandingsQuery(leagueId: number) {
         players: Pick<Player, 'player_id' | 'player_name' | 'player_surname' | 'formats_played' | 'is_active'> | null
       }
 
-      const standingsData = await fetchStandingsForEvents<LeagueStandingRow>(
+      const standingsData = await fetchStandingsForTournaments<LeagueStandingRow>(
         supabase,
-        eventIds,
+        tournamentIds,
         `
           player_id,
           standing_player_score,
@@ -78,7 +78,7 @@ export function useLeagueStandingsQuery(leagueId: number) {
         else {
           playerMap.set(s.player_id, {
             standing_id: 0,
-            event_id: null,
+            tournament_id: null,
             player_id: s.player_id,
             standing_player_score: s.standing_player_score ?? 0,
             standing_player_rank: null,
@@ -105,14 +105,14 @@ export function useLeagueStandingsQuery(leagueId: number) {
   })
 }
 
-/** Standings across a specific set of events (EventRanking's cross-event view). */
-export function useMultipleEventStandingsQuery(eventIds: MaybeRefOrGetter<number[]>) {
+/** Standings across a specific set of tournaments (EventRanking's cross-tournament view). */
+export function useMultipleEventStandingsQuery(tournamentIds: MaybeRefOrGetter<number[]>) {
   const supabase = useSupabaseClient()
 
   return useQuery({
-    key: () => ['event-standings-multi', toValue(eventIds).join(',')],
+    key: () => ['event-standings-multi', toValue(tournamentIds).join(',')],
     query: async (): Promise<StandingWithPlayer[]> => {
-      const ids = toValue(eventIds)
+      const ids = toValue(tournamentIds)
       if (!ids.length) return []
 
       const { data, error } = await supabase
@@ -121,7 +121,7 @@ export function useMultipleEventStandingsQuery(eventIds: MaybeRefOrGetter<number
           *,
           players:player_id (player_id, player_name, player_surname)
         `)
-        .in('event_id', ids)
+        .in('tournament_id', ids)
 
       if (error) throw error
 

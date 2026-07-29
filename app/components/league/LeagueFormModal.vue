@@ -13,7 +13,7 @@ const LeagueFormSchema = v.object({
   startsAt: v.nullable(v.string()),
   endsAt: v.nullable(v.string()),
   rulesetId: v.nullable(v.number()),
-  validEvents: v.nullable(v.pipe(v.number(), v.integer(), v.minValue(1))),
+  validTournaments: v.nullable(v.pipe(v.number(), v.integer(), v.minValue(1))),
   status: v.picklist(['scheduled', 'active', 'ended']),
 })
 
@@ -46,7 +46,7 @@ const defaultForm = () => ({
   startsAt: getToday(),
   endsAt: null as CalendarDate | null,
   rulesetId: undefined as number | undefined,
-  validEvents: undefined as number | undefined,
+  validTournaments: undefined as number | undefined,
   status: 'scheduled' as LeagueStatus,
 })
 
@@ -87,7 +87,7 @@ watch(open, (isOpen) => {
       startsAt: parseDateString(l.starts_at),
       endsAt: parseDateString(l.ends_at),
       rulesetId: l.ruleset_id ?? undefined,
-      validEvents: l.valid_events ?? undefined,
+      validTournaments: l.valid_tournaments ?? undefined,
       status: (l.status as LeagueStatus) ?? 'scheduled',
     })
   } else {
@@ -105,7 +105,7 @@ function handleSubmit() {
     startsAt: form.startsAt?.toString() ?? null,
     endsAt: form.endsAt?.toString() ?? null,
     rulesetId: form.rulesetId ?? null,
-    validEvents: form.validEvents ?? null,
+    validTournaments: form.validTournaments ?? null,
     status: form.status,
   }
 
@@ -188,7 +188,7 @@ function handleSubmit() {
         <UFormField :label="t('league.form.validEventsLabel')">
           <UInputNumber
             id="field-valid-events"
-            v-model="form.validEvents"
+            v-model="form.validTournaments"
             :min="1"
             placeholder="0"
             class="w-full"

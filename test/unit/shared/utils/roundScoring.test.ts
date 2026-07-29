@@ -22,7 +22,7 @@ function makeRuleset(overrides: Partial<Ruleset> = {}): Ruleset {
 
 function makePairing(overrides: Partial<Pairing> = {}): Pairing {
   return {
-    event_id: 1,
+    tournament_id: 1,
     pairing_id: 1,
     pairing_round: 1,
     pairing_datetime: null,
@@ -90,7 +90,7 @@ describe('buildPairingRows', () => {
   it('maps a full 4-player table with pairing_is_full true', () => {
     const rows = buildPairingRows(1, 2, [[10, 20, 30, 40]])
     expect(rows).toEqual([{
-      event_id: 1,
+      tournament_id: 1,
       pairing_round: 2,
       pairing_is_full: true,
       pairing_player1_id: 10,

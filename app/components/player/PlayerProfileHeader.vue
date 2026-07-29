@@ -3,7 +3,7 @@
 import type { Player } from '#shared/utils/types'
 
 interface PlayerStats {
-  events_played: number
+  tournaments_played: number
   total_matches: number
   total_wins: number
   total_kills: number
@@ -42,7 +42,7 @@ const { t } = useI18n()
       <StatTile
         background="bg-elevated"
         :icon="ICONS.calendarDays"
-        :value="playerStats?.events_played ?? 0"
+        :value="playerStats?.tournaments_played ?? 0"
         :label="t('player.stats.events')"
       />
       <StatTile

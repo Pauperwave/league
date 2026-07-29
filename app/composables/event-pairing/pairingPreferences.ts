@@ -7,8 +7,8 @@ interface PairingPreferences {
   forbiddenPairs: PairingForbiddenPair[]
 }
 
-function storageKey(eventId: number): string {
-  return `pairing-preferences-event-${eventId}`
+function storageKey(tournamentId: number): string {
+  return `pairing-preferences-event-${tournamentId}`
 }
 
 function normalizeForbiddenPairs(pairs: PairingForbiddenPair[]): PairingForbiddenPair[] {
@@ -29,7 +29,7 @@ function normalizeForbiddenPairs(pairs: PairingForbiddenPair[]): PairingForbidde
   return result
 }
 
-export function getPairingPreferences(eventId: number): PairingPreferences {
+export function getPairingPreferences(tournamentId: number): PairingPreferences {
   const fallback: PairingPreferences = {
     weights: { ...DEFAULT_PAIRING_WEIGHTS },
     forbiddenPairs: [],
@@ -38,7 +38,7 @@ export function getPairingPreferences(eventId: number): PairingPreferences {
   if (!import.meta.client) return fallback
 
   try {
-    const raw = localStorage.getItem(storageKey(eventId))
+    const raw = localStorage.getItem(storageKey(tournamentId))
     if (!raw) return fallback
 
     const parsed = JSON.parse(raw) as Partial<PairingPreferences>
@@ -56,7 +56,7 @@ export function getPairingPreferences(eventId: number): PairingPreferences {
   }
 }
 
-export function savePairingPreferences(eventId: number, prefs: PairingPreferences): void {
+export function savePairingPreferences(tournamentId: number, prefs: PairingPreferences): void {
   if (!import.meta.client) return
 
   const normalized: PairingPreferences = {
@@ -67,7 +67,7 @@ export function savePairingPreferences(eventId: number, prefs: PairingPreference
     forbiddenPairs: normalizeForbiddenPairs(prefs.forbiddenPairs),
   }
 
-  localStorage.setItem(storageKey(eventId), JSON.stringify(normalized))
+  localStorage.setItem(storageKey(tournamentId), JSON.stringify(normalized))
 }
 
 export function normalizePairingForbiddenPairs(pairs: PairingForbiddenPair[]): PairingForbiddenPair[] {

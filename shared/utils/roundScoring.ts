@@ -1,7 +1,7 @@
 // shared\utils\roundScoring.ts
 // Round-scoring and pairing-row helpers shared between the client store
-// (app/stores/events.ts — startEvent's round-1 pairings) and the BFF endpoints
-// (server/api/events/[eventId]/* — ADR-013). Everything is parameterized on a
+// (app/stores/tournaments.ts — startTournament's round-1 pairings) and the BFF endpoints
+// (server/api/tournaments/[tournamentId]/* — ADR-013). Everything is parameterized on a
 // SupabaseClient or pure, so it runs identically on both sides.
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from './types/database'
@@ -15,20 +15,20 @@ export interface StandingAccumulator {
   play_received: number
 }
 
-/** Resolve event → league → ruleset and build position-value array */
-export async function resolveEventRuleset(supabase: SupabaseClient<Database>, eventId: number) {
-  const { data: eventData, error: eventError } = await supabase
-    .from('events')
-    .select('league_id, event_round_number')
-    .eq('event_id', eventId)
+/** Resolve tournament → league → ruleset and build position-value array */
+export async function resolveTournamentRuleset(supabase: SupabaseClient<Database>, tournamentId: number) {
+  const { data: tournamentData, error: tournamentError } = await supabase
+    .from('tournaments')
+    .select('league_id, tournament_round_number')
+    .eq('tournament_id', tournamentId)
     .single()
 
-  if (eventError || !eventData?.league_id) throw eventError ?? new Error('No league_id')
+  if (tournamentError || !tournamentData?.league_id) throw tournamentError ?? new Error('No league_id')
 
   const { data: leagueData, error: leagueError } = await supabase
     .from('leagues')
     .select('ruleset_id')
-    .eq('id', eventData.league_id)
+    .eq('id', tournamentData.league_id)
     .single()
 
   if (leagueError || !leagueData?.ruleset_id) throw leagueError ?? new Error('No ruleset_id')
@@ -49,7 +49,7 @@ export async function resolveEventRuleset(supabase: SupabaseClient<Database>, ev
     ruleset?.rule_set_rank4 ?? 0,
   ]
 
-  return { ruleset, posValues, eventRoundNumber: eventData.event_round_number }
+  return { ruleset, posValues, tournamentRoundNumber: tournamentData.tournament_round_number }
 }
 
 /**
@@ -66,10 +66,10 @@ export async function resolveEventRuleset(supabase: SupabaseClient<Database>, ev
  * since `updateStandingsAndRanks` writes the result as an absolute value, not
  * an increment.
  */
-export async function fetchRoundData(supabase: SupabaseClient<Database>, eventId: number, currentRound: number) {
+export async function fetchRoundData(supabase: SupabaseClient<Database>, tournamentId: number, currentRound: number) {
   const [{ data: pairingsData, error: pairingsError }, { data: currentStandings, error: currentStandingsError }] = await Promise.all([
-    supabase.from('pairings').select('*').eq('event_id', eventId).lte('pairing_round', currentRound),
-    supabase.from('standings').select('player_id').eq('event_id', eventId),
+    supabase.from('pairings').select('*').eq('tournament_id', tournamentId).lte('pairing_round', currentRound),
+    supabase.from('standings').select('player_id').eq('tournament_id', tournamentId),
   ])
 
   if (pairingsError) throw pairingsError
@@ -223,7 +223,7 @@ export function calculateRoundScores(
 }
 
 /** Batch-update standings scores, then update ranks */
-export async function updateStandingsAndRanks(supabase: SupabaseClient<Database>, eventId: number, standingsMap: Map<number, StandingAccumulator>) {
+export async function updateStandingsAndRanks(supabase: SupabaseClient<Database>, tournamentId: number, standingsMap: Map<number, StandingAccumulator>) {
   // .select() makes the update return the affected rows: an update silently
   // filtered out by RLS (no UPDATE policy for the anon role) reports NO error
   // and 0 rows — without this check, scores vanish and standings stay 0.
@@ -237,7 +237,7 @@ export async function updateStandingsAndRanks(supabase: SupabaseClient<Database>
           brew_received: s.brew_received,
           play_received: s.play_received,
         })
-        .eq('event_id', eventId)
+        .eq('tournament_id', tournamentId)
         .eq('player_id', s.player_id)
         .select('player_id'),
     ),
@@ -264,7 +264,7 @@ export async function updateStandingsAndRanks(supabase: SupabaseClient<Database>
       supabase
         .from('standings')
         .update({ standing_player_rank: index + 1 })
-        .eq('event_id', eventId)
+        .eq('tournament_id', tournamentId)
         .eq('player_id', s.player_id),
     ),
   )
@@ -293,11 +293,11 @@ export function buildRoundOneTables(playerOrder: number[]): number[][] {
 }
 
 /** Map table player-id groups to pairing insert rows. */
-export function buildPairingRows(eventId: number, round: number, tables: number[][]): PairingInsert[] {
+export function buildPairingRows(tournamentId: number, round: number, tables: number[][]): PairingInsert[] {
   return tables
     .filter(table => table.length >= 3)
     .map(table => ({
-      event_id: eventId,
+      tournament_id: tournamentId,
       pairing_round: round,
       pairing_is_full: table.length === 4,
       pairing_player1_id: table[0] ?? null,

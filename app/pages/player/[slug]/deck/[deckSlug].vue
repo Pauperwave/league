@@ -58,7 +58,7 @@ const breadcrumbItems = useBreadcrumb(() => [
 
       <DeckStatsRow
         :first-icon="ICONS.calendarDays"
-        :first-value="deckStats?.events_played ?? 0"
+        :first-value="deckStats?.tournaments_played ?? 0"
         :first-label="t('player.stats.events')"
         :matches="deckStats?.total_matches ?? 0"
         :wins="deckStats?.total_wins ?? 0"

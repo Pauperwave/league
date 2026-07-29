@@ -1,6 +1,6 @@
-// server\api\events\[eventId]\update.post.ts
+// server\api\events\[tournamentId]\update.post.ts
 // fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
-// BFF wave 4 (ADR-013): update an event's form fields. The body is a
+// BFF wave 4 (ADR-013): update a tournament's form fields. The body is a
 // partial — only the provided fields are written. Lifecycle transitions are
 // NOT this endpoint's job: start/advance-round/turn-back-round own those.
 import * as v from 'valibot'
@@ -8,36 +8,36 @@ import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 
 export default defineEventHandler(async (event) => {
-  const eventId = requireIdParam(event, 'eventId')
-  const body = await requireValidBody(event, v.partial(eventFormBodySchema))
+  const tournamentId = requireIdParam(event, 'tournamentId')
+  const body = await requireValidBody(event, v.partial(tournamentFormBodySchema))
 
-  console.log('[api/events/update] request', { eventId, fields: Object.keys(body) })
+  console.log('[api/events/update] request', { tournamentId, fields: Object.keys(body) })
 
   // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this endpoint is the authorization boundary now, not a DB policy.
   const supabase = serverSupabaseServiceRole<Database>(event)
 
   const { data, error } = await supabase
-    .from('events')
+    .from('tournaments')
     .update(body)
-    .eq('event_id', eventId)
+    .eq('tournament_id', tournamentId)
     .select()
     .single()
 
   if (error || !data) {
-    // PGRST116 = zero rows matched the filter — the event doesn't exist.
+    // PGRST116 = zero rows matched the filter — the tournament doesn't exist.
     if (error?.code === 'PGRST116') {
       throw createError({
         statusCode: 404,
-        statusMessage: 'Event not found'
+        statusMessage: 'Tournament not found'
       })
     }
-    console.error('[api/events/update] update failed', { eventId, error })
+    console.error('[api/events/update] update failed', { tournamentId, error })
     throw createError({
       statusCode: 500,
-      statusMessage: error?.message ?? 'Event update failed'
+      statusMessage: error?.message ?? 'Tournament update failed'
     })
   }
 
-  console.log('[api/events/update] updated', { eventId })
+  console.log('[api/events/update] updated', { tournamentId })
   return { event: data }
 })

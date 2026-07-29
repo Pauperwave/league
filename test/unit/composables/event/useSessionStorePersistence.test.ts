@@ -50,7 +50,7 @@ function mountWithPersistence(stores: ReturnType<typeof makeFakeStores>, round =
   const currentRound = ref(round)
   const Host = defineComponent({
     setup() {
-      useSessionStorePersistence({ eventId: EVENT_ID, currentRound, ...stores })
+      useSessionStorePersistence({ tournamentId: EVENT_ID, currentRound, ...stores })
       return () => h('div')
     },
   })

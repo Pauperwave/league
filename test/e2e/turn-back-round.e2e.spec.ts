@@ -21,8 +21,8 @@ function supabaseHeaders() {
   return { apikey: SUPABASE_SECRET_KEY, Authorization: `Bearer ${SUPABASE_SECRET_KEY}` }
 }
 
-async function fetchPairingIds(eventId: number, round: number): Promise<number[]> {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/pairings?event_id=eq.${eventId}&pairing_round=eq.${round}&select=pairing_id`, {
+async function fetchPairingIds(tournamentId: number, round: number): Promise<number[]> {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/pairings?event_id=eq.${tournamentId}&pairing_round=eq.${round}&select=pairing_id`, {
     headers: supabaseHeaders(),
   })
   const rows = await res.json() as { pairing_id: number }[]
@@ -41,18 +41,18 @@ async function countRoundResults(pairingIds: number[]): Promise<number> {
 
 let playerIds: number[] = []
 let leagueId: number | undefined
-let eventId: number | undefined
+let tournamentId: number | undefined
 
 test.afterEach(async ({ request }) => {
   // Unregister first: turn-back-round-to-registration restores the waitroom,
   // and the event-delete guard 409s on any remaining waitroom/pairings/
-  // standings rows (see server/api/events/[eventId]/delete.post.ts).
-  if (eventId !== undefined && playerIds.length > 0) {
-    await request.post(`/api/events/${eventId}/unregister-player`, { data: { playerIds } }).catch(() => {})
+  // standings rows (see server/api/events/[tournamentId]/delete.post.ts).
+  if (tournamentId !== undefined && playerIds.length > 0) {
+    await request.post(`/api/events/${tournamentId}/unregister-player`, { data: { playerIds } }).catch(() => {})
   }
-  if (eventId !== undefined) {
-    await cleanup.event(request, eventId)
-    eventId = undefined
+  if (tournamentId !== undefined) {
+    await cleanup.event(request, tournamentId)
+    tournamentId = undefined
   }
   if (leagueId !== undefined) {
     await cleanup.league(request, leagueId)
@@ -76,7 +76,7 @@ test('turn-back-round succeeds and clears round_results when scores were already
   }
 
   const leagueRes = await request.post('/api/leagues/create', {
-    data: { name: testTag('League'), startsAt: null, endsAt: null, rulesetId: null, validEvents: null },
+    data: { name: testTag('League'), startsAt: null, endsAt: null, rulesetId: null, validTournaments: null },
   })
   expect(leagueRes.ok()).toBe(true)
   const { league } = await leagueRes.json() as { league: { id: number } }
@@ -92,17 +92,17 @@ test('turn-back-round succeeds and clears round_results when scores were already
   })
   expect(eventRes.ok()).toBe(true)
   const { event } = await eventRes.json() as { event: { event_id: number } }
-  eventId = event.event_id
+  tournamentId = event.event_id
 
-  const registerRes = await request.post(`/api/events/${eventId}/register-player`, { data: { playerIds } })
+  const registerRes = await request.post(`/api/events/${tournamentId}/register-player`, { data: { playerIds } })
   expect(registerRes.ok()).toBe(true)
 
-  const startRes = await request.post(`/api/events/${eventId}/start`, { data: { playerOrder: playerIds } })
+  const startRes = await request.post(`/api/events/${tournamentId}/start`, { data: { playerOrder: playerIds } })
   if (!startRes.ok()) {
     throw new Error(`start failed: ${startRes.status()} ${await startRes.text()}`)
   }
 
-  const pairingIds = await fetchPairingIds(eventId, 1)
+  const pairingIds = await fetchPairingIds(tournamentId, 1)
   expect(pairingIds).toHaveLength(1)
   const [pairingId] = pairingIds
 
@@ -119,7 +119,7 @@ test('turn-back-round succeeds and clears round_results when scores were already
   // round_results.pairing_id) whenever the round being rolled back had
   // already-submitted scores — exactly the realistic case for turning a
   // round back at all.
-  const turnBackRes = await request.post(`/api/events/${eventId}/turn-back-round`, { data: { currentRound: 1 } })
+  const turnBackRes = await request.post(`/api/events/${tournamentId}/turn-back-round`, { data: { currentRound: 1 } })
   if (!turnBackRes.ok()) {
     throw new Error(`turn-back-round failed: ${turnBackRes.status()} ${await turnBackRes.text()}`)
   }

@@ -1,13 +1,13 @@
 // app\composables\event\useEventLifecycle.ts
-import type { EventUpdatePayload } from '~/components/event/modal/EventFormModal.vue'
+import type { TournamentUpdatePayload } from '~/components/event/modal/EventFormModal.vue'
 
 interface LifecycleDeps {
   // Event actions from useEventPage
-  eventId: number
+  tournamentId: number
   nextRound: (playerOrder?: number[]) => Promise<boolean>
   turnBackRound: () => Promise<boolean>
-  startEvent: (playerOrder: number[]) => Promise<boolean>
-  updateEvent: (payload: EventUpdatePayload) => Promise<boolean>
+  startTournament: (playerOrder: number[]) => Promise<boolean>
+  updateEvent: (payload: TournamentUpdatePayload) => Promise<boolean>
 
   // State refs
   showNextRoundModal: Ref<boolean>
@@ -41,7 +41,7 @@ interface LifecycleDeps {
  */
 export function useEventLifecycle(deps: LifecycleDeps) {
   const {
-    eventId, nextRound, turnBackRound, startEvent, updateEvent,
+    tournamentId, nextRound, turnBackRound, startTournament, updateEvent,
     showNextRoundModal, showEndEventConfirm, showStartPreviewModal, showCancelRoundConfirm, showEventEditModal,
     isLastRound, currentRound, eventStatus,
     syncUrl, clearViewedRound,
@@ -77,9 +77,9 @@ export function useEventLifecycle(deps: LifecycleDeps) {
 
   async function handlePreviewConfirm(playerOrder: number[]) {
     if (eventStatus.value === 'registration') {
-      const ok = await startEvent(playerOrder)
+      const ok = await startTournament(playerOrder)
       if (ok) {
-        clearWaitingListFlags(eventId)
+        clearWaitingListFlags(tournamentId)
         showStartPreviewModal.value = false
       }
     } else {

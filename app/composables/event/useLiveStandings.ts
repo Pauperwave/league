@@ -1,7 +1,7 @@
 // app\composables\event\useLiveStandings.ts
 import type { Ref } from 'vue'
 import { getPairingPlayerIds } from '#shared/utils/types'
-import type { StandingWithPlayer, PairingWithResults, EventStatus } from '#shared/utils/types'
+import type { StandingWithPlayer, PairingWithResults, TournamentStatus } from '#shared/utils/types'
 import type { RankingEntry } from '~/stores/rankings'
 
 interface RulesetValues {
@@ -98,7 +98,7 @@ export function updateStanding(
 
 export function useLiveStandings(
   rulesetId: Ref<number | null | undefined>,
-  eventStatus: Ref<EventStatus>,
+  eventStatus: Ref<TournamentStatus>,
   pairings: Ref<PairingWithResults[]>,
   standings: Ref<StandingWithPlayer[]>,
 ) {

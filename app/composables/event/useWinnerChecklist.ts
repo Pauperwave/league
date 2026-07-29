@@ -7,8 +7,8 @@ export interface WinnerChecklistEntry {
   players: TablePlayer[]
 }
 
-function winnerChecklistKey(eventId: number, round: number): string {
-  return `winner-checklist-${eventId}-${round}`
+function winnerChecklistKey(tournamentId: number, round: number): string {
+  return `winner-checklist-${tournamentId}-${round}`
 }
 
 // The key is already round-scoped (resets every round on its own) — this
@@ -59,18 +59,18 @@ export function useWinners(
  * checkbox disagree with the client's real value, which Nuxt UI's checkbox
  * doesn't reliably repaint).
  */
-export function useWinnerChecklist(eventId: number, round: MaybeRefOrGetter<number>) {
+export function useWinnerChecklist(tournamentId: number, round: MaybeRefOrGetter<number>) {
   const checked = ref<Record<number, boolean>>({})
 
   function load() {
-    checked.value = getCached<Record<number, boolean>>(winnerChecklistKey(eventId, toValue(round)), CHECKLIST_TTL_MS) ?? {}
+    checked.value = getCached<Record<number, boolean>>(winnerChecklistKey(tournamentId, toValue(round)), CHECKLIST_TTL_MS) ?? {}
   }
 
   onMounted(load)
   watch(() => toValue(round), load)
 
   watch(checked, (value) => {
-    setCached(winnerChecklistKey(eventId, toValue(round)), value)
+    setCached(winnerChecklistKey(tournamentId, toValue(round)), value)
   }, { deep: true })
 
   function toggle(playerId: number) {

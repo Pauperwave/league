@@ -8,14 +8,14 @@ const { t } = useI18n()
 const props = defineProps<{
   waitingPlayers: number[]
   players: Player[]
-  eventId: number
+  tournamentId: number
   waitroomEntries?: Map<number, string>
   tableEstimate?: string
 }>()
 
 const playersById = computed(() => new Map(props.players.map(p => [p.player_id, p])))
 
-const { flags } = useWaitingListFlags(props.eventId)
+const { flags } = useWaitingListFlags(props.tournamentId)
 
 function handleUpdate(payload: { playerId: number, paid: boolean }) {
   flags.value = {

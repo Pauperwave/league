@@ -1,7 +1,7 @@
 <!-- app\components\event\EventStepper.vue -->
 <script setup lang="ts">
 import type { StepperItem } from '@nuxt/ui'
-import type { EventStatus } from '#shared/utils/types'
+import type { TournamentStatus } from '#shared/utils/types'
 
 const { t } = useI18n()
 
@@ -11,7 +11,7 @@ const props = defineProps<{
   /** Total number of rounds in the event */
   totalRounds: number
   /** Current event status */
-  eventStatus: EventStatus
+  eventStatus: TournamentStatus
 }>()
 
 const stepper = useTemplateRef('stepper')

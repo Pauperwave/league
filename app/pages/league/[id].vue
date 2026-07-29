@@ -11,8 +11,8 @@
 -->
 <script setup lang="ts">
 // fallow-ignore-file code-duplication -- LeagueFormModal/ConfirmModal invocation boilerplate shared with leagues.vue
-import type { Event } from '#shared/utils/types'
-import type { EventCreatePayload, EventUpdatePayload } from '~/components/event/modal/EventFormModal.vue'
+import type { Tournament } from '#shared/utils/types'
+import type { TournamentCreatePayload, TournamentUpdatePayload } from '~/components/event/modal/EventFormModal.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -64,34 +64,34 @@ const showCreateModal = ref(false)
 const showLeagueEditModal = ref(false)
 
 const showEventEditModal = ref(false)
-const eventToEdit = ref<Event | null>(null)
+const eventToEdit = ref<Tournament | null>(null)
 
 const showDeleteConfirm = ref(false)
-const eventToDelete = ref<Event | null>(null)
+const eventToDelete = ref<Tournament | null>(null)
 
 // — Navigation —
-function navigateToEvent(event: Event) {
+function navigateToEvent(event: Tournament) {
   logDebug('LeagueDetailPage', 'Navigating to event', {
-    eventId: event.event_id,
-    eventName: event.event_name,
-    eventPlaying: event.event_playing,
-    eventRegistrationOpen: event.event_registration_open,
-    eventCurrentRound: event.event_current_round,
-    targetUrl: `/league/${leagueId}/event/${event.event_id}`,
+    tournamentId: event.tournament_id,
+    eventName: event.tournament_name,
+    eventPlaying: event.tournament_playing,
+    eventRegistrationOpen: event.tournament_registration_open,
+    eventCurrentRound: event.tournament_current_round,
+    targetUrl: `/league/${leagueId}/event/${event.tournament_id}`,
   })
-  router.push(`/league/${leagueId}/event/${event.event_id}`)
+  router.push(`/league/${leagueId}/event/${event.tournament_id}`)
 }
 
-// — Event CRUD —
-async function createEvent(data: EventCreatePayload) {
+// — Tournament CRUD —
+async function createEvent(data: TournamentCreatePayload) {
   try {
     await createEventMutation.mutateAsync({
-      event_name: data.eventName,
+      tournament_name: data.eventName,
       league_id: leagueId,
-      event_datetime: data.eventDate,
-      event_round_number: data.numRound,
-      event_round_duration: data.roundDuration,
-      event_registration_open: true,
+      tournament_datetime: data.eventDate,
+      tournament_round_number: data.numRound,
+      tournament_round_duration: data.roundDuration,
+      tournament_registration_open: true,
     })
   } catch (err) {
     toast.add({
@@ -110,15 +110,15 @@ async function createEvent(data: EventCreatePayload) {
   })
 }
 
-async function updateEvent({ id, data }: EventUpdatePayload) {
+async function updateEvent({ id, data }: TournamentUpdatePayload) {
   try {
     await updateEventMutation.mutateAsync({
       id,
       data: {
-        event_name: data.eventName,
-        event_datetime: data.eventDate ?? undefined,
-        event_round_number: data.numRound,
-        event_round_duration: data.roundDuration,
+        tournament_name: data.eventName,
+        tournament_datetime: data.eventDate ?? undefined,
+        tournament_round_number: data.numRound,
+        tournament_round_duration: data.roundDuration,
       },
     })
   } catch (err) {
@@ -139,12 +139,12 @@ async function updateEvent({ id, data }: EventUpdatePayload) {
   })
 }
 
-function openEditEvent(event: Event) {
+function openEditEvent(event: Tournament) {
   eventToEdit.value = event
   showEventEditModal.value = true
 }
 
-function openDeleteEvent(event: Event) {
+function openDeleteEvent(event: Tournament) {
   eventToDelete.value = event
   showDeleteConfirm.value = true
 }
@@ -153,7 +153,7 @@ async function confirmDeleteEvent() {
   if (!eventToDelete.value) return
 
   try {
-    await deleteEventMutation.mutateAsync(eventToDelete.value.event_id)
+    await deleteEventMutation.mutateAsync(eventToDelete.value.tournament_id)
   } catch (err) {
     toast.add({
       title: t('event.toast.deleteErrorTitle'),
@@ -238,7 +238,7 @@ const { updateLeague } = useLeagueUpdate(() => {
       v-model:open="showDeleteConfirm"
       :description="t('league.confirmDeleteEventDescription')"
       :question="t('league.confirmDeleteEventQuestion')"
-      :subject="eventToDelete?.event_name"
+      :subject="eventToDelete?.tournament_name"
       :confirm-icon="ICONS.delete"
       @confirm="confirmDeleteEvent"
     />

@@ -1,4 +1,4 @@
-// server\api\events\[eventId]\delete.post.ts
+// server\api\events\[tournamentId]\delete.post.ts
 // fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
 // BFF wave 4 (ADR-013): delete an event. The "event still has pairings/
 // standings/waitroom entries" guard lives here (409) — the underlying FKs
@@ -8,9 +8,9 @@ import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 
 export default defineEventHandler(async (event) => {
-  const eventId = requireIdParam(event, 'eventId')
+  const tournamentId = requireIdParam(event, 'tournamentId')
 
-  console.log('[api/events/delete] request', { eventId })
+  console.log('[api/events/delete] request', { tournamentId })
 
   // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this endpoint is the authorization boundary now, not a DB policy.
   const supabase = serverSupabaseServiceRole<Database>(event)
@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
     const { count, error: usageError } = await supabase
       .from(table)
       .select('*', { count: 'exact', head: true })
-      .eq('event_id', eventId)
+      .eq('tournament_id', tournamentId)
 
     if (usageError) {
       throw createError({
@@ -33,24 +33,24 @@ export default defineEventHandler(async (event) => {
     if ((count ?? 0) > 0) {
       throw createError({
         statusCode: 409,
-        statusMessage: `Event still has ${table} entries`
+        statusMessage: `Tournament still has ${table} entries`
       })
     }
   }
 
   const { error } = await supabase
-    .from('events')
+    .from('tournaments')
     .delete()
-    .eq('event_id', eventId)
+    .eq('tournament_id', tournamentId)
 
   if (error) {
-    console.error('[api/events/delete] delete failed', { eventId, error })
+    console.error('[api/events/delete] delete failed', { tournamentId, error })
     throw createError({
       statusCode: 500,
       statusMessage: error.message
     })
   }
 
-  console.log('[api/events/delete] deleted', { eventId })
+  console.log('[api/events/delete] deleted', { tournamentId })
   return { deleted: true }
 })

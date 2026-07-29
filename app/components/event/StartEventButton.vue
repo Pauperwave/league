@@ -16,7 +16,7 @@
 
   Usage:
   <EventsStartEventButton
-    :disabled="!canStartEvent"
+    :disabled="!canStartTournament"
     :loading="isStarting"
     @click="handleStart"
   />

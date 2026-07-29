@@ -56,20 +56,20 @@ interface VotesStoreLike {
 /** A league night; anything older than this is stale and dropped by getCached. */
 const SNAPSHOT_TTL_MS = 12 * 60 * 60 * 1000
 
-export function sessionSnapshotKey(eventId: number): string {
-  return `event-session-${eventId}`
+export function sessionSnapshotKey(tournamentId: number): string {
+  return `event-session-${tournamentId}`
 }
 
 export function useSessionStorePersistence(params: {
-  eventId: number
+  tournamentId: number
   currentRound: Ref<number> | ComputedRef<number>
   rankingsStore: RankingsStoreLike
   killsStore: KillsStoreLike
   commandersStore: CommandersStoreLike
   votesStore: VotesStoreLike
 }) {
-  const { eventId, currentRound, rankingsStore, killsStore, commandersStore, votesStore } = params
-  const key = sessionSnapshotKey(eventId)
+  const { tournamentId, currentRound, rankingsStore, killsStore, commandersStore, votesStore } = params
+  const key = sessionSnapshotKey(tournamentId)
 
   function buildSnapshot(): SessionSnapshot {
     return {
@@ -93,7 +93,7 @@ export function useSessionStorePersistence(params: {
     killsStore.hydrate({ kills: snapshot.kills })
     commandersStore.hydrate(snapshot.commanders)
     votesStore.hydrate(snapshot.votes)
-    logInfo('useSessionStorePersistence', `restored round ${snapshot.round} session state for event ${eventId}`)
+    logInfo('useSessionStorePersistence', `restored round ${snapshot.round} session state for event ${tournamentId}`)
   }
 
   // Hydrate in onMounted, not setup: session stores are empty in the

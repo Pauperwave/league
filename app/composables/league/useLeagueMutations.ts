@@ -13,7 +13,7 @@ export interface LeagueFormPayload {
   startsAt: string | null
   endsAt: string | null
   rulesetId: number | null
-  validEvents: number | null
+  validTournaments: number | null
   /** Only editable while editing an existing league — create always starts
    *  as 'scheduled' server-side regardless of what's sent here. */
   status: LeagueStatus

@@ -1,4 +1,4 @@
-<!-- app\pages\league\[leagueId]\event\[eventId].vue -->
+<!-- app\pages\league\[leagueId]\event\[tournamentId].vue -->
 <script setup lang="ts">
 import { getPairingPlayerIds } from '#shared/utils/types'
 import type { Seat, TablePlayer, PairingTable } from '#shared/utils/types'
@@ -16,10 +16,10 @@ const stepper = useTemplateRef<InstanceType<typeof EventStepper>>('stepper')
 // ── Composables & Stores ───────────────────────────────────────────────────
 
 const {
-  leagueId, eventId, currentLeague, currentEvent, currentRound, totalRounds,
-  eventStatus, canStartEvent, waitingPlayers, waitroomEntries, pairings, standings,
+  leagueId, tournamentId, currentLeague, currentTournament, currentRound, totalRounds,
+  eventStatus, canStartTournament, waitingPlayers, waitroomEntries, pairings, standings,
   players, tableEstimate, getPlayerName, getPlayer,
-  addToWaitingList, removeFromWaitingList, startEvent, nextRound, turnBackRound, updateEvent,
+  addToWaitingList, removeFromWaitingList, startTournament, nextRound, turnBackRound, updateEvent,
   pairingHistory, loading, previewTables, viewedRound, isViewingPastRound, viewRound, clearViewedRound,
   displayedPairings, refreshDisplayedPairings,
 } = useEventPage()
@@ -63,7 +63,7 @@ const {
   selectedKillPairingId,
 } = useEventModals()
 
-const eventStore = useEventStore()
+const tournamentStore = useTournamentStore()
 const rankingsStore = useRankingsStore()
 const commandersStore = useCommandersStore()
 const killsStore = useKillsStore()
@@ -71,7 +71,7 @@ const votesStore = useVotesStore()
 
 // Crash insurance: mirror in-progress round entry (rankings/kills/votes/
 // commanders) to localStorage and restore it after a refresh mid-round.
-useSessionStorePersistence({ eventId, currentRound, rankingsStore, killsStore, commandersStore, votesStore })
+useSessionStorePersistence({ tournamentId, currentRound, rankingsStore, killsStore, commandersStore, votesStore })
 
 const toast = useToast()
 const { liveStandings } = useLiveStandings(
@@ -111,10 +111,10 @@ useEventUrlSync({
 // ── Lifecycle Handlers ───────────────────────────────────────────────────
 
 const lifecycle = useEventLifecycle({
-  eventId,
+  tournamentId,
   nextRound,
   turnBackRound,
-  startEvent,
+  startTournament,
   updateEvent,
   showNextRoundModal,
   showEndEventConfirm,
@@ -147,7 +147,7 @@ const playersHandlers = useEventPlayers({
 
 const submitHandlers = useEventSubmitHandlers({
   rankingsStore,
-  eventStore,
+  tournamentStore,
   killsStore,
   commandersStore,
   votesStore,
@@ -211,7 +211,7 @@ const tournamentPlayers = computed<TablePlayer[]>(() =>
 // "Who's won this table" checklist (BACKLOG #15) — winners derived live from
 // rankingsStore, booster hand-out check-off state persisted per event+round.
 const winners = useWinners(displayedPairings, tournamentPlayers, rankingsStore)
-const { checked: winnersChecked, toggle: toggleWinnerChecked } = useWinnerChecklist(eventId, currentRound)
+const { checked: winnersChecked, toggle: toggleWinnerChecked } = useWinnerChecklist(tournamentId, currentRound)
 
 const pairingPlayersForScoring = computed<PairingPlayer[]>(() => {
   const table3Counter = new Map<number, number>()
@@ -270,7 +270,7 @@ const submittedByPlayerId = computed<Record<number, boolean>>(() => {
   })
 
   const roundDuration = computed(() => {
-    return currentEvent.value?.event_round_duration ?? 75
+    return currentTournament.value?.tournament_round_duration ?? 75
   })
 
   function handleTimerExpired() {
@@ -283,13 +283,13 @@ const submittedByPlayerId = computed<Record<number, boolean>>(() => {
   }
 
 const formattedDate = computed(() => {
-  const dt = currentEvent.value?.event_datetime
+  const dt = currentTournament.value?.tournament_datetime
   if (!dt) return ''
   return new Date(dt).toLocaleDateString('it-IT', { year: 'numeric', month: 'long', day: 'numeric' })
 })
 
 const leagueName = computed(() => currentLeague.value?.name ?? t('league.fallbackName'))
-const eventName = computed(() => currentEvent.value?.event_name ?? t('event.fallbackName'))
+const eventName = computed(() => currentTournament.value?.tournament_name ?? t('event.fallbackName'))
 
 const breadcrumbItems = useBreadcrumb(() => [
   { label: t('league.breadcrumb'), to: '/leagues' },
@@ -346,7 +346,7 @@ function handleOpenKillModal(pairingId: number) {
 // ── Reset / Utility ──────────────────────────────────────────────────────
 
 /** Resets a table's local session state AND persists the clear server-side
- *  (`eventStore.resetPairing`, kills+ranking+commander+votes) — without the
+ *  (`tournamentStore.resetPairing`, kills+ranking+commander+votes) — without the
  *  server call, `round_results` kept the previously-submitted values, so
  *  e.g. "Uccisioni" kept showing as reviewed after a reset even though the
  *  local stores were cleared. */
@@ -371,7 +371,7 @@ async function handleResetTable(pairingId: number) {
     votesStore.removeVotes(playerId)
   })
 
-  const result = await eventStore.resetPairing(pairingId)
+  const result = await tournamentStore.resetPairing(pairingId)
   if (!result.success) {
     toast.add({ title: t('deck.toast.errorTitle'), description: result.error, color: 'error' })
     return
@@ -400,7 +400,7 @@ async function handleUndrawTable(pairingId: number) {
     if (index !== -1) killsStore.kills.splice(index, 1)
   })
 
-  const result = await eventStore.undrawPairing(pairingId)
+  const result = await tournamentStore.undrawPairing(pairingId)
   if (!result.success) {
     toast.add({ title: t('deck.toast.errorTitle'), description: result.error, color: 'error' })
     return
@@ -439,7 +439,7 @@ async function handleUndrawTable(pairingId: number) {
         :current-round="currentRound"
         :total-rounds="totalRounds"
         :event-status="eventStatus"
-        :can-start-event="canStartEvent"
+        :can-start-tournament="canStartTournament"
         :can-advance="canAdvance"
         @start="showStartPreviewModal = true"
         @advance="lifecycle.handleAdvance"
@@ -481,7 +481,7 @@ async function handleUndrawTable(pairingId: number) {
               <WaitingList
                 :waiting-players="waitingPlayers"
                 :players="players"
-                :event-id="eventId"
+                :tournament-id="tournamentId"
                 :waitroom-entries="waitroomEntries"
                 :table-estimate="tableEstimate"
                 @update="playersHandlers.handlePlayerStatusUpdate"
@@ -576,7 +576,7 @@ async function handleUndrawTable(pairingId: number) {
     <TablePreviewModal
       v-model:open="showStartPreviewModal"
       :tables="previewModalTables"
-      :event-id="eventId"
+      :tournament-id="tournamentId"
       :players-for-scoring="pairingPlayersForScoring"
       :history="pairingHistoryForScoring"
       :current-round="Math.max(1, currentRound || 1)"
@@ -672,7 +672,7 @@ async function handleUndrawTable(pairingId: number) {
 
     <EventFormModal
       v-model:open="showEventEditModal"
-      :event="currentEvent ?? null"
+      :event="currentTournament ?? null"
       :league-id="leagueId"
       @update="lifecycle.handleUpdateEvent"
     />

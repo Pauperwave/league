@@ -6,7 +6,7 @@ import type { Database, Tables, TablesInsert } from '#shared/utils/types/databas
 // ─── Table Row Types ────────────────────────────────────────────────────────
 export type League      = Tables<'leagues'>
 export type Ruleset     = Tables<'rulesets'>
-export type Event       = Tables<'events'>
+export type Tournament   = Tables<'tournaments'>
 export type Player      = Tables<'players'>
 export type Pairing     = Tables<'pairings'>
 export type Standing    = Tables<'standings'>
@@ -40,7 +40,7 @@ export interface CommanderDeck {
 
 export interface PlayerStat {
   player_id: number
-  events_played: number
+  tournaments_played: number
   total_matches: number
   total_wins: number
   total_kills: number
@@ -49,7 +49,7 @@ export interface PlayerStat {
 
 // ─── Insert Types ───────────────────────────────────────────────────────────
 export type LeagueInsert      = TablesInsert<'leagues'>
-export type EventInsert       = TablesInsert<'events'>
+export type TournamentInsert  = TablesInsert<'tournaments'>
 export type RoundResultInsert = TablesInsert<'round_results'>
 export type PairingInsert     = TablesInsert<'pairings'>
 export type PlayerInsert      = TablesInsert<'players'>
@@ -118,5 +118,5 @@ export interface CommanderAggregate {
   average_score: number
 }
 
-// Event status - single source of truth for event state
-export type EventStatus = 'registration' | 'playing' | 'ended'
+// Tournament status - single source of truth for tournament state
+export type TournamentStatus = 'registration' | 'playing' | 'ended'

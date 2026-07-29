@@ -5,7 +5,7 @@ import type { RankingEntry } from '~/stores/rankings'
 
 interface SubmitHandlerDeps {
   rankingsStore: ReturnType<typeof import('~/stores/rankings').useRankingsStore>
-  eventStore: ReturnType<typeof import('~/stores/events').useEventStore>
+  tournamentStore: ReturnType<typeof import('~/stores/tournaments').useTournamentStore>
   killsStore: ReturnType<typeof import('~/stores/kills').useKillsStore>
   commandersStore: ReturnType<typeof import('~/stores/commanders').useCommandersStore>
   votesStore: ReturnType<typeof import('~/stores/votes').useVotesStore>
@@ -23,7 +23,7 @@ interface SubmitHandlerDeps {
  */
 export function useEventSubmitHandlers(deps: SubmitHandlerDeps) {
   const {
-    rankingsStore, eventStore, commandersStore, votesStore, toast,
+    rankingsStore, tournamentStore, commandersStore, votesStore, toast,
     selectedPairingId, selectedPlayerId, selectedCommanderPairingId,
     selectedVotesPlayerId, selectedVotesPairingId, refreshDisplayedPairings,
   } = deps
@@ -36,7 +36,7 @@ export function useEventSubmitHandlers(deps: SubmitHandlerDeps) {
   function saveRanking(pairingId: number, rankingWithRanks: RankingEntry[]) {
     rankingsStore.setRankingWithRanks(pairingId, rankingWithRanks)
     toast.add({ title: t('event.rankingsSavedTitle'), color: 'success' })
-    eventStore.savePairingRankings(pairingId, rankingWithRanks.map(r => ({ playerId: r.playerId, position: r.rank })))
+    tournamentStore.savePairingRankings(pairingId, rankingWithRanks.map(r => ({ playerId: r.playerId, position: r.rank })))
       .then((result) => {
         if (!result.success) {
           toast.add({ title: t('deck.toast.errorTitle'), description: result.error, color: 'error' })
@@ -58,7 +58,7 @@ export function useEventSubmitHandlers(deps: SubmitHandlerDeps) {
   }
 
   function handleKillsSubmit(pairingId: number, kills: Kill[]) {
-    eventStore.savePairingKills(pairingId, kills)
+    tournamentStore.savePairingKills(pairingId, kills)
       .then(result => {
         toast.add({ title: result.success ? t('event.killsSavedTitle') : t('deck.toast.errorTitle'), description: result.success ? undefined : result.error, color: result.success ? 'success' : 'error' })
         // Refetch so the "Uccisioni" button's reviewed indicator (derived
@@ -80,7 +80,7 @@ export function useEventSubmitHandlers(deps: SubmitHandlerDeps) {
     if (selectedPlayerId.value !== null && selectedCommanderPairingId.value !== null) {
       commandersStore.setCommanders(selectedPlayerId.value, commander1, commander2)
       toast.add({ title: t('event.commandersSavedTitle'), color: 'success' })
-      eventStore.saveCommander(selectedCommanderPairingId.value, selectedPlayerId.value, commander1, commander2)
+      tournamentStore.saveCommander(selectedCommanderPairingId.value, selectedPlayerId.value, commander1, commander2)
         .then(result => {
           if (!result.success) {
             toast.add({ title: t('deck.toast.errorTitle'), description: result.error, color: 'error' })
@@ -99,7 +99,7 @@ export function useEventSubmitHandlers(deps: SubmitHandlerDeps) {
   function handleVotesSubmit(deckVotePlayerId: number | null, playVotePlayerId: number | null) {
     if (selectedVotesPlayerId.value !== null && selectedVotesPairingId.value !== null) {
       votesStore.setVotes(selectedVotesPlayerId.value, deckVotePlayerId, playVotePlayerId)
-      eventStore.saveVote(selectedVotesPairingId.value, selectedVotesPlayerId.value, deckVotePlayerId, playVotePlayerId)
+      tournamentStore.saveVote(selectedVotesPairingId.value, selectedVotesPlayerId.value, deckVotePlayerId, playVotePlayerId)
         .then((result) => {
           toast.add({ title: result.success ? t('event.voteSavedTitle') : t('deck.toast.errorTitle'), description: result.success ? undefined : result.error, color: result.success ? 'success' : 'error' })
           // Same reason as saveRanking: "Punteggi Tavolo" reads round_results

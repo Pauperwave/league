@@ -22,7 +22,7 @@ defineProps<{
   pairPlayerB: string
   forbiddenPairs: Array<{ playerA: number; playerB: number }>
   allPlayers: Array<{ id: number; name: string }>
-  eventId: number
+  tournamentId: number
 }>()
 
 const open = defineModel<boolean>('open', { default: false })
@@ -59,7 +59,7 @@ const emit = defineEmits<{
           v-model:pair-player-b="pairPlayerBModel"
           :forbidden-pairs="forbiddenPairs"
           :all-players="allPlayers"
-          :event-id="eventId"
+          :tournament-id="tournamentId"
           @add-pair="emit('addPair')"
           @resolve-conflicts="emit('resolveConflicts')"
           @remove-pair="(playerA, playerB) => emit('removePair', playerA, playerB)"

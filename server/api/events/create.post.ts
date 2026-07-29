@@ -1,20 +1,20 @@
 // server\api\events\create.post.ts
 // fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
-// BFF wave 4 (ADR-013): create an event in its registration phase,
+// BFF wave 4 (ADR-013): create a tournament in its registration phase,
 // returning the created row so the client cache mirrors server truth.
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 
 export default defineEventHandler(async (event) => {
-  const body = await requireValidBody(event, eventFormBodySchema)
+  const body = await requireValidBody(event, tournamentFormBodySchema)
 
-  console.log('[api/events/create] request', { name: body.event_name, leagueId: body.league_id })
+  console.log('[api/events/create] request', { name: body.tournament_name, leagueId: body.league_id })
 
   // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this endpoint is the authorization boundary now, not a DB policy.
   const supabase = serverSupabaseServiceRole<Database>(event)
 
   const { data, error } = await supabase
-    .from('events')
+    .from('tournaments')
     .insert(body)
     .select()
     .single()
@@ -23,10 +23,10 @@ export default defineEventHandler(async (event) => {
     console.error('[api/events/create] insert failed', { body, error })
     throw createError({
       statusCode: 500,
-      statusMessage: error?.message ?? 'Event insert failed'
+      statusMessage: error?.message ?? 'Tournament insert failed'
     })
   }
 
-  console.log('[api/events/create] created', { eventId: data.event_id })
+  console.log('[api/events/create] created', { tournamentId: data.tournament_id })
   return { event: data }
 })

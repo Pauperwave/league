@@ -1,6 +1,6 @@
 <!-- app\components\league\LeagueEventsPanel.vue -->
 <script setup lang="ts">
-import type { Event, League } from '#shared/utils/types'
+import type { Tournament, League } from '#shared/utils/types'
 
 const { t } = useI18n()
 
@@ -12,16 +12,16 @@ const {
 } = defineProps<{
   leagueId: number
   currentLeague?: League | null
-  events?: Event[]
+  events?: Tournament[]
   eventsLoading?: boolean
 }>()
 
 const emit = defineEmits<{
   editLeague: []
   createEvent: []
-  viewEvent: [event: Event]
-  editEvent: [event: Event]
-  deleteEvent: [event: Event]
+  viewEvent: [event: Tournament]
+  editEvent: [event: Tournament]
+  deleteEvent: [event: Tournament]
 }>()
 
 const router = useRouter()

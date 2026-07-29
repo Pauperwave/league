@@ -7,9 +7,9 @@ import type { Database } from '#shared/utils/types/database'
 
 export default defineEventHandler(async (event) => {
   const leagueId = requireIdParam(event, 'leagueId')
-  const { name, startsAt, endsAt, rulesetId, validEvents, status } = await requireValidBody(event, leagueFormBodySchema)
+  const { name, startsAt, endsAt, rulesetId, validTournaments, status } = await requireValidBody(event, leagueFormBodySchema)
 
-  console.log('[api/leagues/update] request', { leagueId, name, startsAt, endsAt, rulesetId, validEvents, status })
+  console.log('[api/leagues/update] request', { leagueId, name, startsAt, endsAt, rulesetId, validTournaments, status })
 
   // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this endpoint is the authorization boundary now, not a DB policy.
   const supabase = serverSupabaseServiceRole<Database>(event)
@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
       starts_at: startsAt,
       ends_at: endsAt,
       ruleset_id: rulesetId,
-      valid_events: validEvents,
+      valid_tournaments: validTournaments,
       status,
     })
     .eq('id', leagueId)

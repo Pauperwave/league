@@ -4,8 +4,8 @@ export interface WaitingListFlags {
   paid: boolean
 }
 
-function waitingListFlagsKey(eventId: number): string {
-  return `waiting-list-flags-${eventId}`
+function waitingListFlagsKey(tournamentId: number): string {
+  return `waiting-list-flags-${tournamentId}`
 }
 
 // Effectively "until cleared" — a single event's registration phase never
@@ -32,21 +32,21 @@ const FLAGS_TTL_MS = 30 * 24 * 60 * 60 * 1000
  * starting state, and the real values apply via a normal post-mount reactive
  * update — the same kind of update a user click already triggers correctly.
  */
-export function useWaitingListFlags(eventId: number) {
+export function useWaitingListFlags(tournamentId: number) {
   const flags = ref<Record<number, WaitingListFlags>>({})
 
   onMounted(() => {
-    flags.value = getCached<Record<number, WaitingListFlags>>(waitingListFlagsKey(eventId), FLAGS_TTL_MS) ?? {}
+    flags.value = getCached<Record<number, WaitingListFlags>>(waitingListFlagsKey(tournamentId), FLAGS_TTL_MS) ?? {}
   })
 
   watch(flags, (value) => {
-    setCached(waitingListFlagsKey(eventId), value)
+    setCached(waitingListFlagsKey(tournamentId), value)
   }, { deep: true })
 
   return { flags }
 }
 
-export function clearWaitingListFlags(eventId: number) {
+export function clearWaitingListFlags(tournamentId: number) {
   if (typeof window === 'undefined') return
-  localStorage.removeItem(waitingListFlagsKey(eventId))
+  localStorage.removeItem(waitingListFlagsKey(tournamentId))
 }

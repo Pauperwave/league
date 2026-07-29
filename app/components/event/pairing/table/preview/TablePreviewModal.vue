@@ -18,7 +18,7 @@ const { t } = useI18n()
 
 const {
   tables,
-  eventId,
+  tournamentId,
   playersForScoring,
   history,
   currentRound,
@@ -27,7 +27,7 @@ const {
   dismissible = true,
 } = defineProps<{
   tables: PairingTable[]
-  eventId: number
+  tournamentId: number
   playersForScoring: PairingPlayer[]
   history: PairingHistoryEntry[]
   currentRound: number
@@ -49,7 +49,7 @@ const pairPlayerB = ref<string>('')
 const dragSnapshot = ref<PairingTable[] | null>(null)
 const hasAutoOptimized = ref(false)
 
-const initialPreferences = computed(() => getPairingPreferences(eventId))
+const initialPreferences = computed(() => getPairingPreferences(tournamentId))
 const toast = useToast()
 
 const {
@@ -96,7 +96,7 @@ watch(open, (value) => {
   if (value) {
     hasAutoOptimized.value = false
     reset()
-    const prefs = getPairingPreferences(eventId)
+    const prefs = getPairingPreferences(tournamentId)
     setWeights(prefs.weights)
     setForbiddenPairs(prefs.forbiddenPairs)
   }
@@ -113,7 +113,7 @@ watch(
 )
 
 watch([weights, forbiddenPairs], () => {
-  savePairingPreferences(eventId, {
+  savePairingPreferences(tournamentId, {
     weights: weights.value,
     forbiddenPairs: forbiddenPairs.value,
   })
@@ -131,7 +131,7 @@ const scoreItems = computed(() => [
 ] as const)
 
 const confirmLogging = useButtonLogging('Conferma tavoli', {
-  eventId: () => eventId,
+  tournamentId: () => tournamentId,
   currentRound: () => currentRound,
   tableCount: () => localTables.value.length,
   isValid: () => isValid.value,
@@ -318,7 +318,7 @@ function openTableScoreBreakdown(tableIndex: number) {
     :score-items="scoreItems"
     :forbidden-pairs="forbiddenPairs"
     :all-players="allPlayers"
-    :event-id="eventId"
+    :tournament-id="tournamentId"
     @select-preset="applyWeightPreset"
     @update-weight="updateWeight"
     @add-pair="addForbiddenPairFromSelectors"

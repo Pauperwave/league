@@ -15,14 +15,14 @@ const { data: eventsData, isLoading: loading } = useEventsQuery(props.leagueId)
 const allLeagueEvents = computed(() => {
   const events = eventsData.value ?? []
   return [...events].sort((a, b) => {
-    const dateA = a.event_datetime ?? ''
-    const dateB = b.event_datetime ?? ''
+    const dateA = a.tournament_datetime ?? ''
+    const dateB = b.tournament_datetime ?? ''
     return dateA.localeCompare(dateB)
   })
 })
 
 // Standings across all the league's events (Colada, ADR-015)
-const eventIds = computed(() => eventsData.value?.map(e => e.event_id) ?? [])
+const eventIds = computed(() => eventsData.value?.map(e => e.tournament_id) ?? [])
 const { data: allStandings } = useMultipleEventStandingsQuery(eventIds)
 
 // Group standings by event
@@ -31,7 +31,7 @@ const eventStandings = computed(() => {
 
   return eventsData.value.map(event => ({
     event,
-    standings: (allStandings.value ?? []).filter(s => s.event_id === event.event_id)
+    standings: (allStandings.value ?? []).filter(s => s.tournament_id === event.tournament_id)
   }))
 })
 
@@ -68,8 +68,8 @@ const sortedPlayers = computed(() => {
   })
 })
 
-function getScore(playerId: number, eventId: number): number | null {
-  const es = eventStandings.value.find(e => e.event.event_id === eventId)
+function getScore(playerId: number, tournamentId: number): number | null {
+  const es = eventStandings.value.find(e => e.event.tournament_id === tournamentId)
   if (!es) return null
   const standing = es.standings.find(s => s.player_id === playerId)
   return standing?.standing_player_score ?? null
@@ -95,10 +95,10 @@ function getScore(playerId: number, eventId: number): number | null {
           </th>
           <th
             v-for="event in allLeagueEvents"
-            :key="event.event_id"
+            :key="event.tournament_id"
             class="px-3 py-2 text-center font-semibold whitespace-nowrap"
           >
-            {{ event.event_name }}
+            {{ event.tournament_name }}
           </th>
           <th class="px-3 py-2 text-right font-semibold bg-primary/10">
             {{ t('event.scoreBreakdown.playerTotal') }}
@@ -124,10 +124,10 @@ function getScore(playerId: number, eventId: number): number | null {
           </td>
           <td
             v-for="event in allLeagueEvents"
-            :key="`${player.player_id}-${event.event_id}`"
+            :key="`${player.player_id}-${event.tournament_id}`"
             class="px-3 py-2 text-center"
           >
-            {{ getScore(player.player_id, event.event_id) ?? "-" }}
+            {{ getScore(player.player_id, event.tournament_id) ?? "-" }}
           </td>
           <td class="px-3 py-2 text-right font-bold bg-primary/10">
             {{ totalScore.get(player.player_id) ?? 0 }}

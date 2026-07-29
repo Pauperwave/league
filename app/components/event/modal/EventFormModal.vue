@@ -2,7 +2,7 @@
 <script setup lang="ts">
 // fallow-ignore-file code-duplication -- FormModal invocation boilerplate, see app/components/ui/CLAUDE.md
 import type { CalendarDate } from '@internationalized/date'
-import type { Event } from '#shared/utils/types'
+import type { Tournament } from '#shared/utils/types'
 import * as v from 'valibot'
 
 const { t } = useI18n()
@@ -32,31 +32,31 @@ interface EventForm {
 // Exported: this is the single source of truth for the shape, consumed by
 // useEventLifecycle.ts, useEventPage.ts, and pages/league/[id].vue instead
 // of each redeclaring their own structurally-compatible-by-accident copy.
-export interface EventCreatePayload {
+export interface TournamentCreatePayload {
   eventName: string
   eventDate: string
   numRound: number
   roundDuration: number
 }
 
-export interface EventUpdatePayload {
+export interface TournamentUpdatePayload {
   id: number
-  data: Omit<EventCreatePayload, 'eventDate'> & { eventDate: string | null }
+  data: Omit<TournamentCreatePayload, 'eventDate'> & { eventDate: string | null }
 }
 
 const props = defineProps<{
-  event: Event | null
+  event: Tournament | null
   leagueId: number
 }>()
 
 const emit = defineEmits<{
-  create: [payload: EventCreatePayload]
-  update: [payload: EventUpdatePayload]
+  create: [payload: TournamentCreatePayload]
+  update: [payload: TournamentUpdatePayload]
 }>()
 
 const open = defineModel<boolean>('open', { default: false })
 
-const submitLogging = useButtonLogging('Submit Event Form', { isEditing: () => isEditing.value, eventName: () => form.eventName })
+const submitLogging = useButtonLogging('Submit Tournament Form', { isEditing: () => isEditing.value, eventName: () => form.eventName })
 
 // — Derived modal state —
 const isEditing = computed(() => !!props.event)
@@ -64,7 +64,7 @@ const { title: modalTitle, description: modalDescription, icon: modalIcon, submi
   isEditing,
   namespace: 'event',
   createIcon: ICONS.battle,
-  cancelLoggingLabel: 'Cancel Event Form',
+  cancelLoggingLabel: 'Cancel Tournament Form',
   open
 })
 
@@ -86,10 +86,10 @@ watch(open, (isOpen) => {
   const e = props.event
   Object.assign(form, e
     ? {
-        eventName: e.event_name,
-        eventDate: parseDateString(e.event_datetime),
-        numRound: e.event_round_number ?? 2,
-        roundDuration: e.event_round_duration ?? DEFAULT_ROUND_DURATION,
+        eventName: e.tournament_name,
+        eventDate: parseDateString(e.tournament_datetime),
+        numRound: e.tournament_round_number ?? 2,
+        roundDuration: e.tournament_round_duration ?? DEFAULT_ROUND_DURATION,
       }
     : defaultForm()
   )
@@ -112,12 +112,12 @@ function handleSubmit() {
 
   const parsed = v.safeParse(EventFormSchema, data)
   if (!parsed.success) {
-    logError('EventFormModal', 'Event form validation failed', parsed.issues)
+    logError('EventFormModal', 'Tournament form validation failed', parsed.issues)
     return
   }
 
   if (!isEditing.value && !parsed.output.eventDate) {
-    logError('EventFormModal', 'Event date required for creation')
+    logError('EventFormModal', 'Tournament date required for creation')
     return
   }
 
@@ -125,7 +125,7 @@ function handleSubmit() {
 
   if (isEditing.value && props.event) {
     emit('update', {
-      id: props.event.event_id,
+      id: props.event.tournament_id,
       data: parsed.output,
     })
   } else {
