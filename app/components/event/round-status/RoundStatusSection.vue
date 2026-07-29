@@ -15,7 +15,7 @@ interface Props {
 
 const { title, icon, doneCount, totalCount } = defineProps<Props>()
 
-const isOpen = ref(true)
+const isOpen = ref(false)
 
 const percent = computed(() => totalCount === 0 ? 0 : Math.round((doneCount / totalCount) * 100))
 </script>
