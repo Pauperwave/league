@@ -1,10 +1,10 @@
 // app\composables\event\useWinnerChecklist.ts
-import type { PairingWithResults, TournamentPlayer } from '#shared/utils/types'
+import type { PairingWithResults, TablePlayer } from '#shared/utils/types'
 
 export interface WinnerChecklistEntry {
   pairingId: number
   tableNumber: number
-  players: TournamentPlayer[]
+  players: TablePlayer[]
 }
 
 function winnerChecklistKey(eventId: number, round: number): string {
@@ -27,7 +27,7 @@ const CHECKLIST_TTL_MS = 24 * 60 * 60 * 1000
  */
 export function useWinners(
   pairings: Ref<PairingWithResults[]>,
-  tournamentPlayers: Ref<TournamentPlayer[]>,
+  tournamentPlayers: Ref<TablePlayer[]>,
   rankingsStore: ReturnType<typeof import('~/stores/rankings').useRankingsStore>
 ) {
   return computed<WinnerChecklistEntry[]>(() => {
@@ -42,7 +42,7 @@ export function useWinners(
       entries.push({
         pairingId: pairing.pairing_id,
         tableNumber: index + 1,
-        players: winnerIds.map(id => playersById.get(id)).filter((p): p is TournamentPlayer => !!p),
+        players: winnerIds.map(id => playersById.get(id)).filter((p): p is TablePlayer => !!p),
       })
       return entries
     }, [])

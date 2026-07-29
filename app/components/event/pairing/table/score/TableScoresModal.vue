@@ -3,7 +3,7 @@
 import type { TableColumn } from '@nuxt/ui'
 import type { CellContext } from '@tanstack/vue-table'
 import type { TableScoreRow } from '~/utils/tableScoreRows'
-import type { PairingWithResults, Ruleset, TournamentPlayer } from '#shared/utils/types'
+import type { PairingWithResults, Ruleset, TablePlayer } from '#shared/utils/types'
 import PlayerNameTag from '~/components/player/PlayerNameTag.vue'
 
 const { t } = useI18n()
@@ -14,7 +14,7 @@ const {
   ruleset = null,
 } = defineProps<{
   pairing?: PairingWithResults | null
-  allPlayers: TournamentPlayer[]
+  allPlayers: TablePlayer[]
   ruleset?: Ruleset | null
 }>()
 

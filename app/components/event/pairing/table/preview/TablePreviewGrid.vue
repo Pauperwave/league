@@ -1,13 +1,13 @@
 <!-- app\components\event\pairing\table\preview\TablePreviewGrid.vue -->
 <script setup lang="ts">
-import type { Seat, TournamentTable } from '#shared/utils/types'
+import type { Seat, PairingTable } from '#shared/utils/types'
 import type { TableStatus } from '~/composables/tables/useTableDnd'
 
 const { tables, isDragging, getTableCardClass, getTableStatus, getTableScore } = defineProps<{
-  tables: TournamentTable[]
+  tables: PairingTable[]
   isDragging: boolean
-  getTableCardClass: (table: TournamentTable) => string
-  getTableStatus: (table: TournamentTable) => TableStatus
+  getTableCardClass: (table: PairingTable) => string
+  getTableStatus: (table: PairingTable) => TableStatus
   getTableScore: (tableIndex: number) => number
 }>()
 const emit = defineEmits<{

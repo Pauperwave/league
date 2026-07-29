@@ -69,7 +69,7 @@ export interface PairingWithResults extends Pairing {
   round_results?: RoundResult[]
 }
 
-export interface TournamentPlayer {
+export interface TablePlayer {
   id: number
   name: string
   surname: string
@@ -79,10 +79,10 @@ export interface TournamentPlayer {
 
 export interface Seat {
   id: string
-  player: TournamentPlayer | null
+  player: TablePlayer | null
 }
 
-export interface TournamentTable {
+export interface PairingTable {
   id: string
   tableNumber: number
   seats: Seat[]

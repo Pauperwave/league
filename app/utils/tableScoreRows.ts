@@ -2,7 +2,7 @@
 // The "Punteggi Tavolo" (TableScoresModal.vue) row-building logic — pulled
 // out so it's unit-testable without mounting Vue/UTable.
 import { calculatePlayerTableScore } from '#shared/utils/roundScoring'
-import type { PairingWithResults, Ruleset, TournamentPlayer } from '#shared/utils/types'
+import type { PairingWithResults, Ruleset, TablePlayer } from '#shared/utils/types'
 
 export interface TableScoreRow {
   playerId: number
@@ -50,7 +50,7 @@ function hasCastVotes(tableResults: PairingWithResults['round_results'], playerI
  *  whether the resulting point value happens to be zero. */
 export function buildTableScoreRows(
   pairing: PairingWithResults | null,
-  allPlayers: TournamentPlayer[],
+  allPlayers: TablePlayer[],
   ruleset: Ruleset | null,
 ): TableScoreRow[] {
   if (!pairing) return []
@@ -66,7 +66,7 @@ export function buildTableScoreRows(
 
   const rows = getPairingPlayerIds(pairing)
     .map(id => allPlayers.find(p => p.id === id))
-    .filter((p): p is TournamentPlayer => !!p)
+    .filter((p): p is TablePlayer => !!p)
     .map((player) => {
       const myResult = tableResults.find(r => r.player_id === player.id)
       const scored = calculatePlayerTableScore(player.id, tableResults, posValues, ruleset)

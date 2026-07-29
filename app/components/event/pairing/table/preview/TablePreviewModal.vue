@@ -4,8 +4,8 @@
 // optimizer controls, and transparent score breakdown.
 import type {
   PairingWeights,
-  TournamentPlayer,
-  TournamentTable,
+  TablePlayer,
+  PairingTable,
 } from '#shared/utils/types'
 import type {
   PairingHistoryEntry,
@@ -26,12 +26,12 @@ const {
   loading = false,
   dismissible = true,
 } = defineProps<{
-  tables: TournamentTable[]
+  tables: PairingTable[]
   eventId: number
   playersForScoring: PairingPlayer[]
   history: PairingHistoryEntry[]
   currentRound: number
-  allPlayers: TournamentPlayer[]
+  allPlayers: TablePlayer[]
   loading?: boolean
   dismissible?: boolean
 }>()
@@ -46,7 +46,7 @@ const showTableScoreBreakdown = ref(false)
 const selectedTableIndex = ref<number | null>(null)
 const pairPlayerA = ref<string>('')
 const pairPlayerB = ref<string>('')
-const dragSnapshot = ref<TournamentTable[] | null>(null)
+const dragSnapshot = ref<PairingTable[] | null>(null)
 const hasAutoOptimized = ref(false)
 
 const initialPreferences = computed(() => getPairingPreferences(eventId))
@@ -150,7 +150,7 @@ function handleCancel() {
   emit('cancel')
 }
 
-function tableCardClass(table: TournamentTable): string {
+function tableCardClass(table: PairingTable): string {
   if (conflictingTables.value.has(table.id)) {
     return 'bg-error/10 ring-1 ring-inset ring-error/30'
   }
@@ -240,7 +240,7 @@ const selectedTablePlayers = computed(() => {
 
   return table.seats
     .map(seat => seat.player)
-    .filter((player): player is TournamentPlayer => player !== null)
+    .filter((player): player is TablePlayer => player !== null)
 })
 
 const selectedTablePlayerRows = computed(() => {

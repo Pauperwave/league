@@ -1,6 +1,6 @@
 <!-- app\components\event\pairing\PairingsCard.vue -->
 <script setup lang="ts">
-import type { Pairing, PairingWithResults, TournamentPlayer } from '#shared/utils/types'
+import type { Pairing, PairingWithResults, TablePlayer } from '#shared/utils/types'
 import { getPairingPlayerIds } from '#shared/utils/types'
 
 const { t } = useI18n()
@@ -13,7 +13,7 @@ const props = defineProps<{
   /** When true, hides all action buttons and renders the card in read-only mode. */
   readonly?: boolean
   /** Full list of tournament players used to resolve player details. */
-  allPlayers: TournamentPlayer[]
+  allPlayers: TablePlayer[]
 }>()
 
 // Session stores injected directly (Pinia singletons) — same pattern as the

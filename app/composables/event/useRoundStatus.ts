@@ -1,5 +1,5 @@
 // app\composables\event\useRoundStatus.ts
-import type { PairingWithResults, TournamentPlayer } from '#shared/utils/types'
+import type { PairingWithResults, TablePlayer } from '#shared/utils/types'
 import { getPairingPlayerIds } from '#shared/utils/types'
 
 /** A single table row in the "Classifiche" or "Uccisioni" sections. */
@@ -33,7 +33,7 @@ export interface RoundStatusPlayerItem {
  */
 export function useRoundStatus(
   pairings: Ref<PairingWithResults[]>,
-  tournamentPlayers: Ref<TournamentPlayer[]>,
+  tournamentPlayers: Ref<TablePlayer[]>,
   rankingsStore: ReturnType<typeof useRankingsStore>,
   commandersStore: ReturnType<typeof useCommandersStore>,
   votesStore: ReturnType<typeof useVotesStore>,
@@ -45,7 +45,7 @@ export function useRoundStatus(
   function seatedPlayerNames(pairing: PairingWithResults): string[] {
     return getPairingPlayerIds(pairing)
       .map(id => playersById.value.get(id))
-      .filter((p): p is TournamentPlayer => !!p)
+      .filter((p): p is TablePlayer => !!p)
       .map(p => `${p.name} ${p.surname}`)
   }
 

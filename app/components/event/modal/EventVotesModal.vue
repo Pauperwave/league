@@ -1,6 +1,6 @@
 <!-- app\components\event\modal\EventVotesModal.vue -->
 <script setup lang="ts">
-import type { Player, Ruleset, TournamentPlayer } from '#shared/utils/types'
+import type { Player, Ruleset, TablePlayer } from '#shared/utils/types'
 
 const { t } = useI18n()
 
@@ -18,7 +18,7 @@ const {
   getPlayerName: (playerId: number) => string
   getPlayer: (playerId: number) => Player | undefined
   votesStore: ReturnType<typeof import('~/stores/votes').useVotesStore>
-  tablePlayersForVotes: TournamentPlayer[]
+  tablePlayersForVotes: TablePlayer[]
   ruleset?: Ruleset | null
 }>()
 

@@ -1,9 +1,9 @@
 <!-- app\components\event\pairing\kill\KillSystemModal.vue -->
 <script setup lang="ts">
-import type { TournamentPlayer, Kill } from '#shared/utils/types'
+import type { TablePlayer, Kill } from '#shared/utils/types'
 
 const props = defineProps<{
-  players: TournamentPlayer[]
+  players: TablePlayer[]
   pairingId: number | null
 }>()
 

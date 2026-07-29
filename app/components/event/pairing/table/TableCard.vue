@@ -1,13 +1,13 @@
 <!-- app\components\event\pairing\table\TableCard.vue -->
 <script setup lang="ts">
-import type { Seat, TournamentTable } from '#shared/utils/types'
+import type { Seat, PairingTable } from '#shared/utils/types'
 import type { TableStatus } from '~/composables/tables/useTableDnd'
 import { VueDraggable } from 'vue-draggable-plus'
 
 const { t } = useI18n()
 
 const props = defineProps<{
-  table: TournamentTable
+  table: PairingTable
   tableIndex: number
   isDragging: boolean
   tableCardClass: string

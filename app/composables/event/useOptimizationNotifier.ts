@@ -1,6 +1,6 @@
 // app\composables\event\useOptimizationNotifier.ts
 import type { Ref } from 'vue'
-import type { TournamentTable } from '#shared/utils/types'
+import type { PairingTable } from '#shared/utils/types'
 import type { PairingScoreDetails } from '~/composables/event-pairing/pairingOptimizer'
 
 interface ToastApi {
@@ -16,8 +16,8 @@ interface Params {
   isValid: Ref<boolean>
   previewError: Ref<string>
   scoreDetails: Ref<PairingScoreDetails>
-  cloneCurrentTables: () => TournamentTable[]
-  restoreTables: (tables: TournamentTable[]) => void
+  cloneCurrentTables: () => PairingTable[]
+  restoreTables: (tables: PairingTable[]) => void
   runOptimizer: (swapTimeBudgetMs?: number) => boolean
 }
 

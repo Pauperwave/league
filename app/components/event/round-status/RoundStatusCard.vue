@@ -1,6 +1,6 @@
 <!-- app\components\event\round-status\RoundStatusCard.vue -->
 <script setup lang="ts">
-import type { PairingWithResults, TournamentPlayer } from '#shared/utils/types'
+import type { PairingWithResults, TablePlayer } from '#shared/utils/types'
 import type { RoundStatusFilter } from '~/utils/roundStatusSearch'
 
 /**
@@ -11,7 +11,7 @@ import type { RoundStatusFilter } from '~/utils/roundStatusSearch'
  */
 const props = defineProps<{
   pairings: PairingWithResults[]
-  tournamentPlayers: TournamentPlayer[]
+  tournamentPlayers: TablePlayer[]
 }>()
 
 const emit = defineEmits<{

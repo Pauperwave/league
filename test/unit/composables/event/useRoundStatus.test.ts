@@ -7,7 +7,7 @@ import { useRankingsStore } from '~/stores/rankings'
 import { useCommandersStore } from '~/stores/commanders'
 import { useVotesStore } from '~/stores/votes'
 import { useRoundStatus } from '~/composables/event/useRoundStatus'
-import type { PairingWithResults, TournamentPlayer } from '#shared/utils/types'
+import type { PairingWithResults, PairingPlayer } from '#shared/utils/types'
 
 function makePairing(overrides: Partial<PairingWithResults> = {}): PairingWithResults {
   return {
@@ -25,12 +25,12 @@ function makePairing(overrides: Partial<PairingWithResults> = {}): PairingWithRe
   }
 }
 
-function makePlayer(id: number, name: string, surname: string): TournamentPlayer {
+function makePlayer(id: number, name: string, surname: string): PairingPlayer {
   return { id, name, surname }
 }
 
 /** Mounts a throwaway component so the 3 session stores get a real, isolated Pinia instance. */
-function setupRoundStatus(pairings: PairingWithResults[], players: TournamentPlayer[]) {
+function setupRoundStatus(pairings: PairingWithResults[], players: PairingPlayer[]) {
   const pairingsRef = ref(pairings)
   const playersRef = ref(players)
 

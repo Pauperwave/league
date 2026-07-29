@@ -11,7 +11,7 @@ import '@vue-flow/core/dist/theme-default.css'
 import '@vue-flow/controls/dist/style.css'
 import KillPlayerNode from './KillPlayerNode.vue'
 import KillLoopbackEdge from './KillLoopbackEdge.vue'
-import type { TournamentPlayer } from '#shared/utils/types'
+import type { TablePlayer } from '#shared/utils/types'
 
 // Explicit id shared with <VueFlow id="kill-flow"> below — calling
 // useVueFlow() in the same component that renders <VueFlow>, before it
@@ -28,7 +28,7 @@ const interactive = ref(true)
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 const props = defineProps<{
-  players: TournamentPlayer[]
+  players: TablePlayer[]
 }>()
 
 // ─── Store & Toast ────────────────────────────────────────────────────────────

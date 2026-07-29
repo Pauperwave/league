@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import { Handle, Position } from '@vue-flow/core'
 import { NodeToolbar } from '@vue-flow/node-toolbar'
-import type { TournamentPlayer } from '#shared/utils/types'
+import type { TablePlayer } from '#shared/utils/types'
 import type { PlayerColor } from '~/utils/playerColor'
 
 defineOptions({
@@ -10,7 +10,7 @@ defineOptions({
 })
 
 interface PlayerNodeData {
-  player: TournamentPlayer
+  player: TablePlayer
   width: string
   color: PlayerColor
 }

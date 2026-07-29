@@ -1,10 +1,10 @@
 <!-- app\components\event\pairing\table\score\TableScoreBreakdownModal.vue -->
 <script setup lang="ts">
-import type { TournamentPlayer } from '#shared/utils/types'
+import type { TablePlayer } from '#shared/utils/types'
 import type { PairingPlayerScore, PairingTableScore } from '~/composables/event-pairing/pairingOptimizer'
 
 interface PlayerRow {
-  player: TournamentPlayer
+  player: TablePlayer
   detail?: PairingPlayerScore
 }
 

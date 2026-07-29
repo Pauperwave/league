@@ -1,10 +1,10 @@
 <!-- app\components\event\pairing\table\TablePlayerReceiptCard.vue -->
 <script setup lang="ts">
-import type { TournamentPlayer } from '#shared/utils/types'
+import type { TablePlayer } from '#shared/utils/types'
 import type { PairingPlayerScore } from '~/composables/event-pairing/pairingOptimizer'
 
 defineProps<{
-  player: TournamentPlayer
+  player: TablePlayer
   detail?: PairingPlayerScore
 }>()
 

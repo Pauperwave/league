@@ -1,7 +1,7 @@
 <!-- app\pages\league\[leagueId]\event\[eventId].vue -->
 <script setup lang="ts">
 import { getPairingPlayerIds } from '#shared/utils/types'
-import type { Seat, TournamentPlayer, TournamentTable } from '#shared/utils/types'
+import type { Seat, TablePlayer, PairingTable } from '#shared/utils/types'
 import type { PairingHistoryEntry, PairingPlayer } from '~/composables/event-pairing/pairingOptimizer'
 import type EventStepper from '~/components/event/EventStepper.vue'
 
@@ -172,11 +172,11 @@ const canAdvance = computed(() => {
 
 // ── Computed: Tables & Players ─────────────────────────────────────────────
 
-const previewModalTables = computed<TournamentTable[]>(() =>
+const previewModalTables = computed<PairingTable[]>(() =>
   previewTables.value.map((table, tableIndex) => {
     const seats = Array.from({ length: 4 }, (_, seatIndex) => {
       const playerId = table[seatIndex]
-      let player: TournamentPlayer | null = null
+      let player: TablePlayer | null = null
       if (playerId !== undefined) {
         const playerData = players.value.find(p => p.player_id === playerId)
         player = {
@@ -192,7 +192,7 @@ const previewModalTables = computed<TournamentTable[]>(() =>
   })
 )
 
-const playersForPreview = computed<TournamentPlayer[]>(() =>
+const playersForPreview = computed<TablePlayer[]>(() =>
   players.value.map(player => ({
     id: player.player_id,
     name: `${player.player_name} ${player.player_surname}`,
@@ -200,7 +200,7 @@ const playersForPreview = computed<TournamentPlayer[]>(() =>
   }))
 )
 
-const tournamentPlayers = computed<TournamentPlayer[]>(() =>
+const tournamentPlayers = computed<TablePlayer[]>(() =>
   players.value.map(player => ({
     id: player.player_id,
     name: player.player_name,

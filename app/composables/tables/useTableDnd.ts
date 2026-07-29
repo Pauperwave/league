@@ -4,7 +4,7 @@ import type { BadgeProps } from '@nuxt/ui'
 import type {
   PairingForbiddenPair,
   PairingWeights,
-  TournamentTable,
+  PairingTable,
   Seat,
 } from '#shared/utils/types'
 import type { PairingPlayer, PairingHistoryEntry, PairingScoreDetails } from '~/composables/event-pairing/pairingOptimizer'
@@ -14,7 +14,7 @@ export interface TableStatus {
   label: string
 }
 
-function cloneTables(tables: TournamentTable[]): TournamentTable[] {
+function cloneTables(tables: PairingTable[]): PairingTable[] {
   return tables.map(table => ({
     id: table.id,
     tableNumber: table.tableNumber,
@@ -80,7 +80,7 @@ function normalizeSeats(tableId: string, seats: Seat[]): Seat[] {
  * Returns the swapped table list, or `null` if the shape doesn't match (in
  * which case the caller falls back to its normal invalid-move handling).
  */
-export function attemptTableSwap(before: TournamentTable[], after: TournamentTable[]): TournamentTable[] | null {
+export function attemptTableSwap(before: PairingTable[], after: PairingTable[]): PairingTable[] | null {
   const overflowIndex = after.findIndex(table => table.seats.filter(seat => seat.player !== null).length > 4)
   if (overflowIndex === -1) return null
 
@@ -130,14 +130,14 @@ function shuffleArray<T>(items: T[]): T[] {
   return result
 }
 
-function extractPlayerIds(tables: TournamentTable[]): number[] {
+function extractPlayerIds(tables: PairingTable[]): number[] {
   return tables
     .flatMap(table => table.seats)
     .map(seat => seat.player?.id)
     .filter((id): id is number => id !== undefined)
 }
 
-function ensureTableSeatShape(tables: TournamentTable[]): TournamentTable[] {
+function ensureTableSeatShape(tables: PairingTable[]): PairingTable[] {
   return tables.map((table) => {
     return {
       ...table,
@@ -146,7 +146,7 @@ function ensureTableSeatShape(tables: TournamentTable[]): TournamentTable[] {
   })
 }
 
-function buildTablesFromOrder(tables: TournamentTable[], playerOrder: number[]): TournamentTable[] {
+function buildTablesFromOrder(tables: PairingTable[], playerOrder: number[]): PairingTable[] {
   const sourcePlayers = tables
     .flatMap(table => table.seats)
     .map(seat => seat.player)
@@ -176,7 +176,7 @@ function buildTablesFromOrder(tables: TournamentTable[], playerOrder: number[]):
   })
 }
 
-export function useTableDnd(initialTables: TournamentTable[], params?: {
+export function useTableDnd(initialTables: PairingTable[], params?: {
   playersForScoring?: PairingPlayer[]
   history?: PairingHistoryEntry[]
   currentRound?: number
@@ -185,8 +185,8 @@ export function useTableDnd(initialTables: TournamentTable[], params?: {
 }) {
   const { t } = useI18n()
 
-  const sourceTables = ref<TournamentTable[]>(ensureTableSeatShape(cloneTables(initialTables)))
-  const localTables = ref<TournamentTable[]>(ensureTableSeatShape(cloneTables(initialTables)))
+  const sourceTables = ref<PairingTable[]>(ensureTableSeatShape(cloneTables(initialTables)))
+  const localTables = ref<PairingTable[]>(ensureTableSeatShape(cloneTables(initialTables)))
   const isDragging = ref(false)
 
   const weights = ref<PairingWeights>({
@@ -312,7 +312,7 @@ export function useTableDnd(initialTables: TournamentTable[], params?: {
     isDragging.value = false
   }
 
-  function syncFromSource(tables: TournamentTable[]) {
+  function syncFromSource(tables: PairingTable[]) {
     const normalized = ensureTableSeatShape(cloneTables(tables))
     sourceTables.value = normalized
     localTables.value = ensureTableSeatShape(cloneTables(normalized))
@@ -351,11 +351,11 @@ export function useTableDnd(initialTables: TournamentTable[], params?: {
     return ensureTableSeatShape(cloneTables(localTables.value))
   }
 
-  function restoreTables(tables: TournamentTable[]) {
+  function restoreTables(tables: PairingTable[]) {
     localTables.value = ensureTableSeatShape(cloneTables(tables))
   }
 
-  function tableStatus(table: TournamentTable): TableStatus {
+  function tableStatus(table: PairingTable): TableStatus {
     if (conflictingTables.value.has(table.id)) {
       return { color: 'error' as const, label: 'Conflitto' }
     }

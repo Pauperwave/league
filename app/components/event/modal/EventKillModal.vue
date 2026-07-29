@@ -1,6 +1,6 @@
 <!-- app\components\event\modal\EventKillModal.vue -->
 <script setup lang="ts">
-import type { Kill, TournamentPlayer } from '#shared/utils/types'
+import type { Kill, TablePlayer } from '#shared/utils/types'
 
 const {
   showKillModal,
@@ -8,7 +8,7 @@ const {
   selectedKillPairingId,
 } = defineProps<{
   showKillModal: boolean
-  selectedKillPlayers: TournamentPlayer[]
+  selectedKillPlayers: TablePlayer[]
   selectedKillPairingId: number | null
 }>()
 

@@ -4,13 +4,13 @@ import { defineComponent, h } from 'vue'
 import { mount } from '@vue/test-utils'
 import { attemptTableSwap, useTableDnd } from '~/composables/tables/useTableDnd'
 import { createI18nTestPlugin } from '#test/helpers/mocks'
-import type { TournamentTable, TournamentPlayer } from '#shared/utils/types'
+import type { PairingTable, PairingPlayer } from '#shared/utils/types'
 
-function player(id: number): TournamentPlayer {
+function player(id: number): PairingPlayer {
   return { id, name: `P${id}`, surname: 'Test' }
 }
 
-function table(id: string, tableNumber: number, playerIds: (number | null)[]): TournamentTable {
+function table(id: string, tableNumber: number, playerIds: (number | null)[]): PairingTable {
   return {
     id,
     tableNumber,
@@ -32,7 +32,7 @@ const previewMessages = {
   },
 }
 
-function setupTableDnd(tables: TournamentTable[], params?: Parameters<typeof useTableDnd>[1]) {
+function setupTableDnd(tables: PairingTable[], params?: Parameters<typeof useTableDnd>[1]) {
   let result!: ReturnType<typeof useTableDnd>
   mount(defineComponent({
     setup() {
@@ -161,7 +161,7 @@ describe('useTableDnd', () => {
   })
 
   describe('attemptTableSwap', () => {
-    function occupantIds(t: TournamentTable): number[] {
+    function occupantIds(t: PairingTable): number[] {
       return t.seats.map(s => s.player?.id).filter((id): id is number => id !== undefined)
     }
 
@@ -214,7 +214,7 @@ describe('useTableDnd', () => {
       // Reverse order of the 7 actually-seated players (1-4 at t1, 5-7 at t2)
       replaceByPlayerOrder([7, 6, 5, 4, 3, 2, 1])
 
-      const seatedIds = (t: TournamentTable) => t.seats.map(s => s.player?.id).filter((id): id is number => id !== undefined)
+      const seatedIds = (t: PairingTable) => t.seats.map(s => s.player?.id).filter((id): id is number => id !== undefined)
 
       expect(seatedIds(localTables.value[0]!)).toEqual([7, 6, 5, 4])
       expect(seatedIds(localTables.value[1]!)).toEqual([3, 2, 1])
@@ -232,7 +232,7 @@ describe('useTableDnd', () => {
 
       randomizeTables()
 
-      const seatedIds = (t: TournamentTable) => t.seats.map(s => s.player?.id).filter((id): id is number => id !== undefined)
+      const seatedIds = (t: PairingTable) => t.seats.map(s => s.player?.id).filter((id): id is number => id !== undefined)
 
       expect(seatedIds(localTables.value[0]!)).toHaveLength(4)
       expect(seatedIds(localTables.value[1]!)).toHaveLength(3)

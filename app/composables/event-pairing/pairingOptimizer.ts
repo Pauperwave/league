@@ -11,10 +11,10 @@
 //     aggregateTableScore re-weights the raw (unweighted) count for the table-level total.
 //   This double application is intentional, not a bug — do not "fix" it by adding the weight
 //   to the raw counters (e.g. calculateTable3Penalty) or you will double-weight the metric.
-import type { PairingForbiddenPair, PairingWeights, TournamentPlayer, Seat, TournamentTable } from '#shared/utils/types'
+import type { PairingForbiddenPair, PairingWeights, TablePlayer, Seat, PairingTable } from '#shared/utils/types'
 import { useTableCalculator } from '../tables/useTableCalculator'
 
-export type { TournamentPlayer, Seat, TournamentTable, PairingForbiddenPair, PairingWeights }
+export type { TablePlayer, Seat, PairingTable, PairingForbiddenPair, PairingWeights }
 
 export interface PairingPlayerScore {
   playerId: number

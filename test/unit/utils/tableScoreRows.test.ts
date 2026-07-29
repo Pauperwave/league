@@ -1,7 +1,7 @@
 // test\unit\utils\tableScoreRows.test.ts
 import { describe, expect, it } from 'vitest'
 import { buildTableScoreRows } from '~/utils/tableScoreRows'
-import type { PairingWithResults, RoundResult, Ruleset, TournamentPlayer } from '#shared/utils/types'
+import type { PairingWithResults, RoundResult, Ruleset, PairingPlayer } from '#shared/utils/types'
 
 function makeRuleset(overrides: Partial<Ruleset> = {}): Ruleset {
   return {
@@ -51,7 +51,7 @@ function makePairing(overrides: Partial<PairingWithResults> = {}): PairingWithRe
   }
 }
 
-function makePlayer(id: number, name = `P${id}`, surname = 'Test'): TournamentPlayer {
+function makePlayer(id: number, name = `P${id}`, surname = 'Test'): PairingPlayer {
   return { id, name, surname }
 }
 
@@ -186,7 +186,7 @@ describe('buildTableScoreRows', () => {
     expect(tied.map(r => r.playerId)).toEqual([3, 2])
   })
 
-  it('skips a seated player id that has no matching TournamentPlayer', () => {
+  it('skips a seated player id that has no matching PairingPlayer', () => {
     const pairing = makePairing()
     const rows = buildTableScoreRows(pairing, allPlayers.filter(p => p.id !== 2), makeRuleset())
     expect(rows.map(r => r.playerId)).toEqual([1, 3, 4])

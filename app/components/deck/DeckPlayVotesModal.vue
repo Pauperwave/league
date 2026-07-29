@@ -1,11 +1,11 @@
 <!-- app\components\deck\DeckPlayVotesModal.vue -->
 <script setup lang="ts">
-import type { Ruleset, TournamentPlayer } from '#shared/utils/types'
+import type { Ruleset, TablePlayer } from '#shared/utils/types'
 
 const props = defineProps<{
   deckVotePlayerId: number | null
   playVotePlayerId: number | null
-  otherPlayers: TournamentPlayer[]
+  otherPlayers: TablePlayer[]
   ruleset?: Ruleset | null
 }>()
 

@@ -1,6 +1,6 @@
 <!-- app\components\event\modal\EventScoresModal.vue -->
 <script setup lang="ts">
-import type { PairingWithResults, Ruleset, TournamentPlayer } from '#shared/utils/types'
+import type { PairingWithResults, Ruleset, TablePlayer } from '#shared/utils/types'
 
 const { t } = useI18n()
 
@@ -14,7 +14,7 @@ const {
   showScoresModal: boolean
   selectedScoresPairingId: number | null
   pairings: PairingWithResults[]
-  tournamentPlayers: TournamentPlayer[]
+  tournamentPlayers: TablePlayer[]
   ruleset?: Ruleset | null
 }>()
 

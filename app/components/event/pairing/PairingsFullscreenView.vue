@@ -5,12 +5,12 @@
 // not interacted with. Separate from PairingsCard.vue on purpose: that
 // component owns the editable table cards and all their modals/actions,
 // this one is pure display.
-import type { Pairing, TournamentPlayer } from '#shared/utils/types'
+import type { Pairing, TablePlayer } from '#shared/utils/types'
 import { getPairingPlayerIds } from '#shared/utils/types'
 
 const { pairings, allPlayers } = defineProps<{
   pairings: Pairing[]
-  allPlayers: TournamentPlayer[]
+  allPlayers: TablePlayer[]
 }>()
 
 const emit = defineEmits<{ exit: [] }>()

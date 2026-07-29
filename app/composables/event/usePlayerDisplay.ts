@@ -1,8 +1,8 @@
 // app\composables\event\usePlayerDisplay.ts
-import type { TournamentPlayer } from '#shared/utils/types'
+import type { TablePlayer } from '#shared/utils/types'
 
 export function usePlayerDisplay() {
-  function playerDisplayName(player: TournamentPlayer): { name: string; surname: string } {
+  function playerDisplayName(player: TablePlayer): { name: string; surname: string } {
     const normalizedSurname = player.surname.trim()
     const fullName = player.name.trim()
     const fullNameLower = fullName.toLowerCase()
