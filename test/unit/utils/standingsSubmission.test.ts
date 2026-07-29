@@ -17,7 +17,7 @@ describe('hasCompleteRanking', () => {
 })
 
 describe('buildStandingsSubmissionMap', () => {
-  it('marks players as submitted when they have a ranking in current round pairings', () => {
+  it('fans a per-pairing completeness map out to every seated player', () => {
     const pairings = [
       {
         event_id: 1,
@@ -43,15 +43,12 @@ describe('buildStandingsSubmissionMap', () => {
       },
     ]
 
-    const rankingsByPairing = new Map<number, number[]>([
-      [10, [1, 2]],
+    const isCompleteByPairing = new Map<number, boolean>([
+      [10, true],
+      [20, false],
     ])
 
-    const hasVotes = new Map<number, boolean>([
-      [1, true], [2, true], [3, true], [4, true]
-    ])
-
-    const result = buildStandingsSubmissionMap(pairings, rankingsByPairing, hasVotes)
+    const result = buildStandingsSubmissionMap(pairings, isCompleteByPairing)
 
     expect(result.get(1)).toBe(true)
     expect(result.get(2)).toBe(true)
@@ -59,7 +56,7 @@ describe('buildStandingsSubmissionMap', () => {
     expect(result.get(4)).toBe(false)
   })
 
-  it('marks a pairing as not submitted if not all players are ranked', () => {
+  it('treats a pairing missing from the completeness map as not submitted', () => {
     const pairings = [
       {
         event_id: 1,
@@ -74,15 +71,7 @@ describe('buildStandingsSubmissionMap', () => {
       },
     ]
 
-    const rankingsByPairing = new Map<number, number[]>([
-      [10, [2]],
-    ])
-
-    const hasVotes = new Map<number, boolean>([
-      [1, true], [2, true]
-    ])
-
-    const result = buildStandingsSubmissionMap(pairings, rankingsByPairing, hasVotes)
+    const result = buildStandingsSubmissionMap(pairings, new Map())
 
     expect(result.get(1)).toBe(false)
     expect(result.get(2)).toBe(false)

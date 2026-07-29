@@ -251,27 +251,13 @@ const tablePlayersForVotes = computed(() => {
 
 // ── Computed: Rankings & Submissions ───────────────────────────────────────
 
-const rankingsByPairing = computed(() => {
-  const entries = new Map<number, number[]>()
-  for (const [pairingId, rankingWithRanks] of rankingsStore.rankingsWithRanks.entries()) {
-    entries.set(pairingId, rankingWithRanks.map(entry => entry.playerId))
-  }
-  return entries
-})
-
 const submittedByPlayerId = computed<Record<number, boolean>>(() => {
-  const hasVotesByPlayerId = new Map<number, boolean>()
+  const isCompleteByPairing = new Map<number, boolean>()
   for (const pairing of pairings.value) {
-    const playerIds = [
-      pairing.pairing_player1_id, pairing.pairing_player2_id,
-      pairing.pairing_player3_id, pairing.pairing_player4_id,
-    ].filter((id): id is number => id !== null)
-    for (const playerId of playerIds) {
-      hasVotesByPlayerId.set(playerId, votesStore.hasVotes(playerId))
-    }
+    isCompleteByPairing.set(pairing.pairing_id, isTableComplete(pairing))
   }
   return Object.fromEntries(
-    buildStandingsSubmissionMap(pairings.value, rankingsByPairing.value, hasVotesByPlayerId).entries(),
+    buildStandingsSubmissionMap(pairings.value, isCompleteByPairing).entries(),
   )
 })
 

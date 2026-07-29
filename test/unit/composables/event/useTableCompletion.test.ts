@@ -7,7 +7,7 @@ import { useRankingsStore } from '~/stores/rankings'
 import { useCommandersStore } from '~/stores/commanders'
 import { useVotesStore } from '~/stores/votes'
 import { useTableCompletion } from '~/composables/event/useTableCompletion'
-import type { Pairing, PairingWithResults, RoundResult } from '#shared/utils/types'
+import type { PairingWithResults, RoundResult } from '#shared/utils/types'
 
 function makePairing(overrides: Partial<PairingWithResults> = {}): PairingWithResults {
   return {
@@ -100,10 +100,10 @@ describe('useTableCompletion', () => {
     expect(isDraw(pairing)).toBe(true)
   })
 
-  it('isTableComplete requires a ranking, every seated player to have a commander, and every seated player to have voted', () => {
+  it('isTableComplete requires a ranking, every seated player to have a commander, every seated player to have voted, and kills confirmed', () => {
     const { isTableComplete, rankingsStore, commandersStore, votesStore } = setupCompletion()
-    const pairing: Pairing = makePairing()
     const playerIds = [1, 2, 3, 4]
+    const pairing: PairingWithResults = makePairing()
 
     expect(isTableComplete(pairing)).toBe(false)
 
@@ -114,17 +114,32 @@ describe('useTableCompletion', () => {
     expect(isTableComplete(pairing)).toBe(false)
 
     for (const playerId of playerIds) votesStore.setVotes(playerId, playerId, playerId)
-    expect(isTableComplete(pairing)).toBe(true)
+    expect(isTableComplete(pairing)).toBe(false)
+
+    const withKillsConfirmed = makePairing({ round_results: [makeResult({ number_of_kills: 0 })] })
+    expect(isTableComplete(withKillsConfirmed)).toBe(true)
   })
 
   it('isTableComplete stays false if only some seated players have a commander set', () => {
     const { isTableComplete, rankingsStore, commandersStore, votesStore } = setupCompletion()
-    const pairing: Pairing = makePairing()
     const playerIds = [1, 2, 3, 4]
+    const pairing: PairingWithResults = makePairing({ round_results: [makeResult({ number_of_kills: 0 })] })
 
     rankingsStore.setRankingWithRanks(1, playerIds.map(playerId => ({ playerId, rank: playerId })))
     for (const playerId of playerIds) votesStore.setVotes(playerId, playerId, playerId)
     commandersStore.setCommanders(1, 'Some Commander', null)
+
+    expect(isTableComplete(pairing)).toBe(false)
+  })
+
+  it('isTableComplete stays false if kills have not been confirmed, even with rankings, commanders, and votes complete', () => {
+    const { isTableComplete, rankingsStore, commandersStore, votesStore } = setupCompletion()
+    const playerIds = [1, 2, 3, 4]
+    const pairing: PairingWithResults = makePairing()
+
+    rankingsStore.setRankingWithRanks(1, playerIds.map(playerId => ({ playerId, rank: playerId })))
+    for (const playerId of playerIds) commandersStore.setCommanders(playerId, 'Some Commander', null)
+    for (const playerId of playerIds) votesStore.setVotes(playerId, playerId, playerId)
 
     expect(isTableComplete(pairing)).toBe(false)
   })

@@ -39,7 +39,7 @@ Three test layers exist: **unit** (`test/unit/`, pure logic, `happy-dom` environ
 | `utils/math.test.ts` | `roundToDecimals`, `isCloseTo` — minimal, 4 assertions total |
 | `utils/time.test.ts` | `formatDuration` — 0s, sub-minute, exact hour, hour+min+sec |
 | `utils/cardColors.test.ts` | Mana-cost color extraction (multi-color, Phyrexian, colorless), `resolveCardColors` (double-faced merge, color-identity fallback), `buildGradientClass` (1–4+ colors, unknown letter) |
-| `utils/standingsSubmission.test.ts` | `buildStandingsSubmissionMap` — submitted vs not-all-ranked cases |
+| `utils/standingsSubmission.test.ts` | `buildStandingsSubmissionMap` — per-pairing completeness fan-out to per-player record |
 | `composables/event/useLiveStandings.test.ts` | `buildPosValues`, `cloneStandings`, `calculatePlayerTableScore` (tied ranks, kills, brew/play votes, zero-score), `updateStanding` (victory only on rank 1) |
 | `composables/event/useSessionStorePersistence.test.ts` | Hydrate-on-round-match, skip-on-mismatch, persist-on-mutation, Map/Set round-trip, reset-on-round-advance |
 | `composables/event-pairing/pairingOptimizer.test.ts` | No duplicate players, forbidden-pair respect, 3/4-table splits for 10 players, per-player score sums to table total |

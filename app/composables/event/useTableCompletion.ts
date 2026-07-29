@@ -43,13 +43,19 @@ export function useTableCompletion(
    * - Rankings are saved
    * - All players have a commander set
    * - All players have submitted a vote
+   * - Kills have been confirmed (see `hasKills` above)
+   *
+   * The single definition of "table complete" — shared by the advance-round
+   * check, `PairingsCard`'s per-table badge, and the standings "Inserito"
+   * badge (`buildStandingsSubmissionMap`) so all three agree.
    */
-  const isTableComplete = (pairing: Pairing): boolean => {
+  const isTableComplete = (pairing: PairingWithResults): boolean => {
     const playerIds = getPairingPlayerIds(pairing)
     return (
       hasRanking(pairing) &&
       playerIds.every(id => commandersStore.getCommander1(id) !== null) &&
-      playerIds.every(id => votesStore.hasVotes(id))
+      playerIds.every(id => votesStore.hasVotes(id)) &&
+      hasKills(pairing)
     )
   }
 
