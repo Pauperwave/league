@@ -105,10 +105,23 @@ export function useEventLifecycle(deps: LifecycleDeps) {
     if (ok) showEventEditModal.value = false
   }
 
+  /**
+   * "Annulla Round" resets the current round's data (server-side: deletes
+   * this round's pairings/round_results/round_kills, decrements
+   * event_current_round — see turn-back-round.post.ts) and lands the admin
+   * straight back in the table preview instead of leaving them staring at
+   * the reopened previous round's already-played data with no obvious next
+   * step. Reuses the same showStartPreviewModal flow as "Prossimo Round" —
+   * confirming it re-advances (or re-starts, from round 1) with freshly
+   * regenerated pairings.
+   */
   async function confirmCancelRound() {
     showCancelRoundConfirm.value = false
     const ok = await turnBackRound()
-    if (ok) resetSessionStores()
+    if (ok) {
+      resetSessionStores()
+      showStartPreviewModal.value = true
+    }
   }
 
   function handleCancelRound() {

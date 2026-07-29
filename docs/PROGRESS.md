@@ -400,6 +400,14 @@ Gli store di sessione hanno **persistenza ottimistica**: update immediato UI + s
 - **Doc stale corretta**: `docs/architecture/commander-whitelists.md` menzionava un `partnerWithMap` come "esistente e popolato ma non consultato" — non esiste più nel codice attuale (probabile refuso di un refactor precedente mai aggiornato in doc). Aggiornata con la spiegazione reale del meccanismo di auto-fill.
 - **Verifica**: lint/typecheck/test suite completa verdi; nessun test dedicato aggiunto (nessun test esistente per `CommanderModal.vue`/`useCommanderWhitelists.ts` da cui partire) — verifica manuale in browser rimandata all'utente. Migrazione applicata al DB remoto (`npx supabase db push`, permesso esplicito dell'utente) — `npx supabase migration list` conferma `20260729000000` remoto = locale.
 
+### ADR-041 — "Annulla Round" riporta subito alla modale "Anteprima tavoli" (2026-07-29)
+
+- **Richiesta utente**: "Annulla Round" deve resettare i dati del round corrente (non di quello precedente) e portare alla modale "Anteprima tavoli" prima che il round venga rigenerato.
+- **Verifica lato server**: `turn-back-round.post.ts` era già corretto — cancella `round_results`/`round_kills`/`pairings` del round **corrente** (`eq('pairing_round', currentRound)`, dove `currentRound` è validato contro `event_current_round` con un 409 su mismatch) e decrementa `event_current_round`, lasciando intatti i dati del round precedente (giustamente, visto che quel round è già stato giocato per davvero). Nessun bug nella logica di cancellazione.
+- **Bug reale**: `confirmCancelRound()` (`useEventLifecycle.ts`) non riapriva mai la modale di preview dopo il turn-back — l'admin restava semplicemente sul round precedente, con i suoi dati già giocati, senza alcun invito a rigenerare il round appena annullato. Da qui la percezione "ha resettato il round sbagliato": visivamente nulla sembrava cambiato per il round precedente, mentre il round corrente era stato correttamente cancellato ma senza alcun passo successivo visibile.
+- **Fix**: dopo un `turnBackRound()` riuscito, `confirmCancelRound()` ora imposta anche `showStartPreviewModal.value = true` — stesso flusso già usato da "Prossimo Round"/avvio evento (`handlePreviewConfirm`), che chiama `nextRound`/`startEvent` a seconda di `eventStatus`. `previewTables` si aggiorna correttamente prima dell'apertura perché `turnBackRound()` (in `useEventPage.ts`) chiama già `refreshAfterLifecycle()`, che rinfresca standings/waitroom prima del return.
+- **Verifica**: lint/typecheck/test suite completa verdi; nessun test unitario esistente per `useEventLifecycle.ts` da cui partire (il test e2e `turn-back-round.e2e.spec.ts` è API-only, non tocca la UI). Verifica manuale in browser rimandata all'utente.
+
 ---
 
 ## Funzionalità per area
