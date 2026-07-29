@@ -183,13 +183,15 @@ A `deleted_at timestamptz null` column (leagues/events, maybe decks) instead of/
 
 ## 8. Rename event → tournament; decouple tournament from league
 
-Raised 2026-07-19. "Event" is the wrong word for what this domain concept actually is — a **tournament**: currently modeled as always belonging to exactly one league (`events.league_id`), but a tournament should be able to:
+Raised 2026-07-19. **Phase 1 of 3 (UI text only) done 2026-07-30 — see ADR-044 in `docs/PROGRESS.md`.** Every Italian UI string in `i18n/locales/it.json` using "Evento"/"Eventi" now reads "Torneo"/"Tornei" (values only, i18n *keys* still say `event.*` — that's phase 2 below). The "Crea Nuovo Evento" button icon (`EventFormModal.vue`) was also swapped from `ICONS.calendarAdd` (calendar-plus, wrong concept) to `ICONS.battle` (swords, already used elsewhere for this domain concept) — `ICONS.calendarAdd` itself was deliberately kept in `icons.ts` despite having no current consumer, reserved for when "event" (a date/venue an optional tournament can be linked to, per the decoupling below) becomes a real distinct entity again.
+
+"Event" is the wrong word for what this domain concept actually is — a **tournament**: currently modeled as always belonging to exactly one league (`events.league_id`), but a tournament should be able to:
 
 - belong to a league (today's only shape), **or**
 - be linked to a single one-off event with no league, **or**
 - stand completely alone, tied to neither a league nor an event.
 
-This is two separate large changes bundled together: (1) a naming rework — DB table/column names, TS types (`Event`, `EventInsert`, ...), every route (`/league/[leagueId]/event/[eventId]`), every composable/component/i18n key with "event" in the name — and (2) a real schema/FK change making the league relationship optional and auditing every place that currently assumes "an event always has a league" (pairing generation, standings aggregation, waitroom, breadcrumbs, `api.md`/`database.md` docs). Underestimating this as "just a rename" would be a mistake — the FK optionality change touches the pairing/standings/waitroom stack much more deeply than the name does.
+User-agreed 3-phase rollout (2026-07-30): **phase 1 — UI text only (done, see above)**; **phase 2 — code**: DB table/column names, TS types (`Event`, `EventInsert`, ...), every route (`/league/[leagueId]/event/[eventId]`), every composable/component/i18n *key* with "event" in the name; **phase 3 — database**: the actual migration renaming tables/columns, requires explicit user approval per `docs/AGENTS.md`'s destructive-DB-ops rule. The decoupling (optional league FK, standalone-tournament shape) is a separate, larger change layered on top of phases 2/3, not bundled into them by default — a real schema/FK change making the league relationship optional and auditing every place that currently assumes "an event always has a league" (pairing generation, standings aggregation, waitroom, breadcrumbs, `api.md`/`database.md` docs). Underestimating this as "just a rename" would be a mistake — the FK optionality change touches the pairing/standings/waitroom stack much more deeply than the name does.
 
 **Deliberately P3/someday, not next**: the standing priority is making the *current* event lifecycle (registration → playing → round advance → ended) rock solid first. Don't start this rename until that's true; a big rename on top of a shaky lifecycle compounds risk instead of reducing it.
 

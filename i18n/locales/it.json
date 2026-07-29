@@ -35,15 +35,15 @@
     "newLeague": "Nuova Lega",
     "editLeagueName": "Modifica nome lega",
     "backAriaLabel": "Torna indietro",
-    "newEvent": "Nuovo Evento",
-    "scoresByEvent": "Punteggi per Evento",
+    "newEvent": "Nuovo Torneo",
+    "scoresByEvent": "Punteggi per Torneo",
     "standingsTitle": "Classifica {name}",
     "emptyTitle": "Nessuna lega creata",
     "emptyDescription": "Clicca 'Nuova Lega' per iniziare",
     "confirmDeleteDescription": "Stai per eliminare una lega",
     "confirmDeleteQuestion": "Sei sicuro di voler eliminare la lega",
-    "confirmDeleteEventDescription": "Stai per eliminare un evento",
-    "confirmDeleteEventQuestion": "Sei sicuro di voler eliminare questo evento?",
+    "confirmDeleteEventDescription": "Stai per eliminare un torneo",
+    "confirmDeleteEventQuestion": "Sei sicuro di voler eliminare questo torneo?",
     "status": {
       "scheduled": "Programmata",
       "active": "Attiva",
@@ -70,7 +70,7 @@
       "endsLabel": "Data Fine",
       "rulesetLabel": "Regolamento",
       "rulesetFallback": "Ruleset {id}",
-      "validEventsLabel": "Eventi validi richiesti",
+      "validEventsLabel": "Tornei validi richiesti",
       "statusLabel": "Stato lega"
     },
     "ranking": {
@@ -120,7 +120,7 @@
       "play": "Play"
     },
     "actionTooltips": {
-      "partecipation": "Punti per partecipare all'evento",
+      "partecipation": "Punti per partecipare al torneo",
       "kill": "Punti per aver eliminato un avversario",
       "brew": "Punti per originalità del deck",
       "play": "Punti per la miglior giocata"
@@ -156,7 +156,7 @@
     "notFound": "Giocatore non trovato",
     "deckCount": "0 mazzi | 1 mazzo | {count} mazzi",
     "stats": {
-      "events": "Eventi",
+      "events": "Tornei",
       "matches": "Match",
       "wins": "Vittorie",
       "kills": "Uccisioni",
@@ -166,14 +166,14 @@
     },
     "matchHistory": {
       "heading": "Storico Partite",
-      "event": "Evento",
+      "event": "Torneo",
       "round": "Round",
       "table": "Tavolo",
       "commander": "Commander",
       "position": "Posizione",
       "kills": "Uccisioni",
       "date": "Data",
-      "unknownEvent": "Evento sconosciuto"
+      "unknownEvent": "Torneo sconosciuto"
     },
     "decksSection": {
       "heading": "Commander Decks",
@@ -194,7 +194,7 @@
       "name": "Nome",
       "surname": "Cognome",
       "decks": "Mazzi",
-      "events": "Eventi",
+      "events": "Tornei",
       "matches": "Match",
       "wins": "Vittorie",
       "kills": "Uccisioni",
@@ -243,7 +243,7 @@
       "similarFoundHint": "Verifica che il giocatore non sia già registrato:",
       "select": "Seleziona",
       "search": "Cerca",
-      "similarHelpTextEvent": "Se il giocatore è nella lista, clicca \"Seleziona\" per aggiungerlo all'evento. Altrimenti, procedi pure con la creazione.",
+      "similarHelpTextEvent": "Se il giocatore è nella lista, clicca \"Seleziona\" per aggiungerlo al torneo. Altrimenti, procedi pure con la creazione.",
       "similarHelpTextPlayers": "Se il giocatore è nella lista, clicca \"Cerca\" per trovarlo nell'elenco. Altrimenti, procedi pure con la creazione.",
       "noSimilarFound": "Nessun giocatore simile trovato. Puoi procedere con la creazione."
     },
@@ -266,8 +266,8 @@
     "unknownPlayer": "Giocatore sconosciuto",
     "borrowedBadge": "(Prestato)",
     "statsPlayers": "Giocatori",
-    "usedInEvents": "Usato in {count} evento | Usato in {count} eventi",
-    "notUsedInEvents": "Non usato in eventi",
+    "usedInEvents": "Usato in {count} torneo | Usato in {count} tornei",
+    "notUsedInEvents": "Non usato in tornei",
     "lentBy": "di {name}",
     "viewDetails": "Dettagli",
     "viewStats": "Statistiche",
@@ -412,7 +412,7 @@
     }
   },
   "event": {
-    "fallbackName": "Evento",
+    "fallbackName": "Torneo",
     "standingsTitleFinal": "Classifica Finale",
     "standingsTitleRound": "Classifica Round {round}",
     "standingsTitleDefault": "Classifica",
@@ -433,13 +433,13 @@
       "confirmLabel": "Annulla round"
     },
     "endEvent": {
-      "title": "Termina evento",
-      "description": "Conferma la fine dell'evento",
-      "question": "Sei sicuro di voler terminare l'evento",
-      "warning": "Dopo la conferma l'evento verrà contrassegnato come terminato.",
+      "title": "Termina torneo",
+      "description": "Conferma la fine del torneo",
+      "question": "Sei sicuro di voler terminare il torneo",
+      "warning": "Dopo la conferma il torneo verrà contrassegnato come terminato.",
       "confirmLabel": "Termina"
     },
-    "editAriaLabel": "Modifica evento",
+    "editAriaLabel": "Modifica torneo",
     "status": {
       "registration": "Programmato",
       "playing": "In Corso",
@@ -452,12 +452,12 @@
       "registration": "Registrazione",
       "registrationOpen": "Aperta",
       "registrationClosed": "Chiusa",
-      "emptyTitle": "Nessun evento creato",
-      "emptyDescription": "Clicca 'Nuovo Evento' per iniziare"
+      "emptyTitle": "Nessun torneo creato",
+      "emptyDescription": "Clicca 'Nuovo Torneo' per iniziare"
     },
     "controlPanel": {
       "backToPreviousRoundTooltip": "Torna al round precedente",
-      "endEventTooltip": "Termina l'evento",
+      "endEventTooltip": "Termina il torneo",
       "advanceTooltip": "Procedi al round successivo",
       "incompleteDataTooltip": "Dati dei tavoli incompleti",
       "advanceButton": "Procedi al prossimo round"
@@ -469,10 +469,10 @@
       "roundCompleted": "Completato",
       "roundInProgress": "In corso",
       "roundPending": "In attesa",
-      "endedDescription": "Evento concluso"
+      "endedDescription": "Torneo concluso"
     },
-    "startButton": "Avvia Evento",
-    "endedBadge": "Evento Terminato",
+    "startButton": "Avvia Torneo",
+    "endedBadge": "Torneo Terminato",
     "roundTimer": {
       "expiredTooltip": "Timer scaduto",
       "startTooltip": "Avvia timer",
@@ -543,12 +543,12 @@
     "commandersSavedTitle": "Comandanti salvati",
     "voteSavedTitle": "Voto salvato",
     "form": {
-      "editTitle": "Modifica Evento",
-      "createTitle": "Crea Nuovo Evento",
-      "editDescription": "Modifica i dati dell'evento",
-      "createDescription": "Compila i campi per creare un nuovo evento",
-      "submitCreate": "Crea Evento",
-      "nameLabel": "Nome Evento",
+      "editTitle": "Modifica Torneo",
+      "createTitle": "Crea Nuovo Torneo",
+      "editDescription": "Modifica i dati del torneo",
+      "createDescription": "Compila i campi per creare un nuovo torneo",
+      "submitCreate": "Crea Torneo",
+      "nameLabel": "Nome Torneo",
       "namePlaceholder": "Es. Commander Night #1",
       "dateLabel": "Data",
       "numRoundLabel": "Numero Round",
@@ -666,7 +666,7 @@
     },
     "tablePreview": {
       "title": "Anteprima Tavoli",
-      "description": "Trascina i giocatori per comporre i tavoli prima di avviare l'evento",
+      "description": "Trascina i giocatori per comporre i tavoli prima di avviare il torneo",
       "invalidMoveTitle": "Spostamento non valido",
       "invalidMoveFallback": "Questa disposizione non è consentita",
       "invalidTableSizes": "Ogni tavolo deve avere tra 3 e 4 giocatori",
@@ -766,18 +766,18 @@
       }
     },
     "toast": {
-      "createErrorTitle": "Errore creazione evento",
-      "createErrorFallback": "Impossibile creare l'evento",
-      "createdTitle": "Evento creato",
-      "createdDescription": "L'evento \"{name}\" è stato creato con successo.",
-      "updateErrorTitle": "Errore aggiornamento evento",
-      "updateErrorFallback": "Impossibile aggiornare l'evento",
-      "updatedTitle": "Evento aggiornato",
-      "updatedDescription": "L'evento \"{name}\" è stato aggiornato con successo.",
-      "deleteErrorTitle": "Errore eliminazione evento",
-      "deleteErrorFallback": "Impossibile eliminare l'evento",
-      "deletedTitle": "Evento eliminato",
-      "deletedDescription": "L'evento è stato eliminato con successo."
+      "createErrorTitle": "Errore creazione torneo",
+      "createErrorFallback": "Impossibile creare il torneo",
+      "createdTitle": "Torneo creato",
+      "createdDescription": "Il torneo \"{name}\" è stato creato con successo.",
+      "updateErrorTitle": "Errore aggiornamento torneo",
+      "updateErrorFallback": "Impossibile aggiornare il torneo",
+      "updatedTitle": "Torneo aggiornato",
+      "updatedDescription": "Il torneo \"{name}\" è stato aggiornato con successo.",
+      "deleteErrorTitle": "Errore eliminazione torneo",
+      "deleteErrorFallback": "Impossibile eliminare il torneo",
+      "deletedTitle": "Torneo eliminato",
+      "deletedDescription": "Il torneo è stato eliminato con successo."
     }
   },
   "store": {
@@ -785,7 +785,7 @@
       "loadError": "Errore nel caricamento leghe",
       "createError": "Errore nella creazione lega",
       "updateError": "Errore nell'aggiornamento lega",
-      "inUseError": "Non è possibile eliminare questa lega perché contiene ancora degli eventi",
+      "inUseError": "Non è possibile eliminare questa lega perché contiene ancora dei tornei",
       "deleteError": "Errore nell'eliminazione lega"
     },
     "ruleset": {
@@ -801,15 +801,15 @@
       "registerError": "Errore nella registrazione in lista d'attesa"
     },
     "deck": {
-      "inUseError": "Non è possibile eliminare questo deck perché è stato usato in un evento"
+      "inUseError": "Non è possibile eliminare questo deck perché è stato usato in un torneo"
     },
     "kill": {
       "alreadyRegistered": "Uccisione già registrata",
       "victimAlreadyKilled": "La vittima ha già ucciso questo giocatore"
     },
     "event": {
-      "inUseError": "Non è possibile eliminare questo evento perché contiene ancora tavoli, classifiche o iscritti",
-      "startError": "Errore nell'avvio evento",
+      "inUseError": "Non è possibile eliminare questo torneo perché contiene ancora tavoli, classifiche o iscritti",
+      "startError": "Errore nell'avvio torneo",
       "voteSaveError": "Errore nel salvataggio del voto",
       "commanderSaveError": "Errore nel salvataggio dei comandanti",
       "rankingsSaveError": "Errore nel salvataggio delle posizioni",
@@ -852,6 +852,6 @@
   },
   "app": {
     "title": "Gestione Lega",
-    "description": "Gestione leghe Magic: The Gathering Commander: eventi, abbinamenti, punteggi e classifiche."
+    "description": "Gestione leghe Magic: The Gathering Commander: tornei, abbinamenti, punteggi e classifiche."
   }
 }

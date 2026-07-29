@@ -63,7 +63,7 @@ const isEditing = computed(() => !!props.event)
 const { title: modalTitle, description: modalDescription, icon: modalIcon, submitLabel, handleCancel } = useFormModalMeta({
   isEditing,
   namespace: 'event',
-  createIcon: ICONS.calendarAdd,
+  createIcon: ICONS.battle,
   cancelLoggingLabel: 'Cancel Event Form',
   open
 })

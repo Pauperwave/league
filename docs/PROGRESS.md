@@ -2,7 +2,7 @@
 
 Documento vivo per tracciare avanzamento, architettura e decisioni. Aggiornare quando cambiano scope, stack o convenzioni rilevanti.
 
-**Ultimo aggiornamento:** 2026-07-22
+**Ultimo aggiornamento:** 2026-07-30
 
 ---
 
@@ -422,6 +422,13 @@ Gli store di sessione hanno **persistenza ottimistica**: update immediato UI + s
 - **Fix**: `seat.id` ora è basato sull'identità del giocatore (`${tableId}-player-${playerId}`) per i seat occupati, mantenendo un id posizionale (`${tableId}-empty-${index}`) solo per i seat vuoti (che non hanno un'identità propria — sono intercambiabili). Corretto in entrambi i punti che costruiscono seat id: `normalizeSeats` (il percorso principale, chiamato da ogni update) e `buildTablesFromOrder` (ridondante in pratica — è sempre seguito da `ensureTableSeatShape`/`normalizeSeats` — ma corretto comunque per coerenza).
 - **Gap nei test scoperto**: `pairing-preview-swap.e2e.spec.ts` trascinava sempre `table1Before[0]` (il primo giocatore) — un bug "prende sempre il primo elemento" non sarebbe MAI stato catturato da questo test, dato che l'elemento atteso e quello effettivamente afferrato avrebbero sempre coinciso per costruzione. Aggiornato per trascinare il terzo giocatore (`table1Before[2]`, `.nth(2)`), così il test verifica davvero "il giocatore trascinato è quello sotto il cursore," non solo "index 0 funziona."
 - **Verifica**: lint/typecheck/unit test suite completa verdi (i test unitari esistenti su `useTableDnd.ts` non assumevano il formato esatto dell'id, solo `player.id`, quindi nessuno si è rotto). Verifica manuale in browser rimandata all'utente; l'e2e aggiornato non è stato rieseguito in questa sessione (richiede Playwright + DB reale).
+
+### ADR-044 — Rinomina "Evento" → "Torneo" (fase 1/3: solo testo UI) (2026-07-30)
+
+- **Richiesta utente:** il termine di dominio corretto per quello che l'app chiama "Evento" è **Torneo** — cambio in tre fasi separate: (1) solo le stringhe italiane visibili in UI, (2) codice (nomi tabella/colonna DB, tipi TS, route, composable/component/store, chiavi i18n), (3) schema DB reale. Questo ADR copre solo la fase 1. Le fasi 2 e 3 restano tracciate in `docs/BACKLOG.md` #8 (che già descriveva esattamente questo rework, aperto dal 2026-07-19 e deliberatamente P3/someday dietro la priorità di stabilizzare il lifecycle evento — vedi nota lì).
+- **Cosa è cambiato:** ogni occorrenza testuale di "Evento"/"Eventi" (e le rispettive forme contratte: "l'evento" → "il torneo", "dell'evento" → "del torneo", "all'evento" → "al torneo") in `i18n/locales/it.json` sostituita con "Torneo"/"Tornei" — **solo i valori delle stringhe**, non le chiavi (`event.fallbackName`, `league.newEvent`, ecc. restano invariate, verranno rinominate in fase 2 insieme al resto del codice). Nessun'altra stringa hardcoded fuori da `it.json` è stata trovata (`app/components/event/StartEventButton.vue`'s "Avvia Evento" nel testo era solo un commento di documentazione in inglese, non copy utente — lasciato invariato).
+- **Icona coerente con il nuovo nome:** l'utente ha notato che l'icona del bottone "Crea Nuovo Evento" (`EventFormModal.vue`, via `useFormModalMeta`'s `createIcon`) era `ICONS.calendarAdd` (`i-lucide-calendar-plus`) — un'icona da "aggiungi al calendario", non da torneo. Cambiata a `ICONS.battle` (`i-lucide-swords`), già usata altrove nel dominio scoring/lega per lo stesso concetto (vedi `icons.ts`, sezione "League / event / scoring"). `ICONS.calendarAdd` non ha più consumer dopo il cambio ma è stata **deliberatamente lasciata** in `icons.ts` (non rimossa nonostante la policy "refactor freely/zero consumer") — l'utente prevede di reintrodurla quando il concetto di "evento" tornerà come entità distinta dal "torneo" nella fase 2/3 del rework (`docs/BACKLOG.md` #8, la data/scadenza a cui un torneo può appartenere).
+- **Verifica:** `pnpm lint` verde; JSON validato con `node -e "JSON.parse(...)"` dopo ogni batch di edit.
 
 ---
 
