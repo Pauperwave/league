@@ -1,6 +1,6 @@
 # Checklist gap medi — convenzioni progetto
 
-Checklist operativa derivata da [`skills-audit-report.md`](./skills-audit-report.md) e da `docs/AGENTS.md`.
+Checklist operativa derivata da [`skills-audit-report.md`](./2026-05-24-skills-audit-report.md) e da `docs/AGENTS.md`.
 
 ## Stato implementazione (2026-05-25)
 
