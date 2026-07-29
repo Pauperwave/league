@@ -76,6 +76,19 @@ describe('useRoundStatus', () => {
     expect(killItems.value.map(i => i.tableNumber)).toEqual([1, 2])
   })
 
+  it('rankingItems/killItems include seated players\' names, for search matching by surname', () => {
+    const { rankingItems, killItems } = setupRoundStatus(pairings, players)
+
+    expect(rankingItems.value.map(i => i.playerNames)).toEqual([
+      ['Alessandro Berti', 'Federico Toldo'],
+      ['Gernot Dalvai', 'Elia Pachera'],
+    ])
+    expect(killItems.value.map(i => i.playerNames)).toEqual([
+      ['Alessandro Berti', 'Federico Toldo'],
+      ['Gernot Dalvai', 'Elia Pachera'],
+    ])
+  })
+
   it('rankingItems.done reflects rankingsStore, per pairing', () => {
     const { rankingItems, rankingsStore } = setupRoundStatus(pairings, players)
 

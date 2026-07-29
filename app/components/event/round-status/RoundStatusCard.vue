@@ -49,11 +49,13 @@ function tableHaystack(tableNumber: number): string {
 
 const filteredRankingItems = computed(() =>
   rankingItems.value.filter(item =>
-    matchesRoundStatusFilter(item.done, filter.value) && matchesRoundStatusSearch(tableHaystack(item.tableNumber), search.value)))
+    matchesRoundStatusFilter(item.done, filter.value) &&
+    matchesRoundStatusSearch(`${item.playerNames.join(' ')} ${tableHaystack(item.tableNumber)}`, search.value)))
 
 const filteredKillItems = computed(() =>
   killItems.value.filter(item =>
-    matchesRoundStatusFilter(item.done, filter.value) && matchesRoundStatusSearch(tableHaystack(item.tableNumber), search.value)))
+    matchesRoundStatusFilter(item.done, filter.value) &&
+    matchesRoundStatusSearch(`${item.playerNames.join(' ')} ${tableHaystack(item.tableNumber)}`, search.value)))
 
 const filteredCommanderItems = computed(() =>
   commanderItems.value.filter(item =>

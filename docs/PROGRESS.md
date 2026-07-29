@@ -408,6 +408,13 @@ Gli store di sessione hanno **persistenza ottimistica**: update immediato UI + s
 - **Fix**: dopo un `turnBackRound()` riuscito, `confirmCancelRound()` ora imposta anche `showStartPreviewModal.value = true` — stesso flusso già usato da "Prossimo Round"/avvio evento (`handlePreviewConfirm`), che chiama `nextRound`/`startEvent` a seconda di `eventStatus`. `previewTables` si aggiorna correttamente prima dell'apertura perché `turnBackRound()` (in `useEventPage.ts`) chiama già `refreshAfterLifecycle()`, che rinfresca standings/waitroom prima del return.
 - **Verifica**: lint/typecheck/test suite completa verdi; nessun test unitario esistente per `useEventLifecycle.ts` da cui partire (il test e2e `turn-back-round.e2e.spec.ts` è API-only, non tocca la UI). Verifica manuale in browser rimandata all'utente.
 
+### ADR-042 — "Mi dicono il cognome ma non so il tavolo di appartenenza": ricerca per cognome nelle card Classifiche/Uccisioni (2026-07-30)
+
+- **Richiesta utente**: cercando un cognome nella barra di ricerca di "Stato inserimento", il tavolo di appartenenza dovrebbe comparire anche nelle card "Classifiche" e "Uccisioni" (non solo "Comandanti"/"Voti").
+- **Bug**: `RoundStatusCard.vue` filtrava `rankingItems`/`killItems` (righe per-tavolo, non per-giocatore) contro un haystack costruito solo dal numero/etichetta del tavolo (`tableHaystack`) — mai dai nomi dei giocatori seduti. Cercare un cognome su Classifiche/Uccisioni non trovava quindi nulla, mentre su Comandanti/Voti (righe per-giocatore, haystack già `nome cognome + tavolo`) funzionava. La riga esiste già e mostra "Tavolo N" (`RoundStatusRow.vue`) — mancava solo il match.
+- **Fix**: `useRoundStatus.ts`'s `RoundStatusTableItem` guadagna `playerNames: string[]` (nomi dei giocatori seduti al tavolo di quella riga, calcolati con lo stesso `playersById` già usato da `buildPlayerItems`, ora un `computed` condiviso invece di un `const` locale ricreato per ogni chiamata). `RoundStatusCard.vue` include `playerNames.join(' ')` nell'haystack di ricerca per `filteredRankingItems`/`filteredKillItems`, stesso pattern già in uso per Comandanti/Voti. Non serve mostrare i nomi nella riga (resterebbe solo "Tavolo N", già informativo) — servono solo per il match di ricerca.
+- **Test**: nuovo caso in `useRoundStatus.test.ts` che verifica `playerNames` su `rankingItems`/`killItems`.
+
 ---
 
 ## Funzionalità per area
