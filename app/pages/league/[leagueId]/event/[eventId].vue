@@ -162,33 +162,12 @@ const submitHandlers = useEventSubmitHandlers({
 
 // ── Computed: Advance Check ────────────────────────────────────────────────
 
+const { isTableComplete } = useTableCompletion(rankingsStore, commandersStore, votesStore)
+
 const canAdvance = computed(() => {
   if (eventStatus.value !== 'playing' || pairings.value.length === 0) return false
 
-  return pairings.value.every((pairing) => {
-    const playerIds = [
-      pairing.pairing_player1_id, pairing.pairing_player2_id,
-      pairing.pairing_player3_id, pairing.pairing_player4_id,
-    ].filter((id): id is number => id !== null)
-
-    if (playerIds.length === 0) return false
-
-    const ranking = rankingsStore.getRankingWithRanks(pairing.pairing_id)
-    if (!ranking || ranking.length === 0) return false
-
-    const tableKills = killsStore.kills.filter((k) =>
-      playerIds.includes(k.killerId) && playerIds.includes(k.victimId)
-    )
-    if (tableKills.length === 0) return false
-
-    const allCommandersSet = playerIds.every(id => commandersStore.getCommander1(id) !== null)
-    if (!allCommandersSet) return false
-
-    const allVotesSet = playerIds.every(id => votesStore.hasVotes(id) === true)
-    if (!allVotesSet) return false
-
-    return true
-  })
+  return pairings.value.every(pairing => isTableComplete(pairing))
 })
 
 // ── Computed: Tables & Players ─────────────────────────────────────────────
