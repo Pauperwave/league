@@ -33,12 +33,25 @@ function cloneTables(tables: TournamentTable[]): TournamentTable[] {
   }))
 }
 
+/**
+ * Rebuilds a table's 4-seat shape. `seat.id` for an occupied seat is keyed
+ * by the player's own id, not by array position — `TableCard.vue`'s
+ * `v-for="seat in seatsModel" :key="seat.id"` needs a key stable across
+ * reorders so Vue actually moves/recreates the right DOM node instead of
+ * reusing the same "seat N" node and just patching its `player` prop in
+ * place. With `force-fallback` drag (ADR-037), SortableJS tracks the
+ * physical DOM node it picked up for the whole gesture; a positional key
+ * meant Vue could silently swap that node's content out from under an
+ * in-progress drag, which showed up as "always drags the first seat,
+ * never whichever one is actually being hovered." Empty seats have no
+ * entity to key by, so they keep a positional id — interchangeable anyway.
+ */
 function normalizeSeats(tableId: string, seats: Seat[]): Seat[] {
   const players = seats
     .filter(seat => seat.player !== null)
     .slice(0, 5)
-    .map((seat, index) => ({
-      id: `${tableId}-seat-${index + 1}`,
+    .map(seat => ({
+      id: `${tableId}-player-${seat.player!.id}`,
       player: seat.player,
     }))
 
@@ -46,7 +59,7 @@ function normalizeSeats(tableId: string, seats: Seat[]): Seat[] {
 
   while (normalized.length < 4) {
     normalized.push({
-      id: `${tableId}-seat-${normalized.length + 1}`,
+      id: `${tableId}-empty-${normalized.length + 1}`,
       player: null,
     })
   }
@@ -149,7 +162,7 @@ function buildTablesFromOrder(tables: TournamentTable[], playerOrder: number[]):
       const player = playerId !== undefined ? playerMap.get(playerId) ?? null : null
 
       return {
-        id: `${table.id}-seat-${index + 1}`,
+        id: player !== null ? `${table.id}-player-${player.id}` : `${table.id}-empty-${index + 1}`,
         player,
       }
     }) as [Seat, Seat, Seat, Seat]

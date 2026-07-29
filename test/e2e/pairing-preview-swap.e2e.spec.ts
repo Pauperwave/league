@@ -98,13 +98,15 @@ test('dragging a player from one full table to another swaps them instead of rej
   expect(table1Before).toHaveLength(4)
   expect(table2Before).toHaveLength(4)
 
-  // Drag the first seated player in table 1 onto table 2 — both tables are
-  // full, so a plain move would leave table 2 at 5/table 1 at 3 (invalid);
+  // Drag the THIRD seated player in table 1 onto table 2 — deliberately not
+  // the first, so this actually exercises "the dragged player is whichever
+  // handle the mouse is on," not just index 0. Both tables are full, so a
+  // plain move would leave table 2 at 5/table 1 at 3 (invalid);
   // attemptTableSwap should turn it into a swap instead. TableCard.vue's
   // VueDraggable uses forceFallback (mouse-simulated drag, not native HTML5
   // DnD), so a plain mouse down/move/up sequence drives it.
-  const movedSurname = table1Before[0]!
-  const dragHandle = table1.getByRole('button', { name: 'Trascina giocatore' }).first()
+  const movedSurname = table1Before[2]!
+  const dragHandle = table1.getByRole('button', { name: 'Trascina giocatore' }).nth(2)
   const dropTarget = table2.locator('.grid').first()
 
   const handleBox = await dragHandle.boundingBox()
