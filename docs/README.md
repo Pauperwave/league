@@ -27,7 +27,7 @@ Master index of all project documentation.
 | `BACKLOG.md` | Forward-looking, committed work items ranked by priority (P1–P3) with effort estimates (S/M/L) | Roadmap |
 | `TODO.md` | Forward-looking scratch notes: loose observations, open questions, not yet committed | Roadmap (scratch) |
 | `audits/skills-audit-checklist.md` | Skills audit completion checklist | Process |
-| `audits/skills-audit-report.md` | Full skills audit with scores and recommendations | Process |
+| `audits/2026-05-24-skills-audit-report.md` | Full skills audit with scores and recommendations | Process |
 | `audits/2026-07-12-vue-nuxt-conventions.md` | Vue 3.5+/Nuxt 4 convention compliance audit | Process |
 | `superpowers/plans/` | Dated feature implementation plans (event flow standings, realtime, Scryfall migration, commander search) | Planning (historical) |
 | `superpowers/specs/` | Dated feature design specs (event flow standings, realtime, testing) | Planning (historical) |
@@ -65,7 +65,7 @@ Master index of all project documentation.
 
 1. `BACKLOG.md` — ranked, actionable cleanup items (Valibot form validation, DnD library adoption, etc.)
 2. `AGENTS.md` — lint workflow, fallow integration
-3. `audits/skills-audit-report.md` — comprehensive audit results
+3. `audits/2026-05-24-skills-audit-report.md` — comprehensive audit results
 4. `audits/2026-07-12-vue-nuxt-conventions.md` — Vue/Nuxt convention compliance
 
 ---
@@ -96,7 +96,7 @@ docs/
 │   └── testing.md
 ├── audits/
 │   ├── skills-audit-checklist.md
-│   ├── skills-audit-report.md
+│   ├── 2026-05-24-skills-audit-report.md
 │   └── 2026-07-12-vue-nuxt-conventions.md
 ├── BACKLOG.md
 ├── PROGRESS.md

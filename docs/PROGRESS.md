@@ -428,7 +428,7 @@ Gli store di sessione hanno **persistenza ottimistica**: update immediato UI + s
 - [x] Creato `CLAUDE.md` alla radice del repo
 - [x] Aggiunto TODO per Playwright + Playwright MCP in `docs/TODO.md`
 
-Audit dettagliato: [`docs/audits/skills-audit-report.md`](docs/audits/skills-audit-report.md), checklist: [`docs/audits/skills-audit-checklist.md`](docs/audits/skills-audit-checklist.md) — **non riverificati in questa sessione**, possono essere datati. Vedi anche [`docs/audits/2026-07-12-vue-nuxt-conventions.md`](docs/audits/2026-07-12-vue-nuxt-conventions.md) per l'audit Vue 3.5+/Nuxt 4.
+Audit dettagliato: [`docs/audits/2026-05-24-skills-audit-report.md`](docs/audits/2026-05-24-skills-audit-report.md), checklist: [`docs/audits/skills-audit-checklist.md`](docs/audits/skills-audit-checklist.md) — **non riverificati in questa sessione**, possono essere datati. Vedi anche [`docs/audits/2026-07-12-vue-nuxt-conventions.md`](docs/audits/2026-07-12-vue-nuxt-conventions.md) per l'audit Vue 3.5+/Nuxt 4.
 
 ---
 
@@ -468,7 +468,7 @@ Indice completo e aggiornato: [`docs/README.md`](docs/README.md). Voci principal
 | [`docs/architecture/async-data-keys.md`](docs/architecture/async-data-keys.md) | Convenzione naming chiavi `useAsyncData` |
 | [`docs/BACKLOG.md`](docs/BACKLOG.md) | Lavoro committed, ranked per priorità (P1–P3) con stima effort (S/M/L) |
 | [`docs/TODO.md`](docs/TODO.md) | Osservazioni sparse, non ancora committed |
-| [`docs/audits/skills-audit-report.md`](docs/audits/skills-audit-report.md) | Audit best practices |
+| [`docs/audits/2026-05-24-skills-audit-report.md`](docs/audits/2026-05-24-skills-audit-report.md) | Audit best practices |
 | [`docs/audits/skills-audit-checklist.md`](docs/audits/skills-audit-checklist.md) | Checklist convenzioni |
 | [`docs/audits/2026-07-12-vue-nuxt-conventions.md`](docs/audits/2026-07-12-vue-nuxt-conventions.md) | Audit Vue 3.5+/Nuxt 4 conventions |
 

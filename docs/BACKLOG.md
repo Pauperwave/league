@@ -20,6 +20,8 @@ Committed, actionable work items, ranked by priority with a rough effort estimat
 | 9 | [Adopt `nuxt-echarts` for charts](#9-adopt-nuxt-echarts-for-charts) | P3 | M |
 | 14 | [Persist an explicit table number instead of deriving it from array order](#14-persist-an-explicit-table-number-instead-of-deriving-it-from-array-order) | P3 | M |
 | 15 | [Winner checklist + `table_wins` stat (booster pack reward per round)](#15-winner-checklist--table_wins-stat-booster-pack-reward-per-round) | P2 | M |
+| 16 | [League standings don't use `valid_events` — sums every event instead of best-N](#16-league-standings-dont-use-valid_events--sums-every-event-instead-of-best-n) | P2 | M |
+| 17 | [In-app "info/regolamento" page](#17-in-app-inforegolamento-page) | P3 | S |
 
 ---
 
@@ -233,6 +235,24 @@ After **every** round (including the last one), the winner of each table receive
 
 - ~~**In-room checklist**~~ — **done** (2026-07-21): `WinnerChecklist.vue` + `useWinnerChecklist.ts`, winners derived live from `rankingsStore`, check-off state persisted per event+round in `localStorage`. See ADR-019 in `docs/PROGRESS.md`.
 - **Stat persistence** (still open): record it on player stats as "table wins". Verify what already exists before adding anything: `standings.victories` already accumulates `position === 1` per event, and `player_stats` is trigger-computed from `round_results` — a table win is derivable as `round_results.position = 1`, so this may need **zero new columns**, just a `table_wins` aggregate in the `player_stats` trigger (or even a query).
+
+---
+
+## 16. League standings don't use `valid_events` — sums every event instead of best-N
+
+Surfaced 2026-07-28 while auditing `PythonProjects/main.py`, an old Telegram FAQ bot (`@legacommander`) that predates this app and describes the league's original rules. The bot's canned scoring explanation states the season total is *"la somma dei punti accumulati in ogni tappa considerando solo le 4 tappe migliori"* (best 4 of 5 stages, worst dropped) — but `useLeagueStandingsQuery.ts:29` does a **"Simple sum aggregation of standings across all of a league's events"** (its own comment), with no drop-worst logic at all.
+
+This isn't a new finding — it's already half-acknowledged in ADR-026 (`docs/PROGRESS.md`, 2026-07-26): `leagues.valid_events` was added and wired into the league form UI, and the ADR text says outright *"il campo non era ancora agganciato al calcolo della classifica finale... spostamento a costo zero lato logica di scoring"* (the field wasn't yet hooked up to the final standings calculation). It just never got promoted to a tracked backlog item, so it was at real risk of staying forgotten.
+
+**Needs a semantics decision before implementing, not just a query change**: "Eventi validi richiesti" ("required valid events") reads more like a minimum-participation threshold than a best-N-drop-worst rule — confirm which one `valid_events` is actually meant to be before touching `useLeagueStandingsQuery`. If it's the best-N rule (matching the bot's original description): per player, sort their per-event `standing_player_score` values descending, sum only the top `valid_events` (falling back to summing all events when `valid_events` is `null`, matching today's behavior for leagues that don't set it). If it's a minimum-participation gate instead, this is a different, smaller feature (filter players with `< valid_events` events played out of standings, but still sum everything) — clarify with whoever defined the field, since the two readings produce different UI and different query logic.
+
+---
+
+## 17. In-app "info/regolamento" page
+
+Same source as #16 (the old `@legacommander` Telegram bot). Beyond scoring, the bot answered static FAQ content that has no equivalent anywhere in the app today: link to the full external rulebook, entry fee (5€, prizes per stage), venue address, season calendar, proxy card policy (max 10, must be printed). None of this is a scoring/logic gap — it's informational content currently living nowhere once the bot is retired.
+
+A simple static page (`/info` or similar), sourced from i18n content like the rest of the app's UI-facing strings, covering: rules link, fees, venue, calendar, proxy policy. No CMS/admin editing needed — this is occasional-update content, a hardcoded i18n block is enough for the scale of one club league.
 
 ---
 
