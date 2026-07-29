@@ -37,7 +37,17 @@ export function useEventSubmitHandlers(deps: SubmitHandlerDeps) {
     rankingsStore.setRankingWithRanks(pairingId, rankingWithRanks)
     toast.add({ title: t('event.rankingsSavedTitle'), color: 'success' })
     eventStore.savePairingRankings(pairingId, rankingWithRanks.map(r => ({ playerId: r.playerId, position: r.rank })))
-      .then(result => { if (!result.success) toast.add({ title: t('deck.toast.errorTitle'), description: result.error, color: 'error' }) })
+      .then((result) => {
+        if (!result.success) {
+          toast.add({ title: t('deck.toast.errorTitle'), description: result.error, color: 'error' })
+          return
+        }
+        // Refetch so "Punteggi Tavolo" (TableScoresModal, reads
+        // pairing.round_results directly rather than the session stores)
+        // reflects the placement points immediately instead of the stale
+        // pre-submit round_results snapshot.
+        refreshDisplayedPairings()
+      })
   }
 
   function handleScoreSubmit(ranking: number[], rankingWithRanks: RankingEntry[]) {
@@ -90,8 +100,12 @@ export function useEventSubmitHandlers(deps: SubmitHandlerDeps) {
     if (selectedVotesPlayerId.value !== null && selectedVotesPairingId.value !== null) {
       votesStore.setVotes(selectedVotesPlayerId.value, deckVotePlayerId, playVotePlayerId)
       eventStore.saveVote(selectedVotesPairingId.value, selectedVotesPlayerId.value, deckVotePlayerId, playVotePlayerId)
-        .then(result => {
+        .then((result) => {
           toast.add({ title: result.success ? t('event.voteSavedTitle') : t('deck.toast.errorTitle'), description: result.success ? undefined : result.error, color: result.success ? 'success' : 'error' })
+          // Same reason as saveRanking: "Punteggi Tavolo" reads round_results
+          // directly (deck/play point columns), so it needs a refetch to
+          // pick up the vote just saved.
+          if (result.success) refreshDisplayedPairings()
         })
     }
     return true

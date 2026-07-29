@@ -385,6 +385,12 @@ Gli store di sessione hanno **persistenza ottimistica**: update immediato UI + s
 - **Effetto collaterale positivo**: `PairingsCard`'s badge per-tavolo, il pulsante avanza-round e il badge "Inserito" in classifica ora concordano sempre sulla stessa definizione — non possono più divergere silenziosamente come nei due bug sopra.
 - **Test**: `useTableCompletion.test.ts` aggiornato (kills ora richieste da `isTableComplete`, nuovo caso "kills non confermate" nonostante ranking/comandante/voti completi); `standingsSubmission.test.ts` riscritto per il nuovo signature basato su `isCompleteByPairing`.
 
+### ADR-039 — Fix: la modale "Punteggi Tavolo" non rifletteva subito classifica e voti appena salvati (2026-07-29)
+
+- **Bug segnalato dall'utente**: la modale "Punteggi Tavolo" (`TableScoresModal.vue`, tramite `buildTableScoreRows`) legge i punti direttamente da `pairing.round_results` — non dagli store di sessione (`rankingsStore`/`votesStore`), che sono invece la fonte usata da `isTableComplete` (ADR-038). In `useEventSubmitHandlers.ts`, solo `handleKillsSubmit` chiamava `refreshDisplayedPairings()` dopo il salvataggio; `saveRanking` (classifica) e `handleVotesSubmit` (voti mazzo/giocata) aggiornavano solo lo store locale e mai il refetch della query `pairings`/`displayedPairings`. Risultato: dopo aver inserito classifica o voti, la modale continuava a mostrare i valori di `round_results` precedenti al salvataggio, finché qualcos'altro non forzava un refetch (es. un successivo submit delle kills).
+- **Fix**: `saveRanking` e `handleVotesSubmit` ora richiamano `refreshDisplayedPairings()` in caso di successo, stesso pattern già usato da `handleKillsSubmit`. `handleCommanderSubmit` **non** ha ricevuto lo stesso trattamento: il comandante non entra in nessuna colonna di `buildTableScoreRows`/`calculatePlayerTableScore`, quindi un refetch lì non avrebbe cambiato nulla nella modale — l'unico cache invalidato dopo un salvataggio comandante resta `commander-usage` (già presente).
+- **Verifica**: lint/typecheck/test suite completa verdi; nessun test dedicato aggiunto (nessun test esistente per `useEventSubmitHandlers.ts`, mock di store/eventStore/queryCache non giustificato per una singola chiamata di refetch aggiuntiva) — verifica manuale in browser rimandata all'utente.
+
 ---
 
 ## Funzionalità per area
