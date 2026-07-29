@@ -25,7 +25,7 @@ const commander2 = ref(props.commander2 || '')
 // isLoading/refetch for the "Aggiorna elenco carte" button live in
 // EventCommanderModal (footer), which calls this same composable — the
 // underlying query is shared/cached, so both stay in sync.
-const { whitelists, getPartnerType, getAllowedPartners } = useCommanderWhitelists()
+const { whitelists, getPartnerType, getAllowedPartners, getExactPartnerName } = useCommanderWhitelists()
 
 // Computed: what partner type does commander1 have?
 const commander1PartnerType = computed(() => {
@@ -69,11 +69,28 @@ watch(() => props.commander1, (newVal, oldVal) => {
   }
 })
 
+// "Partner with <specific card>" is a fixed, named pair (e.g. Cazur, Ruthless
+// Stalker ↔ Ukkima, Stalking Shadow) — there's only ever one legal commander2
+// once commander1 is picked, so auto-fill it instead of making the player
+// search for and pick the one card the whitelist already narrowed to.
+// Resolved entirely from the cached catalog (getExactPartnerName), no DB
+// round-trip. Non-immediate: only reacts to the player actually (re)selecting
+// commander1 in this session, not to the initial value coming in from props.
+watch(commander1, (name) => {
+  if (!name) return
+  const partnerName = getExactPartnerName(name)
+  if (partnerName) commander2.value = partnerName
+})
+
+// Blocks submit when commander1 requires a second card (partner/background/
+// companion/etc., see canHaveCommander2) but commander2 hasn't been picked yet.
+const canSubmit = computed(() => !canHaveCommander2.value || !!commander2.value)
+
 function submit() {
   emit('submit', commander1.value || null, commander2.value || null)
 }
 
-defineExpose({ submit })
+defineExpose({ submit, canSubmit })
 </script>
 
 <template>

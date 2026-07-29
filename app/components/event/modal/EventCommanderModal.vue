@@ -35,6 +35,11 @@ const open = computed({
   set: (val) => { if (!val) emit('cancel') },
 })
 
+// Blocks "Salva" until commander2 is filled in, when commander1 requires a
+// second card (partner/background/companion/etc.) — see CommanderModal's
+// canSubmit for the actual rule.
+const canSubmit = computed(() => commanderModalRef.value?.canSubmit ?? false)
+
 function onSubmit() {
   commanderModalRef.value?.submit()
 }
@@ -92,6 +97,7 @@ async function onConfirmRefreshCatalog() {
     <template #footer>
       <ModalFooterActions
         :confirm-label="t('common.save')"
+        :confirm-disabled="!canSubmit"
         @cancel="emit('cancel')"
         @confirm="onSubmit"
       >

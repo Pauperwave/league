@@ -42,9 +42,9 @@ A manual refresh button in `CommanderModal.vue` (`onRefreshCatalog` → `refetch
 | `companion` | *(derived from `keywords`, not `partner_type`)* | Any card whose Scryfall `keywords` include `"Companion"` |
 | `friendForever` | `'friends_forever'` | Has Friends Forever |
 
-Two lookup maps are built alongside the buckets:
+Three lookup maps are built alongside the buckets:
 - `partnerTypeByName: Map<name, partnerType>` — `getPartnerType(name)` reads this, defaulting to `'commander'` for a card with no special mechanic.
-- `partnerWithMap: Map<name, scryfallId>` — the specific card a `partner_with` commander is restricted to (not currently narrowed in `getAllowedPartners`, see "Known gaps" below).
+- `partnerWithScryfallIdByName: Map<name, scryfallId | null>` and `nameByScryfallId: Map<scryfallId, name>` — together let `getExactPartnerName(name)` resolve a `partner_with` commander's exact named partner (e.g. "Cazur, Ruthless Stalker" → "Ukkima, Stalking Shadow") entirely from the cached catalog. See "`partner_with` auto-fill" below.
 
 ### `getAllowedPartners(commander1Name)` — the bidirectional Background split
 
@@ -102,10 +102,21 @@ getPartnerType(commander1) ──► commander1PartnerType
 
 `commander2Label` maps `commander1PartnerType` to a human-readable Italian label (`commander.partnerTypes.*` in `i18n/locales/it.json`) — e.g. "Background" for either `background` or `background_commander`, since the *label* doesn't need the direction split that `getAllowedPartners` does.
 
+## `partner_with` auto-fill (`CommanderModal.vue`)
+
+`getAllowedPartners('partner_with')` still returns the entire `partnerWith` bucket for the commander2 search box's whitelist — every card with a "Partner with" ability, not narrowed to the one named partner. But since 2026-07-29 the exact match is auto-filled instead of requiring the player to find it in that list themselves: a `watch(commander1, ...)` in `CommanderModal.vue` fires when commander1 resolves to `partner_type === 'partner_with'`, calls `getExactPartnerName(commander1)`, and sets `commander2` to the result — e.g. selecting "Cazur, Ruthless Stalker" auto-fills "Ukkima, Stalking Shadow".
+
+**Resolved entirely from the cached catalog, no DB round-trip.** This needed `get_commander_catalog()`'s RPC to expose each row's own `scryfall_id`, not just `partner_with_scryfall_id` (the *target's* id) — added in `supabase/migrations/20260729000000_add_scryfall_id_to_commander_catalog_rpc.sql`. With both ids present client-side, `getExactPartnerName` is a plain two-map lookup (`partnerWithScryfallIdByName` then `nameByScryfallId`), same cost as `getPartnerType`/`getAllowedPartners`. The query key wasn't bumped — an already-persisted (30-day) pre-migration cache just silently misses `scryfallId` (auto-fill no-ops, same "not narrowed yet" experience as before) until the existing manual "Aggiorna elenco carte" refresh or the natural 30-day expiry, the same tradeoff every other catalog content change already accepts (see "why it's cached for 30 days" above) — not worth a one-off versioning scheme for a single field addition.
+
+The watcher is non-immediate — it only reacts to the player actually (re)selecting commander1 during the current modal session, not to the initial value arriving from props, so reopening the modal on an already-correctly-filled pair is a no-op.
+
+## Required-second-card submit gate
+
+`CommanderModal.vue` exposes `canSubmit = !canHaveCommander2.value || !!commander2.value` (alongside `submit`), consumed by `EventCommanderModal.vue` as `ModalFooterActions`'s `confirm-disabled`. Any `partner_type` that flips `canHaveCommander2` to `true` (partner, partner_with, background, friends_forever, doctor's companion, companion) blocks the "Salva" button until commander2 is actually filled in — the same classification the whitelist logic already uses, not a separate mandatory/optional distinction per type.
+
 ## Known gaps (not bugs, just unhandled cases)
 
-- **`partner_group` and `doctor`** are valid `partner_type` values per the Valibot schema in `useCommanderCards.ts` (`PartnerTypeSchema`), but `useCommanderWhitelists.ts`'s bucketing `switch` and `getAllowedPartners`'s `switch` have no case for either. A card with one of these types would report `canHaveCommander2 = true` (since its type isn't `'commander'`) but `getAllowedPartners` falls through to the `default: return []` case — the commander2 search box would render enabled but show zero results. Whether these types are actually populated in `mtg_commanders` today hasn't been checked; flagging here so a future "why is commander2 empty for this card" report doesn't have to re-derive this.
-- **`partner_with`** doesn't narrow to the *specific* partner card — `getAllowedPartners('partner_with')` returns the entire `partnerWith` bucket (every card with a "Partner with" ability), not just the one named card. `partnerWithMap` (name → the specific Scryfall ID) exists and is populated but isn't consulted here. Noted in the code as "could be narrowed in the future."
+- **`partner_group` and `doctor`** are valid `partner_type` values per the Valibot schema in `useCommanderCards.ts` (`PartnerTypeSchema`), but `useCommanderWhitelists.ts`'s bucketing `switch` and `getAllowedPartners`'s `switch` have no case for either. A card with one of these types would report `canHaveCommander2 = true` (since its type isn't `'commander'`) but `getAllowedPartners` falls through to the `default: return []` case — the commander2 search box would render enabled but show zero results, and the new submit gate would correctly still block submit (no commander2 possible), just without a helpful reason surfaced to the player. Whether these types are actually populated in `mtg_commanders` today hasn't been checked; flagging here so a future "why is commander2 empty for this card" report doesn't have to re-derive this.
 
 ## Related docs
 

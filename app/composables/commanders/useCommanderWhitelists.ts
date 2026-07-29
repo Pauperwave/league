@@ -63,12 +63,46 @@ export function useCommanderWhitelists() {
     return map
   })
 
+  // name -> its own partnerWithScryfallId, and scryfallId -> name — together
+  // resolve a partner_with commander's exact partner entirely from the
+  // already-cached catalog (no DB round-trip). See getExactPartnerName.
+  const partnerWithScryfallIdByName = computed(() => {
+    const map = new Map<string, string | null>()
+    for (const row of catalog.value ?? []) {
+      map.set(row.name, row.partnerWithScryfallId)
+    }
+    return map
+  })
+
+  const nameByScryfallId = computed(() => {
+    const map = new Map<string, string>()
+    for (const row of catalog.value ?? []) {
+      map.set(row.scryfallId, row.name)
+    }
+    return map
+  })
+
   /**
    * Get the partner_type for a given commander name.
    * Returns 'commander' for normal commanders, or the specific type.
    */
   function getPartnerType(cardName: string): string {
     return partnerTypeByName.value.get(cardName) || 'commander'
+  }
+
+  /**
+   * For a "partner_with" commander, resolves the exact named partner (e.g.
+   * "Cazur, Ruthless Stalker" → "Ukkima, Stalking Shadow") from the cached
+   * catalog. Returns null if `cardName` isn't partner_with, or its partner
+   * scryfall id doesn't (yet) resolve to a cached row.
+   */
+  function getExactPartnerName(cardName: string): string | null {
+    if (getPartnerType(cardName) !== 'partner_with') return null
+
+    const partnerScryfallId = partnerWithScryfallIdByName.value.get(cardName)
+    if (!partnerScryfallId) return null
+
+    return nameByScryfallId.value.get(partnerScryfallId) ?? null
   }
 
   /**
@@ -82,8 +116,9 @@ export function useCommanderWhitelists() {
       case 'partner':
         return [...whitelists.value.partner]
       case 'partner_with':
-        // For "partner with", return all partnerWith cards
-        // In the future, this could be narrowed to the exact matching partner
+        // The whitelist stays broad (every partner_with card) so a manual
+        // override/fallback is still possible — CommanderModal.vue auto-fills
+        // the one exact match via getExactPartnerName instead of narrowing here.
         return [...whitelists.value.partnerWith]
       case 'background_commander':
         // A "Choose a Background" creature needs an actual Background card.
@@ -110,5 +145,6 @@ export function useCommanderWhitelists() {
     refetch,
     getPartnerType,
     getAllowedPartners,
+    getExactPartnerName,
   }
 }

@@ -3,6 +3,7 @@ import type { Database } from '#shared/utils/types/database'
 
 export interface CommanderCatalogRow {
   name: string
+  scryfallId: string
   partnerType: string | null
   keywords: string[]
   partnerWithScryfallId: string | null
@@ -25,6 +26,7 @@ const CATALOG_CACHE_TIME = 30 * 24 * 60 * 60 * 1000
 
 interface CommanderCatalogRawRow {
   card_name: string
+  scryfall_id: string
   partner_type: string | null
   keywords: string[] | null
   partner_with_scryfall_id: string | null
@@ -41,6 +43,7 @@ async function fetchCommanderCatalog(
 
   return ((data ?? []) as unknown as CommanderCatalogRawRow[]).map(row => ({
     name: row.card_name,
+    scryfallId: row.scryfall_id,
     partnerType: row.partner_type,
     keywords: row.keywords ?? [],
     partnerWithScryfallId: row.partner_with_scryfall_id,
