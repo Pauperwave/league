@@ -76,36 +76,36 @@ export type Database = {
           average_score: number
           commander_1: string
           commander_2: string | null
-          events_played: number
           id: number
           player_id: number
           total_kills: number
           total_matches: number
           total_wins: number
+          tournaments_played: number
           updated_at: string
         }
         Insert: {
           average_score?: number
           commander_1: string
           commander_2?: string | null
-          events_played?: number
           id?: number
           player_id: number
           total_kills?: number
           total_matches?: number
           total_wins?: number
+          tournaments_played?: number
           updated_at?: string
         }
         Update: {
           average_score?: number
           commander_1?: string
           commander_2?: string | null
-          events_played?: number
           id?: number
           player_id?: number
           total_kills?: number
           total_matches?: number
           total_wins?: number
+          tournaments_played?: number
           updated_at?: string
         }
         Relationships: [
@@ -118,53 +118,6 @@ export type Database = {
           },
         ]
       }
-      events: {
-        Row: {
-          event_current_round: number | null
-          event_datetime: string | null
-          event_id: number
-          event_name: string
-          event_playing: boolean | null
-          event_registration_open: boolean | null
-          event_round_duration: number | null
-          event_round_number: number | null
-          league_id: number | null
-          status: string | null
-        }
-        Insert: {
-          event_current_round?: number | null
-          event_datetime?: string | null
-          event_id?: number
-          event_name: string
-          event_playing?: boolean | null
-          event_registration_open?: boolean | null
-          event_round_duration?: number | null
-          event_round_number?: number | null
-          league_id?: number | null
-          status?: string | null
-        }
-        Update: {
-          event_current_round?: number | null
-          event_datetime?: string | null
-          event_id?: number
-          event_name?: string
-          event_playing?: boolean | null
-          event_registration_open?: boolean | null
-          event_round_duration?: number | null
-          event_round_number?: number | null
-          league_id?: number | null
-          status?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "events_league_id_fkey"
-            columns: ["league_id"]
-            isOneToOne: false
-            referencedRelation: "leagues"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       leagues: {
         Row: {
           ends_at: string | null
@@ -173,7 +126,7 @@ export type Database = {
           ruleset_id: number | null
           starts_at: string | null
           status: string
-          valid_events: number | null
+          valid_tournaments: number | null
         }
         Insert: {
           ends_at?: string | null
@@ -182,7 +135,7 @@ export type Database = {
           ruleset_id?: number | null
           starts_at?: string | null
           status: string
-          valid_events?: number | null
+          valid_tournaments?: number | null
         }
         Update: {
           ends_at?: string | null
@@ -191,7 +144,7 @@ export type Database = {
           ruleset_id?: number | null
           starts_at?: string | null
           status?: string
-          valid_events?: number | null
+          valid_tournaments?: number | null
         }
         Relationships: [
           {
@@ -303,7 +256,6 @@ export type Database = {
       }
       pairings: {
         Row: {
-          event_id: number
           pairing_datetime: string | null
           pairing_id: number
           pairing_is_full: boolean | null
@@ -312,9 +264,9 @@ export type Database = {
           pairing_player3_id: number | null
           pairing_player4_id: number | null
           pairing_round: number | null
+          tournament_id: number
         }
         Insert: {
-          event_id: number
           pairing_datetime?: string | null
           pairing_id?: number
           pairing_is_full?: boolean | null
@@ -323,9 +275,9 @@ export type Database = {
           pairing_player3_id?: number | null
           pairing_player4_id?: number | null
           pairing_round?: number | null
+          tournament_id: number
         }
         Update: {
-          event_id?: number
           pairing_datetime?: string | null
           pairing_id?: number
           pairing_is_full?: boolean | null
@@ -334,15 +286,9 @@ export type Database = {
           pairing_player3_id?: number | null
           pairing_player4_id?: number | null
           pairing_round?: number | null
+          tournament_id?: number
         }
         Relationships: [
-          {
-            foreignKeyName: "pairings_event_id_fkey"
-            columns: ["event_id"]
-            isOneToOne: false
-            referencedRelation: "events"
-            referencedColumns: ["event_id"]
-          },
           {
             foreignKeyName: "Pairings_pairing_player1_id_fkey"
             columns: ["pairing_player1_id"]
@@ -371,34 +317,41 @@ export type Database = {
             referencedRelation: "players"
             referencedColumns: ["player_id"]
           },
+          {
+            foreignKeyName: "pairings_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["tournament_id"]
+          },
         ]
       }
       player_stats: {
         Row: {
           average_score: number
-          events_played: number
           player_id: number
           total_kills: number
           total_matches: number
           total_wins: number
+          tournaments_played: number
           updated_at: string
         }
         Insert: {
           average_score?: number
-          events_played?: number
           player_id: number
           total_kills?: number
           total_matches?: number
           total_wins?: number
+          tournaments_played?: number
           updated_at?: string
         }
         Update: {
           average_score?: number
-          events_played?: number
           player_id?: number
           total_kills?: number
           total_matches?: number
           total_wins?: number
+          tournaments_played?: number
           updated_at?: string
         }
         Relationships: [
@@ -577,42 +530,35 @@ export type Database = {
       standings: {
         Row: {
           brew_received: number | null
-          event_id: number | null
           play_received: number | null
           player_id: number
           standing_id: number
           standing_player_rank: number | null
           standing_player_score: number | null
+          tournament_id: number | null
           victories: number | null
         }
         Insert: {
           brew_received?: number | null
-          event_id?: number | null
           play_received?: number | null
           player_id: number
           standing_id?: number
           standing_player_rank?: number | null
           standing_player_score?: number | null
+          tournament_id?: number | null
           victories?: number | null
         }
         Update: {
           brew_received?: number | null
-          event_id?: number | null
           play_received?: number | null
           player_id?: number
           standing_id?: number
           standing_player_rank?: number | null
           standing_player_score?: number | null
+          tournament_id?: number | null
           victories?: number | null
         }
         Relationships: [
-          {
-            foreignKeyName: "standings_event_id_fkey"
-            columns: ["event_id"]
-            isOneToOne: false
-            referencedRelation: "events"
-            referencedColumns: ["event_id"]
-          },
           {
             foreignKeyName: "Standings_player_id_fkey"
             columns: ["player_id"]
@@ -620,41 +566,95 @@ export type Database = {
             referencedRelation: "players"
             referencedColumns: ["player_id"]
           },
+          {
+            foreignKeyName: "standings_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["tournament_id"]
+          },
+        ]
+      }
+      tournaments: {
+        Row: {
+          league_id: number | null
+          status: string | null
+          tournament_current_round: number | null
+          tournament_datetime: string | null
+          tournament_id: number
+          tournament_name: string
+          tournament_playing: boolean | null
+          tournament_registration_open: boolean | null
+          tournament_round_duration: number | null
+          tournament_round_number: number | null
+        }
+        Insert: {
+          league_id?: number | null
+          status?: string | null
+          tournament_current_round?: number | null
+          tournament_datetime?: string | null
+          tournament_id?: number
+          tournament_name: string
+          tournament_playing?: boolean | null
+          tournament_registration_open?: boolean | null
+          tournament_round_duration?: number | null
+          tournament_round_number?: number | null
+        }
+        Update: {
+          league_id?: number | null
+          status?: string | null
+          tournament_current_round?: number | null
+          tournament_datetime?: string | null
+          tournament_id?: number
+          tournament_name?: string
+          tournament_playing?: boolean | null
+          tournament_registration_open?: boolean | null
+          tournament_round_duration?: number | null
+          tournament_round_number?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournaments_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "leagues"
+            referencedColumns: ["id"]
+          },
         ]
       }
       waitroom: {
         Row: {
-          event_id: number
           inserted_at: string | null
           player_id: number
+          tournament_id: number
           wait_id: number
         }
         Insert: {
-          event_id: number
           inserted_at?: string | null
           player_id: number
+          tournament_id: number
           wait_id?: number
         }
         Update: {
-          event_id?: number
           inserted_at?: string | null
           player_id?: number
+          tournament_id?: number
           wait_id?: number
         }
         Relationships: [
-          {
-            foreignKeyName: "waitroom_event_id_fkey"
-            columns: ["event_id"]
-            isOneToOne: false
-            referencedRelation: "events"
-            referencedColumns: ["event_id"]
-          },
           {
             foreignKeyName: "waitroom_player_id_fkey"
             columns: ["player_id"]
             isOneToOne: false
             referencedRelation: "players"
             referencedColumns: ["player_id"]
+          },
+          {
+            foreignKeyName: "waitroom_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["tournament_id"]
           },
         ]
       }
@@ -675,15 +675,36 @@ export type Database = {
     }
     Functions: {
       get_commander_catalog: { Args: never; Returns: Json }
-      recalc_deck_stats: {
-        Args: {
-          p_commander_1: string
-          p_commander_2: string
-          p_player_id: number
-        }
-        Returns: undefined
-      }
-      recalc_player_stats: { Args: { p_player_id: number }; Returns: undefined }
+      recalc_deck_stats:
+        | {
+            Args: {
+              p_commander_1: string
+              p_commander_2: string
+              p_player_id: number
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              p_commander_1: string
+              p_commander_2: string
+              p_player_id: number
+            }
+            Returns: undefined
+          }
+      recalc_player_stats:
+        | {
+            Args: { p_player_id: number }
+            Returns: {
+              error: true
+            } & "Could not choose the best candidate function between: public.recalc_player_stats(p_player_id => int8), public.recalc_player_stats(p_player_id => int4). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
+          }
+        | {
+            Args: { p_player_id: number }
+            Returns: {
+              error: true
+            } & "Could not choose the best candidate function between: public.recalc_player_stats(p_player_id => int8), public.recalc_player_stats(p_player_id => int4). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
+          }
       refresh_commander_stats: { Args: never; Returns: undefined }
     }
     Enums: {
