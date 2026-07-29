@@ -662,6 +662,7 @@ async function handleUndrawTable(pairingId: number) {
       :get-player="getPlayer"
       :votes-store="votesStore"
       :table-players-for-votes="tablePlayersForVotes"
+      :ruleset="currentRuleset"
       @submit="(deckVotePlayerId, playVotePlayerId) => {
         if (submitHandlers.handleVotesSubmit(deckVotePlayerId, playVotePlayerId))
           showVotesModal = false

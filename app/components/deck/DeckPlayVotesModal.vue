@@ -1,11 +1,12 @@
 <!-- app\components\deck\DeckPlayVotesModal.vue -->
 <script setup lang="ts">
-import type { TournamentPlayer } from '#shared/utils/types'
+import type { Ruleset, TournamentPlayer } from '#shared/utils/types'
 
 const props = defineProps<{
   deckVotePlayerId: number | null
   playVotePlayerId: number | null
   otherPlayers: TournamentPlayer[]
+  ruleset?: Ruleset | null
 }>()
 
 const emit = defineEmits<{
@@ -29,8 +30,27 @@ watch(
 
 <template>
   <div class="space-y-4">
+    <div v-if="ruleset" class="flex items-center justify-between gap-2 text-xs text-muted">
+      <span>{{ t('deck.votes.rulesetLabel', { name: ruleset.name }) }}</span>
+      <UTooltip :text="t('deck.votes.rulesetLinkTooltip')">
+        <UButton
+          color="primary"
+          variant="ghost"
+          size="xs"
+          :icon="ICONS.rules"
+          to="/rulesets"
+          :aria-label="t('deck.votes.rulesetLinkTooltip')"
+        />
+      </UTooltip>
+    </div>
+
     <div>
-      <label class="block text-sm font-medium mb-2">{{ t('deck.votes.preferredDeck') }}</label>
+      <div class="flex items-center gap-2 mb-2">
+        <label class="text-sm font-medium">{{ t('deck.votes.preferredDeck') }}</label>
+        <UBadge v-if="ruleset?.rule_set_brew != null" color="info" variant="subtle" size="sm">
+          {{ t('deck.votes.weightBadge', { weight: ruleset.rule_set_brew }) }}
+        </UBadge>
+      </div>
       <div class="flex flex-wrap gap-2">
         <UButton
           v-for="player in otherPlayers"
@@ -50,7 +70,12 @@ watch(
     </div>
 
     <div>
-      <label class="block text-sm font-medium mb-2">{{ t('deck.votes.bestPlay') }}</label>
+      <div class="flex items-center gap-2 mb-2">
+        <label class="text-sm font-medium">{{ t('deck.votes.bestPlay') }}</label>
+        <UBadge v-if="ruleset?.rule_set_play != null" color="info" variant="subtle" size="sm">
+          {{ t('deck.votes.weightBadge', { weight: ruleset.rule_set_play }) }}
+        </UBadge>
+      </div>
       <div class="flex flex-wrap gap-2">
         <UButton
           v-for="player in otherPlayers"

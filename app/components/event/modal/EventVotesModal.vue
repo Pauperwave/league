@@ -1,6 +1,6 @@
 <!-- app\components\event\modal\EventVotesModal.vue -->
 <script setup lang="ts">
-import type { Player, TournamentPlayer } from '#shared/utils/types'
+import type { Player, Ruleset, TournamentPlayer } from '#shared/utils/types'
 
 const { t } = useI18n()
 
@@ -11,6 +11,7 @@ const {
   getPlayer,
   votesStore,
   tablePlayersForVotes,
+  ruleset = null,
 } = defineProps<{
   showVotesModal: boolean
   selectedVotesPlayerId: number | null
@@ -18,6 +19,7 @@ const {
   getPlayer: (playerId: number) => Player | undefined
   votesStore: ReturnType<typeof import('~/stores/votes').useVotesStore>
   tablePlayersForVotes: TournamentPlayer[]
+  ruleset?: Ruleset | null
 }>()
 
 const emit = defineEmits<{
@@ -54,6 +56,7 @@ const open = computed({
         :deck-vote-player-id="votesStore.getDeckVote(selectedVotesPlayerId)"
         :play-vote-player-id="votesStore.getPlayVote(selectedVotesPlayerId)"
         :other-players="tablePlayersForVotes"
+        :ruleset="ruleset"
         @submit="(d, p) => emit('submit', d, p)"
         @cancel="emit('cancel')"
       />

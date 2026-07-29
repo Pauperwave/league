@@ -304,7 +304,10 @@
     },
     "votes": {
       "preferredDeck": "Mazzo preferito",
-      "bestPlay": "Miglior giocata"
+      "bestPlay": "Miglior giocata",
+      "rulesetLabel": "Regolamento: {name}",
+      "rulesetLinkTooltip": "Vai al regolamento",
+      "weightBadge": "+{weight} pt"
     },
     "newModal": {
       "title": "Nuovo Deck",
