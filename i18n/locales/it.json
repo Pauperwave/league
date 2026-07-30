@@ -9,100 +9,100 @@
   },
   "logging": {
     "actionLog": {
-      "clear": "Svuota log azioni"
+      "clear": "Log azioni svuotato"
     },
     "auth": {
-      "logout": "Esci",
-      "loginSubmit": "Conferma login",
-      "clearPassword": "Cancella password",
-      "togglePassword": "Mostra/nascondi password"
+      "logout": "Logout effettuato",
+      "loginSubmit": "Login confermato",
+      "clearPassword": "Password cancellata",
+      "togglePassword": "Visibilità password cambiata"
     },
     "deck": {
-      "openBracketPicker": "Apri selezione bracket",
-      "edit": "Modifica mazzo",
-      "delete": "Elimina mazzo",
-      "submitCreate": "Conferma creazione mazzo",
-      "submitEdit": "Conferma modifica mazzo"
+      "openBracketPicker": "Selezione bracket aperta",
+      "edit": "Mazzo modificato",
+      "delete": "Mazzo eliminato",
+      "submitCreate": "Creazione mazzo confermata",
+      "submitEdit": "Modifica mazzo confermata"
     },
     "developerView": {
-      "toggle": "Attiva/disattiva modalità sviluppatore",
-      "toggleOverlay": "Attiva/disattiva overlay sviluppatore"
+      "toggle": "Modalità sviluppatore cambiata",
+      "toggleOverlay": "Overlay sviluppatore cambiato"
     },
     "league": {
-      "edit": "Modifica lega",
-      "submitForm": "Conferma form lega",
-      "cancelForm": "Annulla form lega"
+      "edit": "Lega modificata",
+      "submitForm": "Form lega confermato",
+      "cancelForm": "Form lega annullato"
     },
     "modal": {
-      "confirm": "Conferma modale",
-      "cancel": "Annulla modale",
-      "confirmButton": "Pulsante conferma",
-      "cancelButton": "Pulsante annulla"
+      "confirm": "Modale confermato",
+      "cancel": "Modale annullato",
+      "confirmButton": "Conferma premuta",
+      "cancelButton": "Annulla premuto"
     },
     "navigation": {
-      "home": "Vai alla home",
-      "backHomeError": "Torna alla home (errore)",
-      "backToLeagues": "Torna alle leghe",
-      "backToLeague": "Torna alla lega",
-      "toLeague": "Vai alla lega",
-      "backToPlayers": "Torna ai giocatori"
+      "home": "Navigazione verso la home",
+      "backHomeError": "Ritorno alla home (errore)",
+      "backToLeagues": "Ritorno alle leghe",
+      "backToLeague": "Ritorno alla lega",
+      "toLeague": "Navigazione verso la lega",
+      "backToPlayers": "Ritorno ai giocatori"
     },
     "pairing": {
-      "openScoreModal": "Apri inserimento punteggio",
-      "openScoresSummary": "Apri riepilogo punteggi",
-      "openKillModal": "Apri inserimento uccisioni",
-      "openCommanderModal": "Apri selezione comandante",
-      "openVotesModal": "Apri inserimento voti",
-      "toggleFullscreen": "Schermo intero tavoli",
-      "confirmTables": "Conferma tavoli",
-      "dragSeat": "Sposta giocatore (anteprima tavoli)",
-      "openWeightsSettings": "Pesi e Vincoli",
-      "optimizeTables": "Ottimizza tavoli",
-      "randomizeTables": "Tavoli casuali",
-      "confirmRanking": "Conferma classifica"
+      "openScoreModal": "Inserimento punteggio aperto",
+      "openScoresSummary": "Riepilogo punteggi aperto",
+      "openKillModal": "Inserimento uccisioni aperto",
+      "openCommanderModal": "Selezione comandante aperta",
+      "openVotesModal": "Inserimento voti aperto",
+      "toggleFullscreen": "Schermo intero tavoli cambiato",
+      "confirmTables": "Tavoli confermati",
+      "dragSeat": "Giocatore spostato (anteprima tavoli)",
+      "openWeightsSettings": "Pesi e vincoli aperti",
+      "optimizeTables": "Tavoli ottimizzati",
+      "randomizeTables": "Tavoli randomizzati",
+      "confirmRanking": "Classifica confermata"
     },
     "player": {
-      "submitForm": "Conferma form giocatore",
-      "cancelForm": "Annulla form giocatore",
-      "selectExisting": "Seleziona giocatore esistente"
+      "submitForm": "Form giocatore confermato",
+      "cancelForm": "Form giocatore annullato",
+      "selectExisting": "Giocatore esistente selezionato"
     },
     "ruleset": {
-      "edit": "Modifica ruleset",
-      "submitForm": "Conferma form ruleset",
-      "cancelForm": "Annulla form ruleset",
-      "openLeaguesModal": "Apri leghe collegate"
+      "edit": "Ruleset modificato",
+      "submitForm": "Form ruleset confermato",
+      "cancelForm": "Form ruleset annullato",
+      "openLeaguesModal": "Leghe collegate aperte"
     },
     "rowActions": {
-      "edit": "Modifica riga",
-      "view": "Visualizza riga",
-      "remove": "Rimuovi riga"
+      "edit": "Riga modificata",
+      "view": "Riga visualizzata",
+      "remove": "Rimossa riga"
     },
     "timer": {
-      "toggleFullscreen": "Schermo intero timer",
-      "start": "Avvia timer",
-      "pause": "Pausa timer",
-      "reset": "Reset timer",
-      "addMinutes": "Aggiungi minuti timer",
-      "subtractMinutes": "Sottrai minuti timer"
+      "toggleFullscreen": "Schermo intero timer cambiato",
+      "start": "Timer avviato",
+      "pause": "Timer messo in pausa",
+      "reset": "Timer resettato",
+      "addMinutes": "Minuti aggiunti al timer",
+      "subtractMinutes": "Sottratti minuti al timer"
     },
     "tournament": {
-      "edit": "Modifica torneo",
-      "submitForm": "Conferma form torneo",
-      "cancelForm": "Annulla form torneo",
-      "cancelRound": "Annulla round",
-      "startEvent": "Avvia evento",
-      "advanceRound": "Avanza round",
-      "endEvent": "Termina torneo evento",
-      "viewRound": "Vai al round",
-      "refreshCommanderCatalog": "Aggiorna catalogo comandanti",
-      "confirmKills": "Conferma uccisioni",
-      "confirmVotes": "Conferma voti"
+      "edit": "Torneo modificato",
+      "submitForm": "Form torneo confermato",
+      "cancelForm": "Form torneo annullato",
+      "cancelRound": "Round annullato",
+      "startEvent": "Evento avviato",
+      "advanceRound": "Round avanzato",
+      "endEvent": "Torneo evento terminato",
+      "viewRound": "Round visualizzato",
+      "refreshCommanderCatalog": "Catalogo comandanti aggiornato",
+      "confirmKills": "Uccisioni confermate",
+      "confirmVotes": "Voti confermati"
     },
     "waitingList": {
-      "addPlayers": "Aggiunta giocatori in lista d'attesa",
-      "createNewPlayer": "Crea nuovo giocatore",
-      "confirmRemove": "Conferma rimozione da lista d'attesa",
-      "confirmBatchRemove": "Conferma rimozione massiva da lista d'attesa"
+      "addPlayers": "Giocatori aggiunti in lista d'attesa",
+      "createNewPlayer": "Nuovo giocatore creato",
+      "confirmRemove": "Rimozione da lista d'attesa confermata",
+      "confirmBatchRemove": "Rimozione massiva da lista d'attesa confermata"
     }
   },
   "common": {
