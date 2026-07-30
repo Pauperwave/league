@@ -17,6 +17,8 @@ export interface CommanderSuggestionItem {
   tokens?: string[]
   /** Fuzzy-matched character indices (into `label`) to highlight — see `fuzzyMatch` in `app/utils/fuzzyMatch.ts`. */
   matchIndices?: number[]
+  /** Scryfall card image, shown in a hover-preview tooltip in CommanderSearch.vue. */
+  imageUrl?: string | null
 }
 
 export interface UseCommanderSearchOptions {
@@ -106,6 +108,7 @@ export function useCommanderSearch(options: UseCommanderSearchOptions = {}) {
         label: row.name,
         tokens: parseManaCost(row.manaCost),
         matchIndices: matches.get(row.name)?.indices,
+        imageUrl: row.imageUrl,
       })
 
       // Split BEFORE capping to 50 — a niche/unpopular commander the player
