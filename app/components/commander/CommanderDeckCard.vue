@@ -176,6 +176,7 @@ async function onBracketConfirm(level: number) {
         :art-url="art1"
         :mana-cost="commander1Data?.manaCost ?? undefined"
         :loading="loading"
+        :class="deck.commander_2_name ? 'flex-1 min-h-0' : ''"
       />
       <CommanderArt
         v-if="deck.commander_2_name"
@@ -183,6 +184,7 @@ async function onBracketConfirm(level: number) {
         :art-url="art2"
         :mana-cost="commander2Data?.manaCost ?? undefined"
         :loading="loading"
+        class="flex-1 min-h-0"
       />
     </div>
 
