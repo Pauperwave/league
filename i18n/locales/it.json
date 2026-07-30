@@ -78,7 +78,8 @@
       "remove": "Rimossa riga"
     },
     "standings": {
-      "copy": "Classifica copiata"
+      "copy": "Classifica copiata",
+      "toggleFullscreen": "Schermo intero classifica cambiato"
     },
     "timer": {
       "toggleFullscreen": "Schermo intero timer cambiato",
@@ -889,7 +890,9 @@
       "submittedBadge": "Inserito",
       "emptyText": "Nessun punteggio",
       "copyTooltip": "Copia classifica",
-      "copySuccessTitle": "Classifica copiata negli appunti"
+      "copySuccessTitle": "Classifica copiata negli appunti",
+      "fullscreenTooltip": "Schermo intero",
+      "exitFullscreenTooltip": "Esci da schermo intero"
     },
     "winnerChecklist": {
       "title": "Vincitori tavoli",

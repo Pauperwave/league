@@ -41,10 +41,29 @@ async function handleCopyStandings() {
   await copy(standingsText.value)
   toast.add({ title: t('tournament.standingsCard.copySuccessTitle'), color: 'success' })
 }
+
+// ─── Fullscreen ───────────────────────────────────────────────────────────────
+// Same pattern as PairingsCard.vue/RoundTimer.vue: browser Fullscreen API on a
+// wrapping ref, so the ranking is readable across a room (projector/TV).
+const standingsRef = useTemplateRef<HTMLDivElement>('standingsRef')
+const { isFullscreen, toggle: toggleFullscreen } = useFullscreen(standingsRef)
+
+const toggleFullscreenLogging = useButtonLogging(t('logging.standings.toggleFullscreen'), {
+  isFullscreen: () => isFullscreen.value,
+})
+
+function handleToggleFullscreen() {
+  toggleFullscreenLogging.logClick()
+  toggleFullscreen()
+}
 </script>
 
 <template>
-  <div class="bg-linear-to-b from-primary/10 to-transparent rounded-xl p-3 border-2 border-primary/30 shadow-lg">
+  <div
+    ref="standingsRef"
+    class="bg-linear-to-b from-primary/10 to-transparent rounded-xl p-3 border-2 border-primary/30 shadow-lg"
+    :class="isFullscreen ? 'h-screen w-screen overflow-auto bg-default flex flex-col justify-center' : ''"
+  >
     <div class="flex items-center justify-end gap-1 mb-1">
       <UTooltip :content="{ side: 'top' }" :text="t('tournament.standingsCard.copyTooltip')">
         <UButton
@@ -56,11 +75,21 @@ async function handleCopyStandings() {
           @click="handleCopyStandings"
         />
       </UTooltip>
+      <UTooltip :content="{ side: 'top' }" :text="isFullscreen ? t('tournament.standingsCard.exitFullscreenTooltip') : t('tournament.standingsCard.fullscreenTooltip')">
+        <UButton
+          :icon="isFullscreen ? ICONS.collapse : ICONS.expand"
+          color="neutral"
+          variant="ghost"
+          size="xs"
+          :aria-label="isFullscreen ? t('tournament.standingsCard.exitFullscreenTooltip') : t('tournament.standingsCard.fullscreenTooltip')"
+          @click="handleToggleFullscreen"
+        />
+      </UTooltip>
     </div>
     <UCollapsible v-model:open="isOpen">
       <button type="button" class="flex items-center justify-center gap-1.5 mb-2 w-full cursor-pointer">
-        <UIcon :name="ICONS.standings" class="size-4 text-primary" />
-        <h4 class="text-base font-bold text-primary">{{ displayTitle }}</h4>
+        <UIcon :name="ICONS.standings" class="text-primary" :class="isFullscreen ? 'size-8' : 'size-4'" />
+        <h4 class="font-bold text-primary" :class="isFullscreen ? 'text-3xl' : 'text-base'">{{ displayTitle }}</h4>
         <UIcon :name="ICONS.chevronDown" class="size-3.5 text-primary transition-transform" :class="isOpen ? '' : '-rotate-90'" />
       </button>
 
@@ -73,23 +102,28 @@ async function handleCopyStandings() {
             <div
               v-for="(standing, index) in standings"
               :key="standing.player_id"
-              class="flex items-center justify-between p-1.5 bg-elevated rounded-lg"
+              class="flex items-center justify-between bg-elevated rounded-lg"
+              :class="isFullscreen ? 'p-3' : 'p-1.5'"
             >
                 <div class="flex items-center gap-2 min-w-0">
                   <span
-                    class="w-5 h-5 flex items-center justify-center rounded-full font-bold text-xs shrink-0"
-                    :class="isTopPlayer(index) ? 'bg-warning/20 text-warning' : 'bg-primary/20 text-primary'"
+                    class="flex items-center justify-center rounded-full font-bold shrink-0"
+                    :class="[
+                      isTopPlayer(index) ? 'bg-warning/20 text-warning' : 'bg-primary/20 text-primary',
+                      isFullscreen ? 'w-10 h-10 text-xl' : 'w-5 h-5 text-xs',
+                    ]"
                   >
                     {{ index + 1 }}
                   </span>
-                  <div class="min-w-0">
+                  <div class="min-w-0" :class="isFullscreen ? 'text-2xl' : ''">
                     <div class="flex items-center gap-1.5">
                       <PlayerNameTag
                         :name="standing.players?.player_name ?? ''"
                         :surname="standing.players?.player_surname ?? ''"
                         :player-id="standing.player_id"
-                        avatar-size="md"
-                        class="font-medium text-sm"
+                        :avatar-size="isFullscreen ? 'lg' : 'md'"
+                        class="font-medium"
+                        :class="isFullscreen ? 'text-2xl' : 'text-sm'"
                       />
                       <UTooltip v-if="submittedByPlayerId[standing.player_id]" :content="{ side: 'top' }" :text="t('tournament.standingsCard.submittedBadge')">
                         <UIcon :name="ICONS.confirm" class="size-3.5 text-success shrink-0" />
@@ -120,8 +154,8 @@ async function handleCopyStandings() {
                   </div>
                 </div>
               <span
-                class="text-base font-bold shrink-0"
-                :class="isTopPlayer(index) ? 'text-warning' : 'text-primary'"
+                class="font-bold shrink-0"
+                :class="[isTopPlayer(index) ? 'text-warning' : 'text-primary', isFullscreen ? 'text-3xl' : 'text-base']"
               >{{ standing.standing_player_score ?? 0 }} PT</span>
             </div>
           </div>
