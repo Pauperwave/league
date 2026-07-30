@@ -1,5 +1,6 @@
 // app\composables\tournament\useLiveStandings.ts
 import type { Ref } from 'vue'
+import { compareStandings } from '#shared/utils/standingsSort'
 import { getPairingPlayerIds } from '#shared/utils/types'
 import type { StandingWithPlayer, PairingWithResults, TournamentStatus } from '#shared/utils/types'
 import type { RankingEntry } from '~/stores/rankings'
@@ -167,7 +168,7 @@ export function useLiveStandings(
       }
     }
 
-    return result.sort((a, b) => (b.standing_player_score || 0) - (a.standing_player_score || 0))
+    return result.sort(compareStandings)
   })
 
   return { liveStandings }

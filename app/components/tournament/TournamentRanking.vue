@@ -1,6 +1,8 @@
 <!-- app\components\tournament\TournamentRanking.vue -->
 <script setup lang="ts">
 // fallow-ignore-file code-duplication -- coincidental generic <table> markup, unrelated to PlayerMatchHistoryTable's feature
+import { compareStandings } from '#shared/utils/standingsSort'
+import type { StandingSortable } from '#shared/utils/standingsSort'
 import type { Player } from '#shared/utils/types'
 
 const props = defineProps<{
@@ -49,23 +51,52 @@ const allPlayers = computed(() => {
   )
 })
 
-const totalScore = computed(() => {
-  const scoreMap = new Map<number, number>()
+const standingsTotals = computed(() => {
+  const totalsMap = new Map<number, StandingSortable>()
   for (const ts of tournamentStandings.value) {
     for (const standing of ts.standings) {
-      const current = scoreMap.get(standing.player_id) ?? 0
-      scoreMap.set(standing.player_id, current + (standing.standing_player_score ?? 0))
+      const current = totalsMap.get(standing.player_id) ?? {
+        player_id: standing.player_id,
+        standing_player_score: 0,
+        victories: 0,
+        brew_received: 0,
+        play_received: 0,
+      }
+      totalsMap.set(standing.player_id, {
+        player_id: standing.player_id,
+        standing_player_score: (current.standing_player_score ?? 0) + (standing.standing_player_score ?? 0),
+        victories: (current.victories ?? 0) + (standing.victories ?? 0),
+        brew_received: (current.brew_received ?? 0) + (standing.brew_received ?? 0),
+        play_received: (current.play_received ?? 0) + (standing.play_received ?? 0),
+      })
     }
+  }
+  return totalsMap
+})
+
+const totalScore = computed(() => {
+  const scoreMap = new Map<number, number>()
+  for (const [playerId, totals] of standingsTotals.value) {
+    scoreMap.set(playerId, totals.standing_player_score ?? 0)
   }
   return scoreMap
 })
 
 const sortedPlayers = computed(() => {
-  return [...allPlayers.value].sort((a, b) => {
-    const scoreA = totalScore.value.get(a.player_id) ?? 0
-    const scoreB = totalScore.value.get(b.player_id) ?? 0
-    return scoreB - scoreA
+  const fallback = (playerId: number): StandingSortable => ({
+    player_id: playerId,
+    standing_player_score: 0,
+    victories: 0,
+    brew_received: 0,
+    play_received: 0,
   })
+
+  return [...allPlayers.value].sort((a, b) =>
+    compareStandings(
+      standingsTotals.value.get(a.player_id) ?? fallback(a.player_id),
+      standingsTotals.value.get(b.player_id) ?? fallback(b.player_id),
+    ),
+  )
 })
 
 function getScore(playerId: number, tournamentId: number): number | null {

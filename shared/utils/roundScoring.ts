@@ -4,6 +4,7 @@
 // (server/api/tournaments/[tournamentId]/* — ADR-013). Everything is parameterized on a
 // SupabaseClient or pure, so it runs identically on both sides.
 import type { SupabaseClient } from '@supabase/supabase-js'
+import { compareStandings } from './standingsSort'
 import type { Database } from './types/database'
 import type { Pairing, PairingInsert, RoundResult, Ruleset } from './types'
 
@@ -255,9 +256,7 @@ export async function updateStandingsAndRanks(supabase: SupabaseClient<Database>
     )
   }
 
-  const ranked = Array.from(standingsMap.values()).sort(
-    (a, b) => b.standing_player_score - a.standing_player_score,
-  )
+  const ranked = Array.from(standingsMap.values()).sort(compareStandings)
 
   const rankUpdates = await Promise.all(
     ranked.map((s, index) =>

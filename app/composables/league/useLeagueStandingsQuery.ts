@@ -4,6 +4,7 @@
 // multi-tournament standings used by TournamentRanking. Moved out of the tournament store —
 // they used to share its standings ref with the per-tournament standings, an
 // implicit coupling between two different pages.
+import { compareStandings } from '#shared/utils/standingsSort'
 import type { StandingWithPlayer, Player } from '#shared/utils/types'
 import type { Database } from '#shared/utils/types/database'
 
@@ -98,9 +99,7 @@ export function useLeagueStandingsQuery(leagueId: number) {
         }
       }
 
-      return Array.from(playerMap.values()).sort(
-        (a, b) => (b.standing_player_score ?? 0) - (a.standing_player_score ?? 0)
-      )
+      return Array.from(playerMap.values()).sort(compareStandings)
     },
   })
 }

@@ -1,11 +1,13 @@
 // test\nuxt\components\standings\StandingsCard.test.ts
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import StandingsCard from '~/components/standings/StandingsCard.vue'
 import { defaultStubs, createI18nTestPlugin } from '#test/helpers/mocks'
 
 describe('StandingsCard', () => {
   it('renders title and Inserito badge when provided', () => {
+    vi.stubGlobal('useToast', () => ({ add: vi.fn() }))
+
     const wrapper = mount(StandingsCard, {
       props: {
         title: 'Classifica Parziale',
