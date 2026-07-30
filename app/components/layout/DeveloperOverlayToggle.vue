@@ -12,9 +12,7 @@
 const { isDeveloperView, isOverlayEnabled } = useDeveloperView()
 const { t } = useI18n()
 
-const toggleLogging = useButtonLogging('Toggle Developer Overlay', {
-  isOverlayEnabled: () => isOverlayEnabled.value,
-})
+const toggleLogging = useButtonLogging('Toggle Developer Overlay')
 
 function toggle() {
   toggleLogging.logClick()

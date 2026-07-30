@@ -18,7 +18,10 @@ function mountActionLog() {
 
 describe('useActionLog', () => {
   beforeEach(() => {
-    localStorage.clear()
+    // Clears both the module-scope singleton ref and localStorage — plain
+    // localStorage.clear() alone wouldn't reset the already-initialized
+    // in-memory ref carried over from a previous test in this file.
+    mountActionLog().clearLog()
   })
 
   it('appends and persists an entry', () => {
@@ -58,5 +61,16 @@ describe('useActionLog', () => {
 
     clearLog()
     expect(entries.value).toHaveLength(0)
+  })
+
+  it('shares the same entries across independent useActionLog() calls, so clearing from one is visible from another', () => {
+    const writer = mountActionLog()
+    const reader = mountActionLog()
+
+    writer.recordEntry({ button: 'Test Button', timestamp: '2026-07-30T00:00:00.000Z' })
+    expect(reader.entries.value).toHaveLength(1)
+
+    reader.clearLog()
+    expect(writer.entries.value).toHaveLength(0)
   })
 })

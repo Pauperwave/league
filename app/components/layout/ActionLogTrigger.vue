@@ -11,13 +11,6 @@ const { isDeveloperView } = useDeveloperView()
 const { t } = useI18n()
 
 const isOpen = ref(false)
-
-const openLogging = useButtonLogging('Open Action Log')
-
-function open() {
-  openLogging.logClick()
-  isOpen.value = true
-}
 </script>
 
 <template>
@@ -28,7 +21,7 @@ function open() {
         color="neutral"
         variant="ghost"
         :aria-label="t('actionLogPanel.openAriaLabel')"
-        @click="open"
+        @click="isOpen = true"
       />
     </UTooltip>
 
