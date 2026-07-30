@@ -23,6 +23,25 @@ const emit = defineEmits<{
   view: []
   delete: []
 }>()
+
+const editLogging = useButtonLogging('Row Action: Edit')
+const viewLogging = useButtonLogging('Row Action: View')
+const removeLogging = useButtonLogging('Row Action: Remove')
+
+function handleEdit() {
+  editLogging.logClick()
+  emit('edit')
+}
+
+function handleView() {
+  viewLogging.logClick()
+  emit('view')
+}
+
+function handleDelete() {
+  removeLogging.logClick()
+  emit('delete')
+}
 </script>
 
 <template>
@@ -34,7 +53,7 @@ const emit = defineEmits<{
       :variant="variant"
       :disabled="disabled"
       :loading="loading"
-      @click="emit('edit')"
+      @click="handleEdit"
     />
     <RowActionButton
       v-if="showView"
@@ -43,7 +62,7 @@ const emit = defineEmits<{
       :variant="variant"
       :disabled="disabled"
       :loading="loading"
-      @click="emit('view')"
+      @click="handleView"
     />
     <RowActionButton
       v-if="showDelete"
@@ -52,7 +71,7 @@ const emit = defineEmits<{
       :variant="variant"
       :disabled="disabled"
       :loading="loading"
-      @click="emit('delete')"
+      @click="handleDelete"
     />
   </div>
 </template>

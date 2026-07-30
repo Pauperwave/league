@@ -63,7 +63,13 @@ watch(open, async (isOpen) => {
   }
 })
 
+const submitLogging = useButtonLogging('Submit Deck Edit Form', {
+  deckId: () => props.deck?.id,
+  isBorrowed: () => isBorrowed.value,
+})
+
 function handleSubmit() {
+  submitLogging.logClick()
   if (!props.deck) return
 
   const data = {

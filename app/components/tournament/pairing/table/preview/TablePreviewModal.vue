@@ -202,6 +202,12 @@ function handleDragStart() {
   setDragging(true)
 }
 
+const dragSeatLogging = useButtonLogging('Sposta giocatore (anteprima tavoli)', {
+  tournamentId: () => tournamentId,
+  currentRound: () => currentRound,
+  wasValid: () => isValid.value,
+})
+
 function handleDragEnd() {
   setDragging(false)
 
@@ -223,6 +229,7 @@ function handleDragEnd() {
     })
   }
 
+  dragSeatLogging.logClick()
   dragSnapshot.value = null
 }
 

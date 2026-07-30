@@ -2,7 +2,7 @@
 <script setup lang="ts">
 import type { CommanderDeck } from '#shared/utils/types'
 
-defineProps<{
+const props = defineProps<{
   deck: CommanderDeck
   isUsedInTournaments: boolean
 }>()
@@ -13,6 +13,19 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useI18n()
+
+const editLogging = useButtonLogging('Modifica mazzo', { deckId: () => props.deck.id })
+const deleteLogging = useButtonLogging('Elimina mazzo', { deckId: () => props.deck.id })
+
+function handleEdit() {
+  editLogging.logClick()
+  emit('edit', props.deck)
+}
+
+function handleDelete() {
+  deleteLogging.logClick()
+  emit('delete', props.deck)
+}
 </script>
 
 <template>
@@ -24,7 +37,7 @@ const { t } = useI18n()
       color="neutral"
       :icon="ICONS.edit"
       :aria-label="t('deck.cardActions.editAriaLabel')"
-      @click="emit('edit', deck)"
+      @click="handleEdit"
     />
 
     <!-- Delete: only shown when not used -->
@@ -35,7 +48,7 @@ const { t } = useI18n()
         color="error"
         :icon="ICONS.delete"
         :aria-label="t('deck.cardActions.deleteAriaLabel')"
-        @click="emit('delete', deck)"
+        @click="handleDelete"
       />
     </UTooltip>
   </div>

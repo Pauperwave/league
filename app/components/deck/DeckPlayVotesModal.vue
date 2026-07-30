@@ -26,6 +26,16 @@ watch(
     localPlayVotePlayerId.value = play
   }
 )
+
+const submitVotesLogging = useButtonLogging('Conferma voti', {
+  deckVotePlayerId: () => localDeckVotePlayerId.value,
+  playVotePlayerId: () => localPlayVotePlayerId.value,
+})
+
+function handleConfirm() {
+  submitVotesLogging.logClick()
+  emit('submit', localDeckVotePlayerId.value, localPlayVotePlayerId.value)
+}
 </script>
 
 <template>
@@ -97,7 +107,7 @@ watch(
     <ModalFooterActions
       :confirm-label="t('common.save')"
       @cancel="emit('cancel')"
-      @confirm="emit('submit', localDeckVotePlayerId, localPlayVotePlayerId)"
+      @confirm="handleConfirm"
     />
   </div>
 </template>

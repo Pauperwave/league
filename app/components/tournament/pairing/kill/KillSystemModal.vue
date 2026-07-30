@@ -78,7 +78,13 @@ watch(open, (isOpen, wasOpen) => {
   }
 })
 
+const confirmKillsLogging = useButtonLogging('Conferma uccisioni', {
+  pairingId: () => props.pairingId,
+  killCount: () => killsStore.kills.length,
+})
+
 function onConfirm() {
+  confirmKillsLogging.logClick()
   confirmed = true
   open.value = false
 }

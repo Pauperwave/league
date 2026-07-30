@@ -83,6 +83,32 @@ const openScoreModalLogging = useButtonLogging('Open Score Modal', {
   tableIndex: () => currentTableIndex.value
 })
 
+/** Tracks the last pairing/player passed to the open-{scores,kill,commander,votes}-modal handlers, for logging context. */
+const lastScoresModalPairingId = ref<number | null>(null)
+const lastKillModalPairingId = ref<number | null>(null)
+const lastCommanderModalPairingId = ref<number | null>(null)
+const lastCommanderModalPlayerId = ref<number | null>(null)
+const lastVotesModalPairingId = ref<number | null>(null)
+const lastVotesModalPlayerId = ref<number | null>(null)
+
+const openScoresModalLogging = useButtonLogging('Open Scores Summary Modal', {
+  pairingId: () => lastScoresModalPairingId.value,
+})
+
+const openKillModalLogging = useButtonLogging('Open Kill Modal', {
+  pairingId: () => lastKillModalPairingId.value,
+})
+
+const openCommanderModalLogging = useButtonLogging('Open Commander Modal', {
+  pairingId: () => lastCommanderModalPairingId.value,
+  playerId: () => lastCommanderModalPlayerId.value,
+})
+
+const openVotesModalLogging = useButtonLogging('Open Votes Modal', {
+  pairingId: () => lastVotesModalPairingId.value,
+  playerId: () => lastVotesModalPlayerId.value,
+})
+
 // ─── Fullscreen ───────────────────────────────────────────────────────────────
 // Same pattern as RoundTimer.vue: browser Fullscreen API on a wrapping ref, so
 // the tables take over the whole screen instead of sharing space with the
@@ -192,6 +218,36 @@ function handleOpenScoreModal(pairingId: number, tableIndex: number) {
   currentTableIndex.value = tableIndex
   openScoreModalLogging.logClick()
   emit('openScoreModal', pairingId, tableIndex)
+}
+
+/** Opens the scores summary modal, updating logging context before emitting. */
+function handleOpenScoresModal(pairingId: number) {
+  lastScoresModalPairingId.value = pairingId
+  openScoresModalLogging.logClick()
+  emit('openScoresModal', pairingId)
+}
+
+/** Opens the kill entry modal, updating logging context before emitting. */
+function handleOpenKillModal(pairingId: number) {
+  lastKillModalPairingId.value = pairingId
+  openKillModalLogging.logClick()
+  emit('openKillModal', pairingId)
+}
+
+/** Opens the commander selection modal, updating logging context before emitting. */
+function handleOpenCommanderModal(pairingId: number, playerId: number) {
+  lastCommanderModalPairingId.value = pairingId
+  lastCommanderModalPlayerId.value = playerId
+  openCommanderModalLogging.logClick()
+  emit('openCommanderModal', pairingId, playerId)
+}
+
+/** Opens the vote entry modal, updating logging context before emitting. */
+function handleOpenVotesModal(pairingId: number, playerId: number) {
+  lastVotesModalPairingId.value = pairingId
+  lastVotesModalPlayerId.value = playerId
+  openVotesModalLogging.logClick()
+  emit('openVotesModal', pairingId, playerId)
 }
 
 /** Queues a reset confirmation for the given pairing. */
@@ -321,7 +377,7 @@ function fillTable(pairingId: number) {
               :pairing="pairing"
               :table-index="index"
               :is-complete="isTableComplete(pairing)"
-              @view-scores="emit('openScoresModal', $event)"
+              @view-scores="handleOpenScoresModal"
               @reset-table="handleResetTable"
               @quick-fill="handleQuickTestFill"
             />
@@ -339,8 +395,8 @@ function fillTable(pairingId: number) {
               :readonly="readonly"
               :has-commander="!!commandersStore.getCommander1(playerId)"
               :has-votes="votesStore.hasVotes(playerId)"
-              @open-commander-modal="(pairingId, pid) => emit('openCommanderModal', pairingId, pid)"
-              @open-votes-modal="(pairingId, pid) => emit('openVotesModal', pairingId, pid)"
+              @open-commander-modal="handleOpenCommanderModal"
+              @open-votes-modal="handleOpenVotesModal"
             />
           </div>
 
@@ -353,7 +409,7 @@ function fillTable(pairingId: number) {
               :has-kills="hasKills(pairing)"
               :is-draw="isDraw(pairing)"
               @open-score-modal="handleOpenScoreModal"
-              @open-kill-modal="emit('openKillModal', $event)"
+              @open-kill-modal="handleOpenKillModal"
               @draw="handleDrawTable"
             />
           </template>
