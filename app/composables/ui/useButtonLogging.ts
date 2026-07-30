@@ -17,6 +17,13 @@ export function useButtonLogging(buttonName: string, context?: Record<string, un
       ...evaluatedContext,
     }
     console.log('[BUTTON CLICK]', logData)
+
+    const { recordEntry } = useActionLog()
+    recordEntry({
+      button: buttonName,
+      timestamp: logData.timestamp,
+      context: Object.keys(evaluatedContext).length ? evaluatedContext : undefined,
+    })
   }
 
   return { logClick }

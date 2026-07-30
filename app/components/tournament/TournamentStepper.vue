@@ -67,6 +67,14 @@ const currentStep = computed(() => {
 const internalStep = ref(currentStep.value)
 watch(currentStep, (val) => { internalStep.value = val })
 
+/** The round being navigated to in the last handleStepClick call, for logging context. */
+const lastViewedRound = ref(0)
+
+const viewRoundLogging = useButtonLogging('Vai al round', {
+  round: () => lastViewedRound.value,
+  currentRound: () => props.currentRound,
+})
+
 function handleStepClick(value: string | number | undefined) {
   // Always reset back to the current step to prevent visual state from changing
   internalStep.value = currentStep.value
@@ -74,6 +82,8 @@ function handleStepClick(value: string | number | undefined) {
   if (typeof value === 'string' && value.startsWith('round-')) {
     const round = parseInt(value.replace('round-', ''), 10)
     if (round < props.currentRound) {
+      lastViewedRound.value = round
+      viewRoundLogging.logClick()
       emit('viewRound', round)
     }
   }

@@ -123,6 +123,7 @@ export const ICONS = {
   terminal: 'i-lucide-terminal',
   booster: 'i-lucide-gift',
   roundStatus: 'i-lucide-list-checks',
+  actionLog: 'i-lucide-history',
 } as const
 
 export type IconName = (typeof ICONS)[keyof typeof ICONS]

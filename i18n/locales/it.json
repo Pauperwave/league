@@ -1,4 +1,12 @@
 {
+  "actionLogPanel": {
+    "title": "Log Azioni",
+    "openAriaLabel": "Apri log azioni",
+    "empty": "Nessuna azione registrata",
+    "clear": "Svuota log",
+    "clearedToast": "Log azioni svuotato",
+    "entryCount": "{count} azioni registrate"
+  },
   "common": {
     "cancel": "Annulla",
     "save": "Salva",

@@ -33,6 +33,16 @@ const startEventLogging = useButtonLogging('Avvia evento', {
   canStartTournament: () => props.canStartTournament,
 })
 
+const advanceRoundLogging = useButtonLogging('Avanza round', {
+  currentRound: () => props.currentRound,
+  canAdvance: () => props.canAdvance,
+})
+
+const endEventLogging = useButtonLogging('Termina torneo evento', {
+  currentRound: () => props.currentRound,
+  totalRounds: () => props.totalRounds,
+})
+
 function cancelRound() {
   cancelRoundLogging.logClick()
   emit('cancelRound')
@@ -41,6 +51,16 @@ function cancelRound() {
 function handleStartEvent() {
   startEventLogging.logClick()
   emit('start')
+}
+
+function handleAdvanceOrEnd() {
+  if (isLastRound.value) {
+    endEventLogging.logClick()
+    emit('end')
+  } else {
+    advanceRoundLogging.logClick()
+    emit('advance')
+  }
 }
 </script>
 
@@ -69,7 +89,7 @@ function handleStartEvent() {
         :trailing-icon="isLastRound ? ICONS.flag : ICONS.forward"
         :color="props.canAdvance ? 'success' : 'neutral'"
         :disabled="!props.canAdvance"
-        @click="isLastRound ? emit('end') : emit('advance')"
+        @click="handleAdvanceOrEnd"
       >
         {{ isLastRound ? t('tournament.endEvent.title') : t('tournament.controlPanel.advanceButton') }}
       </UButton>

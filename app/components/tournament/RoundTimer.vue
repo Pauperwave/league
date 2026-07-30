@@ -83,6 +83,16 @@ watch(isFullscreen, (value) => {
   play(value ? 'expand' : 'collapse')
 })
 
+const toggleFullscreenLogging = useButtonLogging('Toggle Timer Fullscreen', {
+  round: () => props.round,
+  isFullscreen: () => isFullscreen.value,
+})
+
+function handleToggleFullscreen() {
+  toggleFullscreenLogging.logClick()
+  toggle()
+}
+
 // ---------------------------------------------------------------------------
 // Reset confirmation
 // ---------------------------------------------------------------------------
@@ -124,12 +134,16 @@ const { pause, resume } = useIntervalFn(() => {
 // Controls
 // ---------------------------------------------------------------------------
 
+const startLogging = useButtonLogging('Start Timer', { round: () => props.round })
+const stopLogging = useButtonLogging('Pause Timer', { round: () => props.round })
+
 /**
  * Start or resume the timer.
  * Back-calculates the effective start time from the current elapsed value
  * so that paused time is correctly excluded.
  */
 function start() {
+  startLogging.logClick()
   startTime.value = calculateResumeStartTime(Date.now(), elapsed.value)
   isRunning.value = true
   resume()
@@ -138,13 +152,17 @@ function start() {
 
 /** Pause the timer, preserving elapsed time for a later resume. */
 function stop() {
+  stopLogging.logClick()
   pause()
   isRunning.value = false
   play('pause')
 }
 
+const resetLogging = useButtonLogging('Reset Timer', { round: () => props.round })
+
 /** Stop the timer and reset all state back to zero (including added time). */
 function reset() {
+  resetLogging.logClick()
   pause()
   startTime.value = null
   elapsed.value = 0
@@ -163,8 +181,16 @@ function confirmReset() {
   showResetConfirm.value = false
 }
 
+/** Tracks the minutes argument of the last addMinutes/subtractMinutes call, for logging context. */
+const lastMinutesDelta = ref(0)
+
+const addMinutesLogging = useButtonLogging('Add Timer Minutes', { round: () => props.round, minutes: () => lastMinutesDelta.value })
+const subtractMinutesLogging = useButtonLogging('Subtract Timer Minutes', { round: () => props.round, minutes: () => lastMinutesDelta.value })
+
 /** Add extra minutes to the current round. If the timer had expired, restarts it from the added time. */
 function addMinutes(minutes: number) {
+  lastMinutesDelta.value = minutes
+  addMinutesLogging.logClick()
   const wasExpired = isExpired.value
   timeBonus.value += minutes
   if (wasExpired) {
@@ -178,6 +204,8 @@ function addMinutes(minutes: number) {
 
 /** Remove minutes from the current round, floored so the total duration never goes below zero. */
 function subtractMinutes(minutes: number) {
+  lastMinutesDelta.value = minutes
+  subtractMinutesLogging.logClick()
   timeBonus.value = clampSubtractedBonus(timeBonus.value, minutes, props.durationMinutes)
   play('deselect')
 }
@@ -245,7 +273,7 @@ onMounted(() => {
         size="xl"
         class="absolute top-[4cqmin] right-[4cqmin]"
         :aria-label="t('tournament.roundTimer.exitFullscreenTooltip')"
-        @click="toggle"
+        @click="handleToggleFullscreen"
       />
     </UTooltip>
 
@@ -312,7 +340,7 @@ onMounted(() => {
           variant="ghost"
           :fullscreen="isFullscreen"
           :tooltip="t('tournament.roundTimer.fullscreenTooltip')"
-          @click="toggle"
+          @click="handleToggleFullscreen"
         />
       </div>
 
