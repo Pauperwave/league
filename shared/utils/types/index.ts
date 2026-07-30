@@ -62,6 +62,7 @@ export type NewPlayer = Omit<PlayerInsert, 'player_id'>
 // Full player data - for compatibility with existing code that expects full player
 export interface StandingWithPlayer extends Standing {
   players?: Player
+  placementPoints?: number
   kills?: number
 }
 

@@ -71,6 +71,10 @@ const isOpen = ref(true)
                         <UIcon :name="ICONS.victories" class="size-4 text-warning" />
                         <span>{{ standing.victories ?? 0 }}</span>
                       </div>
+                      <div class="flex items-center gap-1 text-md text-muted" :title="t('tournament.tableScoresModal.placementColumn')">
+                        <UIcon :name="ICONS.standings" class="size-4 text-primary" />
+                        <span>{{ standing.placementPoints ?? 0 }}</span>
+                      </div>
                       <div class="flex items-center gap-1 text-md text-muted" :title="t('player.stats.kills')">
                         <UIcon :name="ICONS.kills" class="size-4 text-error" />
                         <span>{{ standing.kills ?? 0 }}</span>

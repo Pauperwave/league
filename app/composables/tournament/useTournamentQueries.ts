@@ -7,6 +7,7 @@
 import type { Tournament, StandingWithPlayer, Pairing, PairingWithResults, Kill } from '#shared/utils/types'
 import type { Database } from '#shared/utils/types/database'
 import type { PairingHistoryEntry } from '~/composables/event-pairing/pairingOptimizer'
+import { calculatePlayerTableScore, resolveTournamentRuleset } from '#shared/utils/roundScoring'
 
 type PairingRoundIds = Pick<Pairing, 'pairing_round' | 'pairing_player1_id' | 'pairing_player2_id' | 'pairing_player3_id' | 'pairing_player4_id'>
 
@@ -52,12 +53,12 @@ export function useEventStandingsQuery(tournamentId: number) {
 
       if (error) throw error
 
-      const { data: pairingIdsData } = await supabase
+      const { data: pairingsData } = await supabase
         .from('pairings')
-        .select('pairing_id')
+        .select('pairing_id, round_results (*)')
         .eq('tournament_id', tournamentId)
 
-      const pairingIds = (pairingIdsData ?? []).map(p => p.pairing_id)
+      const pairingIds = (pairingsData ?? []).map(p => p.pairing_id)
 
       const killsMap = new Map<number, number>()
       if (pairingIds.length) {
@@ -74,9 +75,24 @@ export function useEventStandingsQuery(tournamentId: number) {
         }
       }
 
+      const placementPointsMap = new Map<number, number>()
+      if (pairingsData?.length) {
+        const { posValues, ruleset } = await resolveTournamentRuleset(supabase, tournamentId)
+
+        for (const pairing of pairingsData) {
+          const tableResults = pairing.round_results ?? []
+          for (const result of tableResults) {
+            const scored = calculatePlayerTableScore(result.player_id, tableResults, posValues, ruleset)
+            if (!scored) continue
+            placementPointsMap.set(result.player_id, (placementPointsMap.get(result.player_id) ?? 0) + scored.scoreRank)
+          }
+        }
+      }
+
       return (data ?? []).map(s => ({
         ...s,
         kills: killsMap.get(s.player_id) ?? 0,
+        placementPoints: placementPointsMap.get(s.player_id) ?? 0,
         players: s.players
           ? sanitizePlayer({
             player_id: s.players.player_id,
