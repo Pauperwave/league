@@ -25,6 +25,24 @@ async function fetchStandingsForTournaments<T>(
 }
 
 /**
+ * Sums `round_results.number_of_kills` per player — pulled out of
+ * `fetchKillsByPlayer` so the aggregation itself (the part that was
+ * actually wrong before, see 2026-07-31 fix) is unit-testable without a
+ * Supabase client.
+ */
+export function aggregateKillsByPlayer(
+  results: { player_id: number; number_of_kills: number | null }[]
+): Map<number, number> {
+  const killsMap = new Map<number, number>()
+
+  for (const r of results) {
+    killsMap.set(r.player_id, (killsMap.get(r.player_id) ?? 0) + (r.number_of_kills ?? 0))
+  }
+
+  return killsMap
+}
+
+/**
  * Kills aren't a `standings` column (recompute-on-read, same pattern as
  * `useEventStandingsQuery`'s single-tournament version) — derived from
  * `round_results.number_of_kills` via each tournament's pairings.
@@ -33,8 +51,6 @@ async function fetchKillsByPlayer(
   supabase: ReturnType<typeof useSupabaseClient<Database>>,
   tournamentIds: number[]
 ): Promise<Map<number, number>> {
-  const killsMap = new Map<number, number>()
-
   const { data: pairingsData, error: pairingsError } = await supabase
     .from('pairings')
     .select('pairing_id')
@@ -43,7 +59,7 @@ async function fetchKillsByPlayer(
   if (pairingsError) throw pairingsError
 
   const pairingIds = (pairingsData ?? []).map(p => p.pairing_id)
-  if (!pairingIds.length) return killsMap
+  if (!pairingIds.length) return new Map()
 
   const { data: resultsData, error: resultsError } = await supabase
     .from('round_results')
@@ -53,11 +69,66 @@ async function fetchKillsByPlayer(
 
   if (resultsError) throw resultsError
 
-  for (const r of resultsData ?? []) {
-    killsMap.set(r.player_id, (killsMap.get(r.player_id) ?? 0) + (r.number_of_kills ?? 0))
+  return aggregateKillsByPlayer(resultsData ?? [])
+}
+
+/** Row shape selected by `useLeagueStandingsQuery`'s `standings` query — exported for its aggregation test. */
+export interface LeagueStandingRow {
+  player_id: number
+  standing_player_score: number | null
+  victories: number | null
+  brew_received: number | null
+  play_received: number | null
+  players: Pick<Player, 'player_id' | 'player_name' | 'player_surname' | 'formats_played' | 'is_active'> | null
+}
+
+/**
+ * Sums per-tournament `standings` rows into one row per player (a player who
+ * appears in N tournaments gets one summed entry) and merges in the
+ * recomputed kill counts, then applies the shared tie-break sort. Pulled out
+ * of `useLeagueStandingsQuery` so the actual summing logic — the part that
+ * silently dropped kills before the 2026-07-31 fix — is unit-testable
+ * without a Supabase client.
+ */
+export function aggregateLeagueStandings(
+  rows: LeagueStandingRow[],
+  killsMap: Map<number, number>
+): StandingWithPlayer[] {
+  const playerMap = new Map<number, StandingWithPlayer>()
+
+  for (const s of rows) {
+    const existing = playerMap.get(s.player_id)
+    if (existing) {
+      existing.standing_player_score = (existing.standing_player_score ?? 0) + (s.standing_player_score ?? 0)
+      existing.victories = (existing.victories ?? 0) + (s.victories ?? 0)
+      existing.brew_received = (existing.brew_received ?? 0) + (s.brew_received ?? 0)
+      existing.play_received = (existing.play_received ?? 0) + (s.play_received ?? 0)
+    }
+    else {
+      playerMap.set(s.player_id, {
+        standing_id: 0,
+        tournament_id: null,
+        player_id: s.player_id,
+        standing_player_score: s.standing_player_score ?? 0,
+        standing_player_rank: null,
+        victories: s.victories ?? 0,
+        kills: killsMap.get(s.player_id) ?? 0,
+        brew_received: s.brew_received ?? 0,
+        play_received: s.play_received ?? 0,
+        players: s.players
+          ? sanitizePlayer({
+            player_id: s.players.player_id,
+            player_name: s.players.player_name,
+            player_surname: s.players.player_surname,
+            formats_played: s.players.formats_played ?? null,
+            is_active: s.players.is_active ?? true,
+          })
+          : undefined,
+      })
+    }
   }
 
-  return killsMap
+  return Array.from(playerMap.values()).sort(compareStandings)
 }
 
 /** Query key for a league's summed standings. */
@@ -80,15 +151,6 @@ export function useLeagueStandingsQuery(leagueId: number) {
 
       const tournamentIds = tournamentsData.map(e => e.tournament_id)
 
-      interface LeagueStandingRow {
-        player_id: number
-        standing_player_score: number | null
-        victories: number | null
-        brew_received: number | null
-        play_received: number | null
-        players: Pick<Player, 'player_id' | 'player_name' | 'player_surname' | 'formats_played' | 'is_active'> | null
-      }
-
       const [standingsData, killsMap] = await Promise.all([
         fetchStandingsForTournaments<LeagueStandingRow>(
           supabase,
@@ -105,41 +167,7 @@ export function useLeagueStandingsQuery(leagueId: number) {
         fetchKillsByPlayer(supabase, tournamentIds),
       ])
 
-      const playerMap = new Map<number, StandingWithPlayer>()
-
-      for (const s of standingsData ?? []) {
-        const existing = playerMap.get(s.player_id)
-        if (existing) {
-          existing.standing_player_score = (existing.standing_player_score ?? 0) + (s.standing_player_score ?? 0)
-          existing.victories = (existing.victories ?? 0) + (s.victories ?? 0)
-          existing.brew_received = (existing.brew_received ?? 0) + (s.brew_received ?? 0)
-          existing.play_received = (existing.play_received ?? 0) + (s.play_received ?? 0)
-        }
-        else {
-          playerMap.set(s.player_id, {
-            standing_id: 0,
-            tournament_id: null,
-            player_id: s.player_id,
-            standing_player_score: s.standing_player_score ?? 0,
-            standing_player_rank: null,
-            victories: s.victories ?? 0,
-            kills: killsMap.get(s.player_id) ?? 0,
-            brew_received: s.brew_received ?? 0,
-            play_received: s.play_received ?? 0,
-            players: s.players
-              ? sanitizePlayer({
-                player_id: s.players.player_id,
-                player_name: s.players.player_name,
-                player_surname: s.players.player_surname,
-                formats_played: s.players.formats_played ?? null,
-                is_active: s.players.is_active ?? true,
-              })
-              : undefined,
-          })
-        }
-      }
-
-      return Array.from(playerMap.values()).sort(compareStandings)
+      return aggregateLeagueStandings(standingsData ?? [], killsMap)
     },
   })
 }
