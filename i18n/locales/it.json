@@ -685,8 +685,11 @@
     "tablePreviewToolbar": {
       "totalScoreLabel": "Punteggio totale:",
       "weightsAndConstraints": "Pesi e Vincoli",
+      "weightsAndConstraintsTooltip": "Configura pesi e vincoli usati per l'ottimizzazione",
       "optimize": "Ottimizza",
-      "random": "Random"
+      "optimizeTooltip": "Migliora la disposizione attuale dei tavoli",
+      "random": "Random",
+      "randomTooltip": "Genera una disposizione casuale dei tavoli"
     },
     "optimizer": {
       "noImprovements": "Non sono stati trovati miglioramenti con i vincoli correnti",

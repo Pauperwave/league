@@ -25,15 +25,21 @@ const { t } = useI18n()
     </div>
 
     <div class="flex flex-wrap items-center gap-2">
-      <UButton size="sm" color="neutral" variant="soft" :icon="ICONS.settings" @click="emit('openSettings')">
-        {{ t('tournament.tablePreviewToolbar.weightsAndConstraints') }}
-      </UButton>
-      <UButton size="sm" color="neutral" variant="outline" :icon="ICONS.optimize" :disabled="loading" @click="emit('optimize')">
-        {{ t('tournament.tablePreviewToolbar.optimize') }}
-      </UButton>
-      <UButton size="sm" color="neutral" variant="outline" :icon="ICONS.shuffle" :disabled="loading" @click="emit('random')">
-        {{ t('tournament.tablePreviewToolbar.random') }}
-      </UButton>
+      <UTooltip :content="{ side: 'top' }" :text="t('tournament.tablePreviewToolbar.weightsAndConstraintsTooltip')">
+        <UButton size="sm" color="neutral" variant="soft" :icon="ICONS.settings" @click="emit('openSettings')">
+          {{ t('tournament.tablePreviewToolbar.weightsAndConstraints') }}
+        </UButton>
+      </UTooltip>
+      <UTooltip :content="{ side: 'top' }" :text="t('tournament.tablePreviewToolbar.optimizeTooltip')">
+        <UButton size="sm" color="neutral" variant="outline" :icon="ICONS.optimize" :disabled="loading" @click="emit('optimize')">
+          {{ t('tournament.tablePreviewToolbar.optimize') }}
+        </UButton>
+      </UTooltip>
+      <UTooltip :content="{ side: 'top' }" :text="t('tournament.tablePreviewToolbar.randomTooltip')">
+        <UButton size="sm" color="neutral" variant="outline" :icon="ICONS.shuffle" :disabled="loading" @click="emit('random')">
+          {{ t('tournament.tablePreviewToolbar.random') }}
+        </UButton>
+      </UTooltip>
     </div>
   </div>
 </template>
