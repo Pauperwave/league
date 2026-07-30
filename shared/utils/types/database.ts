@@ -701,6 +701,10 @@ export type Database = {
         | "Timeless"
         | "Pauper"
         | "Penny"
+        | "Duel Commander"
+        | "Cubo Vintage"
+        | "Cubo Commander"
+        | "Premodern"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -842,6 +846,10 @@ export const Constants = {
         "Timeless",
         "Pauper",
         "Penny",
+        "Duel Commander",
+        "Cubo Vintage",
+        "Cubo Commander",
+        "Premodern",
       ],
     },
   },
