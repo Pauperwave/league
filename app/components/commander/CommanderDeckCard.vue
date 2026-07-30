@@ -105,7 +105,6 @@ async function onBracketConfirm(level: number) {
           <UBadge
             :color="bracketDefinition ? BRACKET_COLORS[bracketDefinition.level] : 'neutral'"
             :variant="bracketDefinition ? 'soft' : 'outline'"
-            size="sm"
             class="w-fit cursor-pointer"
             @click="openBracketPicker"
           >
