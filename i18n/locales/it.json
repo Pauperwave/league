@@ -400,7 +400,6 @@
       "editFieldLabel": "Bracket",
       "editFieldHintUnset": "Non ancora impostato",
       "editFieldHintSet": "Bracket {level} · {name}",
-      "selectedStatus": "Selezionato: {level} — {name}",
       "deckBuildingLabel": "Deck building",
       "saveSuccess": "Bracket salvato",
       "saveError": "Impossibile salvare il bracket"

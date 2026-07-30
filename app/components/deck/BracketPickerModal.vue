@@ -22,11 +22,6 @@ watch(open, (isOpen) => {
   if (isOpen) selected.value = currentLevel
 })
 
-function selectedName(level: number | null): string {
-  if (level === null) return ''
-  return t(BRACKET_LEVELS[level - 1]!.nameKey)
-}
-
 function onCancel() {
   emit('cancel')
   open.value = false
@@ -83,17 +78,12 @@ function onConfirm() {
     </template>
 
     <template #footer>
-      <div class="flex items-center justify-between w-full gap-4">
-        <span class="text-sm text-muted">
-          {{ selected !== null ? t('deck.bracket.selectedStatus', { level: selected, name: selectedName(selected) }) : '' }}
-        </span>
-        <ModalFooterActions
-          :confirm-label="t('common.save')"
-          :confirm-disabled="selected === null"
-          @cancel="onCancel"
-          @confirm="onConfirm"
-        />
-      </div>
+      <ModalFooterActions
+        :confirm-label="t('common.save')"
+        :confirm-disabled="selected === null"
+        @cancel="onCancel"
+        @confirm="onConfirm"
+      />
     </template>
   </UModal>
 </template>
