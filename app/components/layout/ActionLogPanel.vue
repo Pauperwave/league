@@ -66,8 +66,9 @@ function handleClear() {
             </div>
             <UIcon
               v-if="entry.context"
-              :name="expandedIds.has(entry.id) ? ICONS.collapse : ICONS.expand"
-              class="size-4 text-muted shrink-0"
+              :name="ICONS.chevronDown"
+              class="size-4 text-muted shrink-0 transition-transform"
+              :class="expandedIds.has(entry.id) ? '' : '-rotate-90'"
             />
           </div>
 
