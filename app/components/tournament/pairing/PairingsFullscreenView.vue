@@ -49,7 +49,7 @@ const columns = computed(() => Math.max(1, Math.ceil(Math.sqrt(pairings.length))
 <template>
   <div class="relative h-screen w-screen bg-default overflow-hidden">
     <!-- Absolutely positioned, not a reserved header strip — with many
-         tables (e.g. a 40-player/10-table event) every row of grid height
+         tables (e.g. a 40-player/10-table tournament) every row of grid height
          matters; a dedicated header row was pushing the last grid row off
          screen. -->
     <UTooltip :content="{ side: 'top' }" :text="t('tournament.pairing.exitFullscreenTooltip')">

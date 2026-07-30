@@ -234,7 +234,7 @@ const columns = computed<TableColumn<WaitingPlayer>[]>(() => [
     header: t('tournament.waitingListTable.timeColumn'),
     meta: { class: { th: 'text-center', td: 'text-center' } },
   },
-  createToggleColumn('paid', 'success', 'event.waitingListTable.paidColumn', 'event.waitingListTable.paidAriaLabel'),
+  createToggleColumn('paid', 'success', 'tournament.waitingListTable.paidColumn', 'tournament.waitingListTable.paidAriaLabel'),
   {
     id: 'actions',
     header: t('tournament.waitingListTable.actionsColumn'),

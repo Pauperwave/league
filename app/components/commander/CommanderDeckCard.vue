@@ -7,7 +7,7 @@ const { t } = useI18n()
 const props = defineProps<{
   deck: CommanderDeck
   playerSlug?: string
-  eventCount?: number
+  tournamentCount?: number
   showActions?: boolean
   /** Aggregate stats (player count, match count) for /decks browse view */
   aggregate?: CommanderAggregate
@@ -31,7 +31,7 @@ const lenderName = computed(() => {
 })
 
 const hasCompanion = computed(() => !!props.deck.companion_name)
-const isUsedInEvents = computed(() => !!props.eventCount && props.eventCount > 0)
+const isUsedInTournaments = computed(() => !!props.tournamentCount && props.tournamentCount > 0)
 
 const scryfallSearchUrl = computed(() =>
   `https://scryfall.com/search?q=!"${encodeURIComponent(props.deck.commander_1_name)}"`
@@ -52,9 +52,9 @@ const { commander1Data, commander2Data, loading } = useCommanderCards(
 const art1 = computed(() => getArtCrop(commander1Data.value))
 const art2 = computed(() => getArtCrop(commander2Data.value))
 
-const eventCountLabel = computed(() =>
-  isUsedInEvents.value
-    ? t('deck.usedInTournaments', props.eventCount!, { named: { count: props.eventCount } })
+const tournamentCountLabel = computed(() =>
+  isUsedInTournaments.value
+    ? t('deck.usedInTournaments', props.tournamentCount!, { named: { count: props.tournamentCount } })
     : t('deck.notUsedInTournaments')
 )
 
@@ -144,17 +144,17 @@ async function onBracketConfirm(level: number) {
             </UBadge>
           </template>
 
-          <!-- Event count badge (player-specific mode) -->
-          <UTooltip v-else :text="eventCountLabel">
+          <!-- Tournament count badge (player-specific mode) -->
+          <UTooltip v-else :text="tournamentCountLabel">
             <UButton
-              v-if="isUsedInEvents"
+              v-if="isUsedInTournaments"
               size="xs"
               variant="soft"
               color="info"
               :icon="ICONS.standings"
               disabled
             >
-              {{ eventCount }}
+              {{ tournamentCount }}
             </UButton>
           </UTooltip>
 
@@ -162,7 +162,7 @@ async function onBracketConfirm(level: number) {
           <DeckCardActions
             v-if="showActions"
             :deck="deck"
-            :is-used-in-events="isUsedInEvents"
+            :is-used-in-tournaments="isUsedInTournaments"
             @edit="emit('edit', $event)"
             @delete="emit('delete', $event)"
           />

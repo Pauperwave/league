@@ -1,7 +1,7 @@
 // server\api\tournaments\[tournamentId]\start.post.ts
 // fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
-// BFF slice (ADR-013): atomic event start. Owns the whole transition —
-// validate the waitroom, create zeroed standings, flip the event to playing,
+// BFF slice (ADR-013): atomic tournament start. Owns the whole transition —
+// validate the waitroom, create zeroed standings, flip the tournament to playing,
 // clear the waitroom, insert round-1 pairings from the confirmed playerOrder.
 import * as v from 'valibot'
 import { serverSupabaseServiceRole } from '#supabase/server'
@@ -21,12 +21,12 @@ export default defineEventHandler(async (event) => {
   // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this endpoint is the authorization boundary now, not a DB policy.
   const supabase = serverSupabaseServiceRole<Database>(event)
 
-  // Domain guards: the event must exist and not be running already.
+  // Domain guards: the tournament must exist and not be running already.
   const tournamentRow = await requireTournamentRow(supabase, tournamentId)
   if (tournamentRow.tournament_playing || (tournamentRow.tournament_current_round ?? 0) > 0) {
     throw createError({
       statusCode: 409,
-      statusMessage: 'Event has already started'
+      statusMessage: 'Tournament has already started'
     })
   }
 
@@ -80,11 +80,11 @@ export default defineEventHandler(async (event) => {
     // 23505 = unique_violation on standings(tournament_id, player_id) — a
     // concurrent/retried start already inserted these rows (BACKLOG #12,
     // TOCTOU between the tournament_playing guard above and this insert). Clean
-    // rejection, not a scary 500: the event did in fact already start.
+    // rejection, not a scary 500: the tournament did in fact already start.
     if (standingsError.code === '23505') {
       throw createError({
         statusCode: 409,
-        statusMessage: 'Event has already started'
+        statusMessage: 'Tournament has already started'
       })
     }
     console.error('[api/start] standings insert failed', { tournamentId, standingsError })
@@ -103,10 +103,10 @@ export default defineEventHandler(async (event) => {
     .single()
 
   if (updateError || !updatedTournament) {
-    console.error('[api/start] event update failed', { tournamentId, updateError })
+    console.error('[api/start] tournament update failed', { tournamentId, updateError })
     throw createError({
       statusCode: 500,
-      statusMessage: updateError?.message ?? 'Event update failed'
+      statusMessage: updateError?.message ?? 'Tournament update failed'
     })
   }
 
@@ -138,6 +138,6 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  console.log('[api/start] event started', { tournamentId, tables: rows.length })
+  console.log('[api/start] tournament started', { tournamentId, tables: rows.length })
   return { event: updatedTournament }
 })

@@ -1,6 +1,6 @@
 // server\api\tournaments\[tournamentId]\delete.post.ts
 // fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
-// BFF wave 4 (ADR-013): delete an event. The "event still has pairings/
+// BFF wave 4 (ADR-013): delete a tournament. The "tournament still has pairings/
 // standings/waitroom entries" guard lives here (409) — the underlying FKs
 // are ON DELETE RESTRICT (2026-07-19 migration), so this is a friendlier
 // error than the raw constraint-violation 500 that would otherwise surface.

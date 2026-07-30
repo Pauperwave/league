@@ -2,7 +2,7 @@
 import type { TournamentUpdatePayload } from '~/components/tournament/modal/TournamentFormModal.vue'
 
 interface LifecycleDeps {
-  // Event actions from useTournamentPage
+  // Tournament actions from useTournamentPage
   tournamentId: number
   nextRound: (playerOrder?: number[]) => Promise<boolean>
   turnBackRound: () => Promise<boolean>
@@ -37,7 +37,7 @@ interface LifecycleDeps {
 }
 
 /**
- * Composable for event lifecycle actions (next round, end event, cancel round, etc.)
+ * Composable for tournament lifecycle actions (next round, end tournament, cancel round, etc.)
  */
 export function useTournamentLifecycle(deps: LifecycleDeps) {
   const {
@@ -62,7 +62,7 @@ export function useTournamentLifecycle(deps: LifecycleDeps) {
    * NextRoundModal confirm: hand over to the table preview, which runs the
    * optimizer and supplies the confirmed playerOrder that the advance-round
    * endpoint requires — never call nextRound() directly from here (the
-   * endpoint rejects a missing playerOrder unless the event is ending).
+   * endpoint rejects a missing playerOrder unless the tournament is ending).
    */
   function confirmNextRound() {
     showNextRoundModal.value = false

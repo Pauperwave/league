@@ -71,12 +71,12 @@ const tournamentToDelete = ref<Tournament | null>(null)
 
 // — Navigation —
 function navigateToTournament(event: Tournament) {
-  logDebug('LeagueDetailPage', 'Navigating to event', {
+  logDebug('LeagueDetailPage', 'Navigating to tournament', {
     tournamentId: event.tournament_id,
     tournamentName: event.tournament_name,
-    eventPlaying: event.tournament_playing,
-    eventRegistrationOpen: event.tournament_registration_open,
-    eventCurrentRound: event.tournament_current_round,
+    tournamentPlaying: event.tournament_playing,
+    tournamentRegistrationOpen: event.tournament_registration_open,
+    tournamentCurrentRound: event.tournament_current_round,
     targetUrl: `/league/${leagueId}/tournament/${event.tournament_id}`,
   })
   router.push(`/league/${leagueId}/tournament/${event.tournament_id}`)
@@ -202,7 +202,7 @@ const { updateLeague } = useLeagueUpdate(() => {
         />
       </div>
 
-      <!-- League Standings — same StandingsCard used on the event page, so the
+      <!-- League Standings — same StandingsCard used on the tournament page, so the
            two representations of "a ranked list of standings" don't diverge. -->
       <div class="lg:col-span-1">
         <StandingsCard

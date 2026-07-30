@@ -9,7 +9,7 @@ import type { VoteEntry } from '~/stores/votes'
  * Crash insurance for in-progress round entry (see ADR discussion 2026-07-14):
  * mirrors the four session stores (rankings, kills, votes, commanders) to
  * localStorage so a refresh/tab-kill mid-round doesn't lose typed-but-unsaved
- * data. One key per event; the snapshot embeds the round number, so any round
+ * data. One key per tournament; the snapshot embeds the round number, so any round
  * change (advance or turn-back) self-invalidates stale data — the post-reset
  * save simply overwrites the snapshot with the new round's empty state.
  *
@@ -93,7 +93,7 @@ export function useSessionStorePersistence(params: {
     killsStore.hydrate({ kills: snapshot.kills })
     commandersStore.hydrate(snapshot.commanders)
     votesStore.hydrate(snapshot.votes)
-    logInfo('useSessionStorePersistence', `restored round ${snapshot.round} session state for event ${tournamentId}`)
+    logInfo('useSessionStorePersistence', `restored round ${snapshot.round} session state for tournament ${tournamentId}`)
   }
 
   // Hydrate in onMounted, not setup: session stores are empty in the

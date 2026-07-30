@@ -1,8 +1,8 @@
 // app\composables\league\useLeagueStandingsQuery.ts
-// Pinia Colada queries for cross-event standings aggregates (ADR-015):
+// Pinia Colada queries for cross-tournament standings aggregates (ADR-015):
 // the league-wide sum standings shown on the league page, and the
-// multi-event standings used by TournamentRanking. Moved out of the event store —
-// they used to share its standings ref with the per-event standings, an
+// multi-tournament standings used by TournamentRanking. Moved out of the tournament store —
+// they used to share its standings ref with the per-tournament standings, an
 // implicit coupling between two different pages.
 import type { StandingWithPlayer, Player } from '#shared/utils/types'
 import type { Database } from '#shared/utils/types/database'

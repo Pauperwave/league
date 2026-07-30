@@ -8,17 +8,17 @@ function waitingListFlagsKey(tournamentId: number): string {
   return `waiting-list-flags-${tournamentId}`
 }
 
-// Effectively "until cleared" — a single event's registration phase never
+// Effectively "until cleared" — a single tournament's registration phase never
 // comes close to this long; the real invalidation is the explicit clear on
-// event start (clearWaitingListFlags, called from useTournamentLifecycle.ts).
+// tournament start (clearWaitingListFlags, called from useTournamentLifecycle.ts).
 const FLAGS_TTL_MS = 30 * 24 * 60 * 60 * 1000
 
 /**
- * Per-event "pagato" checkbox state for the waiting list —
+ * Per-tournament "pagato" checkbox state for the waiting list —
  * ephemeral by design (confirmed 2026-07-14: "just for remembering right in
  * that moment", see docs/TODO.md), but persisted to localStorage so a page
  * refresh during registration doesn't silently reset every checkbox. Cleared
- * once the event actually starts (see useTournamentLifecycle.ts's
+ * once the tournament actually starts (see useTournamentLifecycle.ts's
  * handlePreviewConfirm) since the waitroom itself is cleared then too.
  *
  * Deliberately NOT read synchronously at setup (unlike a plain

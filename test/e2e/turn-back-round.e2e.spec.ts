@@ -5,7 +5,7 @@
 // had round_results (a regression from the 2026-07-19 RESTRICT-cascade
 // migration — round_results.pairing_id -> pairings.pairing_id can no longer
 // be deleted out from under existing round_results). Every entity here is
-// disposable (tagged players/league/event), deleted in afterEach regardless
+// disposable (tagged players/league/tournament), deleted in afterEach regardless
 // of outcome — never assert against or mutate pre-existing data.
 import { expect, test } from '@playwright/test'
 import { cleanup } from './helpers/cleanup'
@@ -22,7 +22,7 @@ function supabaseHeaders() {
 }
 
 async function fetchPairingIds(tournamentId: number, round: number): Promise<number[]> {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/pairings?event_id=eq.${tournamentId}&pairing_round=eq.${round}&select=pairing_id`, {
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/pairings?tournament_id=eq.${tournamentId}&pairing_round=eq.${round}&select=pairing_id`, {
     headers: supabaseHeaders(),
   })
   const rows = await res.json() as { pairing_id: number }[]
@@ -45,13 +45,13 @@ let tournamentId: number | undefined
 
 test.afterEach(async ({ request }) => {
   // Unregister first: turn-back-round-to-registration restores the waitroom,
-  // and the event-delete guard 409s on any remaining waitroom/pairings/
+  // and the tournament-delete guard 409s on any remaining waitroom/pairings/
   // standings rows (see server/api/tournaments/[tournamentId]/delete.post.ts).
   if (tournamentId !== undefined && playerIds.length > 0) {
     await request.post(`/api/tournaments/${tournamentId}/unregister-player`, { data: { playerIds } }).catch(() => {})
   }
   if (tournamentId !== undefined) {
-    await cleanup.event(request, tournamentId)
+    await cleanup.tournament(request, tournamentId)
     tournamentId = undefined
   }
   if (leagueId !== undefined) {
@@ -82,17 +82,17 @@ test('turn-back-round succeeds and clears round_results when scores were already
   const { league } = await leagueRes.json() as { league: { id: number } }
   leagueId = league.id
 
-  const eventRes = await request.post('/api/tournaments/create', {
+  const tournamentRes = await request.post('/api/tournaments/create', {
     data: {
-      event_name: testTag('Event'),
+      tournament_name: testTag('Tournament'),
       league_id: leagueId,
-      event_round_number: 1,
-      event_round_duration: 30,
+      tournament_round_number: 1,
+      tournament_round_duration: 30,
     },
   })
-  expect(eventRes.ok()).toBe(true)
-  const { event } = await eventRes.json() as { event: { event_id: number } }
-  tournamentId = event.event_id
+  expect(tournamentRes.ok()).toBe(true)
+  const { event } = await tournamentRes.json() as { event: { tournament_id: number } }
+  tournamentId = event.tournament_id
 
   const registerRes = await request.post(`/api/tournaments/${tournamentId}/register-player`, { data: { playerIds } })
   expect(registerRes.ok()).toBe(true)

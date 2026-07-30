@@ -20,7 +20,7 @@ interface EventPlayersDeps {
 }
 
 /**
- * Composable for player management actions within an event context.
+ * Composable for player management actions within a tournament context.
  * Player create/update go through the Colada mutations (ADR-015).
  */
 export function useTournamentPlayers(deps: EventPlayersDeps) {

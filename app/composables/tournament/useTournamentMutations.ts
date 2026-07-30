@@ -1,7 +1,7 @@
 // app\composables\tournament\useTournamentMutations.ts
-// Pinia Colada mutations for event CRUD (ADR-015): $fetch to the BFF
+// Pinia Colada mutations for tournament CRUD (ADR-015): $fetch to the BFF
 // endpoints (ADR-013), then invalidate the events list (+ league standings,
-// since deleting an event changes the summed aggregate) so the caches
+// since deleting a tournament changes the summed aggregate) so the caches
 // refetch server truth. Lifecycle transitions (start/nextRound/turnBack) and
 // round-result writes stay in useTournamentStore — they're multi-step
 // orchestration, not single-entity CRUD, and already refresh their own set

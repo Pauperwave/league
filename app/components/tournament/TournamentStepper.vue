@@ -8,9 +8,9 @@ const { t } = useI18n()
 const props = defineProps<{
   /** Current round number (1-based) */
   currentRound: number
-  /** Total number of rounds in the event */
+  /** Total number of rounds in the tournament */
   totalRounds: number
-  /** Current event status */
+  /** Current tournament status */
   tournamentStatus: TournamentStatus
 }>()
 

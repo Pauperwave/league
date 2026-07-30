@@ -10,7 +10,7 @@ interface RoundResultUsage {
 export const DECK_USAGE_KEY = ['deck-usage']
 
 /**
- * A player's commander decks plus their event usage (ADR-015): decks derive
+ * A player's commander decks plus their tournament usage (ADR-015): decks derive
  * from the cached ['decks'] Colada query, usage from a per-player
  * ['deck-usage', id] query over round_results (which decks were played, for
  * the UI's in-use badge/guard).
@@ -57,7 +57,7 @@ export function useCommanderDecks(playerId: Ref<number | undefined>) {
     return (usageMap.value.get(getDeckUsageKey(deck)) || 0) > 0
   }
 
-  function getDeckEventCount(deck: CommanderDeck): number {
+  function getDeckTournamentCount(deck: CommanderDeck): number {
     return usageMap.value.get(getDeckUsageKey(deck)) || 0
   }
 
@@ -66,6 +66,6 @@ export function useCommanderDecks(playerId: Ref<number | undefined>) {
     pending,
     error,
     isDeckInUse,
-    getDeckEventCount
+    getDeckTournamentCount
   }
 }

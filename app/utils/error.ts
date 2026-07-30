@@ -13,7 +13,7 @@ export function toErrorMessage(err: unknown, fallback = 'Unknown error'): string
 
 /**
  * True when a caught $fetch error is a 409 Conflict — the BFF's answer for
- * domain "in use" guards (ruleset used by a league, deck played in an event).
+ * domain "in use" guards (ruleset used by a league, deck played in a tournament).
  */
 export function isConflictError(err: unknown): boolean {
   return typeof err === 'object' && err !== null

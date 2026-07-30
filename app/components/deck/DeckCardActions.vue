@@ -4,7 +4,7 @@ import type { CommanderDeck } from '#shared/utils/types'
 
 defineProps<{
   deck: CommanderDeck
-  isUsedInEvents: boolean
+  isUsedInTournaments: boolean
 }>()
 
 const emit = defineEmits<{
@@ -28,7 +28,7 @@ const { t } = useI18n()
     />
 
     <!-- Delete: only shown when not used -->
-    <UTooltip v-if="!isUsedInEvents" :text="t('deck.cardActions.deleteTooltip')">
+    <UTooltip v-if="!isUsedInTournaments" :text="t('deck.cardActions.deleteTooltip')">
       <UButton
         size="xs"
         variant="ghost"

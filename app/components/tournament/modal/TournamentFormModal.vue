@@ -11,7 +11,7 @@ const { t } = useI18n()
 const DEFAULT_ROUND_DURATION = 75 // 1:15 hours
 
 // — Valibot Schema —
-const EventFormSchema = v.object({
+const TournamentFormSchema = v.object({
   tournamentName: v.pipe(v.string(), v.trim(), v.minLength(1)),
   tournamentDate: v.nullable(v.string()),
   numRound: v.pipe(v.number(), v.minValue(1), v.maxValue(10)),
@@ -21,7 +21,7 @@ const EventFormSchema = v.object({
 // — Types —
 
 // Internal reactive form state
-interface EventForm {
+interface TournamentForm {
   tournamentName: string
   tournamentDate: CalendarDate | null  // CalendarDate for DatePicker binding
   numRound: number
@@ -62,21 +62,21 @@ const submitLogging = useButtonLogging('Submit Tournament Form', { isEditing: ()
 const isEditing = computed(() => !!props.tournament)
 const { title: modalTitle, description: modalDescription, icon: modalIcon, submitLabel, handleCancel } = useFormModalMeta({
   isEditing,
-  namespace: 'event',
+  namespace: 'tournament',
   createIcon: ICONS.battle,
   cancelLoggingLabel: 'Cancel Tournament Form',
   open
 })
 
 // — Form —
-const defaultForm = (): EventForm => ({
+const defaultForm = (): TournamentForm => ({
   tournamentName: '',
   tournamentDate: getToday(),
   numRound: 2,
   roundDuration: DEFAULT_ROUND_DURATION,
 })
 
-const form = shallowReactive<EventForm>(defaultForm())
+const form = shallowReactive<TournamentForm>(defaultForm())
 
 const isValid = computed(() => !!form.tournamentName.trim())
 
@@ -110,7 +110,7 @@ function handleSubmit() {
     roundDuration: form.roundDuration,
   }
 
-  const parsed = v.safeParse(EventFormSchema, data)
+  const parsed = v.safeParse(TournamentFormSchema, data)
   if (!parsed.success) {
     logError('TournamentFormModal', 'Tournament form validation failed', parsed.issues)
     return
@@ -149,11 +149,11 @@ function handleSubmit() {
     :description="modalDescription"
     :icon="modalIcon"
     :submit-label="submitLabel"
-    form-id="event-form"
+    form-id="tournament-form"
     :disabled="!isValid"
     @cancel="handleCancel"
   >
-    <form id="event-form" class="space-y-4" @submit.prevent="handleSubmit">
+    <form id="tournament-form" class="space-y-4" @submit.prevent="handleSubmit">
         <div class="grid grid-cols-2 gap-4">
           <UFormField :label="t('tournament.form.nameLabel')" required>
             <UInput

@@ -3,11 +3,11 @@
 <!--
   StartTournamentButton
 
-  A fixed-width primary button used to start an event.
+  A fixed-width primary button used to start a tournament.
   Displays a play icon with the label "Avvia Evento".
 
   Props:
-  - disabled: Prevents the button from being clicked (e.g. when event requirements are not met)
+  - disabled: Prevents the button from being clicked (e.g. when tournament requirements are not met)
   - loading:  Shows a loading spinner (e.g. while the start request is in progress)
 
   Events:
@@ -24,7 +24,7 @@
 
 <script setup lang="ts">
 defineProps<{
-  /** Prevents the button from being clicked. Use when event requirements are not met */
+  /** Prevents the button from being clicked. Use when tournament requirements are not met */
   disabled?: boolean
   /** Shows a loading spinner. Use while the start request is in progress */
   loading?: boolean

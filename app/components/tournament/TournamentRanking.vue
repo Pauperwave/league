@@ -9,36 +9,36 @@ const props = defineProps<{
 
 const { t } = useI18n()
 
-// Colada cache of the league's events (ADR-015)
-const { data: eventsData, isLoading: loading } = useEventsQuery(props.leagueId)
+// Colada cache of the league's tournaments (ADR-015)
+const { data: tournamentsData, isLoading: loading } = useEventsQuery(props.leagueId)
 
-const allLeagueEvents = computed(() => {
-  const events = eventsData.value ?? []
-  return [...events].sort((a, b) => {
+const allLeagueTournaments = computed(() => {
+  const tournaments = tournamentsData.value ?? []
+  return [...tournaments].sort((a, b) => {
     const dateA = a.tournament_datetime ?? ''
     const dateB = b.tournament_datetime ?? ''
     return dateA.localeCompare(dateB)
   })
 })
 
-// Standings across all the league's events (Colada, ADR-015)
-const eventIds = computed(() => eventsData.value?.map(e => e.tournament_id) ?? [])
-const { data: allStandings } = useMultipleEventStandingsQuery(eventIds)
+// Standings across all the league's tournaments (Colada, ADR-015)
+const tournamentIds = computed(() => tournamentsData.value?.map(e => e.tournament_id) ?? [])
+const { data: allStandings } = useMultipleEventStandingsQuery(tournamentIds)
 
-// Group standings by event
-const eventStandings = computed(() => {
-  if (!eventsData.value) return []
+// Group standings by tournament
+const tournamentStandings = computed(() => {
+  if (!tournamentsData.value) return []
 
-  return eventsData.value.map(event => ({
-    event,
-    standings: (allStandings.value ?? []).filter(s => s.tournament_id === event.tournament_id)
+  return tournamentsData.value.map(tournament => ({
+    tournament,
+    standings: (allStandings.value ?? []).filter(s => s.tournament_id === tournament.tournament_id)
   }))
 })
 
 const allPlayers = computed(() => {
   const playerMap = new Map<number, Player>()
-  for (const es of eventStandings.value) {
-    for (const standing of es.standings) {
+  for (const ts of tournamentStandings.value) {
+    for (const standing of ts.standings) {
       if (standing.players && !playerMap.has(standing.player_id)) {
         playerMap.set(standing.player_id, standing.players)
       }
@@ -51,8 +51,8 @@ const allPlayers = computed(() => {
 
 const totalScore = computed(() => {
   const scoreMap = new Map<number, number>()
-  for (const es of eventStandings.value) {
-    for (const standing of es.standings) {
+  for (const ts of tournamentStandings.value) {
+    for (const standing of ts.standings) {
       const current = scoreMap.get(standing.player_id) ?? 0
       scoreMap.set(standing.player_id, current + (standing.standing_player_score ?? 0))
     }
@@ -69,9 +69,9 @@ const sortedPlayers = computed(() => {
 })
 
 function getScore(playerId: number, tournamentId: number): number | null {
-  const es = eventStandings.value.find(e => e.event.tournament_id === tournamentId)
-  if (!es) return null
-  const standing = es.standings.find(s => s.player_id === playerId)
+  const ts = tournamentStandings.value.find(t => t.tournament.tournament_id === tournamentId)
+  if (!ts) return null
+  const standing = ts.standings.find(s => s.player_id === playerId)
   return standing?.standing_player_score ?? null
 }
 </script>
@@ -94,11 +94,11 @@ function getScore(playerId: number, tournamentId: number): number | null {
             {{ t('league.ranking.player') }}
           </th>
           <th
-            v-for="event in allLeagueEvents"
-            :key="event.tournament_id"
+            v-for="tournament in allLeagueTournaments"
+            :key="tournament.tournament_id"
             class="px-3 py-2 text-center font-semibold whitespace-nowrap"
           >
-            {{ event.tournament_name }}
+            {{ tournament.tournament_name }}
           </th>
           <th class="px-3 py-2 text-right font-semibold bg-primary/10">
             {{ t('tournament.scoreBreakdown.playerTotal') }}
@@ -123,11 +123,11 @@ function getScore(playerId: number, tournamentId: number): number | null {
             />
           </td>
           <td
-            v-for="event in allLeagueEvents"
-            :key="`${player.player_id}-${event.tournament_id}`"
+            v-for="tournament in allLeagueTournaments"
+            :key="`${player.player_id}-${tournament.tournament_id}`"
             class="px-3 py-2 text-center"
           >
-            {{ getScore(player.player_id, event.tournament_id) ?? "-" }}
+            {{ getScore(player.player_id, tournament.tournament_id) ?? "-" }}
           </td>
           <td class="px-3 py-2 text-right font-bold bg-primary/10">
             {{ totalScore.get(player.player_id) ?? 0 }}
@@ -147,7 +147,7 @@ function getScore(playerId: number, tournamentId: number): number | null {
     </div>
 
     <div
-      v-else-if="allLeagueEvents.length === 0"
+      v-else-if="allLeagueTournaments.length === 0"
       class="text-center py-8 text-muted"
     >
       <UIcon

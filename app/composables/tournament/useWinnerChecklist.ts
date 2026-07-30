@@ -52,7 +52,7 @@ export function useWinners(
 /**
  * Persisted "booster consegnato" check-off state per player for the current
  * round — who won is derived live elsewhere; this only tracks whether their
- * reward has physically been handed over. Keyed by event+round, so it
+ * reward has physically been handed over. Keyed by tournament+round, so it
  * naturally resets every round. Reads in `onMounted` rather than
  * synchronously, same as `useWaitingListFlags.ts`, to avoid an SSR hydration
  * mismatch (a synchronous localStorage read makes the server-rendered

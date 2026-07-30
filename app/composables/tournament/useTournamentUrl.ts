@@ -1,7 +1,7 @@
 // app\composables\tournament\useTournamentUrl.ts
 
 /**
- * Composable for bidirectional sync between URL query params and event page state.
+ * Composable for bidirectional sync between URL query params and tournament page state.
  *
  * All sync functions use `router.replace` (not `push`) to avoid polluting history.
  * Unknown params are preserved during sync.

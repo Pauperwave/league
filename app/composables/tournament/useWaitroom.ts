@@ -1,11 +1,11 @@
 // app\composables\tournament\useWaitroom.ts
-// Pinia Colada query + mutations for an event's waiting list (ADR-015).
+// Pinia Colada query + mutations for a tournament's waiting list (ADR-015).
 // Reads stay client → Supabase; register/unregister go through the BFF
 // endpoints (ADR-013 wave 1), which own the domain rules (registration
 // open, duplicates) — invalidation refetches server truth afterwards.
 // Successor of the waitroom state that lived in the players store.
 
-/** Query-key prefix for per-event waitroom lists — invalidated by useWaitroomMutations. */
+/** Query-key prefix for per-tournament waitroom lists — invalidated by useWaitroomMutations. */
 export const WAITROOM_KEY = ['waitroom']
 
 export function useWaitroom(tournamentId: number) {

@@ -19,9 +19,9 @@ const {
 const emit = defineEmits<{
   editLeague: []
   createTournament: []
-  viewTournament: [event: Tournament]
-  editTournament: [event: Tournament]
-  deleteTournament: [event: Tournament]
+  viewTournament: [tournament: Tournament]
+  editTournament: [tournament: Tournament]
+  deleteTournament: [tournament: Tournament]
 }>()
 
 const router = useRouter()

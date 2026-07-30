@@ -1,6 +1,6 @@
 <!-- app\components\tournament\EndedTournamentBadge.vue -->
 <!--
-  Marks the event page's ended phase, above the final standings
+  Marks the tournament page's ended phase, above the final standings
   (see docs/architecture/event-flow.md).
 -->
 <script setup lang="ts">

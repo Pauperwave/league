@@ -8,10 +8,10 @@ interface Props {
   loading: boolean
   decks: CommanderDeck[]
   slug: string
-  getEventCount: (deck: CommanderDeck) => number
+  getTournamentCount: (deck: CommanderDeck) => number
 }
 
-const { loading, decks, slug, getEventCount } = defineProps<Props>()
+const { loading, decks, slug, getTournamentCount } = defineProps<Props>()
 
 const emit = defineEmits<{
   addDeck: []
@@ -50,7 +50,7 @@ const { t } = useI18n()
         :key="deck.id"
         :deck="deck"
         :player-slug="slug"
-        :event-count="getEventCount(deck)"
+        :tournament-count="getTournamentCount(deck)"
         show-actions
         @edit="emit('edit', deck)"
         @delete="emit('delete', deck)"

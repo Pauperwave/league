@@ -2,7 +2,7 @@
 import type { Kill } from '#shared/utils/types'
 
 /**
- * Store for tracking player kills during an event round.
+ * Store for tracking player kills during a tournament round.
  * Manages ephemeral kill data and pairing confirmation state.
  */
 export const useKillsStore = defineStore('kills', () => {

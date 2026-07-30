@@ -3,7 +3,7 @@
 /**
  * RoundTimer
  *
- * A countdown timer for a single event round.
+ * A countdown timer for a single tournament round.
  *
  * - Persists the start timestamp to localStorage keyed by round number,
  *   so a page refresh resumes the timer exactly where it left off.

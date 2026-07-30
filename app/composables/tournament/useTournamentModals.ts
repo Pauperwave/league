@@ -1,7 +1,7 @@
 // app\composables\tournament\useTournamentModals.ts
 
 /**
- * Composable that encapsulates ALL modal visibility and selection state for the event page.
+ * Composable that encapsulates ALL modal visibility and selection state for the tournament page.
  */
 export function useTournamentModals() {
   // ─── Simple Visibility Flags ────────────────────────────────────────────────

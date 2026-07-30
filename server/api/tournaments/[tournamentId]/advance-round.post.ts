@@ -2,7 +2,7 @@
 // fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
 // BFF slice (ADR-013): atomic round transition. Owns the whole sequence that
 // the client used to orchestrate — score the closing round, accumulate
-// standings, advance (or end) the event, insert the next round's pairings —
+// standings, advance (or end) the tournament, insert the next round's pairings —
 // so a mid-sequence client death can no longer leave the DB half-updated.
 //
 // The pairing optimizer stays CLIENT-side on purpose: it is pure computation
@@ -36,19 +36,19 @@ export default defineEventHandler(async (event) => {
   const supabase = serverSupabaseServiceRole<Database>(event)
 
   // Domain guards: playing phase, and the round the client thinks it is
-  // closing must be the round the event is actually at (double-submit/stale
+  // closing must be the round the tournament is actually at (double-submit/stale
   // tab protection).
   const tournamentRow = await requireTournamentRow(supabase, tournamentId)
   if (!tournamentRow.tournament_playing) {
     throw createError({
       statusCode: 409,
-      statusMessage: 'Event is not in the playing phase'
+      statusMessage: 'Tournament is not in the playing phase'
     })
   }
   if (tournamentRow.tournament_current_round !== currentRound) {
     throw createError({
       statusCode: 409,
-      statusMessage: `Round mismatch: event is at round ${tournamentRow.tournament_current_round}, request is closing round ${currentRound}`
+      statusMessage: `Round mismatch: tournament is at round ${tournamentRow.tournament_current_round}, request is closing round ${currentRound}`
     })
   }
 

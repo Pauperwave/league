@@ -32,7 +32,7 @@ interface EventUrlSyncDeps {
 
 /**
  * Composable that groups all URL query-param ↔ modal sync watchers.
- * Call once in the event page to wire everything up.
+ * Call once in the tournament page to wire everything up.
  */
 export function useTournamentUrlSync(deps: EventUrlSyncDeps) {
   const {

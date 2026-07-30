@@ -2,11 +2,11 @@
 // UI-driven reproduction of the ADR-037 fix: dragging a player from one full
 // (4/4) table onto another full table in the "Anteprima Tavoli" preview must
 // swap the two players instead of being silently rejected. Preconditions
-// (players/league/event/registration) are seeded via the API for speed —
+// (players/league/tournament/registration) are seeded via the API for speed —
 // only the drag itself is driven through the real UI, same split as
-// deck-create.e2e.spec.ts. The event is never actually started (the preview
+// deck-create.e2e.spec.ts. The tournament is never actually started (the preview
 // opens before that BFF call, and this test cancels out of it), so cleanup
-// only ever has to remove the event/league/players, never pairings/standings.
+// only ever has to remove the tournament/league/players, never pairings/standings.
 import { expect, test } from '@playwright/test'
 import { cleanup } from './helpers/cleanup'
 import { testTag } from './helpers/testTag'
@@ -18,12 +18,12 @@ const playerSurnames: string[] = []
 
 test.afterEach(async ({ request }) => {
   if (tournamentId !== undefined) {
-    // The event/delete endpoint 409s while any waitroom rows reference it —
+    // The tournament/delete endpoint 409s while any waitroom rows reference it —
     // this test registers players via the API but never unregisters them
     // (there's no round to withdraw from, the modal is only cancelled), so
     // cleanup must clear the waitroom first.
     await request.post(`/api/tournaments/${tournamentId}/unregister-player`, { data: { playerIds } })
-    await cleanup.event(request, tournamentId)
+    await cleanup.tournament(request, tournamentId)
     tournamentId = undefined
   }
   if (leagueId !== undefined) {
@@ -58,17 +58,17 @@ test('dragging a player from one full table to another swaps them instead of rej
   const { league } = await leagueRes.json() as { league: { id: number } }
   leagueId = league.id
 
-  const eventRes = await request.post('/api/tournaments/create', {
+  const tournamentRes = await request.post('/api/tournaments/create', {
     data: {
-      event_name: testTag('Event'),
+      tournament_name: testTag('Tournament'),
       league_id: leagueId,
-      event_round_number: 2,
-      event_round_duration: 30,
+      tournament_round_number: 2,
+      tournament_round_duration: 30,
     },
   })
-  expect(eventRes.ok()).toBe(true)
-  const { event } = await eventRes.json() as { event: { event_id: number } }
-  tournamentId = event.event_id
+  expect(tournamentRes.ok()).toBe(true)
+  const { event } = await tournamentRes.json() as { event: { tournament_id: number } }
+  tournamentId = event.tournament_id
 
   const registerRes = await request.post(`/api/tournaments/${tournamentId}/register-player`, { data: { playerIds } })
   expect(registerRes.ok()).toBe(true)
@@ -76,7 +76,7 @@ test('dragging a player from one full table to another swaps them instead of rej
   await page.goto(`/league/${leagueId}/tournament/${tournamentId}`)
   await page.waitForLoadState('networkidle')
 
-  await page.getByRole('button', { name: 'Avvia Evento' }).click()
+  await page.getByRole('button', { name: 'Avvia Torneo' }).click()
   const dialog = page.getByRole('dialog', { name: 'Anteprima Tavoli' })
   await expect(dialog).toBeVisible()
 
@@ -136,7 +136,7 @@ test('dragging a player from one full table to another swaps them instead of rej
   // Every player accounted for exactly once across both tables.
   expect([...table1After, ...table2After].sort()).toEqual([...playerSurnames].sort())
 
-  // Cancel out — never actually start the event, so cleanup has nothing to
-  // do beyond the event/league/players (no pairings/standings ever created).
+  // Cancel out — never actually start the tournament, so cleanup has nothing to
+  // do beyond the tournament/league/players (no pairings/standings ever created).
   await dialog.getByRole('button', { name: 'Annulla' }).click()
 })

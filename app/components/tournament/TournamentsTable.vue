@@ -15,9 +15,9 @@ defineProps<{
 }>()
 
 const emit = defineEmits<{
-  view: [event: Tournament]
-  edit: [event: Tournament]
-  delete: [event: Tournament]
+  view: [tournament: Tournament]
+  edit: [tournament: Tournament]
+  delete: [tournament: Tournament]
 }>()
 
 const UBadge = resolveComponent('UBadge') as Component

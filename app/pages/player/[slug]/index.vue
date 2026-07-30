@@ -21,7 +21,7 @@ const {
   data: commanderDecks,
   pending: decksLoading,
   isDeckInUse,
-  getDeckEventCount
+  getDeckTournamentCount
 } = useCommanderDecks(playerId)
 
 const { data: playerStats } = usePlayerStats(playerId)
@@ -93,7 +93,7 @@ async function confirmDeleteDeck() {
     await deleteDeck.mutateAsync(deckToDelete.value.id)
     notifyDeckSuccess('deck.toast.deletedTitle', 'deck.toast.deletedDescription')
   } catch (err) {
-    // The endpoint answers 409 when the deck was played in an event.
+    // The endpoint answers 409 when the deck was played in a tournament.
     notifyDeckError(isConflictError(err)
       ? t('store.deck.inUseError')
       : toErrorMessage(err, t('deck.toast.deleteErrorFallback')))
@@ -153,7 +153,7 @@ const { data: matchHistory } = usePlayerMatchHistory(playerId)
       :loading="decksLoading"
       :decks="commanderDecks ?? []"
       :slug="slug"
-      :get-event-count="getDeckEventCount"
+      :get-tournament-count="getDeckTournamentCount"
       @add-deck="createModalOpen = true"
       @edit="handleEditDeck"
       @delete="handleDeleteClick"
