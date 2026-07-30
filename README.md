@@ -1,94 +1,62 @@
-# Nuxt Starter Template
+# MTG Commander League
 
-## Setting up Supabase types
+Web app Nuxt 4 per gestire leghe di **Magic: The Gathering Commander**: regolamenti, leghe, tornei, iscrizione in lista d'attesa, pairing, punteggio live e classifiche, con i flussi in-room (modali di punteggio, kill, comandante, voto).
 
-If you get the following error:
-```
-Database types configured at "#shared/utils/types.types.ts" but file not found at "C:/Users/emanuelenardi/Documents/Coding/MagicTheGathering/league/app/types/database.types.ts". Using "Data
-```
-
-Add this to your nuxt.config.ts:
-```ts
-supabase: {
-    redirect: false,
-    types: "shared/utils/types/database.ts"
-},
-```
-
-The module expects types at #shared/utils/types.types.ts which in Nuxt 4 resolves to app/types/. Create that directory and generate:
-```powershell [Terminal]
-mkdir -p shared/utils/types && npx supabase gen types typescript --project-id bravmfpjiochvfnegbxr --schema public > app/types/database.types.ts
-```
-
-
-[![Nuxt UI](https://img.shields.io/badge/Made%20with-Nuxt%20UI-00DC82?logo=nuxt&labelColor=020420)](https://ui.nuxt.com)
-
-Use this template to get started with [Nuxt UI](https://ui.nuxt.com) quickly.
-
-- [Live demo](https://starter-template.nuxt.dev/)
-- [Documentation](https://ui.nuxt.com/docs/getting-started/installation/nuxt)
-
-<a href="https://starter-template.nuxt.dev/" target="_blank">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://ui.nuxt.com/assets/templates/nuxt/starter-dark.png">
-    <source media="(prefers-color-scheme: light)" srcset="https://ui.nuxt.com/assets/templates/nuxt/starter-light.png">
-    <img alt="Nuxt Starter Template" src="https://ui.nuxt.com/assets/templates/nuxt/starter-light.png" width="830" height="466">
-  </picture>
-</a>
-
-> The starter template for Vue is on https://github.com/nuxt-ui-templates/starter-vue.
-
-## Quick Start
-
-```bash [Terminal]
-npm create nuxt@latest -- -t ui
-```
-
-## Deploy your own
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-name=starter&repository-url=https%3A%2F%2Fgithub.com%2Fnuxt-ui-templates%2Fstarter&demo-image=https%3A%2F%2Fui.nuxt.com%2Fassets%2Ftemplates%2Fnuxt%2Fstarter-dark.png&demo-url=https%3A%2F%2Fstarter-template.nuxt.dev%2F&demo-title=Nuxt%20Starter%20Template&demo-description=A%20minimal%20template%20to%20get%20started%20with%20Nuxt%20UI.)
+Stack: Nuxt 4 · Vue 3.5 · Nuxt UI · Pinia / Pinia Colada · Supabase (Postgres + RLS) · TypeScript · Vitest · Playwright.
 
 ## Setup
-
-Make sure to install the dependencies:
 
 ```bash
 pnpm install
 ```
 
-## Development Server
+Crea un `.env` con le variabili richieste dal progetto Supabase collegato (`SUPABASE_URL`, `SUPABASE_KEY`, `NUXT_SESSION_PASSWORD` — quest'ultima da almeno 32 caratteri, usata da `nuxt-auth-utils` per la sessione applicativa protetta da password).
 
-Start the development server on `http://localhost:3000`:
+## Sviluppo
 
 ```bash
-pnpm dev
+pnpm dev            # dev server su http://localhost:3000
+pnpm dev:clean       # come sopra, ripulendo prima .nuxt/.output/.vercel
 ```
 
-## Production
-
-Build the application for production:
+## Build e produzione
 
 ```bash
 pnpm build
+pnpm preview        # preview locale della build di produzione
 ```
 
-Locally preview production build:
+Vedi la [documentazione di deploy Nuxt](https://nuxt.com/docs/getting-started/deployment) per il deploy effettivo.
+
+## Qualità del codice
 
 ```bash
-pnpm preview
+pnpm lint           # eslint . — 0 warning/0 errori richiesti
+pnpm typecheck      # nuxt typecheck (vue-tsc) — 0 errori richiesti
+pnpm test           # vitest run (tutti i test)
+pnpm test:e2e       # playwright
+pnpm fallow:health  # audit di complessità/duplicazione/dead-code
 ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+## Supabase
 
-## Renovate integration
+Le migration vivono in `supabase/migrations/` (`YYYYMMDDHHMMSS_descrizione.sql`, idempotenti). Dopo ogni modifica allo schema, rigenera i tipi TypeScript:
 
-Install [Renovate GitHub app](https://github.com/apps/renovate/installations/select_target) on your repository and you are good to go.
+```bash
+npx supabase gen types typescript --project-id <project-id> --schema public > shared/utils/types/database.ts
+```
 
-## Documentation
+`shared/utils/types/database.ts` è un file generato: non va editato a mano (eccezioni puntuali documentate in `docs/PROGRESS.md`).
 
-Project documentation lives in [`docs/`](docs/README.md) — start with that index. Notably:
+## Renovate
 
-- [`docs/architecture/`](docs/architecture) — how the app works: data flow (`state-flow.md`), routes, Pinia stores, database/RLS, event lifecycle, component hierarchy, `useAsyncData` key conventions, modal URL sync
-- [`CLAUDE.md`](CLAUDE.md) — conventions and guidance for AI coding agents working in this repo
-- [`docs/BACKLOG.md`](docs/BACKLOG.md) — ranked, actionable work items
-- [`docs/PROGRESS.md`](docs/PROGRESS.md) — curated changelog and architectural decisions
+La [Renovate GitHub app](https://github.com/apps/renovate/installations/select_target) è collegata a questa repo per il rinnovo automatico delle dipendenze.
+
+## Documentazione
+
+La documentazione di progetto vive in [`docs/`](docs/README.md) — parti da quell'indice. In particolare:
+
+- [`docs/architecture/`](docs/architecture) — come funziona l'app: data flow (`state-flow.md`), routes, Pinia store, database/RLS, ciclo di vita dei tornei, gerarchia dei componenti, convenzioni delle chiavi `useAsyncData`, sync URL delle modali
+- [`CLAUDE.md`](CLAUDE.md) — convenzioni e guida per agenti AI che lavorano su questa repo
+- [`docs/BACKLOG.md`](docs/BACKLOG.md) — attività pianificate, ranked per priorità
+- [`docs/PROGRESS.md`](docs/PROGRESS.md) — changelog curato e decisioni architetturali (ADR)
