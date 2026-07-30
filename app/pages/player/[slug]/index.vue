@@ -11,6 +11,13 @@ const { t } = useI18n()
 
 const { player, playerId } = usePlayerBySlug(slug)
 
+const backToPlayersLogging = useButtonLogging('Navigate: Back to Players')
+
+function handleBackToPlayers() {
+  backToPlayersLogging.logClick()
+  router.push('/players')
+}
+
 const breadcrumbItems = useBreadcrumb(() => [
   { label: t('player.breadcrumb'), to: '/players' },
   { label: player.value ? `${player.value.player_name} ${player.value.player_surname}` : t('player.fallbackName') }
@@ -119,7 +126,7 @@ const { data: matchHistory } = usePlayerMatchHistory(playerId)
       color="neutral"
       :icon="ICONS.back"
       :aria-label="t('common.back')"
-      @click="() => { router.push('/players') }"
+      @click="handleBackToPlayers"
     >
       {{ t('common.back') }}
     </UButton>

@@ -8,11 +8,13 @@ interface Props {
 defineProps<Props>()
 
 const { t } = useI18n()
+
+const homeLogging = useButtonLogging('Navigate: Home')
 </script>
 
 <template>
   <div class="flex items-center justify-between">
-    <UButton color="neutral" :icon="ICONS.back" to="/">
+    <UButton color="neutral" :icon="ICONS.back" to="/" @click="homeLogging.logClick()">
       {{ t('common.home') }}
     </UButton>
     <h1 class="text-2xl font-bold">

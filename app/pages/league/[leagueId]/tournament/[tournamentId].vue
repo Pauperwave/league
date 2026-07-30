@@ -9,6 +9,13 @@ const { t } = useI18n()
 const router = useRouter()
 const stepper = useTemplateRef<InstanceType<typeof TournamentStepper>>('stepper')
 
+const backToLeagueLogging = useButtonLogging('Navigate: Back to League')
+
+function handleBackToLeague() {
+  backToLeagueLogging.logClick()
+  router.push(`/league/${leagueId}`)
+}
+
 // ── Types ──────────────────────────────────────────────────────────────────
 
 // Note: PlayerStatusUpdate is emitted by WaitingList but not processed in this page
@@ -419,7 +426,7 @@ async function handleUndrawTable(pairingId: number) {
         color="neutral"
         :icon="ICONS.back"
         :aria-label="t('league.backAriaLabel')"
-        @click="() => { router.push(`/league/${leagueId}`) }"
+        @click="handleBackToLeague"
       >
         {{ t('common.back') }}
       </UButton>

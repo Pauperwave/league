@@ -20,6 +20,13 @@ function toggleExpanded(id: string) {
   }
 }
 
+/** Renders an ISO timestamp as `YYYY-MM-DD HH:MM:SS` (local time, not locale-dependent) for the log list. */
+function formatTimestamp(iso: string): string {
+  const date = new Date(iso)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`
+}
+
 const clearLogLogging = useButtonLogging('Clear Action Log')
 
 function handleClear() {
@@ -62,7 +69,7 @@ function handleClear() {
           <div class="flex items-center justify-between gap-2">
             <div class="min-w-0">
               <p class="font-medium truncate">{{ entry.button }}</p>
-              <p class="text-xs text-muted">{{ entry.timestamp }}</p>
+              <p class="text-xs text-muted">{{ formatTimestamp(entry.timestamp) }}</p>
             </div>
             <UIcon
               v-if="entry.context"

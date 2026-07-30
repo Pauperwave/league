@@ -25,6 +25,13 @@ const emit = defineEmits<{
 }>()
 
 const router = useRouter()
+
+const backLogging = useButtonLogging('Navigate: Back to Leagues')
+
+function handleBack() {
+  backLogging.logClick()
+  router.push('/leagues')
+}
 </script>
 
 <template>
@@ -34,7 +41,7 @@ const router = useRouter()
         color="neutral"
         :icon="ICONS.back"
         :aria-label="t('league.backAriaLabel')"
-        @click="() => { router.push('/leagues') }"
+        @click="handleBack"
       >
         {{ t('common.back') }}
       </UButton>
