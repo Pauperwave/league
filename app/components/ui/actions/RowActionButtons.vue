@@ -27,9 +27,11 @@ const emit = defineEmits<{
   delete: []
 }>()
 
-const editLogging = useButtonLogging('Row Action: Edit', { entityLabel: () => entityLabel })
-const viewLogging = useButtonLogging('Row Action: View', { entityLabel: () => entityLabel })
-const removeLogging = useButtonLogging('Row Action: Remove', { entityLabel: () => entityLabel })
+const { t } = useI18n()
+
+const editLogging = useButtonLogging(t('logging.rowActions.edit'), { entityLabel: () => entityLabel })
+const viewLogging = useButtonLogging(t('logging.rowActions.view'), { entityLabel: () => entityLabel })
+const removeLogging = useButtonLogging(t('logging.rowActions.remove'), { entityLabel: () => entityLabel })
 
 function handleEdit() {
   editLogging.logClick()

@@ -14,8 +14,8 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
-const editLogging = useButtonLogging('Modifica mazzo', { deckId: () => props.deck.id })
-const deleteLogging = useButtonLogging('Elimina mazzo', { deckId: () => props.deck.id })
+const editLogging = useButtonLogging(t('logging.deck.edit'), { deckId: () => props.deck.id })
+const deleteLogging = useButtonLogging(t('logging.deck.delete'), { deckId: () => props.deck.id })
 
 function handleEdit() {
   editLogging.logClick()

@@ -10,7 +10,7 @@ import type { RulesetFormPayload } from '~/composables/ruleset/useRulesetMutatio
 export function useRulesetsPage() {
   const toast = useToast()
   const { t } = useI18n()
-  const editRulesetLogging = useButtonLogging('Edit Ruleset')
+  const editRulesetLogging = useButtonLogging(t('logging.ruleset.edit'))
 
   const { data, error, isLoading: loading } = useRulesetsQuery()
   const rulesets = computed(() => data.value ?? [])

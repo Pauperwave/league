@@ -55,7 +55,7 @@ const allPlayersInQueue = computed(() =>
   props.players.length > 0 && props.players.every(p => props.waitingPlayers.includes(p.player_id))
 )
 
-const addPlayersLogging = useButtonLogging('Add Players', {
+const addPlayersLogging = useButtonLogging(t('logging.waitingList.addPlayers'), {
   playerNames: () => selectedPlayerIds.value.map((id) => {
     const player = playersById.value.get(Number(id))
     return player ? `${player.player_name} ${player.player_surname}` : `#${id}`
@@ -67,7 +67,7 @@ function handleAddSelected() {
   selectedPlayerIds.value = []
 }
 
-const createNewLogging = useButtonLogging('Create New Player')
+const createNewLogging = useButtonLogging(t('logging.waitingList.createNewPlayer'))
 function handleCreateNew() {
   createNewLogging.logClick()
   emit('createNew')

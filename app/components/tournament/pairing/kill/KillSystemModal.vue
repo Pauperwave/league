@@ -78,7 +78,7 @@ watch(open, (isOpen, wasOpen) => {
   }
 })
 
-const confirmKillsLogging = useButtonLogging('Conferma uccisioni', {
+const confirmKillsLogging = useButtonLogging(t('logging.tournament.confirmKills'), {
   pairingId: () => props.pairingId,
   killCount: () => killsStore.kills.length,
 })

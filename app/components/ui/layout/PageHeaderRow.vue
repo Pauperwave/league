@@ -9,7 +9,7 @@ defineProps<Props>()
 
 const { t } = useI18n()
 
-const homeLogging = useButtonLogging('Navigate: Home')
+const homeLogging = useButtonLogging(t('logging.navigation.home'))
 </script>
 
 <template>

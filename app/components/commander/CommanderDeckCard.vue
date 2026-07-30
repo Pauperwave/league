@@ -61,7 +61,7 @@ const tournamentCountLabel = computed(() =>
 // Bracket level (BACKLOG, 2026-07-22): self-assigned per player's own copy of
 // a deck, so it's meaningless in aggregate mode (no single owning player).
 const showBracketModal = ref(false)
-const bracketChipLogging = useButtonLogging('Open Bracket Picker', { deckId: () => props.deck.id })
+const bracketChipLogging = useButtonLogging(t('logging.deck.openBracketPicker'), { deckId: () => props.deck.id })
 const toast = useToast()
 const { updateDeck } = useDeckMutations()
 

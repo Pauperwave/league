@@ -22,23 +22,23 @@ const emit = defineEmits<{
 const showStartButton = computed(() => props.tournamentStatus === 'registration')
 const isLastRound = computed(() => props.currentRound === props.totalRounds && props.currentRound > 0)
 
-const cancelRoundLogging = useButtonLogging('Annulla round', {
+const cancelRoundLogging = useButtonLogging(t('logging.tournament.cancelRound'), {
   currentRound: () => props.currentRound,
   totalRounds: () => props.totalRounds,
   tournamentStatus: () => props.tournamentStatus,
 })
 
-const startEventLogging = useButtonLogging('Avvia evento', {
+const startEventLogging = useButtonLogging(t('logging.tournament.startEvent'), {
   tournamentStatus: () => props.tournamentStatus,
   canStartTournament: () => props.canStartTournament,
 })
 
-const advanceRoundLogging = useButtonLogging('Avanza round', {
+const advanceRoundLogging = useButtonLogging(t('logging.tournament.advanceRound'), {
   currentRound: () => props.currentRound,
   canAdvance: () => props.canAdvance,
 })
 
-const endEventLogging = useButtonLogging('Termina torneo evento', {
+const endEventLogging = useButtonLogging(t('logging.tournament.endEvent'), {
   currentRound: () => props.currentRound,
   totalRounds: () => props.totalRounds,
 })

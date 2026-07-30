@@ -25,8 +25,8 @@ const emit = defineEmits<{
   search: [query: string]
 }>()
 
-const submitLogging = useButtonLogging('Submit Player Form', { isEditing: () => isEditing.value, data: () => ({ firstName: form.firstName, lastName: form.lastName }) })
-const selectExistingLogging = useButtonLogging('Select Existing Player')
+const submitLogging = useButtonLogging(t('logging.player.submitForm'), { isEditing: () => isEditing.value, data: () => ({ firstName: form.firstName, lastName: form.lastName }) })
+const selectExistingLogging = useButtonLogging(t('logging.player.selectExisting'))
 
 const PlayerFormSchema = v.object({
   player_name: v.pipe(v.string(), v.trim(), v.minLength(1)),

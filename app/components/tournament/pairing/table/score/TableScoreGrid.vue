@@ -64,7 +64,7 @@ const {
 
 watch(() => props.pairing, initializeGrid, { immediate: true })
 
-const confirmRankingLogging = useButtonLogging('Conferma classifica', {
+const confirmRankingLogging = useButtonLogging(t('logging.pairing.confirmRanking'), {
   isValidFormation: () => isValidFormation.value,
   playerCount: () => players.value.length,
   gridSize: () => gridSize.value,

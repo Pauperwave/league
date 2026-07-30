@@ -70,7 +70,7 @@ watch(currentStep, (val) => { internalStep.value = val })
 /** The round being navigated to in the last handleStepClick call, for logging context. */
 const lastViewedRound = ref(0)
 
-const viewRoundLogging = useButtonLogging('Vai al round', {
+const viewRoundLogging = useButtonLogging(t('logging.tournament.viewRound'), {
   round: () => lastViewedRound.value,
   currentRound: () => props.currentRound,
 })

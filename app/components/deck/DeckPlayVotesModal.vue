@@ -27,7 +27,7 @@ watch(
   }
 )
 
-const submitVotesLogging = useButtonLogging('Conferma voti', {
+const submitVotesLogging = useButtonLogging(t('logging.tournament.confirmVotes'), {
   deckVotePlayerId: () => localDeckVotePlayerId.value,
   playVotePlayerId: () => localPlayVotePlayerId.value,
 })

@@ -9,7 +9,7 @@
 const { logout } = usePasswordAuth()
 const { t } = useI18n()
 
-const logoutLogging = useButtonLogging('Logout')
+const logoutLogging = useButtonLogging(t('logging.auth.logout'))
 
 function handleLogout() {
   logoutLogging.logClick()

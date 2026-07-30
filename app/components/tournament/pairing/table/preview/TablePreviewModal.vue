@@ -130,7 +130,7 @@ const scoreItems = computed(() => [
   { key: 'tableSize3', label: t('tournament.tablePreview.scoreItems.tableSize3'), value: weights.value.tableSize3, min: -2, max: 2, step: 0.05 },
 ] as const)
 
-const confirmLogging = useButtonLogging('Conferma tavoli', {
+const confirmLogging = useButtonLogging(t('logging.pairing.confirmTables'), {
   tournamentId: () => tournamentId,
   currentRound: () => currentRound,
   tableCount: () => localTables.value.length,
@@ -202,7 +202,7 @@ function handleDragStart() {
   setDragging(true)
 }
 
-const dragSeatLogging = useButtonLogging('Sposta giocatore (anteprima tavoli)', {
+const dragSeatLogging = useButtonLogging(t('logging.pairing.dragSeat'), {
   tournamentId: () => tournamentId,
   currentRound: () => currentRound,
   wasValid: () => isValid.value,

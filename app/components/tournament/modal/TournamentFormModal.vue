@@ -56,7 +56,7 @@ const emit = defineEmits<{
 
 const open = defineModel<boolean>('open', { default: false })
 
-const submitLogging = useButtonLogging('Submit Tournament Form', { isEditing: () => isEditing.value, tournamentName: () => form.tournamentName })
+const submitLogging = useButtonLogging(t('logging.tournament.submitForm'), { isEditing: () => isEditing.value, tournamentName: () => form.tournamentName })
 
 // — Derived modal state —
 const isEditing = computed(() => !!props.tournament)
@@ -64,7 +64,7 @@ const { title: modalTitle, description: modalDescription, icon: modalIcon, submi
   isEditing,
   namespace: 'tournament',
   createIcon: ICONS.battle,
-  cancelLoggingLabel: 'Cancel Tournament Form',
+  cancelLoggingLabel: t('logging.tournament.cancelForm'),
   open
 })
 

@@ -25,7 +25,7 @@ const emit = defineEmits<{
 
 const displayLabel = computed(() => label ?? t('common.cancel'))
 
-const clickLogging = useButtonLogging('Cancel Button', { label: () => displayLabel.value })
+const clickLogging = useButtonLogging(t('logging.modal.cancelButton'), { label: () => displayLabel.value })
 
 function handleClick() {
   clickLogging.logClick()

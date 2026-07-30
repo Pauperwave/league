@@ -4,7 +4,7 @@ import type { League } from '#shared/utils/types'
 
 const { t } = useI18n()
 
-const editLeagueLogging = useButtonLogging('Edit League')
+const editLeagueLogging = useButtonLogging(t('logging.league.edit'))
 
 const {
   rulesets,

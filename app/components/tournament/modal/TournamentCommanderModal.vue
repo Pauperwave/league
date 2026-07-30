@@ -51,7 +51,7 @@ const { isLoading: isRefreshingCatalog, refetch: refetchCatalog } = useCommander
 
 const showRefreshCatalogConfirm = ref(false)
 
-const refreshCatalogLogging = useButtonLogging('Refresh Commander Catalog')
+const refreshCatalogLogging = useButtonLogging(t('logging.tournament.refreshCommanderCatalog'))
 
 async function onConfirmRefreshCatalog() {
   refreshCatalogLogging.logClick()

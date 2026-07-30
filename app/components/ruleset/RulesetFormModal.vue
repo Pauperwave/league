@@ -19,7 +19,7 @@ const emit = defineEmits<{
 
 const open = defineModel<boolean>('open', { default: false })
 
-const submitLogging = useButtonLogging('Submit Ruleset Form', { isEditing: () => isEditing.value, name: () => form.name })
+const submitLogging = useButtonLogging(t('logging.ruleset.submitForm'), { isEditing: () => isEditing.value, name: () => form.name })
 
 const RulesetCreateSchema = v.object({
   name: v.pipe(v.string(), v.trim(), v.minLength(1)),
@@ -50,7 +50,7 @@ const { title, description, icon, submitLabel, handleCancel } = useFormModalMeta
   isEditing,
   namespace: 'ruleset',
   createIcon: ICONS.rules,
-  cancelLoggingLabel: 'Cancel Ruleset Form',
+  cancelLoggingLabel: t('logging.ruleset.cancelForm'),
   open
 })
 

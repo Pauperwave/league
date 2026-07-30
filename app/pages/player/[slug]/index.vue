@@ -11,7 +11,7 @@ const { t } = useI18n()
 
 const { player, playerId } = usePlayerBySlug(slug)
 
-const backToPlayersLogging = useButtonLogging('Navigate: Back to Players')
+const backToPlayersLogging = useButtonLogging(t('logging.navigation.backToPlayers'))
 
 function handleBackToPlayers() {
   backToPlayersLogging.logClick()

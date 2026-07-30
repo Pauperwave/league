@@ -66,7 +66,7 @@ const playerNameToRemove = computed(() => {
   return player ? fullName(player) : ''
 })
 
-const confirmRemoveLogging = useButtonLogging('Conferma rimozione da lista d\'attesa', {
+const confirmRemoveLogging = useButtonLogging(t('logging.waitingList.confirmRemove'), {
   playerName: () => playerNameToRemove.value,
 })
 
@@ -146,7 +146,7 @@ function handleBatchRemoveClick() {
   showBatchRemoveConfirm.value = true
 }
 
-const confirmBatchRemoveLogging = useButtonLogging('Conferma rimozione massiva da lista d\'attesa', {
+const confirmBatchRemoveLogging = useButtonLogging(t('logging.waitingList.confirmBatchRemove'), {
   playerNames: () => selectedPlayerIds.value.map((id) => {
     const player = props.data.find(p => p.playerId === id)
     return player ? fullName(player) : `#${id}`

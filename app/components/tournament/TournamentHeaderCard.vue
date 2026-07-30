@@ -14,7 +14,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
-const editLogging = useButtonLogging('Edit Tournament', { tournamentName: () => props.tournamentName })
+const editLogging = useButtonLogging(t('logging.tournament.edit'), { tournamentName: () => props.tournamentName })
 
 function handleEdit() {
   editLogging.logClick()

@@ -26,7 +26,7 @@ const emit = defineEmits<{
 
 const router = useRouter()
 
-const backLogging = useButtonLogging('Navigate: Back to Leagues')
+const backLogging = useButtonLogging(t('logging.navigation.backToLeagues'))
 
 function handleBack() {
   backLogging.logClick()

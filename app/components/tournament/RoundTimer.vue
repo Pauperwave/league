@@ -83,7 +83,7 @@ watch(isFullscreen, (value) => {
   play(value ? 'expand' : 'collapse')
 })
 
-const toggleFullscreenLogging = useButtonLogging('Toggle Timer Fullscreen', {
+const toggleFullscreenLogging = useButtonLogging(t('logging.timer.toggleFullscreen'), {
   round: () => props.round,
   isFullscreen: () => isFullscreen.value,
 })
@@ -134,8 +134,8 @@ const { pause, resume } = useIntervalFn(() => {
 // Controls
 // ---------------------------------------------------------------------------
 
-const startLogging = useButtonLogging('Start Timer', { round: () => props.round })
-const stopLogging = useButtonLogging('Pause Timer', { round: () => props.round })
+const startLogging = useButtonLogging(t('logging.timer.start'), { round: () => props.round })
+const stopLogging = useButtonLogging(t('logging.timer.pause'), { round: () => props.round })
 
 /**
  * Start or resume the timer.
@@ -158,7 +158,7 @@ function stop() {
   play('pause')
 }
 
-const resetLogging = useButtonLogging('Reset Timer', { round: () => props.round })
+const resetLogging = useButtonLogging(t('logging.timer.reset'), { round: () => props.round })
 
 /** Stop the timer and reset all state back to zero (including added time). */
 function reset() {
@@ -184,8 +184,8 @@ function confirmReset() {
 /** Tracks the minutes argument of the last addMinutes/subtractMinutes call, for logging context. */
 const lastMinutesDelta = ref(0)
 
-const addMinutesLogging = useButtonLogging('Add Timer Minutes', { round: () => props.round, minutes: () => lastMinutesDelta.value })
-const subtractMinutesLogging = useButtonLogging('Subtract Timer Minutes', { round: () => props.round, minutes: () => lastMinutesDelta.value })
+const addMinutesLogging = useButtonLogging(t('logging.timer.addMinutes'), { round: () => props.round, minutes: () => lastMinutesDelta.value })
+const subtractMinutesLogging = useButtonLogging(t('logging.timer.subtractMinutes'), { round: () => props.round, minutes: () => lastMinutesDelta.value })
 
 /** Add extra minutes to the current round. If the timer had expired, restarts it from the added time. */
 function addMinutes(minutes: number) {

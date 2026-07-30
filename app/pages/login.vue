@@ -14,9 +14,9 @@ const redirectPath = computed(() => {
   return redirect || '/'
 })
 
-const submitLogging = useButtonLogging('Login Submit', { redirectPath: () => redirectPath.value })
-const clearPasswordLogging = useButtonLogging('Clear Password')
-const togglePasswordLogging = useButtonLogging('Toggle Password', { showPassword: () => !showPassword.value })
+const submitLogging = useButtonLogging(t('logging.auth.loginSubmit'), { redirectPath: () => redirectPath.value })
+const clearPasswordLogging = useButtonLogging(t('logging.auth.clearPassword'))
+const togglePasswordLogging = useButtonLogging(t('logging.auth.togglePassword'), { showPassword: () => !showPassword.value })
 
 async function handleSubmit() {
   submitLogging.logClick()

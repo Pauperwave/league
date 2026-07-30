@@ -17,9 +17,9 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
-const openSettingsLogging = useButtonLogging('Pesi e Vincoli')
-const optimizeLogging = useButtonLogging('Ottimizza tavoli')
-const randomLogging = useButtonLogging('Tavoli casuali')
+const openSettingsLogging = useButtonLogging(t('logging.pairing.openWeightsSettings'))
+const optimizeLogging = useButtonLogging(t('logging.pairing.optimizeTables'))
+const randomLogging = useButtonLogging(t('logging.pairing.randomizeTables'))
 
 function handleOpenSettings() {
   openSettingsLogging.logClick()

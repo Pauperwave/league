@@ -26,7 +26,7 @@ const emit = defineEmits<{
 
 const displayLabel = computed(() => label ?? t('common.confirm'))
 
-const clickLogging = useButtonLogging('Confirm Button', { label: () => displayLabel.value })
+const clickLogging = useButtonLogging(t('logging.modal.confirmButton'), { label: () => displayLabel.value })
 
 function handleClick() {
   clickLogging.logClick()

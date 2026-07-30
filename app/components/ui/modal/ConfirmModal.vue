@@ -57,8 +57,8 @@ const displayWarning = computed(() => warning ?? t('common.confirmDeleteWarning'
 const displayConfirmLabel = computed(() => confirmLabel ?? t('common.delete'))
 const displayCancelLabel = computed(() => cancelLabel ?? t('common.cancel'))
 
-const confirmLogging = useButtonLogging('Confirm Modal', { title: () => displayTitle.value, subject: () => subject })
-const cancelLogging = useButtonLogging('Cancel Modal', { title: () => displayTitle.value })
+const confirmLogging = useButtonLogging(t('logging.modal.confirm'), { title: () => displayTitle.value, subject: () => subject })
+const cancelLogging = useButtonLogging(t('logging.modal.cancel'), { title: () => displayTitle.value })
 
 function onConfirm() {
   confirmLogging.logClick()

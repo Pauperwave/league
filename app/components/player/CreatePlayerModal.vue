@@ -21,13 +21,15 @@ const emit = defineEmits<{
 
 const open = defineModel<boolean>('open', { default: false })
 
+const { t } = useI18n()
+
 // — Derived modal state —
 const isEditing = computed(() => !!props.player)
 const { title: modalTitle, description: modalDescription, icon: modalIcon, submitLabel, handleCancel } = useFormModalMeta({
   isEditing,
   namespace: 'player',
   createIcon: ICONS.addPlayer,
-  cancelLoggingLabel: 'Cancel Player Form',
+  cancelLoggingLabel: t('logging.player.cancelForm'),
   open
 })
 

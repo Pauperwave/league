@@ -7,6 +7,104 @@
     "clearedToast": "Log azioni svuotato",
     "entryCount": "{count} azioni registrate"
   },
+  "logging": {
+    "actionLog": {
+      "clear": "Svuota log azioni"
+    },
+    "auth": {
+      "logout": "Esci",
+      "loginSubmit": "Conferma login",
+      "clearPassword": "Cancella password",
+      "togglePassword": "Mostra/nascondi password"
+    },
+    "deck": {
+      "openBracketPicker": "Apri selezione bracket",
+      "edit": "Modifica mazzo",
+      "delete": "Elimina mazzo",
+      "submitCreate": "Conferma creazione mazzo",
+      "submitEdit": "Conferma modifica mazzo"
+    },
+    "developerView": {
+      "toggle": "Attiva/disattiva modalità sviluppatore",
+      "toggleOverlay": "Attiva/disattiva overlay sviluppatore"
+    },
+    "league": {
+      "edit": "Modifica lega",
+      "submitForm": "Conferma form lega",
+      "cancelForm": "Annulla form lega"
+    },
+    "modal": {
+      "confirm": "Conferma modale",
+      "cancel": "Annulla modale",
+      "confirmButton": "Pulsante conferma",
+      "cancelButton": "Pulsante annulla"
+    },
+    "navigation": {
+      "home": "Vai alla home",
+      "backHomeError": "Torna alla home (errore)",
+      "backToLeagues": "Torna alle leghe",
+      "backToLeague": "Torna alla lega",
+      "toLeague": "Vai alla lega",
+      "backToPlayers": "Torna ai giocatori"
+    },
+    "pairing": {
+      "openScoreModal": "Apri inserimento punteggio",
+      "openScoresSummary": "Apri riepilogo punteggi",
+      "openKillModal": "Apri inserimento uccisioni",
+      "openCommanderModal": "Apri selezione comandante",
+      "openVotesModal": "Apri inserimento voti",
+      "toggleFullscreen": "Schermo intero tavoli",
+      "confirmTables": "Conferma tavoli",
+      "dragSeat": "Sposta giocatore (anteprima tavoli)",
+      "openWeightsSettings": "Pesi e Vincoli",
+      "optimizeTables": "Ottimizza tavoli",
+      "randomizeTables": "Tavoli casuali",
+      "confirmRanking": "Conferma classifica"
+    },
+    "player": {
+      "submitForm": "Conferma form giocatore",
+      "cancelForm": "Annulla form giocatore",
+      "selectExisting": "Seleziona giocatore esistente"
+    },
+    "ruleset": {
+      "edit": "Modifica ruleset",
+      "submitForm": "Conferma form ruleset",
+      "cancelForm": "Annulla form ruleset",
+      "openLeaguesModal": "Apri leghe collegate"
+    },
+    "rowActions": {
+      "edit": "Modifica riga",
+      "view": "Visualizza riga",
+      "remove": "Rimuovi riga"
+    },
+    "timer": {
+      "toggleFullscreen": "Schermo intero timer",
+      "start": "Avvia timer",
+      "pause": "Pausa timer",
+      "reset": "Reset timer",
+      "addMinutes": "Aggiungi minuti timer",
+      "subtractMinutes": "Sottrai minuti timer"
+    },
+    "tournament": {
+      "edit": "Modifica torneo",
+      "submitForm": "Conferma form torneo",
+      "cancelForm": "Annulla form torneo",
+      "cancelRound": "Annulla round",
+      "startEvent": "Avvia evento",
+      "advanceRound": "Avanza round",
+      "endEvent": "Termina torneo evento",
+      "viewRound": "Vai al round",
+      "refreshCommanderCatalog": "Aggiorna catalogo comandanti",
+      "confirmKills": "Conferma uccisioni",
+      "confirmVotes": "Conferma voti"
+    },
+    "waitingList": {
+      "addPlayers": "Aggiunta giocatori in lista d'attesa",
+      "createNewPlayer": "Crea nuovo giocatore",
+      "confirmRemove": "Conferma rimozione da lista d'attesa",
+      "confirmBatchRemove": "Conferma rimozione massiva da lista d'attesa"
+    }
+  },
   "common": {
     "cancel": "Annulla",
     "save": "Salva",

@@ -52,7 +52,7 @@ watch(open, async (isOpen) => {
   lenderId.value = undefined
 })
 
-const submitLogging = useButtonLogging('Submit Deck Create Form', {
+const submitLogging = useButtonLogging(t('logging.deck.submitCreate'), {
   playerId: () => props.playerId,
   isBorrowed: () => isBorrowed.value,
 })

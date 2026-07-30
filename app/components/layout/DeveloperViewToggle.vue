@@ -15,7 +15,7 @@ const DEVELOPER_VIEW_PASSWORD = 'test'
 const { isDeveloperView } = useDeveloperView()
 const { t } = useI18n()
 
-const toggleLogging = useButtonLogging('Toggle Developer View')
+const toggleLogging = useButtonLogging(t('logging.developerView.toggle'))
 
 const showPasswordPopover = ref(false)
 const password = ref('')

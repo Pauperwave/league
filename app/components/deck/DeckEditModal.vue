@@ -63,7 +63,7 @@ watch(open, async (isOpen) => {
   }
 })
 
-const submitLogging = useButtonLogging('Submit Deck Edit Form', {
+const submitLogging = useButtonLogging(t('logging.deck.submitEdit'), {
   deckId: () => props.deck?.id,
   isBorrowed: () => isBorrowed.value,
 })

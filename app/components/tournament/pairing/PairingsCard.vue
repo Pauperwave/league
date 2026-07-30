@@ -78,7 +78,7 @@ const currentTableIndex = ref<number | null>(null)
 
 // ─── Logging ──────────────────────────────────────────────────────────────────
 
-const openScoreModalLogging = useButtonLogging('Open Score Modal', {
+const openScoreModalLogging = useButtonLogging(t('logging.pairing.openScoreModal'), {
   pairingId: () => currentPairingId.value,
   tableIndex: () => currentTableIndex.value
 })
@@ -91,20 +91,20 @@ const lastCommanderModalPlayerId = ref<number | null>(null)
 const lastVotesModalPairingId = ref<number | null>(null)
 const lastVotesModalPlayerId = ref<number | null>(null)
 
-const openScoresModalLogging = useButtonLogging('Open Scores Summary Modal', {
+const openScoresModalLogging = useButtonLogging(t('logging.pairing.openScoresSummary'), {
   pairingId: () => lastScoresModalPairingId.value,
 })
 
-const openKillModalLogging = useButtonLogging('Open Kill Modal', {
+const openKillModalLogging = useButtonLogging(t('logging.pairing.openKillModal'), {
   pairingId: () => lastKillModalPairingId.value,
 })
 
-const openCommanderModalLogging = useButtonLogging('Open Commander Modal', {
+const openCommanderModalLogging = useButtonLogging(t('logging.pairing.openCommanderModal'), {
   pairingId: () => lastCommanderModalPairingId.value,
   playerId: () => lastCommanderModalPlayerId.value,
 })
 
-const openVotesModalLogging = useButtonLogging('Open Votes Modal', {
+const openVotesModalLogging = useButtonLogging(t('logging.pairing.openVotesModal'), {
   pairingId: () => lastVotesModalPairingId.value,
   playerId: () => lastVotesModalPlayerId.value,
 })
@@ -116,7 +116,7 @@ const openVotesModalLogging = useButtonLogging('Open Votes Modal', {
 const pairingsRef = useTemplateRef<HTMLDivElement>('pairingsRef')
 const { isFullscreen, toggle: toggleFullscreen } = useFullscreen(pairingsRef)
 
-const toggleFullscreenLogging = useButtonLogging('Toggle Pairings Fullscreen', {
+const toggleFullscreenLogging = useButtonLogging(t('logging.pairing.toggleFullscreen'), {
   isFullscreen: () => isFullscreen.value,
 })
 

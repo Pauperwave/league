@@ -9,7 +9,7 @@ const { t } = useI18n()
 const router = useRouter()
 const stepper = useTemplateRef<InstanceType<typeof TournamentStepper>>('stepper')
 
-const backToLeagueLogging = useButtonLogging('Navigate: Back to League')
+const backToLeagueLogging = useButtonLogging(t('logging.navigation.backToLeague'))
 
 function handleBackToLeague() {
   backToLeagueLogging.logClick()

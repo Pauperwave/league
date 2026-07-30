@@ -21,7 +21,7 @@ const {
   confirmDeleteRuleset,
 } = useRulesetsPage()
 
-const openLeaguesModalLogging = useButtonLogging('Open Leagues Modal')
+const openLeaguesModalLogging = useButtonLogging(t('logging.ruleset.openLeaguesModal'))
 
 const breadcrumbItems = useBreadcrumb(() => [
   { label: t('ruleset.breadcrumb') },
