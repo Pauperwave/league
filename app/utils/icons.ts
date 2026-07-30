@@ -15,6 +15,7 @@ export const ICONS = {
   delete: 'i-lucide-trash-2',
   edit: 'i-lucide-pencil',
   confirm: 'i-lucide-check',
+  copy: 'i-lucide-copy',
   close: 'i-lucide-x',
   clear: 'i-lucide-circle-x',
   reset: 'i-lucide-rotate-ccw',

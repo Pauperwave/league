@@ -77,6 +77,9 @@
       "view": "Riga visualizzata",
       "remove": "Rimossa riga"
     },
+    "standings": {
+      "copy": "Classifica copiata"
+    },
     "timer": {
       "toggleFullscreen": "Schermo intero timer cambiato",
       "start": "Timer avviato",
@@ -884,7 +887,9 @@
       "brewVotesTooltip": "Brew votes",
       "playVotesTooltip": "Play votes",
       "submittedBadge": "Inserito",
-      "emptyText": "Nessun punteggio"
+      "emptyText": "Nessun punteggio",
+      "copyTooltip": "Copia classifica",
+      "copySuccessTitle": "Classifica copiata negli appunti"
     },
     "winnerChecklist": {
       "title": "Vincitori tavoli",

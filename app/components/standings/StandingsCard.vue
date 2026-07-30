@@ -16,6 +16,8 @@ const {
 
 const { t } = useI18n()
 const { isDeveloperView } = useDeveloperView()
+const { copy } = useClipboard()
+const toast = useToast()
 
 const displayTitle = computed(() => title ?? t('tournament.standingsTitleDefault'))
 
@@ -24,10 +26,37 @@ const TOP_PLAYER_COUNT = 8
 const isTopPlayer = (index: number) => index < TOP_PLAYER_COUNT
 
 const isOpen = ref(true)
+
+/** "posizionamento / nome e cognome / punti totali" — one line per player, in current ranking order. */
+const standingsText = computed(() =>
+  standings
+    .map((s, i) => `${i + 1}. ${s.players?.player_name ?? ''} ${s.players?.player_surname ?? ''} - ${s.standing_player_score ?? 0} PT`.trim())
+    .join('\n')
+)
+
+const copyStandingsLogging = useButtonLogging(t('logging.standings.copy'))
+
+async function handleCopyStandings() {
+  copyStandingsLogging.logClick()
+  await copy(standingsText.value)
+  toast.add({ title: t('tournament.standingsCard.copySuccessTitle'), color: 'success' })
+}
 </script>
 
 <template>
   <div class="bg-linear-to-b from-primary/10 to-transparent rounded-xl p-3 border-2 border-primary/30 shadow-lg">
+    <div class="flex items-center justify-end gap-1 mb-1">
+      <UTooltip :content="{ side: 'top' }" :text="t('tournament.standingsCard.copyTooltip')">
+        <UButton
+          :icon="ICONS.copy"
+          color="neutral"
+          variant="ghost"
+          size="xs"
+          :aria-label="t('tournament.standingsCard.copyTooltip')"
+          @click="handleCopyStandings"
+        />
+      </UTooltip>
+    </div>
     <UCollapsible v-model:open="isOpen">
       <button type="button" class="flex items-center justify-center gap-1.5 mb-2 w-full cursor-pointer">
         <UIcon :name="ICONS.standings" class="size-4 text-primary" />
