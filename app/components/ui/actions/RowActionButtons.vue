@@ -8,6 +8,7 @@ const {
   variant = 'outline',
   disabled = false,
   loading = false,
+  entityLabel,
 } = defineProps<{
   showEdit?: boolean
   showView?: boolean
@@ -16,6 +17,8 @@ const {
   variant?: 'solid' | 'outline' | 'ghost' | 'link' | 'soft' | 'subtle'
   disabled?: boolean
   loading?: boolean
+  /** Row's display name (e.g. league/tournament/player name), so the action log shows which entity was affected instead of just "edit was clicked somewhere". */
+  entityLabel?: string
 }>()
 
 const emit = defineEmits<{
@@ -24,9 +27,9 @@ const emit = defineEmits<{
   delete: []
 }>()
 
-const editLogging = useButtonLogging('Row Action: Edit')
-const viewLogging = useButtonLogging('Row Action: View')
-const removeLogging = useButtonLogging('Row Action: Remove')
+const editLogging = useButtonLogging('Row Action: Edit', { entityLabel: () => entityLabel })
+const viewLogging = useButtonLogging('Row Action: View', { entityLabel: () => entityLabel })
+const removeLogging = useButtonLogging('Row Action: Remove', { entityLabel: () => entityLabel })
 
 function handleEdit() {
   editLogging.logClick()

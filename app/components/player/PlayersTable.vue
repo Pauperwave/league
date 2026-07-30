@@ -124,6 +124,7 @@ const columns: TableColumn<Player>[] = [
       showDelete: false,
       size: 'sm',
       variant: 'outline',
+      entityLabel: `${row.original.player_name} ${row.original.player_surname}`,
       onEdit: () => emit('edit', row.original),
     })
   }

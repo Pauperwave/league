@@ -92,7 +92,7 @@ const columns: TableColumn<League>[] = [
     onView: (league) => emit('view', league),
     onEdit: (league) => emit('edit', league),
     onDelete: (league) => emit('delete', league),
-  })
+  }, (league) => league.name)
 ]
 </script>
 

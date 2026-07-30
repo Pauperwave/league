@@ -245,6 +245,7 @@ const columns = computed<TableColumn<WaitingPlayer>[]>(() => [
         showView: false,
         showEdit: true,
         showDelete: true,
+        entityLabel: fullName(row.original),
         onEdit: () => emit('edit', row.original.playerId),
         onDelete: () => { playerIdToRemove.value = row.original.playerId },
       }),

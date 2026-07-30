@@ -115,7 +115,7 @@ const columns: TableColumn<Tournament>[] = [
     onView: (event) => emit('view', event),
     onEdit: (event) => emit('edit', event),
     onDelete: (event) => emit('delete', event),
-  })
+  }, (event) => event.tournament_name)
 ]
 </script>
 
