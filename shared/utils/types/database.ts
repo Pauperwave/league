@@ -675,36 +675,15 @@ export type Database = {
     }
     Functions: {
       get_commander_catalog: { Args: never; Returns: Json }
-      recalc_deck_stats:
-        | {
-            Args: {
-              p_commander_1: string
-              p_commander_2: string
-              p_player_id: number
-            }
-            Returns: undefined
-          }
-        | {
-            Args: {
-              p_commander_1: string
-              p_commander_2: string
-              p_player_id: number
-            }
-            Returns: undefined
-          }
-      recalc_player_stats:
-        | {
-            Args: { p_player_id: number }
-            Returns: {
-              error: true
-            } & "Could not choose the best candidate function between: public.recalc_player_stats(p_player_id => int8), public.recalc_player_stats(p_player_id => int4). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
-          }
-        | {
-            Args: { p_player_id: number }
-            Returns: {
-              error: true
-            } & "Could not choose the best candidate function between: public.recalc_player_stats(p_player_id => int8), public.recalc_player_stats(p_player_id => int4). Try renaming the parameters or the function itself in the database so function overloading can be resolved"
-          }
+      recalc_deck_stats: {
+        Args: {
+          p_commander_1: string
+          p_commander_2: string
+          p_player_id: number
+        }
+        Returns: undefined
+      }
+      recalc_player_stats: { Args: { p_player_id: number }; Returns: undefined }
       refresh_commander_stats: { Args: never; Returns: undefined }
     }
     Enums: {
