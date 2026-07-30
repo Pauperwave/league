@@ -24,6 +24,42 @@ async function fetchStandingsForTournaments<T>(
   return (data ?? []) as unknown as T[]
 }
 
+/**
+ * Kills aren't a `standings` column (recompute-on-read, same pattern as
+ * `useEventStandingsQuery`'s single-tournament version) — derived from
+ * `round_results.number_of_kills` via each tournament's pairings.
+ */
+async function fetchKillsByPlayer(
+  supabase: ReturnType<typeof useSupabaseClient<Database>>,
+  tournamentIds: number[]
+): Promise<Map<number, number>> {
+  const killsMap = new Map<number, number>()
+
+  const { data: pairingsData, error: pairingsError } = await supabase
+    .from('pairings')
+    .select('pairing_id')
+    .in('tournament_id', tournamentIds)
+
+  if (pairingsError) throw pairingsError
+
+  const pairingIds = (pairingsData ?? []).map(p => p.pairing_id)
+  if (!pairingIds.length) return killsMap
+
+  const { data: resultsData, error: resultsError } = await supabase
+    .from('round_results')
+    .select('player_id, number_of_kills')
+    .not('number_of_kills', 'is', null)
+    .in('pairing_id', pairingIds)
+
+  if (resultsError) throw resultsError
+
+  for (const r of resultsData ?? []) {
+    killsMap.set(r.player_id, (killsMap.get(r.player_id) ?? 0) + (r.number_of_kills ?? 0))
+  }
+
+  return killsMap
+}
+
 /** Query key for a league's summed standings. */
 export const LEAGUE_STANDINGS_KEY = ['league-standings']
 
@@ -48,25 +84,26 @@ export function useLeagueStandingsQuery(leagueId: number) {
         player_id: number
         standing_player_score: number | null
         victories: number | null
-        kills: number | null
         brew_received: number | null
         play_received: number | null
         players: Pick<Player, 'player_id' | 'player_name' | 'player_surname' | 'formats_played' | 'is_active'> | null
       }
 
-      const standingsData = await fetchStandingsForTournaments<LeagueStandingRow>(
-        supabase,
-        tournamentIds,
-        `
-          player_id,
-          standing_player_score,
-          victories,
-          kills,
-          brew_received,
-          play_received,
-          players:player_id (player_id, player_name, player_surname, formats_played, is_active)
-        `
-      )
+      const [standingsData, killsMap] = await Promise.all([
+        fetchStandingsForTournaments<LeagueStandingRow>(
+          supabase,
+          tournamentIds,
+          `
+            player_id,
+            standing_player_score,
+            victories,
+            brew_received,
+            play_received,
+            players:player_id (player_id, player_name, player_surname, formats_played, is_active)
+          `
+        ),
+        fetchKillsByPlayer(supabase, tournamentIds),
+      ])
 
       const playerMap = new Map<number, StandingWithPlayer>()
 
@@ -75,7 +112,6 @@ export function useLeagueStandingsQuery(leagueId: number) {
         if (existing) {
           existing.standing_player_score = (existing.standing_player_score ?? 0) + (s.standing_player_score ?? 0)
           existing.victories = (existing.victories ?? 0) + (s.victories ?? 0)
-          existing.kills = (existing.kills ?? 0) + (s.kills ?? 0)
           existing.brew_received = (existing.brew_received ?? 0) + (s.brew_received ?? 0)
           existing.play_received = (existing.play_received ?? 0) + (s.play_received ?? 0)
         }
@@ -87,7 +123,7 @@ export function useLeagueStandingsQuery(leagueId: number) {
             standing_player_score: s.standing_player_score ?? 0,
             standing_player_rank: null,
             victories: s.victories ?? 0,
-            kills: s.kills ?? 0,
+            kills: killsMap.get(s.player_id) ?? 0,
             brew_received: s.brew_received ?? 0,
             play_received: s.play_received ?? 0,
             players: s.players
@@ -118,18 +154,22 @@ export function useMultipleEventStandingsQuery(tournamentIds: MaybeRefOrGetter<n
       const ids = toValue(tournamentIds)
       if (!ids.length) return []
 
-      const { data, error } = await supabase
-        .from('standings')
-        .select(`
-          *,
-          players:player_id (player_id, player_name, player_surname)
-        `)
-        .in('tournament_id', ids)
+      const [{ data, error }, killsMap] = await Promise.all([
+        supabase
+          .from('standings')
+          .select(`
+            *,
+            players:player_id (player_id, player_name, player_surname)
+          `)
+          .in('tournament_id', ids),
+        fetchKillsByPlayer(supabase, ids),
+      ])
 
       if (error) throw error
 
       return (data ?? []).map(s => ({
         ...s,
+        kills: killsMap.get(s.player_id) ?? 0,
         players: s.players
           ? sanitizePlayer({
             player_id: s.players.player_id,
