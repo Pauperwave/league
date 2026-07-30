@@ -50,7 +50,7 @@ describe('aggregateLeagueStandings', () => {
       makeRow({ player_id: 1, standing_player_score: 5, victories: 0, brew_received: 2, play_received: 1 }),
     ]
 
-    const [result] = aggregateLeagueStandings(rows, new Map())
+    const [result] = aggregateLeagueStandings(rows, new Map(), new Map())
 
     expect(result).toMatchObject({
       standing_player_score: 15,
@@ -64,7 +64,7 @@ describe('aggregateLeagueStandings', () => {
     const rows = [makeRow({ player_id: 1, standing_player_score: 10 })]
     const killsMap = new Map([[1, 4]])
 
-    const [result] = aggregateLeagueStandings(rows, killsMap)
+    const [result] = aggregateLeagueStandings(rows, killsMap, new Map())
 
     expect(result?.kills).toBe(4)
   })
@@ -72,7 +72,7 @@ describe('aggregateLeagueStandings', () => {
   it('defaults a player with no kills entry to 0, not undefined', () => {
     const rows = [makeRow({ player_id: 1 })]
 
-    const [result] = aggregateLeagueStandings(rows, new Map())
+    const [result] = aggregateLeagueStandings(rows, new Map(), new Map())
 
     expect(result?.kills).toBe(0)
   })
@@ -88,13 +88,30 @@ describe('aggregateLeagueStandings', () => {
     ]
     const killsMap = new Map([[1, 4]])
 
-    const [result] = aggregateLeagueStandings(rows, killsMap)
+    const [result] = aggregateLeagueStandings(rows, killsMap, new Map())
 
     expect(result?.kills).toBe(4)
   })
 
+  it('merges in the recomputed placement points for each player (regression: always showed 0 on the league page)', () => {
+    const rows = [makeRow({ player_id: 1, standing_player_score: 10 })]
+    const placementPointsMap = new Map([[1, 7]])
+
+    const [result] = aggregateLeagueStandings(rows, new Map(), placementPointsMap)
+
+    expect(result?.placementPoints).toBe(7)
+  })
+
+  it('defaults a player with no placement points entry to 0, not undefined', () => {
+    const rows = [makeRow({ player_id: 1 })]
+
+    const [result] = aggregateLeagueStandings(rows, new Map(), new Map())
+
+    expect(result?.placementPoints).toBe(0)
+  })
+
   it('defaults null numeric fields to 0', () => {
-    const [result] = aggregateLeagueStandings([makeRow({ player_id: 1 })], new Map())
+    const [result] = aggregateLeagueStandings([makeRow({ player_id: 1 })], new Map(), new Map())
 
     expect(result).toMatchObject({
       standing_player_score: 0,
@@ -111,7 +128,7 @@ describe('aggregateLeagueStandings', () => {
       makeRow({ player_id: 1, standing_player_score: 20, victories: 0 }),
     ]
 
-    const result = aggregateLeagueStandings(rows, new Map())
+    const result = aggregateLeagueStandings(rows, new Map(), new Map())
 
     expect(result.map(r => r.player_id)).toEqual([1, 3, 2])
   })
@@ -130,13 +147,13 @@ describe('aggregateLeagueStandings', () => {
       }),
     ]
 
-    const [result] = aggregateLeagueStandings(rows, new Map())
+    const [result] = aggregateLeagueStandings(rows, new Map(), new Map())
 
     expect(result?.players).toMatchObject({ player_id: 1, player_name: 'Ada', player_surname: 'Lovelace' })
   })
 
   it('leaves players undefined when the row has no joined player', () => {
-    const [result] = aggregateLeagueStandings([makeRow({ player_id: 1, players: null })], new Map())
+    const [result] = aggregateLeagueStandings([makeRow({ player_id: 1, players: null })], new Map(), new Map())
 
     expect(result?.players).toBeUndefined()
   })
