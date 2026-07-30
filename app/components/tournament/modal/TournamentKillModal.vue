@@ -1,0 +1,33 @@
+<!-- app\components\tournament\modal\TournamentKillModal.vue -->
+<script setup lang="ts">
+import type { Kill, TablePlayer } from '#shared/utils/types'
+
+const {
+  showKillModal,
+  selectedKillPlayers,
+  selectedKillPairingId,
+} = defineProps<{
+  showKillModal: boolean
+  selectedKillPlayers: TablePlayer[]
+  selectedKillPairingId: number | null
+}>()
+
+const emit = defineEmits<{
+  submit: [kills: Kill[]]
+  close: []
+}>()
+
+const open = computed({
+  get: () => showKillModal,
+  set: (val) => { if (!val) emit('close') },
+})
+</script>
+
+<template>
+  <KillSystemModal
+    v-model:open="open"
+    :players="selectedKillPlayers"
+    :pairing-id="selectedKillPairingId"
+    @submit="(kills) => emit('submit', kills)"
+  />
+</template>

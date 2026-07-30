@@ -6,7 +6,7 @@ import type { Tournament, Kill } from '#shared/utils/types'
  * The tournament lifecycle state machine (ADR-015 carve-out): currentTournament plus
  * the BFF-backed lifecycle and round-result actions. All cache-like reads
  * (tournaments list, standings, pairings, pairing history) live in Colada queries
- * — useEventQueries.ts / useLeagueStandingsQuery.ts — which the callers
+ * — useTournamentQueries.ts / useLeagueStandingsQuery.ts — which the callers
  * refresh/invalidate after lifecycle writes.
  */
 export const useTournamentStore = defineStore('tournaments', () => {
@@ -38,7 +38,7 @@ export const useTournamentStore = defineStore('tournaments', () => {
   })
 
   // ── Actions: Tournament lifecycle ─────────────────────────────────────────────
-  // Plain CRUD (create/update/delete) lives in useEventMutations (ADR-015) —
+  // Plain CRUD (create/update/delete) lives in useTournamentMutations (ADR-015) —
   // a Colada useMutation per action, invalidating ['events']/['league-standings']
   // automatically. What stays here is genuine multi-step orchestration.
 

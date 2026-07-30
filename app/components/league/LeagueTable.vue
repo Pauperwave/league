@@ -1,6 +1,6 @@
 <!-- app\components\league\LeagueTable.vue -->
 <script setup lang="ts">
-// fallow-ignore-file code-duplication -- id/name column boilerplate shared with EventTable.vue; kept inline rather than
+// fallow-ignore-file code-duplication -- id/name column boilerplate shared with TournamentsTable.vue; kept inline rather than
 // extracted into useTableUtils.ts so each table's column list stays fully readable in one place
 import type { Component } from 'vue'
 import type { TableColumn } from '@nuxt/ui'

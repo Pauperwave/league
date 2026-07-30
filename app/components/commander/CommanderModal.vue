@@ -23,7 +23,7 @@ const commander2 = ref(props.commander2 || '')
 // Whitelists — backed by a shared, localStorage-persisted Pinia Colada query
 // (useCommanderCatalogQuery): fetches once app-wide, no manual load needed.
 // isLoading/refetch for the "Aggiorna elenco carte" button live in
-// EventCommanderModal (footer), which calls this same composable — the
+// TournamentCommanderModal (footer), which calls this same composable — the
 // underlying query is shared/cached, so both stay in sync.
 const { whitelists, getPartnerType, getAllowedPartners, getExactPartnerName } = useCommanderWhitelists()
 

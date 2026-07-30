@@ -1,7 +1,7 @@
 // app\composables\league\useLeagueStandingsQuery.ts
 // Pinia Colada queries for cross-event standings aggregates (ADR-015):
 // the league-wide sum standings shown on the league page, and the
-// multi-event standings used by EventRanking. Moved out of the event store —
+// multi-event standings used by TournamentRanking. Moved out of the event store —
 // they used to share its standings ref with the per-event standings, an
 // implicit coupling between two different pages.
 import type { StandingWithPlayer, Player } from '#shared/utils/types'
@@ -105,7 +105,7 @@ export function useLeagueStandingsQuery(leagueId: number) {
   })
 }
 
-/** Standings across a specific set of tournaments (EventRanking's cross-tournament view). */
+/** Standings across a specific set of tournaments (TournamentRanking's cross-tournament view). */
 export function useMultipleEventStandingsQuery(tournamentIds: MaybeRefOrGetter<number[]>) {
   const supabase = useSupabaseClient()
 

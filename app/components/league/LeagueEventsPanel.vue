@@ -18,10 +18,10 @@ const {
 
 const emit = defineEmits<{
   editLeague: []
-  createEvent: []
+  createTournament: []
   viewEvent: [event: Tournament]
   editEvent: [event: Tournament]
-  deleteEvent: [event: Tournament]
+  deleteTournament: [event: Tournament]
 }>()
 
 const router = useRouter()
@@ -56,26 +56,26 @@ const router = useRouter()
       <UButton
         color="primary"
         :icon="ICONS.add"
-        @click="emit('createEvent')"
+        @click="emit('createTournament')"
       >
         {{ t('league.newEvent') }}
       </UButton>
     </div>
 
-    <EventTable
+    <TournamentsTable
       :events="events"
       :loading="eventsLoading"
       class="flex-none"
       @view="(e) => emit('viewEvent', e)"
       @edit="(e) => emit('editEvent', e)"
-      @delete="(e) => emit('deleteEvent', e)"
+      @delete="(e) => emit('deleteTournament', e)"
     />
 
     <div class="mt-3 flex flex-col flex-1 min-h-0 overflow-hidden">
       <h2 class="text-lg font-semibold mb-2 shrink-0">
         {{ t('league.scoresByEvent') }}
       </h2>
-      <EventRanking :league-id="leagueId" class="flex-1 min-h-0 overflow-auto" />
+      <TournamentRanking :league-id="leagueId" class="flex-1 min-h-0 overflow-auto" />
     </div>
   </div>
 </template>

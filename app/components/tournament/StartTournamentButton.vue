@@ -1,0 +1,48 @@
+<!-- app\components\tournament\StartTournamentButton.vue -->
+
+<!--
+  StartTournamentButton
+
+  A fixed-width primary button used to start an event.
+  Displays a play icon with the label "Avvia Evento".
+
+  Props:
+  - disabled: Prevents the button from being clicked (e.g. when event requirements are not met)
+  - loading:  Shows a loading spinner (e.g. while the start request is in progress)
+
+  Events:
+  - No custom emits defined. Native DOM events (e.g. @click) fall through automatically
+    to the root <UButton> element via Vue's fallthrough attributes.
+
+  Usage:
+  <EventsStartEventButton
+    :disabled="!canStartTournament"
+    :loading="isStarting"
+    @click="handleStart"
+  />
+-->
+
+<script setup lang="ts">
+defineProps<{
+  /** Prevents the button from being clicked. Use when event requirements are not met */
+  disabled?: boolean
+  /** Shows a loading spinner. Use while the start request is in progress */
+  loading?: boolean
+}>()
+
+const { t } = useI18n()
+</script>
+
+<template>
+  <UButton
+    color="primary"
+    :variant="disabled ? 'outline' : 'solid'"
+    size="lg"
+    class="w-48"
+    :disabled
+    :loading
+    :icon="ICONS.play"
+  >
+    {{ t('event.startButton') }}
+  </UButton>
+</template>

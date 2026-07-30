@@ -12,7 +12,7 @@
 <script setup lang="ts">
 // fallow-ignore-file code-duplication -- LeagueFormModal/ConfirmModal invocation boilerplate shared with leagues.vue
 import type { Tournament } from '#shared/utils/types'
-import type { TournamentCreatePayload, TournamentUpdatePayload } from '~/components/event/modal/EventFormModal.vue'
+import type { TournamentCreatePayload, TournamentUpdatePayload } from '~/components/tournament/modal/TournamentFormModal.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -22,10 +22,10 @@ const { t } = useI18n()
 const leagueId = Number(route.params.id)
 
 const {
-  createEvent: createEventMutation,
-  updateEvent: updateEventMutation,
-  deleteEvent: deleteEventMutation
-} = useEventMutations()
+  createTournament: createEventMutation,
+  updateTournament: updateEventMutation,
+  deleteTournament: deleteEventMutation
+} = useTournamentMutations()
 
 const { data: rulesetsData, isLoading: rulesetsLoading } = useRulesetsQuery()
 const rulesets = computed(() => rulesetsData.value ?? [])
@@ -63,7 +63,7 @@ onMounted(() => {
 const showCreateModal = ref(false)
 const showLeagueEditModal = ref(false)
 
-const showEventEditModal = ref(false)
+const showTournamentEditModal = ref(false)
 const eventToEdit = ref<Tournament | null>(null)
 
 const showDeleteConfirm = ref(false)
@@ -83,7 +83,7 @@ function navigateToEvent(event: Tournament) {
 }
 
 // — Tournament CRUD —
-async function createEvent(data: TournamentCreatePayload) {
+async function createTournament(data: TournamentCreatePayload) {
   try {
     await createEventMutation.mutateAsync({
       tournament_name: data.eventName,
@@ -110,7 +110,7 @@ async function createEvent(data: TournamentCreatePayload) {
   })
 }
 
-async function updateEvent({ id, data }: TournamentUpdatePayload) {
+async function updateTournament({ id, data }: TournamentUpdatePayload) {
   try {
     await updateEventMutation.mutateAsync({
       id,
@@ -130,7 +130,7 @@ async function updateEvent({ id, data }: TournamentUpdatePayload) {
     return
   }
 
-  showEventEditModal.value = false
+  showTournamentEditModal.value = false
   eventToEdit.value = null
   toast.add({
     title: t('event.toast.updatedTitle'),
@@ -141,7 +141,7 @@ async function updateEvent({ id, data }: TournamentUpdatePayload) {
 
 function openEditEvent(event: Tournament) {
   eventToEdit.value = event
-  showEventEditModal.value = true
+  showTournamentEditModal.value = true
 }
 
 function openDeleteEvent(event: Tournament) {
@@ -212,18 +212,18 @@ const { updateLeague } = useLeagueUpdate(() => {
     </div>
 
     <!-- Modals -->
-    <EventFormModal
+    <TournamentFormModal
       v-model:open="showCreateModal"
       :event="null"
       :league-id="leagueId"
-      @create="createEvent"
+      @create="createTournament"
     />
 
-    <EventFormModal
-      v-model:open="showEventEditModal"
+    <TournamentFormModal
+      v-model:open="showTournamentEditModal"
       :event="eventToEdit"
       :league-id="leagueId"
-      @update="updateEvent"
+      @update="updateTournament"
     />
 
     <LeagueFormModal

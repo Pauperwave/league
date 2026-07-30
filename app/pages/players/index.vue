@@ -1,6 +1,6 @@
 <!-- app\pages\players\index.vue -->
 <script setup lang="ts">
-// fallow-ignore-file code-duplication -- create/update-player handler boilerplate shared with useEventPlayers (the post-create/update flows differ: plain toast here, waitlist registration there)
+// fallow-ignore-file code-duplication -- create/update-player handler boilerplate shared with useTournamentPlayers (the post-create/update flows differ: plain toast here, waitlist registration there)
 import type { NewPlayer, Player } from '#shared/utils/types'
 import type { PlayerUpdatePayload } from '~/composables/players/usePlayerMutations'
 

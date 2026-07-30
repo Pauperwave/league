@@ -3,11 +3,11 @@
 import { getPairingPlayerIds } from '#shared/utils/types'
 import type { Seat, TablePlayer, PairingTable } from '#shared/utils/types'
 import type { PairingHistoryEntry, PairingPlayer } from '~/composables/event-pairing/pairingOptimizer'
-import type EventStepper from '~/components/event/EventStepper.vue'
+import type TournamentStepper from '~/components/tournament/TournamentStepper.vue'
 
 const { t } = useI18n()
 const router = useRouter()
-const stepper = useTemplateRef<InstanceType<typeof EventStepper>>('stepper')
+const stepper = useTemplateRef<InstanceType<typeof TournamentStepper>>('stepper')
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -17,14 +17,14 @@ const stepper = useTemplateRef<InstanceType<typeof EventStepper>>('stepper')
 
 const {
   leagueId, tournamentId, currentLeague, currentTournament, currentRound, totalRounds,
-  eventStatus, canStartTournament, waitingPlayers, waitroomEntries, pairings, standings,
+  tournamentStatus, canStartTournament, waitingPlayers, waitroomEntries, pairings, standings,
   players, tableEstimate, getPlayerName, getPlayer,
-  addToWaitingList, removeFromWaitingList, startTournament, nextRound, turnBackRound, updateEvent,
+  addToWaitingList, removeFromWaitingList, startTournament, nextRound, turnBackRound, updateTournament,
   pairingHistory, loading, previewTables, viewedRound, isViewingPastRound, viewRound, clearViewedRound,
   displayedPairings, refreshDisplayedPairings,
-} = useEventPage()
+} = useTournamentPage()
 
-// Ruleset for the "Punteggi Tavolo" breakdown (EventScoresModal) — rulesets
+// Ruleset for the "Punteggi Tavolo" breakdown (TournamentScoresModal) — rulesets
 // are a single shared cache (useRulesetsQuery, ADR-015), find this league's.
 const { data: rulesetsData } = useRulesetsQuery()
 const currentRuleset = computed(() =>
@@ -38,14 +38,14 @@ const {
   syncKillModal, killModalFromQuery,
   syncVotesModal, votesModalFromQuery,
   syncCommanderModal, commanderModalFromQuery,
-} = useEventUrl()
+} = useTournamentUrl()
 
 const {
-  showEventEditModal,
+  showTournamentEditModal,
   showNextRoundModal,
   showStartPreviewModal,
   showCancelRoundConfirm,
-  showEndEventConfirm,
+  showEndTournamentConfirm,
   showKillModal,
   showCreatePlayerModal,
   playerToEdit,
@@ -61,7 +61,7 @@ const {
   selectedVotesPlayerId,
   selectedVotesPairingId,
   selectedKillPairingId,
-} = useEventModals()
+} = useTournamentModals()
 
 const tournamentStore = useTournamentStore()
 const rankingsStore = useRankingsStore()
@@ -76,21 +76,21 @@ useSessionStorePersistence({ tournamentId, currentRound, rankingsStore, killsSto
 const toast = useToast()
 const { liveStandings } = useLiveStandings(
   computed(() => currentLeague.value?.ruleset_id),
-  eventStatus, pairings, standings,
+  tournamentStatus, pairings, standings,
 )
 
 // ── Data Fetching ──────────────────────────────────────────────────────────
-// The Colada queries inside useEventPage (events, waitroom, standings,
+// The Colada queries inside useTournamentPage (events, waitroom, standings,
 // pairing history, pairings) SSR-prefetch themselves — no useAsyncData
 // orchestration needed anymore (ADR-015).
 
-if (phaseFromQuery.value !== 'previewTables' && phaseFromQuery.value !== eventStatus.value) {
-  syncUrl(eventStatus.value, currentRound.value)
+if (phaseFromQuery.value !== 'previewTables' && phaseFromQuery.value !== tournamentStatus.value) {
+  syncUrl(tournamentStatus.value, currentRound.value)
 }
 
 // ── URL Sync ─────────────────────────────────────────────────────────────
 
-useEventUrlSync({
+useTournamentUrlSync({
   syncPreview, syncScoreModal, syncKillModal, syncVotesModal, syncCommanderModal,
   previewFromQuery, scoreModalFromQuery, killModalFromQuery, votesModalFromQuery, commanderModalFromQuery,
   showStartPreviewModal,
@@ -110,20 +110,20 @@ useEventUrlSync({
 
 // ── Lifecycle Handlers ───────────────────────────────────────────────────
 
-const lifecycle = useEventLifecycle({
+const lifecycle = useTournamentLifecycle({
   tournamentId,
   nextRound,
   turnBackRound,
   startTournament,
-  updateEvent,
+  updateTournament,
   showNextRoundModal,
-  showEndEventConfirm,
+  showEndTournamentConfirm,
   showStartPreviewModal,
   showCancelRoundConfirm,
-  showEventEditModal,
-  isLastRound: computed(() => eventStatus.value === 'playing' && currentRound.value >= totalRounds.value && totalRounds.value > 0),
+  showTournamentEditModal,
+  isLastRound: computed(() => tournamentStatus.value === 'playing' && currentRound.value >= totalRounds.value && totalRounds.value > 0),
   currentRound,
-  eventStatus,
+  tournamentStatus,
   syncUrl,
   clearViewedRound,
   killsStore,
@@ -134,7 +134,7 @@ const lifecycle = useEventLifecycle({
 
 // ── Player Handlers ──────────────────────────────────────────────────────
 
-const playersHandlers = useEventPlayers({
+const playersHandlers = useTournamentPlayers({
   addToWaitingList,
   removeFromWaitingList,
   players,
@@ -145,7 +145,7 @@ const playersHandlers = useEventPlayers({
 
 // ── Submit Handlers ────────────────────────────────────────────────────────
 
-const submitHandlers = useEventSubmitHandlers({
+const submitHandlers = useTournamentSubmitHandlers({
   rankingsStore,
   tournamentStore,
   killsStore,
@@ -165,7 +165,7 @@ const submitHandlers = useEventSubmitHandlers({
 const { isTableComplete } = useTableCompletion(rankingsStore, commandersStore, votesStore)
 
 const canAdvance = computed(() => {
-  if (eventStatus.value !== 'playing' || pairings.value.length === 0) return false
+  if (tournamentStatus.value !== 'playing' || pairings.value.length === 0) return false
 
   return pairings.value.every(pairing => isTableComplete(pairing))
 })
@@ -264,7 +264,7 @@ const submittedByPlayerId = computed<Record<number, boolean>>(() => {
 // ── Computed: UI Text ──────────────────────────────────────────────────────
 
   const standingsTitle = computed(() => {
-    if (eventStatus.value === 'ended') return t('event.standingsTitleFinal')
+    if (tournamentStatus.value === 'ended') return t('event.standingsTitleFinal')
     if (currentRound.value > 0) return t('event.standingsTitleRound', { round: currentRound.value })
     return t('event.standingsTitleDefault')
   })
@@ -297,7 +297,7 @@ const breadcrumbItems = useBreadcrumb(() => [
   { label: eventName.value },
 ])
 
-// EventActionBar and EventStepper are now siblings (extracted from the old
+// TournamentActionBar and TournamentStepper are now siblings (extracted from the old
 // EventControlPanel so the actions can live in their own row under the
 // header — see ADR/session 2026-07-26) — the page has to coordinate the
 // stepper's immediate visual step-back itself instead of that living inside
@@ -423,35 +423,35 @@ async function handleUndrawTable(pairingId: number) {
       >
         {{ t('common.back') }}
       </UButton>
-      <EventHeaderCard
-        v-if="eventStatus !== 'playing' && !isViewingPastRound"
+      <TournamentHeaderCard
+        v-if="tournamentStatus !== 'playing' && !isViewingPastRound"
         :event-name="eventName"
         :event-date="formattedDate"
-        :event-status="eventStatus"
-        @edit="showEventEditModal = true"
+        :tournament-status="tournamentStatus"
+        @edit="showTournamentEditModal = true"
       />
       <h1 v-else class="text-2xl font-bold">{{ eventName }}</h1>
     </div>
 
     <!-- Main Content -->
     <div class="flex flex-col gap-6 p-6">
-      <EventActionBar
+      <TournamentActionBar
         :current-round="currentRound"
         :total-rounds="totalRounds"
-        :event-status="eventStatus"
+        :tournament-status="tournamentStatus"
         :can-start-tournament="canStartTournament"
         :can-advance="canAdvance"
         @start="showStartPreviewModal = true"
         @advance="lifecycle.handleAdvance"
-        @end="showEndEventConfirm = true"
+        @end="showEndTournamentConfirm = true"
         @cancel-round="handleCancelRoundClick"
       />
 
-      <EventStepper
+      <TournamentStepper
         ref="stepper"
         :current-round="currentRound"
         :total-rounds="totalRounds"
-        :event-status="eventStatus"
+        :tournament-status="tournamentStatus"
         @step-changed="lifecycle.handleStepChanged"
         @view-round="viewRound"
       >
@@ -476,8 +476,8 @@ async function handleUndrawTable(pairingId: number) {
           </div>
 
           <!-- Registration / Ended Phase -->
-          <div v-if="eventStatus !== 'playing' && !isViewingPastRound">
-            <div v-if="eventStatus === 'registration'" class="space-y-4">
+          <div v-if="tournamentStatus !== 'playing' && !isViewingPastRound">
+            <div v-if="tournamentStatus === 'registration'" class="space-y-4">
               <WaitingList
                 :waiting-players="waitingPlayers"
                 :players="players"
@@ -503,8 +503,8 @@ async function handleUndrawTable(pairingId: number) {
               />
             </div>
 
-            <div v-else-if="eventStatus === 'ended'" class="space-y-2">
-              <EndedEventBadge />
+            <div v-else-if="tournamentStatus === 'ended'" class="space-y-2">
+              <EndedTournamentBadge />
               <StandingsCard
                 :standings="liveStandings"
                 :loading="loading"
@@ -563,7 +563,7 @@ async function handleUndrawTable(pairingId: number) {
             </div>
           </div>
         </template>
-      </EventStepper>
+      </TournamentStepper>
     </div>
 
     <!-- ── Modals ─────────────────────────────────────────────────────────── -->
@@ -598,7 +598,7 @@ async function handleUndrawTable(pairingId: number) {
     />
 
     <ConfirmModal
-      v-model:open="showEndEventConfirm"
+      v-model:open="showEndTournamentConfirm"
       :title="t('event.endEvent.title')"
       :description="t('event.endEvent.description')"
       :question="t('event.endEvent.question')"
@@ -609,7 +609,7 @@ async function handleUndrawTable(pairingId: number) {
       @confirm="lifecycle.confirmEndEvent"
     />
 
-    <EventScoreModal
+    <TournamentScoreModal
       :show-score-modal="showScoreModal"
       :selected-pairing-id="selectedPairingId"
       :selected-table-index="selectedTableIndex"
@@ -623,7 +623,7 @@ async function handleUndrawTable(pairingId: number) {
       @cancel="showScoreModal = false"
     />
 
-    <EventCommanderModal
+    <TournamentCommanderModal
       :show-commander-modal="showCommanderModal"
       :selected-player-id="selectedPlayerId"
       :selected-commander-pairing-id="selectedCommanderPairingId"
@@ -638,7 +638,7 @@ async function handleUndrawTable(pairingId: number) {
       @cancel="showCommanderModal = false"
     />
 
-    <EventScoresModal
+    <TournamentScoresModal
       :show-scores-modal="showScoresModal"
       :selected-scores-pairing-id="selectedScoresPairingId"
       :pairings="pairings"
@@ -647,7 +647,7 @@ async function handleUndrawTable(pairingId: number) {
       @cancel="showScoresModal = false"
     />
 
-    <EventKillModal
+    <TournamentKillModal
       :show-kill-modal="showKillModal"
       :selected-kill-players="selectedKillPlayers"
       :selected-kill-pairing-id="selectedKillPairingId"
@@ -655,7 +655,7 @@ async function handleUndrawTable(pairingId: number) {
       @close="showKillModal = false"
     />
 
-    <EventVotesModal
+    <TournamentVotesModal
       :show-votes-modal="showVotesModal"
       :selected-votes-player-id="selectedVotesPlayerId"
       :get-player-name="getPlayerName"
@@ -670,8 +670,8 @@ async function handleUndrawTable(pairingId: number) {
       @cancel="showVotesModal = false"
     />
 
-    <EventFormModal
-      v-model:open="showEventEditModal"
+    <TournamentFormModal
+      v-model:open="showTournamentEditModal"
       :event="currentTournament ?? null"
       :league-id="leagueId"
       @update="lifecycle.handleUpdateEvent"

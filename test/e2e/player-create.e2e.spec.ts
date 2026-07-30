@@ -5,7 +5,7 @@
 //
 // No update/delete coverage here: /players only exposes create (no edit
 // button/row action on this page — player update only happens in the event
-// waiting-list context, see useEventPlayers.ts) and there is no player
+// waiting-list context, see useTournamentPlayers.ts) and there is no player
 // delete endpoint at all, deliberately (see api.md).
 import { expect, test } from '@playwright/test'
 import { cleanup } from './helpers/cleanup'

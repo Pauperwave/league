@@ -1,0 +1,84 @@
+<!-- app\components\tournament\pairing\settings\PairingSettingsModal.vue -->
+<script setup lang="ts">
+import type { PairingWeights } from '#shared/utils/types'
+import type { PairingPresetKind } from './PairingPresetButtons.vue'
+import ForbiddenPairsSection from './ForbiddenPairsSection.vue'
+
+const { t } = useI18n()
+
+interface WeightItem {
+  key: keyof PairingWeights
+  label: string
+  value: number
+  min: number
+  max: number
+  step: number
+}
+
+defineProps<{
+  selectedPreset: PairingPresetKind
+  scoreItems: ReadonlyArray<WeightItem>
+  pairPlayerA: string
+  pairPlayerB: string
+  forbiddenPairs: Array<{ playerA: number; playerB: number }>
+  allPlayers: Array<{ id: number; name: string }>
+  tournamentId: number
+}>()
+
+const open = defineModel<boolean>('open', { default: false })
+const pairPlayerAModel = defineModel<string>('pairPlayerA', { default: '' })
+const pairPlayerBModel = defineModel<string>('pairPlayerB', { default: '' })
+
+const emit = defineEmits<{
+  selectPreset: [preset: Exclude<PairingPresetKind, 'custom'>]
+  updateWeight: [key: keyof PairingWeights, value: number]
+  addPair: []
+  resolveConflicts: []
+  removePair: [playerA: number, playerB: number]
+}>()
+</script>
+
+<template>
+  <UModal
+    v-model:open="open"
+    :title="t('event.pairingSettings.title')"
+    :description="t('event.pairingSettings.description')"
+    :ui="{ content: 'sm:max-w-3xl' }"
+  >
+    <template #body>
+      <div class="space-y-6">
+        <PairingWeightsSection
+          :selected-preset="selectedPreset"
+          :score-items="scoreItems"
+          @select-preset="preset => emit('selectPreset', preset)"
+          @update-weight="(key, value) => emit('updateWeight', key, value)"
+        />
+
+        <ForbiddenPairsSection
+          v-model:pair-player-a="pairPlayerAModel"
+          v-model:pair-player-b="pairPlayerBModel"
+          :forbidden-pairs="forbiddenPairs"
+          :all-players="allPlayers"
+          :tournament-id="tournamentId"
+          @add-pair="emit('addPair')"
+          @resolve-conflicts="emit('resolveConflicts')"
+          @remove-pair="(playerA, playerB) => emit('removePair', playerA, playerB)"
+        />
+      </div>
+    </template>
+
+    <!-- Single "Chiudi" button, not ModalFooterActions' Conferma/Annulla —
+         every slider/pair edit here applies live to localStorage, there's no
+         local draft to confirm or discard. -->
+    <template #footer>
+      <div class="flex justify-end w-full">
+        <CancelButton
+          :label="t('common.close')"
+          :icon="ICONS.close"
+          variant="outline"
+          @click="() => { open = false }"
+        />
+      </div>
+    </template>
+  </UModal>
+</template>

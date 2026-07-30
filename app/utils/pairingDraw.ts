@@ -4,7 +4,7 @@ import type { PairingWithResults } from '#shared/utils/types'
 /**
  * True when a pairing was resolved as a draw ("Patta"): zero kills for every
  * seated player and everyone tied for first — the exact shape
- * `handleDrawSubmit` (`useEventSubmitHandlers.ts`) writes. There's no
+ * `handleDrawSubmit` (`useTournamentSubmitHandlers.ts`) writes. There's no
  * separate "was this a draw" flag persisted, so this is derived from the
  * data shape rather than stored directly.
  */
