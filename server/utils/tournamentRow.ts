@@ -1,5 +1,5 @@
 // server\utils\tournamentRow.ts
-// Shared scaffolding for the /api/events/:tournamentId/* endpoints: fetch the
+// Shared scaffolding for the /api/tournaments/:tournamentId/* endpoints: fetch the
 // tournament's lifecycle columns with the uniform 404. Domain guards stay in each
 // endpoint — they differ per intent (ADR-013).
 import type { SupabaseClient } from '@supabase/supabase-js'

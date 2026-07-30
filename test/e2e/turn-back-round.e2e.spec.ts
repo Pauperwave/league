@@ -46,9 +46,9 @@ let tournamentId: number | undefined
 test.afterEach(async ({ request }) => {
   // Unregister first: turn-back-round-to-registration restores the waitroom,
   // and the event-delete guard 409s on any remaining waitroom/pairings/
-  // standings rows (see server/api/events/[tournamentId]/delete.post.ts).
+  // standings rows (see server/api/tournaments/[tournamentId]/delete.post.ts).
   if (tournamentId !== undefined && playerIds.length > 0) {
-    await request.post(`/api/events/${tournamentId}/unregister-player`, { data: { playerIds } }).catch(() => {})
+    await request.post(`/api/tournaments/${tournamentId}/unregister-player`, { data: { playerIds } }).catch(() => {})
   }
   if (tournamentId !== undefined) {
     await cleanup.event(request, tournamentId)
@@ -82,7 +82,7 @@ test('turn-back-round succeeds and clears round_results when scores were already
   const { league } = await leagueRes.json() as { league: { id: number } }
   leagueId = league.id
 
-  const eventRes = await request.post('/api/events/create', {
+  const eventRes = await request.post('/api/tournaments/create', {
     data: {
       event_name: testTag('Event'),
       league_id: leagueId,
@@ -94,10 +94,10 @@ test('turn-back-round succeeds and clears round_results when scores were already
   const { event } = await eventRes.json() as { event: { event_id: number } }
   tournamentId = event.event_id
 
-  const registerRes = await request.post(`/api/events/${tournamentId}/register-player`, { data: { playerIds } })
+  const registerRes = await request.post(`/api/tournaments/${tournamentId}/register-player`, { data: { playerIds } })
   expect(registerRes.ok()).toBe(true)
 
-  const startRes = await request.post(`/api/events/${tournamentId}/start`, { data: { playerOrder: playerIds } })
+  const startRes = await request.post(`/api/tournaments/${tournamentId}/start`, { data: { playerOrder: playerIds } })
   if (!startRes.ok()) {
     throw new Error(`start failed: ${startRes.status()} ${await startRes.text()}`)
   }
@@ -119,7 +119,7 @@ test('turn-back-round succeeds and clears round_results when scores were already
   // round_results.pairing_id) whenever the round being rolled back had
   // already-submitted scores — exactly the realistic case for turning a
   // round back at all.
-  const turnBackRes = await request.post(`/api/events/${tournamentId}/turn-back-round`, { data: { currentRound: 1 } })
+  const turnBackRes = await request.post(`/api/tournaments/${tournamentId}/turn-back-round`, { data: { currentRound: 1 } })
   if (!turnBackRes.ok()) {
     throw new Error(`turn-back-round failed: ${turnBackRes.status()} ${await turnBackRes.text()}`)
   }

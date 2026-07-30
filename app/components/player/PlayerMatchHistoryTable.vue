@@ -58,10 +58,10 @@ const rows = computed(() =>
             </td>
             <td class="py-2 px-3">
               <NuxtLink
-                :to="`/league/${match.league_id}/event/${match.event_id}`"
+                :to="`/league/${match.league_id}/tournament/${match.tournament_id}`"
                 class="text-primary hover:underline"
               >
-                {{ match.event_name }}
+                {{ match.tournament_name }}
               </NuxtLink>
             </td>
             <td class="text-center py-2 px-3">{{ match.pairing_round }}</td>

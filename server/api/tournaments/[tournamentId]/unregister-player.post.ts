@@ -1,4 +1,4 @@
-// server\api\events\[tournamentId]\unregister-player.post.ts
+// server\api\tournaments\[tournamentId]\unregister-player.post.ts
 // fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
 // BFF slice (ADR-013): remove players from an event's waiting list —
 // symmetric with register-player.

@@ -4,8 +4,8 @@
   If this file were league/[leagueId].vue, it would pair with the sibling
   league/[leagueId]/ folder as a NESTED route: named parent routes take
   priority over nested dynamic routes (Nuxt pages docs), so navigating to
-  /league/7/event/12 would render THIS page instead of the event page unless
-  this page embedded <NuxtPage>. The mismatched param name keeps the two
+  /league/7/tournament/12 would render THIS page instead of the tournament page
+  unless this page embedded <NuxtPage>. The mismatched param name keeps the two
   routes flat and independent. See docs/architecture/routes.md § "Nested
   route gotcha".
 -->
@@ -77,9 +77,9 @@ function navigateToEvent(event: Tournament) {
     eventPlaying: event.tournament_playing,
     eventRegistrationOpen: event.tournament_registration_open,
     eventCurrentRound: event.tournament_current_round,
-    targetUrl: `/league/${leagueId}/event/${event.tournament_id}`,
+    targetUrl: `/league/${leagueId}/tournament/${event.tournament_id}`,
   })
-  router.push(`/league/${leagueId}/event/${event.tournament_id}`)
+  router.push(`/league/${leagueId}/tournament/${event.tournament_id}`)
 }
 
 // — Tournament CRUD —

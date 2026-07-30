@@ -2,9 +2,9 @@
 import type { Database } from '#shared/utils/types/database'
 
 export interface PlayerMatchHistory {
-  event_id: number
+  tournament_id: number
   league_id: number
-  event_name: string
+  tournament_name: string
   pairing_id: number
   pairing_round: number
   table_number: number
@@ -30,15 +30,15 @@ interface RawMatchRow {
   pairings: {
     pairing_round: number
     pairing_datetime: string
-    event_id: number
-    events: { event_name: string; league_id: number } | null
+    tournament_id: number
+    tournaments: { tournament_name: string; league_id: number } | null
   } | null
 }
 
 export async function fetchPlayerMatchHistory(
   supabase: ReturnType<typeof useSupabaseClient<Database>>,
   playerId: number,
-  unknownEventName: string,
+  unknownTournamentName: string,
 ): Promise<PlayerMatchHistory[]> {
   const { data, error } = await supabase
     .from('round_results')
@@ -54,9 +54,9 @@ export async function fetchPlayerMatchHistory(
       pairings!inner (
         pairing_round,
         pairing_datetime,
-        event_id,
-        events:event_id (
-          event_name,
+        tournament_id,
+        tournaments:tournament_id (
+          tournament_name,
           league_id
         )
       )
@@ -71,7 +71,7 @@ export async function fetchPlayerMatchHistory(
 
   // Flatten nested data and assign table numbers
   const results: PlayerMatchHistory[] = []
-  let currentEventId = -1
+  let currentTournamentId = -1
   let tableCounter = 0
 
   const rows = (data ?? []) as unknown as RawMatchRow[]
@@ -79,19 +79,19 @@ export async function fetchPlayerMatchHistory(
     const pairings = row.pairings
     if (!pairings) continue
 
-    const tournamentId = pairings.event_id
+    const tournamentId = pairings.tournament_id
 
-    // Reset table counter when event changes
-    if (tournamentId !== currentEventId) {
-      currentEventId = tournamentId
+    // Reset table counter when tournament changes
+    if (tournamentId !== currentTournamentId) {
+      currentTournamentId = tournamentId
       tableCounter = 0
     }
     tableCounter++
 
     results.push({
-      event_id: tournamentId,
-      league_id: pairings.events?.league_id ?? 0,
-      event_name: pairings.events?.event_name ?? unknownEventName,
+      tournament_id: tournamentId,
+      league_id: pairings.tournaments?.league_id ?? 0,
+      tournament_name: pairings.tournaments?.tournament_name ?? unknownTournamentName,
       pairing_id: row.pairing_id,
       pairing_round: pairings.pairing_round,
       table_number: tableCounter,
@@ -119,7 +119,7 @@ export const PLAYER_MATCH_HISTORY_KEY = ['player-match-history']
 export function usePlayerMatchHistory(playerId: MaybeRefOrGetter<number | undefined>) {
   const supabase = useSupabaseClient()
   const { t } = useI18n()
-  const unknownEventName = t('player.matchHistory.unknownEvent')
+  const unknownTournamentName = t('player.matchHistory.unknownEvent')
 
   const { data, isLoading, error } = useQuery({
     key: () => [...PLAYER_MATCH_HISTORY_KEY, toValue(playerId) ?? 'none'],
@@ -127,7 +127,7 @@ export function usePlayerMatchHistory(playerId: MaybeRefOrGetter<number | undefi
     query: (): Promise<PlayerMatchHistory[]> => {
       const id = toValue(playerId)
       if (!id) return Promise.resolve([])
-      return fetchPlayerMatchHistory(supabase, id, unknownEventName)
+      return fetchPlayerMatchHistory(supabase, id, unknownTournamentName)
     },
   })
 

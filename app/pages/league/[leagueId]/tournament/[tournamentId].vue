@@ -1,4 +1,4 @@
-<!-- app\pages\league\[leagueId]\event\[tournamentId].vue -->
+<!-- app\pages\league\[leagueId]\tournament\[tournamentId].vue -->
 <script setup lang="ts">
 import { getPairingPlayerIds } from '#shared/utils/types'
 import type { Seat, TablePlayer, PairingTable } from '#shared/utils/types'

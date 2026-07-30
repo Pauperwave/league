@@ -1,4 +1,4 @@
-// server\api\events\[tournamentId]\turn-back-round.post.ts
+// server\api\tournaments\[tournamentId]\turn-back-round.post.ts
 // BFF slice (ADR-013): atomic round rollback. From round 2+ (or an ended
 // tournament) it reopens the previous round; from round 1 it returns the
 // tournament to the registration phase, wiping standings/pairings and

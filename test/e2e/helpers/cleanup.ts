@@ -45,7 +45,7 @@ async function deletePlayerDirect(playerId: number) {
 
 export const cleanup = {
   league: (request: APIRequestContext, id: number) => safeDelete(request, `/api/leagues/${id}/delete`, `league ${id}`),
-  event: (request: APIRequestContext, id: number) => safeDelete(request, `/api/events/${id}/delete`, `event ${id}`),
+  event: (request: APIRequestContext, id: number) => safeDelete(request, `/api/tournaments/${id}/delete`, `event ${id}`),
   ruleset: (request: APIRequestContext, id: number) => safeDelete(request, `/api/rulesets/${id}/delete`, `ruleset ${id}`),
   deck: (request: APIRequestContext, id: number) => safeDelete(request, `/api/decks/${id}/delete`, `deck ${id}`),
   player: (_request: APIRequestContext, id: number) => deletePlayerDirect(id),

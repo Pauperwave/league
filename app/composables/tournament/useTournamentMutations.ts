@@ -17,7 +17,7 @@ export function useTournamentMutations() {
 
   const createTournament = useMutation({
     mutation: (event: TournamentInsert) =>
-      $fetch<{ event: Tournament }>('/api/events/create', { method: 'POST', body: event }),
+      $fetch<{ event: Tournament }>('/api/tournaments/create', { method: 'POST', body: event }),
     onSettled: invalidate,
   })
 
@@ -27,13 +27,13 @@ export function useTournamentMutations() {
   // response typed instead.
   const updateTournament = useMutation({
     mutation: ({ id, data }: { id: number, data: Partial<Tournament> }) =>
-      $fetch<{ event: Tournament }>(`/api/events/${id}/update` as string, { method: 'POST', body: data }),
+      $fetch<{ event: Tournament }>(`/api/tournaments/${id}/update` as string, { method: 'POST', body: data }),
     onSettled: invalidate,
   })
 
   const deleteTournament = useMutation({
     mutation: (id: number) =>
-      $fetch<{ deleted: boolean }>(`/api/events/${id}/delete` as string, { method: 'POST' }),
+      $fetch<{ deleted: boolean }>(`/api/tournaments/${id}/delete` as string, { method: 'POST' }),
     onSettled: invalidate,
   })
 

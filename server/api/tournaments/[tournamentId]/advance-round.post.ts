@@ -1,4 +1,4 @@
-// server\api\events\[tournamentId]\advance-round.post.ts
+// server\api\tournaments\[tournamentId]\advance-round.post.ts
 // fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
 // BFF slice (ADR-013): atomic round transition. Owns the whole sequence that
 // the client used to orchestrate — score the closing round, accumulate

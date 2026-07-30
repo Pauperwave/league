@@ -58,7 +58,7 @@ export const useTournamentStore = defineStore('tournaments', () => {
     error.value = null
 
     try {
-      const { event: updatedTournament } = await $fetch(`/api/events/${tournamentId}/start`, {
+      const { event: updatedTournament } = await $fetch(`/api/tournaments/${tournamentId}/start`, {
         method: 'POST',
         body: { playerOrder },
       })
@@ -95,7 +95,7 @@ export const useTournamentStore = defineStore('tournaments', () => {
     error.value = null
 
     try {
-      const { event: updatedTournament, hasEnded } = await $fetch(`/api/events/${tournamentId}/advance-round`, {
+      const { event: updatedTournament, hasEnded } = await $fetch(`/api/tournaments/${tournamentId}/advance-round`, {
         method: 'POST',
         body: { currentRound, playerOrder },
       })
@@ -129,7 +129,7 @@ export const useTournamentStore = defineStore('tournaments', () => {
     error.value = null
 
     try {
-      const { event: updatedTournament } = await $fetch(`/api/events/${tournamentId}/turn-back-round`, {
+      const { event: updatedTournament } = await $fetch(`/api/tournaments/${tournamentId}/turn-back-round`, {
         method: 'POST',
         body: { currentRound },
       })

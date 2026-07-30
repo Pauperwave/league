@@ -1,4 +1,4 @@
-// server\api\events\[tournamentId]\register-player.post.ts
+// server\api\tournaments\[tournamentId]\register-player.post.ts
 // fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
 // BFF slice 1 (ADR-013): intent-based endpoint for registering players into an
 // event's waiting list. Enforces the site-password gate server-side and owns

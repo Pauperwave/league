@@ -134,7 +134,7 @@ test('full event lifecycle: register, start, submit a round, advance, turn back,
   // 2 rounds — enough to exercise advance-round, turn-back-round from round
   // 2 (the branch turn-back-round.e2e.spec.ts doesn't cover), and hitting
   // the final-round "event ends" transition.
-  const eventRes = await request.post('/api/events/create', {
+  const eventRes = await request.post('/api/tournaments/create', {
     data: {
       event_name: testTag('Event'),
       league_id: leagueId,
@@ -146,11 +146,11 @@ test('full event lifecycle: register, start, submit a round, advance, turn back,
   const { event } = await eventRes.json() as { event: { event_id: number } }
   tournamentId = event.event_id
 
-  const registerRes = await request.post(`/api/events/${tournamentId}/register-player`, { data: { playerIds } })
+  const registerRes = await request.post(`/api/tournaments/${tournamentId}/register-player`, { data: { playerIds } })
   expect(registerRes.ok()).toBe(true)
 
   // ── Start: round 1 pairings generated ─────────────────────────────────────
-  const startRes = await request.post(`/api/events/${tournamentId}/start`, { data: { playerOrder: playerIds } })
+  const startRes = await request.post(`/api/tournaments/${tournamentId}/start`, { data: { playerOrder: playerIds } })
   if (!startRes.ok()) throw new Error(`start failed: ${startRes.status()} ${await startRes.text()}`)
 
   let eventRow = await fetchEvent(tournamentId)
@@ -190,7 +190,7 @@ test('full event lifecycle: register, start, submit a round, advance, turn back,
   expect(await countRoundResults(round1PairingIds)).toBe(playerIds.length)
 
   // ── Advance to round 2 ─────────────────────────────────────────────────────
-  const advanceRes = await request.post(`/api/events/${tournamentId}/advance-round`, {
+  const advanceRes = await request.post(`/api/tournaments/${tournamentId}/advance-round`, {
     data: { currentRound: 1, playerOrder: playerIds },
   })
   if (!advanceRes.ok()) throw new Error(`advance-round failed: ${advanceRes.status()} ${await advanceRes.text()}`)
@@ -216,7 +216,7 @@ test('full event lifecycle: register, start, submit a round, advance, turn back,
   //    turn-back-round.e2e.spec.ts, which only exercises round-1-to-
   //    registration) — round 2's pairings/results must be gone afterward,
   //    round 1's must be untouched. ────────────────────────────────────────
-  const turnBackRes = await request.post(`/api/events/${tournamentId}/turn-back-round`, { data: { currentRound: 2 } })
+  const turnBackRes = await request.post(`/api/tournaments/${tournamentId}/turn-back-round`, { data: { currentRound: 2 } })
   if (!turnBackRes.ok()) throw new Error(`turn-back-round failed: ${turnBackRes.status()} ${await turnBackRes.text()}`)
 
   eventRow = await fetchEvent(tournamentId)
@@ -229,12 +229,12 @@ test('full event lifecycle: register, start, submit a round, advance, turn back,
   // ── Re-advance to round 2, then advance past the final round: the event
   //    must end (event_playing=false, event_current_round beyond the total
   //    round count). ──────────────────────────────────────────────────────
-  const readvanceRes = await request.post(`/api/events/${tournamentId}/advance-round`, {
+  const readvanceRes = await request.post(`/api/tournaments/${tournamentId}/advance-round`, {
     data: { currentRound: 1, playerOrder: playerIds },
   })
   if (!readvanceRes.ok()) throw new Error(`re-advance-round failed: ${readvanceRes.status()} ${await readvanceRes.text()}`)
 
-  const finalAdvanceRes = await request.post(`/api/events/${tournamentId}/advance-round`, {
+  const finalAdvanceRes = await request.post(`/api/tournaments/${tournamentId}/advance-round`, {
     data: { currentRound: 2 },
   })
   if (!finalAdvanceRes.ok()) throw new Error(`final advance-round failed: ${finalAdvanceRes.status()} ${await finalAdvanceRes.text()}`)

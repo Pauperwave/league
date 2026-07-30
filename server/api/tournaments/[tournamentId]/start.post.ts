@@ -1,4 +1,4 @@
-// server\api\events\[tournamentId]\start.post.ts
+// server\api\tournaments\[tournamentId]\start.post.ts
 // fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
 // BFF slice (ADR-013): atomic event start. Owns the whole transition —
 // validate the waitroom, create zeroed standings, flip the event to playing,

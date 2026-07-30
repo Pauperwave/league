@@ -193,7 +193,7 @@ export function useTournamentPage() {
 
   async function navigateToScore(pairingId: number, playerId: number, tableId: number) {
     await navigateTo({
-      path: `/league/${leagueId}/event/${tournamentId}/round/${currentRound.value}/score`,
+      path: `/league/${leagueId}/tournament/${tournamentId}/round/${currentRound.value}/score`,
       query: {
         pairingId: String(pairingId),
         playerId: String(playerId),

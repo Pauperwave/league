@@ -43,7 +43,7 @@ export function useWaitroomMutations(tournamentId: number) {
   const registerPlayers = useMutation({
     mutation: (playerIds: number[]) =>
       $fetch<{ registered: { player_id: number, inserted_at: string | null }[], alreadyRegistered: number[] }>(
-        `/api/events/${tournamentId}/register-player` as string,
+        `/api/tournaments/${tournamentId}/register-player` as string,
         { method: 'POST', body: { playerIds } },
       ),
     onSettled: invalidate,
@@ -52,7 +52,7 @@ export function useWaitroomMutations(tournamentId: number) {
   const unregisterPlayers = useMutation({
     mutation: (playerIds: number[]) =>
       $fetch<{ removed: number[] }>(
-        `/api/events/${tournamentId}/unregister-player` as string,
+        `/api/tournaments/${tournamentId}/unregister-player` as string,
         { method: 'POST', body: { playerIds } },
       ),
     onSettled: invalidate,

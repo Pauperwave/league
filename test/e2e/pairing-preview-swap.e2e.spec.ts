@@ -22,7 +22,7 @@ test.afterEach(async ({ request }) => {
     // this test registers players via the API but never unregisters them
     // (there's no round to withdraw from, the modal is only cancelled), so
     // cleanup must clear the waitroom first.
-    await request.post(`/api/events/${tournamentId}/unregister-player`, { data: { playerIds } })
+    await request.post(`/api/tournaments/${tournamentId}/unregister-player`, { data: { playerIds } })
     await cleanup.event(request, tournamentId)
     tournamentId = undefined
   }
@@ -58,7 +58,7 @@ test('dragging a player from one full table to another swaps them instead of rej
   const { league } = await leagueRes.json() as { league: { id: number } }
   leagueId = league.id
 
-  const eventRes = await request.post('/api/events/create', {
+  const eventRes = await request.post('/api/tournaments/create', {
     data: {
       event_name: testTag('Event'),
       league_id: leagueId,
@@ -70,10 +70,10 @@ test('dragging a player from one full table to another swaps them instead of rej
   const { event } = await eventRes.json() as { event: { event_id: number } }
   tournamentId = event.event_id
 
-  const registerRes = await request.post(`/api/events/${tournamentId}/register-player`, { data: { playerIds } })
+  const registerRes = await request.post(`/api/tournaments/${tournamentId}/register-player`, { data: { playerIds } })
   expect(registerRes.ok()).toBe(true)
 
-  await page.goto(`/league/${leagueId}/event/${tournamentId}`)
+  await page.goto(`/league/${leagueId}/tournament/${tournamentId}`)
   await page.waitForLoadState('networkidle')
 
   await page.getByRole('button', { name: 'Avvia Evento' }).click()
