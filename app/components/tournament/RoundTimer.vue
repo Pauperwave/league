@@ -252,7 +252,7 @@ onMounted(() => {
 <template>
   <div
     ref="timerRef"
-    class="flex items-center"
+    class="flex items-center flex-wrap"
     :class="isFullscreen
       ? ['relative flex-col justify-center h-screen w-screen gap-12 @container-size', isPaused ? 'bg-warning/10' : 'bg-default']
       : isPaused
