@@ -89,7 +89,8 @@
       "roundStart": "Timer round avviato",
       "roundEnd": "Timer round terminato",
       "turnsStart": "Timer turni avviato",
-      "turnsEnd": "Timer turni terminato"
+      "turnsEnd": "Timer turni terminato",
+      "skipPre": "Pre-round saltato"
     },
     "tournament": {
       "edit": "Torneo modificato",
@@ -592,6 +593,7 @@
       "startTooltip": "Avvia timer",
       "pauseTooltip": "Pausa timer",
       "resetTooltip": "Resetta timer",
+      "skipPreTooltip": "Salta al round",
       "add5Tooltip": "Aggiungi 5 minuti",
       "add10Tooltip": "Aggiungi 10 minuti",
       "subtract5Tooltip": "Togli 5 minuti",

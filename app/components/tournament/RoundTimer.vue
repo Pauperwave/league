@@ -209,6 +209,28 @@ function advancePastExpiry() {
   }
 }
 
+const skipPreLogging = useButtonLogging(t('logging.timer.skipPre'), { round: () => props.round })
+
+/**
+ * Lets the organizer skip straight from "pre" (SISTEMATEVI) to "round"
+ * (GIOCO) once everyone's already seated, instead of waiting out the full
+ * 3 minutes. Unlike advancePastExpiry's natural-expiry cascade, there's no
+ * overflow to carry over — the phase just ends early, elapsed resets to 0.
+ * Preserves whatever running/paused state "pre" was already in, rather than
+ * forcing the round to auto-start (matching how a manual skip shouldn't be
+ * more eager than the timer already was).
+ */
+function skipPreTimer() {
+  if (phase.value !== 'pre') return
+  skipPreLogging.logClick()
+  logPhase('preEnd')
+  play('notification')
+  phase.value = 'round'
+  logPhase('roundStart')
+  elapsed.value = 0
+  startTime.value = isRunning.value ? Date.now() : null
+}
+
 // ---------------------------------------------------------------------------
 // Interval
 // ---------------------------------------------------------------------------
@@ -438,6 +460,16 @@ onMounted(() => {
             @click="stop"
           />
         </template>
+
+        <TimerControlButton
+          v-if="phase === 'pre'"
+          :icon="ICONS.forward"
+          color="success"
+          variant="subtle"
+          :fullscreen="isFullscreen"
+          :tooltip="t('tournament.roundTimer.skipPreTooltip')"
+          @click="skipPreTimer"
+        />
 
         <TimerControlButton
           :icon="ICONS.reset"
