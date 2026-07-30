@@ -403,21 +403,26 @@ onMounted(() => {
       />
     </UTooltip>
 
-    <UIcon
-      :name="ICONS.timer"
-      :class="[
-        isExpired ? 'text-error' : isRunning ? 'text-primary' : 'text-muted',
-        isFullscreen ? 'size-[20cqmin]' : 'size-5',
-      ]"
-    />
+    <!-- Icon + phase label paired in their own row so the label stays to
+         the icon's right even in fullscreen mode, where the outer
+         container is flex-col (icon/label/digits/controls would otherwise
+         stack vertically in DOM order instead). -->
+    <div class="flex items-center gap-2">
+      <UIcon
+        :name="ICONS.timer"
+        :class="[
+          isExpired ? 'text-error' : isRunning ? 'text-primary' : 'text-muted',
+          isFullscreen ? 'size-[20cqmin]' : 'size-5',
+        ]"
+      />
 
-    <!-- Phase label — always to the right of the icon, one per phase. -->
-    <span
-      class="font-bold uppercase tracking-wide"
-      :class="[phaseLabelColorClass, isFullscreen ? 'text-[10cqmin]' : 'text-sm']"
-    >
-      {{ phaseLabel }}
-    </span>
+      <span
+        class="font-bold uppercase tracking-wide"
+        :class="[phaseLabelColorClass, isFullscreen ? 'text-[10cqmin]' : 'text-sm']"
+      >
+        {{ phaseLabel }}
+      </span>
+    </div>
 
     <!-- Countdown display — nothing left to count once "ended". -->
     <span
