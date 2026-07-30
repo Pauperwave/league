@@ -83,7 +83,13 @@
       "pause": "Timer messo in pausa",
       "reset": "Timer resettato",
       "addMinutes": "Minuti aggiunti al timer",
-      "subtractMinutes": "Sottratti minuti al timer"
+      "subtractMinutes": "Sottratti minuti al timer",
+      "preStart": "Timer pre-round avviato",
+      "preEnd": "Timer pre-round terminato",
+      "roundStart": "Timer round avviato",
+      "roundEnd": "Timer round terminato",
+      "turnsStart": "Timer turni avviato",
+      "turnsEnd": "Timer turni terminato"
     },
     "tournament": {
       "edit": "Torneo modificato",
@@ -603,6 +609,10 @@
         "description": "Stai per togliere tempo al round",
         "question": "Questa sottrazione farà scadere subito il timer, continuare",
         "confirmLabel": "Sottrai"
+      },
+      "phases": {
+        "turns": "TURNI",
+        "ended": "FINE PARTITA"
       }
     },
     "waitingList": {
