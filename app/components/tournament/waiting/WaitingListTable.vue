@@ -66,8 +66,13 @@ const playerNameToRemove = computed(() => {
   return player ? fullName(player) : ''
 })
 
+const confirmRemoveLogging = useButtonLogging('Conferma rimozione da lista d\'attesa', {
+  playerName: () => playerNameToRemove.value,
+})
+
 function handleConfirmRemove() {
   if (playerIdToRemove.value === null) return
+  confirmRemoveLogging.logClick()
   emit('remove', playerIdToRemove.value)
   playerIdToRemove.value = null
 }
@@ -141,7 +146,15 @@ function handleBatchRemoveClick() {
   showBatchRemoveConfirm.value = true
 }
 
+const confirmBatchRemoveLogging = useButtonLogging('Conferma rimozione massiva da lista d\'attesa', {
+  playerNames: () => selectedPlayerIds.value.map((id) => {
+    const player = props.data.find(p => p.playerId === id)
+    return player ? fullName(player) : `#${id}`
+  }),
+})
+
 function handleConfirmBatchRemove() {
+  confirmBatchRemoveLogging.logClick()
   showBatchRemoveConfirm.value = false
   executeBatch(null, ids => emit('batchRemove', ids))
 }
