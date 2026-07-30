@@ -543,6 +543,7 @@ async function handleUndrawTable(pairingId: number) {
                 @reset-table="handleResetTable"
                 @draw="(pairingId, playerIds) => submitHandlers.handleDrawSubmit(pairingId, playerIds)"
                 @undraw="handleUndrawTable"
+                @refresh-pairings="refreshDisplayedPairings"
               />
             </div>
             <div class="space-y-4">

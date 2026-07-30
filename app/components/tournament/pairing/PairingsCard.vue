@@ -22,6 +22,8 @@ const rankingsStore = useRankingsStore()
 const commandersStore = useCommandersStore()
 const killsStore = useKillsStore()
 const votesStore = useVotesStore()
+const tournamentStore = useTournamentStore()
+const toast = useToast()
 
 // Prefetch: warms useCommanderUsageQuery's cache for every seated player in
 // the round as soon as the pairings render, so opening any table's commander
@@ -61,6 +63,9 @@ const emit = defineEmits<{
   draw: [pairingId: number, playerIds: number[]]
   /** Undoes a previously declared draw — clears the pairing's ranking and kills. */
   undraw: [pairingId: number]
+  /** Fired after a test-fill persists kills server-side, so the page can
+   *  refetch and pick up the confirmed `round_results.number_of_kills`. */
+  refreshPairings: []
 }>()
 
 // ─── State ────────────────────────────────────────────────────────────────────
@@ -277,13 +282,14 @@ function handleDrawTable(pairingId: number) {
  * Executes the confirmed action (reset, test fill, fill-all, or draw) and
  * clears the dialog state. Called by all four ConfirmModal @confirm events.
  */
-function handleConfirm() {
+async function handleConfirm() {
   if (!confirmDialog.value) return
 
   if (confirmDialog.value.type === 'reset') {
     emit('resetTable', confirmDialog.value.pairingId)
   } else if (confirmDialog.value.type === 'fill') {
-    fillTable(confirmDialog.value.pairingId)
+    await fillTable(confirmDialog.value.pairingId)
+    emit('refreshPairings')
   } else if (confirmDialog.value.type === 'draw') {
     const pairingId = confirmDialog.value.pairingId
     const pairing = props.pairings.find(p => p.pairing_id === pairingId)
@@ -291,9 +297,8 @@ function handleConfirm() {
   } else if (confirmDialog.value.type === 'undraw') {
     emit('undraw', confirmDialog.value.pairingId)
   } else {
-    for (const pairing of props.pairings) {
-      fillTable(pairing.pairing_id)
-    }
+    await Promise.all(props.pairings.map(pairing => fillTable(pairing.pairing_id)))
+    emit('refreshPairings')
   }
 
   confirmDialog.value = null
@@ -302,11 +307,15 @@ function handleConfirm() {
 /**
  * Fills a pairing table with dummy test data:
  * - Sets sequential rankings for all players
- * - Adds a kill from player 1 → player 2 and confirms the pairing
+ * - Adds a kill from player 1 → player 2 and persists it server-side so
+ *   `round_results.number_of_kills` gets set — `isTableComplete`'s `hasKills`
+ *   reads that column rather than the local kills store (see
+ *   `useTableCompletion.ts`), so without this the table never showed as
+ *   "uccisioni registrate" after a test-fill
  * - Assigns the catalog's top commander (see firstCommanderName) to each player
  * - Sets circular votes (each player votes for the next)
  */
-function fillTable(pairingId: number) {
+async function fillTable(pairingId: number) {
   const pairing = props.pairings.find(p => p.pairing_id === pairingId)
   if (!pairing) return
 
@@ -319,6 +328,13 @@ function fillTable(pairingId: number) {
   )
 
   killsStore.addKill(playerIds[0]!, playerIds[1]!)
+
+  const result = await tournamentStore.savePairingKills(pairingId, [
+    { killerId: playerIds[0]!, victimId: playerIds[1]! }
+  ])
+  if (!result.success) {
+    toast.add({ title: t('deck.toast.errorTitle'), description: result.error, color: 'error' })
+  }
 
   for (const id of playerIds) {
     commandersStore.setCommanders(id, firstCommanderName.value, null)
