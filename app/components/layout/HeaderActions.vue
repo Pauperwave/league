@@ -4,6 +4,7 @@
 
   Wrapper component that groups the header actions:
   - Developer view toggle (DeveloperViewToggle)
+  - Developer overlay toggle (DeveloperOverlayToggle)
   - Action log trigger (ActionLogTrigger)
   - Theme switch (ColorModeSwitch)
   - Logout (LogoutButton)
@@ -15,6 +16,7 @@
 <template>
   <div class="flex items-center gap-2">
     <DeveloperViewToggle />
+    <DeveloperOverlayToggle />
     <ActionLogTrigger />
     <ColorModeSwitch />
     <LogoutButton />

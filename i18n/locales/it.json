@@ -35,7 +35,9 @@
     "developerViewPasswordDescription": "Attiva modalità sviluppatore",
     "developerViewPasswordPlaceholder": "Password",
     "developerViewPasswordConfirm": "Sblocca",
-    "developerViewPasswordError": "Password errata"
+    "developerViewPasswordError": "Password errata",
+    "enableDeveloperOverlay": "Attiva overlay bordi sviluppatore",
+    "disableDeveloperOverlay": "Disattiva overlay bordi sviluppatore"
   },
   "league": {
     "breadcrumb": "Leghe",

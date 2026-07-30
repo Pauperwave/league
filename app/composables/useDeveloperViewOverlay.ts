@@ -39,12 +39,16 @@ function clearMissingAccessibleNames() {
  * class is set imperatively via a MutationObserver instead of a plain
  * attribute selector — the DOM is re-scanned (rAF-debounced) whenever it
  * changes, since most of this app's content is client-rendered after mount.
+ * Active only when both `isDeveloperView` and `isOverlayEnabled` are on —
+ * the latter is a separate switch (see DeveloperOverlayToggle.vue) so the
+ * outlines can be turned off without leaving developer mode entirely.
  *
  * Call once from app.vue — not from every component that reads
  * useDeveloperView(), or multiple observers would stack up.
  */
 export function useDeveloperViewOverlay() {
-  const { isDeveloperView } = useDeveloperView()
+  const { isDeveloperView, isOverlayEnabled } = useDeveloperView()
+  const overlayActive = computed(() => isDeveloperView.value && isOverlayEnabled.value)
   let observer: MutationObserver | null = null
   let scheduled = false
 
@@ -58,7 +62,7 @@ export function useDeveloperViewOverlay() {
   }
 
   onMounted(() => {
-    watch(isDeveloperView, (enabled) => {
+    watch(overlayActive, (enabled) => {
       document.documentElement.classList.toggle('developer-view-active', enabled)
       if (enabled) {
         markMissingAccessibleNames()
