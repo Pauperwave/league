@@ -7,9 +7,9 @@ const props = defineProps<{
   player: Player | null
   existingPlayers: Player[]
   /** Changes what "similar player found" resolves to: adding to the current
-   * event's waiting list ('event') vs. just locating them in the /players
+   * tournament's waiting list ('tournament') vs. just locating them in the /players
    * table via search ('players') — the two contexts this modal is used in. */
-  context: 'event' | 'players'
+  context: 'tournament' | 'players'
 }>()
 
 const emit = defineEmits<{

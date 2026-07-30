@@ -194,14 +194,14 @@ const columns = computed<TableColumn<WaitingPlayer>[]>(() => [
             ? 'indeterminate'
             : false,
         'onUpdate:modelValue': (value: unknown) => table.toggleAllPageRowsSelected(!!(value as boolean)),
-        'aria-label': t('event.waitingListTable.selectAllAriaLabel'),
+        'aria-label': t('tournament.waitingListTable.selectAllAriaLabel'),
       }),
     cell: ({ row, table }) =>
       h(UCheckbox, {
         modelValue: row.getIsSelected(),
         'onUpdate:modelValue': (value: unknown) => toggleRowSelection(table, row, !!(value as boolean)),
         onClick: handleRowCheckboxClick,
-        'aria-label': t('event.waitingListTable.selectRowAriaLabel', { name: fullName(row.original) }),
+        'aria-label': t('tournament.waitingListTable.selectRowAriaLabel', { name: fullName(row.original) }),
       }),
   },
   {
@@ -211,7 +211,7 @@ const columns = computed<TableColumn<WaitingPlayer>[]>(() => [
   },
   {
     accessorKey: 'name',
-    header: t('event.waitingListTable.playerColumn'),
+    header: t('tournament.waitingListTable.playerColumn'),
     meta: { class: { td: 'font-medium' } },
     cell: ({ row }) => {
       const { name, surname } = row.original
@@ -231,13 +231,13 @@ const columns = computed<TableColumn<WaitingPlayer>[]>(() => [
   },
   {
     accessorKey: 'time',
-    header: t('event.waitingListTable.timeColumn'),
+    header: t('tournament.waitingListTable.timeColumn'),
     meta: { class: { th: 'text-center', td: 'text-center' } },
   },
   createToggleColumn('paid', 'success', 'event.waitingListTable.paidColumn', 'event.waitingListTable.paidAriaLabel'),
   {
     id: 'actions',
-    header: t('event.waitingListTable.actionsColumn'),
+    header: t('tournament.waitingListTable.actionsColumn'),
     enableHiding: false,
     meta: { class: { th: 'text-center', td: 'text-center' } },
     cell: ({ row }) =>
@@ -279,24 +279,24 @@ const meta = computed(() => ({
   <div class="flex flex-col gap-2">
     <div class="flex flex-wrap items-center justify-between gap-2">
       <div class="flex flex-wrap items-center gap-2">
-        <UInput v-model="searchQuery" :icon="ICONS.search" :placeholder="t('event.waitingListTable.searchPlaceholder')" class="max-w-sm" />
+        <UInput v-model="searchQuery" :icon="ICONS.search" :placeholder="t('tournament.waitingListTable.searchPlaceholder')" class="max-w-sm" />
         <slot name="search-actions" />
       </div>
       <div v-if="hasSelection" class="flex flex-wrap items-center gap-2">
         <span class="text-sm font-medium text-highlighted">
-          {{ t('event.waitingListTable.selectedCount', { count: selectedPlayerIds.length }) }}
+          {{ t('tournament.waitingListTable.selectedCount', { count: selectedPlayerIds.length }) }}
         </span>
         <UButton
           size="xs" :color="allSelectedPaid ? 'neutral' : 'success'" variant="subtle" :icon="ICONS.paid"
           @click="handleToggleMarkPaid"
         >
-          {{ allSelectedPaid ? t('event.waitingListTable.unmarkPaid') : t('event.waitingListTable.markPaid') }}
+          {{ allSelectedPaid ? t('tournament.waitingListTable.unmarkPaid') : t('tournament.waitingListTable.markPaid') }}
         </UButton>
         <UButton
           size="xs" color="error" variant="subtle" :icon="ICONS.delete"
           @click="handleBatchRemoveClick"
         >
-          {{ t('event.waitingListTable.removeSelected') }}
+          {{ t('tournament.waitingListTable.removeSelected') }}
         </UButton>
       </div>
     </div>
@@ -331,11 +331,11 @@ const meta = computed(() => ({
               :name="ICONS.noResults"
               class="text-4xl mb-1"
             />
-            <p>{{ t('event.waitingListTable.noResultsFor', { query: searchQuery }) }}</p>
+            <p>{{ t('tournament.waitingListTable.noResultsFor', { query: searchQuery }) }}</p>
           </div>
           <UEmpty
             v-else
-            :title="t('event.waitingListTable.emptyTitle')"
+            :title="t('tournament.waitingListTable.emptyTitle')"
             :icon="ICONS.players"
           />
         </template>
@@ -344,18 +344,18 @@ const meta = computed(() => ({
 
     <ConfirmModal
       v-model:open="showRemoveConfirm"
-      :title="t('event.waitingListTable.removeConfirm.title')"
-      :description="t('event.waitingListTable.removeConfirm.description')"
-      :question="t('event.waitingListTable.removeConfirm.question')"
+      :title="t('tournament.waitingListTable.removeConfirm.title')"
+      :description="t('tournament.waitingListTable.removeConfirm.description')"
+      :question="t('tournament.waitingListTable.removeConfirm.question')"
       :subject="playerNameToRemove"
       @confirm="handleConfirmRemove"
     />
 
     <ConfirmModal
       v-model:open="showBatchRemoveConfirm"
-      :title="t('event.waitingListTable.batchRemoveConfirm.title')"
-      :description="t('event.waitingListTable.batchRemoveConfirm.description')"
-      :question="t('event.waitingListTable.batchRemoveConfirm.question', { count: selectedPlayerIds.length })"
+      :title="t('tournament.waitingListTable.batchRemoveConfirm.title')"
+      :description="t('tournament.waitingListTable.batchRemoveConfirm.description')"
+      :question="t('tournament.waitingListTable.batchRemoveConfirm.question', { count: selectedPlayerIds.length })"
       @confirm="handleConfirmBatchRemove"
     />
   </div>

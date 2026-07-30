@@ -28,14 +28,14 @@ const emit = defineEmits<{
       <UTooltip
         :key="`cmd-${playerId}-${hasCommander ? 1 : 0}`"
         :content="{ side: 'right' }"
-        :text="hasCommander ? t('event.pairing.commanderSetTooltip') : t('event.pairing.commanderNotSetTooltip')"
+        :text="hasCommander ? t('tournament.pairing.commanderSetTooltip') : t('tournament.pairing.commanderNotSetTooltip')"
       >
         <UButton
           size="sm"
           variant="outline"
           :color="hasCommander ? 'success' : 'neutral'"
           :icon="hasCommander ? ICONS.commanderSet : ICONS.commanderNotSet"
-          :aria-label="t('event.pairing.commanderAriaLabel')"
+          :aria-label="t('tournament.pairing.commanderAriaLabel')"
           @click="emit('openCommanderModal', pairingId, playerId)"
         />
       </UTooltip>
@@ -44,14 +44,14 @@ const emit = defineEmits<{
       <UTooltip
         :key="`vote-${playerId}-${hasVotes ? 1 : 0}`"
         :content="{ side: 'right' }"
-        :text="hasVotes ? t('event.pairing.voteSetTooltip') : t('event.pairing.voteNotSetTooltip')"
+        :text="hasVotes ? t('tournament.pairing.voteSetTooltip') : t('tournament.pairing.voteNotSetTooltip')"
       >
         <UButton
           size="sm"
           variant="outline"
           :color="hasVotes ? 'success' : 'neutral'"
           :icon="hasVotes ? ICONS.confirm : ICONS.vote"
-          :aria-label="t('event.pairing.voteAriaLabel')"
+          :aria-label="t('tournament.pairing.voteAriaLabel')"
           @click="emit('openVotesModal', pairingId, playerId)"
         />
       </UTooltip>

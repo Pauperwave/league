@@ -95,7 +95,7 @@ const tableData = computed(() => {
     <div class="flex flex-wrap items-center gap-3">
       <h2 class="font-semibold text-xl flex items-center gap-2">
         <UIcon :name="ICONS.players" size="lg" class="text-muted" />
-        {{ t('event.waitingList.heading') }}
+        {{ t('tournament.waitingList.heading') }}
       </h2>
       <WaitingListStats
         :player-count="waitingPlayers.length"

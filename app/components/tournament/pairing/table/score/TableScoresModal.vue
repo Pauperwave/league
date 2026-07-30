@@ -62,11 +62,11 @@ const columns: TableColumn<TableScoreRow>[] = [
       avatarSize: 'xs',
     }),
   },
-  iconColumn('placementPoints', 'placementUnspecified', ICONS.standings, t('event.tableScoresModal.placementColumn')),
+  iconColumn('placementPoints', 'placementUnspecified', ICONS.standings, t('tournament.tableScoresModal.placementColumn')),
   iconColumn('killPoints', 'killUnspecified', ICONS.kills, t('player.stats.kills')),
-  iconColumn('deckPoints', 'deckUnspecified', ICONS.generate, t('event.tableScoresModal.deckColumn')),
-  iconColumn('playPoints', 'playUnspecified', ICONS.gameplay, t('event.tableScoresModal.playColumn')),
-  iconColumn('total', null, ICONS.total, t('event.scoreBreakdown.playerTotal'), 'text-center px-3 py-1.5 font-bold'),
+  iconColumn('deckPoints', 'deckUnspecified', ICONS.generate, t('tournament.tableScoresModal.deckColumn')),
+  iconColumn('playPoints', 'playUnspecified', ICONS.gameplay, t('tournament.tableScoresModal.playColumn')),
+  iconColumn('total', null, ICONS.total, t('tournament.scoreBreakdown.playerTotal'), 'text-center px-3 py-1.5 font-bold'),
 ]
 </script>
 

@@ -22,7 +22,7 @@ function table(id: string, tableNumber: number, playerIds: (number | null)[]): P
 }
 
 const previewMessages = {
-  event: {
+  tournament: {
     tablePreview: {
       invalidTableSizes: 'invalid-sizes',
       duplicatePlayers: 'duplicate-players',

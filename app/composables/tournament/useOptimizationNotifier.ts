@@ -49,7 +49,7 @@ function notifyOptimizationResult(toast: ToastApi, t: ReturnType<typeof useI18n>
   if (!params.changed || params.afterTotal <= params.beforeTotal) {
     toast.add({
       title: params.noChangeTitle,
-      description: t('event.optimizer.noImprovements'),
+      description: t('tournament.optimizer.noImprovements'),
       color: 'neutral',
     })
     return
@@ -60,9 +60,9 @@ function notifyOptimizationResult(toast: ToastApi, t: ReturnType<typeof useI18n>
 
   toast.add({
     title: params.successTitle,
-    description: t('event.optimizer.improvedDescription', {
+    description: t('tournament.optimizer.improvedDescription', {
       delta: delta.toFixed(2),
-      tables: changedTables.join(', ') || t('event.optimizer.noneFallback'),
+      tables: changedTables.join(', ') || t('tournament.optimizer.noneFallback'),
     }),
     color: 'success',
   })
@@ -86,8 +86,8 @@ export function useOptimizationNotifier(params: Params) {
       afterTotal,
       beforeTableTotals,
       afterTableTotals,
-      successTitle: t('event.optimizer.optimizationCompleteTitle'),
-      noChangeTitle: t('event.optimizer.alreadyOptimizedTitle'),
+      successTitle: t('tournament.optimizer.optimizationCompleteTitle'),
+      noChangeTitle: t('tournament.optimizer.alreadyOptimizedTitle'),
     })
   }
 
@@ -101,8 +101,8 @@ export function useOptimizationNotifier(params: Params) {
     if (!params.isValid.value) {
       params.restoreTables(snapshot)
       params.toast.add({
-        title: t('event.optimizer.conflictResolutionFailedTitle'),
-        description: params.previewError.value || t('event.optimizer.noValidSolutionFallback'),
+        title: t('tournament.optimizer.conflictResolutionFailedTitle'),
+        description: params.previewError.value || t('tournament.optimizer.noValidSolutionFallback'),
         color: 'error',
       })
       return
@@ -114,8 +114,8 @@ export function useOptimizationNotifier(params: Params) {
     if (afterTotal < beforeTotal) {
       params.restoreTables(snapshot)
       params.toast.add({
-        title: t('event.optimizer.alreadyOptimizedTitle'),
-        description: t('event.optimizer.noImprovements'),
+        title: t('tournament.optimizer.alreadyOptimizedTitle'),
+        description: t('tournament.optimizer.noImprovements'),
         color: 'neutral',
       })
       return
@@ -127,8 +127,8 @@ export function useOptimizationNotifier(params: Params) {
       afterTotal,
       beforeTableTotals,
       afterTableTotals,
-      successTitle: t('event.optimizer.conflictResolutionCompleteTitle'),
-      noChangeTitle: t('event.optimizer.alreadyOptimizedTitle'),
+      successTitle: t('tournament.optimizer.conflictResolutionCompleteTitle'),
+      noChangeTitle: t('tournament.optimizer.alreadyOptimizedTitle'),
     })
   }
 

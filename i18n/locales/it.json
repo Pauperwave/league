@@ -35,15 +35,15 @@
     "newLeague": "Nuova Lega",
     "editLeagueName": "Modifica nome lega",
     "backAriaLabel": "Torna indietro",
-    "newEvent": "Nuovo Torneo",
-    "scoresByEvent": "Punteggi per Torneo",
+    "newTournament": "Nuovo Torneo",
+    "scoresByTournament": "Punteggi per Torneo",
     "standingsTitle": "Classifica {name}",
     "emptyTitle": "Nessuna lega creata",
     "emptyDescription": "Clicca 'Nuova Lega' per iniziare",
     "confirmDeleteDescription": "Stai per eliminare una lega",
     "confirmDeleteQuestion": "Sei sicuro di voler eliminare la lega",
-    "confirmDeleteEventDescription": "Stai per eliminare un torneo",
-    "confirmDeleteEventQuestion": "Sei sicuro di voler eliminare questo torneo?",
+    "confirmDeleteTournamentDescription": "Stai per eliminare un torneo",
+    "confirmDeleteTournamentQuestion": "Sei sicuro di voler eliminare questo torneo?",
     "status": {
       "scheduled": "Programmata",
       "active": "Attiva",
@@ -70,7 +70,7 @@
       "endsLabel": "Data Fine",
       "rulesetLabel": "Regolamento",
       "rulesetFallback": "Ruleset {id}",
-      "validEventsLabel": "Tornei validi richiesti",
+      "validTournamentsLabel": "Tornei validi richiesti",
       "statusLabel": "Stato lega"
     },
     "ranking": {
@@ -156,7 +156,7 @@
     "notFound": "Giocatore non trovato",
     "deckCount": "0 mazzi | 1 mazzo | {count} mazzi",
     "stats": {
-      "events": "Tornei",
+      "tournaments": "Tornei",
       "matches": "Match",
       "wins": "Vittorie",
       "kills": "Uccisioni",
@@ -166,14 +166,14 @@
     },
     "matchHistory": {
       "heading": "Storico Partite",
-      "event": "Torneo",
+      "tournament": "Torneo",
       "round": "Round",
       "table": "Tavolo",
       "commander": "Commander",
       "position": "Posizione",
       "kills": "Uccisioni",
       "date": "Data",
-      "unknownEvent": "Torneo sconosciuto"
+      "unknownTournament": "Torneo sconosciuto"
     },
     "decksSection": {
       "heading": "Commander Decks",
@@ -194,7 +194,7 @@
       "name": "Nome",
       "surname": "Cognome",
       "decks": "Mazzi",
-      "events": "Tornei",
+      "tournaments": "Tornei",
       "matches": "Match",
       "wins": "Vittorie",
       "kills": "Uccisioni",
@@ -243,7 +243,7 @@
       "similarFoundHint": "Verifica che il giocatore non sia già registrato:",
       "select": "Seleziona",
       "search": "Cerca",
-      "similarHelpTextEvent": "Se il giocatore è nella lista, clicca \"Seleziona\" per aggiungerlo al torneo. Altrimenti, procedi pure con la creazione.",
+      "similarHelpTextTournament": "Se il giocatore è nella lista, clicca \"Seleziona\" per aggiungerlo al torneo. Altrimenti, procedi pure con la creazione.",
       "similarHelpTextPlayers": "Se il giocatore è nella lista, clicca \"Cerca\" per trovarlo nell'elenco. Altrimenti, procedi pure con la creazione.",
       "noSimilarFound": "Nessun giocatore simile trovato. Puoi procedere con la creazione."
     },
@@ -266,8 +266,8 @@
     "unknownPlayer": "Giocatore sconosciuto",
     "borrowedBadge": "(Prestato)",
     "statsPlayers": "Giocatori",
-    "usedInEvents": "Usato in {count} torneo | Usato in {count} tornei",
-    "notUsedInEvents": "Non usato in tornei",
+    "usedInTournaments": "Usato in {count} torneo | Usato in {count} tornei",
+    "notUsedInTournaments": "Non usato in tornei",
     "lentBy": "di {name}",
     "viewDetails": "Dettagli",
     "viewStats": "Statistiche",
@@ -411,7 +411,7 @@
       "deckBuilding": "Nessuna restrizione (a parte la banned list)."
     }
   },
-  "event": {
+  "tournament": {
     "fallbackName": "Torneo",
     "standingsTitleFinal": "Classifica Finale",
     "standingsTitleRound": "Classifica Round {round}",
@@ -807,7 +807,7 @@
       "alreadyRegistered": "Uccisione già registrata",
       "victimAlreadyKilled": "La vittima ha già ucciso questo giocatore"
     },
-    "event": {
+    "tournament": {
       "inUseError": "Non è possibile eliminare questo torneo perché contiene ancora tavoli, classifiche o iscritti",
       "startError": "Errore nell'avvio torneo",
       "voteSaveError": "Errore nel salvataggio del voto",

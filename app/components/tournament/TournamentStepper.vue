@@ -28,8 +28,8 @@ defineSlots<{
 const items = computed<StepperItem[]>(() => {
   const steps: StepperItem[] = [
     {
-      title: t('event.stepper.registrationTitle'),
-      description: t('event.stepper.registrationDescription'),
+      title: t('tournament.stepper.registrationTitle'),
+      description: t('tournament.stepper.registrationDescription'),
       icon: ICONS.registration,
       value: 'registration',
     },
@@ -37,20 +37,20 @@ const items = computed<StepperItem[]>(() => {
 
   for (let i = 1; i <= props.totalRounds; i++) {
     steps.push({
-      title: t('event.stepper.roundTitle', { n: i }),
+      title: t('tournament.stepper.roundTitle', { n: i }),
       description: i < props.currentRound
-        ? t('event.stepper.roundCompleted')
+        ? t('tournament.stepper.roundCompleted')
         : i === props.currentRound
-          ? t('event.stepper.roundInProgress')
-          : t('event.stepper.roundPending'),
+          ? t('tournament.stepper.roundInProgress')
+          : t('tournament.stepper.roundPending'),
       icon: ICONS.battle,
       value: `round-${i}`,
     })
   }
 
   steps.push({
-    title: t('event.status.ended'),
-    description: t('event.stepper.endedDescription'),
+    title: t('tournament.status.ended'),
+    description: t('tournament.stepper.endedDescription'),
     icon: ICONS.flag,
     value: 'ended',
   })

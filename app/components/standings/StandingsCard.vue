@@ -17,7 +17,7 @@ const {
 const { t } = useI18n()
 const { isDeveloperView } = useDeveloperView()
 
-const displayTitle = computed(() => title ?? t('event.standingsTitleDefault'))
+const displayTitle = computed(() => title ?? t('tournament.standingsTitleDefault'))
 
 /** How many top rows get the gold/warning highlight (rank badge + score). */
 const TOP_PLAYER_COUNT = 8
@@ -62,7 +62,7 @@ const isOpen = ref(true)
                         avatar-size="md"
                         class="font-medium text-sm"
                       />
-                      <UTooltip v-if="submittedByPlayerId[standing.player_id]" :content="{ side: 'top' }" :text="t('event.standingsCard.submittedBadge')">
+                      <UTooltip v-if="submittedByPlayerId[standing.player_id]" :content="{ side: 'top' }" :text="t('tournament.standingsCard.submittedBadge')">
                         <UIcon :name="ICONS.confirm" class="size-3.5 text-success shrink-0" />
                       </UTooltip>
                     </div>
@@ -75,11 +75,11 @@ const isOpen = ref(true)
                         <UIcon :name="ICONS.kills" class="size-4 text-error" />
                         <span>{{ standing.kills ?? 0 }}</span>
                       </div>
-                      <div class="flex items-center gap-1 text-md text-muted" :title="t('event.standingsCard.brewVotesTooltip')">
+                      <div class="flex items-center gap-1 text-md text-muted" :title="t('tournament.standingsCard.brewVotesTooltip')">
                         <UIcon :name="ICONS.brewVotes" class="size-4 text-info" />
                         <span>{{ standing.brew_received ?? 0 }}</span>
                       </div>
-                      <div class="flex items-center gap-1 text-md text-muted" :title="t('event.standingsCard.playVotesTooltip')">
+                      <div class="flex items-center gap-1 text-md text-muted" :title="t('tournament.standingsCard.playVotesTooltip')">
                         <UIcon :name="ICONS.playVotes" class="size-4 text-success" />
                         <span>{{ standing.play_received ?? 0 }}</span>
                       </div>
@@ -94,7 +94,7 @@ const isOpen = ref(true)
           </div>
           <div v-else class="text-center py-6 text-muted">
             <UIcon :name="ICONS.statsEmpty" class="text-4xl mb-2" />
-            <p class="text-sm">{{ t('event.standingsCard.emptyText') }}</p>
+            <p class="text-sm">{{ t('tournament.standingsCard.emptyText') }}</p>
           </div>
 
           <template #fallback>

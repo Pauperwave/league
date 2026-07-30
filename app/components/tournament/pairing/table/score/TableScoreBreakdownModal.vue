@@ -21,7 +21,7 @@ const { t } = useI18n()
 <template>
   <UModal
     v-model:open="open"
-    :title="t('event.scoreBreakdown.modalTitle')"
+    :title="t('tournament.scoreBreakdown.modalTitle')"
     :ui="{ content: 'sm:max-w-2xl' }"
   >
     <template #body>
@@ -39,7 +39,7 @@ const { t } = useI18n()
       </div>
 
       <div v-else class="text-sm text-muted">
-        {{ t('event.scoreBreakdown.noDetails') }}
+        {{ t('tournament.scoreBreakdown.noDetails') }}
       </div>
     </template>
   </UModal>

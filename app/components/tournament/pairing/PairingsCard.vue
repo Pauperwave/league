@@ -288,18 +288,18 @@ function fillTable(pairingId: number) {
       <template #header>
         <div class="flex items-center gap-2">
           <UIcon :name="ICONS.gridView" class="size-5 text-primary" />
-          <h2 class="text-lg font-semibold">{{ t('event.pairing.tablesHeading') }}</h2>
+          <h2 class="text-lg font-semibold">{{ t('tournament.pairing.tablesHeading') }}</h2>
           <QuickFillButton
             v-if="!readonly"
-            :tooltip="t('event.pairing.fillAllTooltip')"
+            :tooltip="t('tournament.pairing.fillAllTooltip')"
             @click="handleQuickTestFillAll"
           />
-          <UTooltip :content="{ side: 'top' }" :text="t('event.pairing.fullscreenTooltip')">
+          <UTooltip :content="{ side: 'top' }" :text="t('tournament.pairing.fullscreenTooltip')">
             <UButton
               :icon="ICONS.expand"
               color="neutral"
               variant="ghost"
-              :aria-label="t('event.pairing.fullscreenTooltip')"
+              :aria-label="t('tournament.pairing.fullscreenTooltip')"
               @click="handleToggleFullscreen"
             />
           </UTooltip>
@@ -360,16 +360,16 @@ function fillTable(pairingId: number) {
         </UCard>
       </div>
 
-      <UEmpty v-else :icon="ICONS.players" :title="t('event.pairing.noTablesAvailable')" />
+      <UEmpty v-else :icon="ICONS.players" :title="t('tournament.pairing.noTablesAvailable')" />
 
       <!-- Reset confirmation dialog -->
       <ConfirmModal
         v-model:open="showResetConfirm"
-        :title="t('event.pairing.resetConfirm.title')"
-        :description="t('event.pairing.resetConfirm.description')"
-        :question="t('event.pairing.resetConfirm.question')"
-        :subject="t('event.pairing.tableHeading', { n: pairings.findIndex(p => p.pairing_id === tableToReset) + 1 })"
-        :confirm-label="t('event.pairing.resetConfirm.confirmLabel')"
+        :title="t('tournament.pairing.resetConfirm.title')"
+        :description="t('tournament.pairing.resetConfirm.description')"
+        :question="t('tournament.pairing.resetConfirm.question')"
+        :subject="t('tournament.pairing.tableHeading', { n: pairings.findIndex(p => p.pairing_id === tableToReset) + 1 })"
+        :confirm-label="t('tournament.pairing.resetConfirm.confirmLabel')"
         :confirm-icon="ICONS.reset"
         @confirm="handleConfirm"
       />
@@ -377,12 +377,12 @@ function fillTable(pairingId: number) {
       <!-- Test fill confirmation dialog -->
       <ConfirmModal
         v-model:open="showFillConfirm"
-        :title="t('event.pairing.fillConfirm.title')"
-        :description="t('event.pairing.fillConfirm.description')"
-        :question="t('event.pairing.fillConfirm.question')"
-        :subject="t('event.pairing.tableHeading', { n: pairings.findIndex(p => p.pairing_id === tableToFill) + 1 })"
-        :warning="t('event.pairing.fillConfirm.warning')"
-        :confirm-label="t('event.pairing.fillConfirm.confirmLabel')"
+        :title="t('tournament.pairing.fillConfirm.title')"
+        :description="t('tournament.pairing.fillConfirm.description')"
+        :question="t('tournament.pairing.fillConfirm.question')"
+        :subject="t('tournament.pairing.tableHeading', { n: pairings.findIndex(p => p.pairing_id === tableToFill) + 1 })"
+        :warning="t('tournament.pairing.fillConfirm.warning')"
+        :confirm-label="t('tournament.pairing.fillConfirm.confirmLabel')"
         :confirm-icon="ICONS.quickAction"
         @confirm="handleConfirm"
       />
@@ -390,11 +390,11 @@ function fillTable(pairingId: number) {
       <!-- Fill-all-tables confirmation dialog -->
       <ConfirmModal
         v-model:open="showFillAllConfirm"
-        :title="t('event.pairing.fillAllConfirm.title')"
-        :description="t('event.pairing.fillAllConfirm.description')"
-        :question="t('event.pairing.fillAllConfirm.question')"
-        :warning="t('event.pairing.fillAllConfirm.warning')"
-        :confirm-label="t('event.pairing.fillAllConfirm.confirmLabel')"
+        :title="t('tournament.pairing.fillAllConfirm.title')"
+        :description="t('tournament.pairing.fillAllConfirm.description')"
+        :question="t('tournament.pairing.fillAllConfirm.question')"
+        :warning="t('tournament.pairing.fillAllConfirm.warning')"
+        :confirm-label="t('tournament.pairing.fillAllConfirm.confirmLabel')"
         :confirm-icon="ICONS.quickAction"
         @confirm="handleConfirm"
       />
@@ -402,12 +402,12 @@ function fillTable(pairingId: number) {
       <!-- Draw ("Patta") confirmation dialog -->
       <ConfirmModal
         v-model:open="showDrawConfirm"
-        :title="t('event.pairing.drawConfirm.title')"
-        :description="t('event.pairing.drawConfirm.description')"
-        :question="t('event.pairing.drawConfirm.question')"
-        :subject="t('event.pairing.tableHeading', { n: pairings.findIndex(p => p.pairing_id === tableToDraw) + 1 })"
-        :warning="t('event.pairing.drawConfirm.warning')"
-        :confirm-label="t('event.pairing.drawConfirm.confirmLabel')"
+        :title="t('tournament.pairing.drawConfirm.title')"
+        :description="t('tournament.pairing.drawConfirm.description')"
+        :question="t('tournament.pairing.drawConfirm.question')"
+        :subject="t('tournament.pairing.tableHeading', { n: pairings.findIndex(p => p.pairing_id === tableToDraw) + 1 })"
+        :warning="t('tournament.pairing.drawConfirm.warning')"
+        :confirm-label="t('tournament.pairing.drawConfirm.confirmLabel')"
         :confirm-icon="ICONS.draw"
         @confirm="handleConfirm"
       />
@@ -415,11 +415,11 @@ function fillTable(pairingId: number) {
       <!-- "Annulla Patta" confirmation dialog -->
       <ConfirmModal
         v-model:open="showUndrawConfirm"
-        :title="t('event.pairing.undrawConfirm.title')"
-        :description="t('event.pairing.undrawConfirm.description')"
-        :question="t('event.pairing.undrawConfirm.question')"
-        :subject="t('event.pairing.tableHeading', { n: pairings.findIndex(p => p.pairing_id === tableToUndraw) + 1 })"
-        :confirm-label="t('event.pairing.undrawConfirm.confirmLabel')"
+        :title="t('tournament.pairing.undrawConfirm.title')"
+        :description="t('tournament.pairing.undrawConfirm.description')"
+        :question="t('tournament.pairing.undrawConfirm.question')"
+        :subject="t('tournament.pairing.tableHeading', { n: pairings.findIndex(p => p.pairing_id === tableToUndraw) + 1 })"
+        :confirm-label="t('tournament.pairing.undrawConfirm.confirmLabel')"
         :confirm-icon="ICONS.undo"
         @confirm="handleConfirm"
       />

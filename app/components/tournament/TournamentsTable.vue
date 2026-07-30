@@ -26,12 +26,12 @@ const RowActionButtons = resolveComponent('RowActionButtons') as Component
 
 function getEventStatus(event: Tournament): { key: 'ended' | 'playing' | 'registration', label: string, color: StatusColor, icon: string } {
   if ((event.tournament_current_round || 0) > (event.tournament_round_number || 0)) {
-    return { key: 'ended', label: t('event.status.ended'), color: 'error', icon: ICONS.clear }
+    return { key: 'ended', label: t('tournament.status.ended'), color: 'error', icon: ICONS.clear }
   }
   if (event.tournament_playing) {
-    return { key: 'playing', label: t('event.status.playing'), color: 'success', icon: ICONS.success }
+    return { key: 'playing', label: t('tournament.status.playing'), color: 'success', icon: ICONS.success }
   }
-  return { key: 'registration', label: t('event.status.registration'), color: 'warning', icon: ICONS.clock }
+  return { key: 'registration', label: t('tournament.status.registration'), color: 'warning', icon: ICONS.clock }
 }
 
 function getRegistrationStatus(open: boolean | null): {
@@ -40,9 +40,9 @@ function getRegistrationStatus(open: boolean | null): {
   icon: string
 } {
   if (open) {
-    return { label: t('event.table.registrationOpen'), color: 'success', icon: ICONS.success }
+    return { label: t('tournament.table.registrationOpen'), color: 'success', icon: ICONS.success }
   }
-  return { label: t('event.table.registrationClosed'), color: 'error', icon: ICONS.clear }
+  return { label: t('tournament.table.registrationClosed'), color: 'error', icon: ICONS.clear }
 }
 
 // tournament_current_round is set to tournament_round_number + 1 as the internal
@@ -79,12 +79,12 @@ const columns: TableColumn<Tournament>[] = [
   },
   {
     accessorKey: 'tournament_datetime',
-    header: sortableHeader(t('event.table.date'), UButton),
+    header: sortableHeader(t('tournament.table.date'), UButton),
     cell: ({ row }) => formatDate(row.getValue('tournament_datetime'))
   },
   {
     id: 'round',
-    header: sortableHeader(t('event.table.round'), UButton),
+    header: sortableHeader(t('tournament.table.round'), UButton),
     cell: ({ row }) => {
       const current = row.original.tournament_current_round
       const total = row.original.tournament_round_number
@@ -93,7 +93,7 @@ const columns: TableColumn<Tournament>[] = [
   },
   {
     accessorKey: 'status',
-    header: sortableHeader(t('event.table.status'), UButton),
+    header: sortableHeader(t('tournament.table.status'), UButton),
     cell: ({ row }) => {
       const status = getEventStatus(row.original)
       return h(
@@ -105,7 +105,7 @@ const columns: TableColumn<Tournament>[] = [
   },
   {
     id: 'registration',
-    header: sortableHeader(t('event.table.registration'), UButton),
+    header: sortableHeader(t('tournament.table.registration'), UButton),
     cell: ({ row }) => {
       const reg = getRegistrationStatus(row.original.tournament_registration_open)
       return h(UBadge, { color: reg.color, variant: 'subtle', icon: reg.icon }, () => reg.label)
@@ -126,8 +126,8 @@ const columns: TableColumn<Tournament>[] = [
     :meta="tableMeta"
     :loading="loading"
     :sorting="[{ id: 'tournament_datetime', desc: false }]"
-    :empty-title="t('event.table.emptyTitle')"
-    :empty-description="t('event.table.emptyDescription')"
+    :empty-title="t('tournament.table.emptyTitle')"
+    :empty-description="t('tournament.table.emptyDescription')"
     :empty-icon="ICONS.calendarCancel"
   />
 </template>

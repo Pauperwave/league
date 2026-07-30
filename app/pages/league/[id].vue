@@ -95,8 +95,8 @@ async function createTournament(data: TournamentCreatePayload) {
     })
   } catch (err) {
     toast.add({
-      title: t('event.toast.createErrorTitle'),
-      description: toErrorMessage(err, t('event.toast.createErrorFallback')),
+      title: t('tournament.toast.createErrorTitle'),
+      description: toErrorMessage(err, t('tournament.toast.createErrorFallback')),
       color: 'error'
     })
     return
@@ -104,8 +104,8 @@ async function createTournament(data: TournamentCreatePayload) {
 
   showCreateModal.value = false
   toast.add({
-    title: t('event.toast.createdTitle'),
-    description: t('event.toast.createdDescription', { name: data.tournamentName }),
+    title: t('tournament.toast.createdTitle'),
+    description: t('tournament.toast.createdDescription', { name: data.tournamentName }),
     color: 'success'
   })
 }
@@ -123,8 +123,8 @@ async function updateTournament({ id, data }: TournamentUpdatePayload) {
     })
   } catch (err) {
     toast.add({
-      title: t('event.toast.updateErrorTitle'),
-      description: toErrorMessage(err, t('event.toast.updateErrorFallback')),
+      title: t('tournament.toast.updateErrorTitle'),
+      description: toErrorMessage(err, t('tournament.toast.updateErrorFallback')),
       color: 'error'
     })
     return
@@ -133,8 +133,8 @@ async function updateTournament({ id, data }: TournamentUpdatePayload) {
   showTournamentEditModal.value = false
   tournamentToEdit.value = null
   toast.add({
-    title: t('event.toast.updatedTitle'),
-    description: t('event.toast.updatedDescription', { name: data.tournamentName }),
+    title: t('tournament.toast.updatedTitle'),
+    description: t('tournament.toast.updatedDescription', { name: data.tournamentName }),
     color: 'success'
   })
 }
@@ -156,10 +156,10 @@ async function confirmDeleteTournament() {
     await deleteTournamentMutation.mutateAsync(tournamentToDelete.value.tournament_id)
   } catch (err) {
     toast.add({
-      title: t('event.toast.deleteErrorTitle'),
+      title: t('tournament.toast.deleteErrorTitle'),
       description: isConflictError(err)
-        ? t('store.event.inUseError')
-        : toErrorMessage(err, t('event.toast.deleteErrorFallback')),
+        ? t('store.tournament.inUseError')
+        : toErrorMessage(err, t('tournament.toast.deleteErrorFallback')),
       color: 'error'
     })
     return
@@ -168,8 +168,8 @@ async function confirmDeleteTournament() {
   showDeleteConfirm.value = false
   tournamentToDelete.value = null
   toast.add({
-    title: t('event.toast.deletedTitle'),
-    description: t('event.toast.deletedDescription'),
+    title: t('tournament.toast.deletedTitle'),
+    description: t('tournament.toast.deletedDescription'),
     color: 'success'
   })
 }
@@ -236,8 +236,8 @@ const { updateLeague } = useLeagueUpdate(() => {
 
     <ConfirmModal
       v-model:open="showDeleteConfirm"
-      :description="t('league.confirmDeleteEventDescription')"
-      :question="t('league.confirmDeleteEventQuestion')"
+      :description="t('league.confirmDeleteTournamentDescription')"
+      :question="t('league.confirmDeleteTournamentQuestion')"
       :subject="tournamentToDelete?.tournament_name"
       :confirm-icon="ICONS.delete"
       @confirm="confirmDeleteTournament"

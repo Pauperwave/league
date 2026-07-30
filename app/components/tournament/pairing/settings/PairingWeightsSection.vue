@@ -27,7 +27,7 @@ const emit = defineEmits<{
 
 <template>
   <section class="space-y-3">
-    <div class="text-sm font-semibold">{{ t('event.pairingWeights.heading') }}</div>
+    <div class="text-sm font-semibold">{{ t('tournament.pairingWeights.heading') }}</div>
 
     <PairingPresetButtons
       :selected="selectedPreset"
@@ -51,9 +51,9 @@ const emit = defineEmits<{
       </div>
     </div>
 
-    <div class="text-sm font-semibold">{{ t('event.pairingWeights.formulaHeading') }}</div>
+    <div class="text-sm font-semibold">{{ t('tournament.pairingWeights.formulaHeading') }}</div>
     <div class="rounded border border-default/70 bg-muted/20 p-3 font-mono text-xs text-center">
-      {{ t('event.pairingWeights.formula') }}
+      {{ t('tournament.pairingWeights.formula') }}
     </div>
   </section>
 </template>

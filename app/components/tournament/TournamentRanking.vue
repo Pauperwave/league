@@ -101,7 +101,7 @@ function getScore(playerId: number, tournamentId: number): number | null {
             {{ event.tournament_name }}
           </th>
           <th class="px-3 py-2 text-right font-semibold bg-primary/10">
-            {{ t('event.scoreBreakdown.playerTotal') }}
+            {{ t('tournament.scoreBreakdown.playerTotal') }}
           </th>
         </tr>
       </thead>

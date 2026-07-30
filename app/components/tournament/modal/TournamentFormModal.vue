@@ -155,19 +155,19 @@ function handleSubmit() {
   >
     <form id="event-form" class="space-y-4" @submit.prevent="handleSubmit">
         <div class="grid grid-cols-2 gap-4">
-          <UFormField :label="t('event.form.nameLabel')" required>
+          <UFormField :label="t('tournament.form.nameLabel')" required>
             <UInput
               id="field-name"
               v-model="form.tournamentName"
-              :placeholder="t('event.form.namePlaceholder')"
+              :placeholder="t('tournament.form.namePlaceholder')"
               class="w-full"
             />
           </UFormField>
-          <DatePicker v-model="form.tournamentDate" :label="t('event.form.dateLabel')" />
+          <DatePicker v-model="form.tournamentDate" :label="t('tournament.form.dateLabel')" />
         </div>
 
         <div class="grid grid-cols-2 gap-4">
-          <UFormField :label="t('event.form.numRoundLabel')">
+          <UFormField :label="t('tournament.form.numRoundLabel')">
             <UInputNumber
               v-model="form.numRound"
               :min="1"
@@ -176,7 +176,7 @@ function handleSubmit() {
               class="w-full"
             />
           </UFormField>
-          <UFormField :label="t('event.form.roundDurationLabel')">
+          <UFormField :label="t('tournament.form.roundDurationLabel')">
             <UInputNumber
               v-model="form.roundDuration"
               :min="10"

@@ -11,7 +11,7 @@ const { t } = useI18n()
 <template>
   <div class="text-center py-4">
     <UBadge color="neutral" size="lg" :icon="ICONS.success">
-      {{ t('event.endedBadge') }}
+      {{ t('tournament.endedBadge') }}
     </UBadge>
   </div>
 </template>

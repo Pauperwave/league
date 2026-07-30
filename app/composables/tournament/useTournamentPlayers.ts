@@ -55,7 +55,7 @@ export function useTournamentPlayers(deps: EventPlayersDeps) {
     }
     await addToWaitingList([created.player_id])
     const display = sanitizePlayer(created)
-    toast.add({ title: t('event.playerCreatedTitle'), description: t('event.playerCreatedDescription', { name: `${display.player_name} ${display.player_surname}` }), color: 'success' })
+    toast.add({ title: t('tournament.playerCreatedTitle'), description: t('tournament.playerCreatedDescription', { name: `${display.player_name} ${display.player_surname}` }), color: 'success' })
   }
 
   async function handlePlayerUpdate(payload: PlayerUpdatePayload) {
@@ -66,12 +66,12 @@ export function useTournamentPlayers(deps: EventPlayersDeps) {
       return
     }
     showCreatePlayerModal.value = false
-    toast.add({ title: t('event.playerUpdatedTitle'), color: 'success' })
+    toast.add({ title: t('tournament.playerUpdatedTitle'), color: 'success' })
   }
 
   async function handlePlayerSelectFromModal(playerId: number) {
     await addToWaitingList([playerId])
-    toast.add({ title: t('event.playerAddedTitle'), description: t('event.playerAddedDescription'), color: 'success' })
+    toast.add({ title: t('tournament.playerAddedTitle'), description: t('tournament.playerAddedDescription'), color: 'success' })
   }
 
   function handlePlayerStatusUpdate(payload: { playerId: number, paid: boolean }) {

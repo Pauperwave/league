@@ -32,7 +32,7 @@ describe('StandingsCard', () => {
         stubs: defaultStubs,
         plugins: [createI18nTestPlugin({
           player: { stats: { wins: 'Vittorie', kills: 'Uccisioni' } },
-          event: { standingsCard: { brewVotesTooltip: 'Brew votes', playVotesTooltip: 'Play votes', submittedBadge: 'Inserito' } },
+          tournament: { standingsCard: { brewVotesTooltip: 'Brew votes', playVotesTooltip: 'Play votes', submittedBadge: 'Inserito' } },
         })],
       },
     })

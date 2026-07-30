@@ -296,10 +296,10 @@ export function useTableDnd(initialTables: PairingTable[], params?: {
   })
 
   const previewError = computed(() => {
-    if (!tableSizesValid.value) return t('event.tablePreview.invalidTableSizes')
-    if (!noDuplicates.value) return t('event.tablePreview.duplicatePlayers')
-    if (!noMissingPlayers.value) return t('event.tablePreview.missingPlayers')
-    if (!scoreDetails.value.isValid) return t('event.tablePreview.forbiddenPairsPresent')
+    if (!tableSizesValid.value) return t('tournament.tablePreview.invalidTableSizes')
+    if (!noDuplicates.value) return t('tournament.tablePreview.duplicatePlayers')
+    if (!noMissingPlayers.value) return t('tournament.tablePreview.missingPlayers')
+    if (!scoreDetails.value.isValid) return t('tournament.tablePreview.forbiddenPairsPresent')
     return ''
   })
 

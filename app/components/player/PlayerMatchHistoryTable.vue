@@ -38,7 +38,7 @@ const rows = computed(() =>
         <thead>
           <tr class="border-b border-accented">
             <th class="text-left py-2 px-3 text-muted font-medium">{{ t('player.matchHistory.date') }}</th>
-            <th class="text-left py-2 px-3 text-muted font-medium">{{ t('player.matchHistory.event') }}</th>
+            <th class="text-left py-2 px-3 text-muted font-medium">{{ t('player.matchHistory.tournament') }}</th>
             <th class="text-center py-2 px-3 text-muted font-medium">{{ t('player.matchHistory.round') }}</th>
             <th class="text-center py-2 px-3 text-muted font-medium">{{ t('player.matchHistory.table') }}</th>
             <th class="text-left py-2 px-3 text-muted font-medium">{{ t('player.matchHistory.commander') }}</th>

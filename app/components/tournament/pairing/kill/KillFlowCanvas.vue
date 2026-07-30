@@ -194,7 +194,7 @@ function onConnect(connection: Connection) {
   logDebug('KillFlowCanvas', 'addKill result:', result)
   if (!result.success) {
     toast.add({
-      title: t('event.killFlow.invalidTitle'),
+      title: t('tournament.killFlow.invalidTitle'),
       description: result.error,
       color: 'warning',
       icon: ICONS.warning,
@@ -206,7 +206,7 @@ function onConnect(connection: Connection) {
 function onEdgeClick({ edge }: EdgeMouseEvent) {
   killsStore.removeKill(Number(edge.source), Number(edge.target))
   toast.add({
-    title: t('event.killFlow.killRemovedTitle'),
+    title: t('tournament.killFlow.killRemovedTitle'),
     color: 'neutral',
     icon: ICONS.delete,
     duration: 2000,
@@ -248,26 +248,26 @@ function logToObject() {
            restyled to match (see the style block below), so every control
            here is a custom ControlButton instead of the defaults. -->
       <Controls position="top-left" :show-zoom="false" :show-fit-view="false" :show-interactive="false">
-        <ControlButton :title="t('event.killFlow.zoomIn')" @click="zoomIn()">
+        <ControlButton :title="t('tournament.killFlow.zoomIn')" @click="zoomIn()">
           <UIcon :name="ICONS.add" class="size-5" />
         </ControlButton>
 
-        <ControlButton :title="t('event.killFlow.zoomOut')" @click="zoomOut()">
+        <ControlButton :title="t('tournament.killFlow.zoomOut')" @click="zoomOut()">
           <UIcon :name="ICONS.subtract" class="size-5" />
         </ControlButton>
 
-        <ControlButton :title="t('event.killFlow.fitView')" @click="fitView()">
+        <ControlButton :title="t('tournament.killFlow.fitView')" @click="fitView()">
           <UIcon :name="ICONS.fitView" class="size-5" />
         </ControlButton>
 
         <ControlButton
-          :title="interactive ? t('event.killFlow.lock') : t('event.killFlow.unlock')"
+          :title="interactive ? t('tournament.killFlow.lock') : t('tournament.killFlow.unlock')"
           @click="interactive = !interactive"
         >
           <UIcon :name="interactive ? ICONS.unlock : ICONS.lock" class="size-5" />
         </ControlButton>
 
-        <ControlButton :title="t('event.killFlow.logData')" @click="logToObject">
+        <ControlButton :title="t('tournament.killFlow.logData')" @click="logToObject">
           <UIcon :name="ICONS.terminal" class="size-5" />
         </ControlButton>
       </Controls>

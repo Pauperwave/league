@@ -78,16 +78,16 @@ export function useTournamentPage() {
     const result = calculateTables(count)
     if (!result.canPlay) {
       return count < 3
-        ? t('event.notEnoughPlayers')
-        : t('event.tooManyForFive')
+        ? t('tournament.notEnoughPlayers')
+        : t('tournament.tooManyForFive')
     }
     return formatTableEstimate(
       result.tables4,
       result.tables3,
       (n, size) => size === 4
-        ? t('event.tablesOf4', n, { named: { count: n } })
-        : t('event.tablesOf3', n, { named: { count: n } }),
-      t('event.tableEstimateConjunction'),
+        ? t('tournament.tablesOf4', n, { named: { count: n } })
+        : t('tournament.tablesOf3', n, { named: { count: n } }),
+      t('tournament.tableEstimateConjunction'),
     )
   })
 

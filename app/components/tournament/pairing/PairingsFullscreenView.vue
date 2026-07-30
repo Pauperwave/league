@@ -52,13 +52,13 @@ const columns = computed(() => Math.max(1, Math.ceil(Math.sqrt(pairings.length))
          tables (e.g. a 40-player/10-table event) every row of grid height
          matters; a dedicated header row was pushing the last grid row off
          screen. -->
-    <UTooltip :content="{ side: 'top' }" :text="t('event.pairing.exitFullscreenTooltip')">
+    <UTooltip :content="{ side: 'top' }" :text="t('tournament.pairing.exitFullscreenTooltip')">
       <UButton
         :icon="ICONS.collapse"
         color="neutral"
         variant="ghost"
         class="absolute top-2 right-2 z-10"
-        :aria-label="t('event.pairing.exitFullscreenTooltip')"
+        :aria-label="t('tournament.pairing.exitFullscreenTooltip')"
         @click="emit('exit')"
       />
     </UTooltip>

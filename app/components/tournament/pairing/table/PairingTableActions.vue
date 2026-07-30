@@ -27,7 +27,7 @@ const emit = defineEmits<{
   <div class="flex gap-2">
     <!-- Rankings button — locked while the table is marked as a draw, since
          editing it would silently un-draw the table with no other signal. -->
-    <UTooltip :content="{ side: 'top' }" :text="isDraw ? t('event.pairing.drawnTooltip') : (hasRanking ? t('event.pairing.rankingSetTooltip') : t('event.pairing.rankingNotSetTooltip'))">
+    <UTooltip :content="{ side: 'top' }" :text="isDraw ? t('tournament.pairing.drawnTooltip') : (hasRanking ? t('tournament.pairing.rankingSetTooltip') : t('tournament.pairing.rankingNotSetTooltip'))">
       <UButton
         :color="hasRanking ? 'success' : 'neutral'"
         class="flex-1"
@@ -36,12 +36,12 @@ const emit = defineEmits<{
         :disabled="isDraw"
         @click="emit('openScoreModal', pairingId, tableIndex)"
       >
-        {{ t('event.pairing.rankingButton') }}
+        {{ t('tournament.pairing.rankingButton') }}
       </UButton>
     </UTooltip>
 
     <!-- Kills entry button — same lock as above. -->
-    <UTooltip :content="{ side: 'top' }" :text="isDraw ? t('event.pairing.drawnTooltip') : (hasKills ? t('event.pairing.killsSetTooltip') : t('event.pairing.killsNotSetTooltip'))">
+    <UTooltip :content="{ side: 'top' }" :text="isDraw ? t('tournament.pairing.drawnTooltip') : (hasKills ? t('tournament.pairing.killsSetTooltip') : t('tournament.pairing.killsNotSetTooltip'))">
       <UButton
         :color="hasKills ? 'success' : 'neutral'"
         class="flex-1"
@@ -50,7 +50,7 @@ const emit = defineEmits<{
         :disabled="isDraw"
         @click="emit('openKillModal', pairingId)"
       >
-        {{ t('event.pairing.killsButton') }}
+        {{ t('tournament.pairing.killsButton') }}
       </UButton>
     </UTooltip>
 
@@ -59,7 +59,7 @@ const emit = defineEmits<{
          once ranking/kills already hold real data (would silently discard
          it) unless the table is already a draw, in which case pressing it
          again toggles the draw back off. -->
-    <UTooltip :content="{ side: 'top' }" :text="isDraw ? t('event.pairing.drawUndoTooltip') : (canToggleDraw ? t('event.killModal.drawHint') : t('event.pairing.drawDisabledTooltip'))">
+    <UTooltip :content="{ side: 'top' }" :text="isDraw ? t('tournament.pairing.drawUndoTooltip') : (canToggleDraw ? t('tournament.killModal.drawHint') : t('tournament.pairing.drawDisabledTooltip'))">
       <UButton
         :color="isDraw ? 'success' : 'neutral'"
         class="flex-1"
@@ -68,7 +68,7 @@ const emit = defineEmits<{
         :disabled="!canToggleDraw"
         @click="emit('draw', pairingId)"
       >
-        {{ t('event.pairing.drawButton') }}
+        {{ t('tournament.pairing.drawButton') }}
       </UButton>
     </UTooltip>
   </div>

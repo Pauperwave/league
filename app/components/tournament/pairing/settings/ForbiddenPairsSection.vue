@@ -56,23 +56,23 @@ const forbiddenPairsDisplay = computed(() => {
 
 <template>
   <section class="space-y-3">
-    <div class="text-sm font-semibold">{{ t('event.forbiddenPairs.heading') }}</div>
+    <div class="text-sm font-semibold">{{ t('tournament.forbiddenPairs.heading') }}</div>
 
     <div class="grid grid-cols-1 md:grid-cols-[1fr_1fr_auto_auto] gap-2 items-center">
       <USelectMenu
         v-model="pairPlayerA"
         :items="playerOptions"
         value-key="value"
-        :placeholder="t('event.forbiddenPairs.playerAPlaceholder')"
-        :search-input="{ placeholder: t('event.forbiddenPairs.searchPlaceholder') }"
+        :placeholder="t('tournament.forbiddenPairs.playerAPlaceholder')"
+        :search-input="{ placeholder: t('tournament.forbiddenPairs.searchPlaceholder') }"
       />
 
       <USelectMenu
         v-model="pairPlayerB"
         :items="playerOptions"
         value-key="value"
-        :placeholder="t('event.forbiddenPairs.playerBPlaceholder')"
-        :search-input="{ placeholder: t('event.forbiddenPairs.searchPlaceholder') }"
+        :placeholder="t('tournament.forbiddenPairs.playerBPlaceholder')"
+        :search-input="{ placeholder: t('tournament.forbiddenPairs.searchPlaceholder') }"
       />
 
       <UButton
@@ -82,7 +82,7 @@ const forbiddenPairsDisplay = computed(() => {
         :disabled="!canAddForbiddenPair"
         @click="emit('addPair')"
       >
-        {{ t('event.forbiddenPairs.addPair') }}
+        {{ t('tournament.forbiddenPairs.addPair') }}
       </UButton>
 
       <UButton
@@ -91,13 +91,13 @@ const forbiddenPairsDisplay = computed(() => {
         :icon="ICONS.refresh"
         @click="emit('resolveConflicts')"
       >
-        {{ t('event.forbiddenPairs.resolveConflicts') }}
+        {{ t('tournament.forbiddenPairs.resolveConflicts') }}
       </UButton>
     </div>
 
     <div class="max-h-48 overflow-auto space-y-1 pr-1">
       <div v-if="!forbiddenPairsDisplay.length" class="text-sm text-muted">
-        {{ t('event.forbiddenPairs.empty') }}
+        {{ t('tournament.forbiddenPairs.empty') }}
       </div>
 
       <div
@@ -117,7 +117,7 @@ const forbiddenPairsDisplay = computed(() => {
     </div>
 
     <div class="text-xs text-muted">
-      {{ t('event.forbiddenPairs.storageNote') }}
+      {{ t('tournament.forbiddenPairs.storageNote') }}
       <code>{{ pairingStorageKey }}</code>.
     </div>
   </section>

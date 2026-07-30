@@ -185,7 +185,7 @@ function handleSubmit() {
           />
         </UFormField>
 
-        <UFormField :label="t('league.form.validEventsLabel')">
+        <UFormField :label="t('league.form.validTournamentsLabel')">
           <UInputNumber
             id="field-valid-events"
             v-model="form.validTournaments"

@@ -43,6 +43,6 @@ const { t } = useI18n()
     :loading
     :icon="ICONS.play"
   >
-    {{ t('event.startButton') }}
+    {{ t('tournament.startButton') }}
   </UButton>
 </template>

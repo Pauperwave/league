@@ -11,9 +11,9 @@ const props = defineProps<{
   player: Player | null
   existingPlayers: Player[]
   /** Changes what "similar player found" resolves to: adding to the current
-   * event's waiting list ('event') vs. just locating them in the /players
+   * tournament's waiting list ('tournament') vs. just locating them in the /players
    * table via search ('players') — the two contexts this form is used in. */
-  context: 'event' | 'players'
+  context: 'tournament' | 'players'
 }>()
 
 const { t } = useI18n()
@@ -186,7 +186,7 @@ function handleSearchExisting(name: string) {
               </span>
             </span>
             <UButton
-              v-if="context === 'event'"
+              v-if="context === 'tournament'"
               size="xs"
               color="primary"
               variant="soft"
@@ -209,7 +209,7 @@ function handleSearchExisting(name: string) {
         </ul>
 
         <p class="text-xs text-muted">
-          {{ t(context === 'event' ? 'player.form.similarHelpTextEvent' : 'player.form.similarHelpTextPlayers') }}
+          {{ t(context === 'tournament' ? 'player.form.similarHelpTextTournament' : 'player.form.similarHelpTextPlayers') }}
         </p>
       </div>
     </UCard>

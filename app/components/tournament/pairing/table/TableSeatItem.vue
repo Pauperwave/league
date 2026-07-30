@@ -40,7 +40,7 @@ function handleCommanderClick() {
       <button
         type="button"
         class="drag-handle text-muted hover:text-default transition cursor-grab hover:cursor-grab active:cursor-grabbing"
-        :aria-label="t('event.pairing.dragPlayerAriaLabel')"
+        :aria-label="t('tournament.pairing.dragPlayerAriaLabel')"
       >
         <UIcon :name="ICONS.dragHandle" class="size-4 cursor-grab hover:cursor-grab active:cursor-grabbing" />
       </button>
@@ -70,7 +70,7 @@ function handleCommanderClick() {
         variant="ghost"
         :color="hasCommander ? 'success' : 'neutral'"
         :icon="hasCommander ? ICONS.commanderSet : ICONS.commanderNotSet"
-        :aria-label="t('event.pairing.commanderAriaLabel')"
+        :aria-label="t('tournament.pairing.commanderAriaLabel')"
         @click="handleCommanderClick"
       />
     </div>
@@ -81,7 +81,7 @@ function handleCommanderClick() {
       :class="isDragging ? 'text-amber-700' : 'text-muted'"
     >
       <UIcon :name="ICONS.add" class="size-4" />
-      <span>{{ isDragging ? t('event.pairing.dropHere') : t('event.pairing.emptySlot') }}</span>
+      <span>{{ isDragging ? t('tournament.pairing.dropHere') : t('tournament.pairing.emptySlot') }}</span>
     </div>
   </div>
 </template>

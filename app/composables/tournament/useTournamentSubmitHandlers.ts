@@ -35,7 +35,7 @@ export function useTournamentSubmitHandlers(deps: SubmitHandlerDeps) {
    * ranking state and persists it, with the same toast/error handling. */
   function saveRanking(pairingId: number, rankingWithRanks: RankingEntry[]) {
     rankingsStore.setRankingWithRanks(pairingId, rankingWithRanks)
-    toast.add({ title: t('event.rankingsSavedTitle'), color: 'success' })
+    toast.add({ title: t('tournament.rankingsSavedTitle'), color: 'success' })
     tournamentStore.savePairingRankings(pairingId, rankingWithRanks.map(r => ({ playerId: r.playerId, position: r.rank })))
       .then((result) => {
         if (!result.success) {
@@ -60,7 +60,7 @@ export function useTournamentSubmitHandlers(deps: SubmitHandlerDeps) {
   function handleKillsSubmit(pairingId: number, kills: Kill[]) {
     tournamentStore.savePairingKills(pairingId, kills)
       .then(result => {
-        toast.add({ title: result.success ? t('event.killsSavedTitle') : t('deck.toast.errorTitle'), description: result.success ? undefined : result.error, color: result.success ? 'success' : 'error' })
+        toast.add({ title: result.success ? t('tournament.killsSavedTitle') : t('deck.toast.errorTitle'), description: result.success ? undefined : result.error, color: result.success ? 'success' : 'error' })
         // Refetch so the "Uccisioni" button's reviewed indicator (derived
         // from round_results.number_of_kills, see PairingsCard) updates
         // immediately instead of waiting for the next lifecycle transition.
@@ -79,7 +79,7 @@ export function useTournamentSubmitHandlers(deps: SubmitHandlerDeps) {
   function handleCommanderSubmit(commander1: string | null, commander2: string | null) {
     if (selectedPlayerId.value !== null && selectedCommanderPairingId.value !== null) {
       commandersStore.setCommanders(selectedPlayerId.value, commander1, commander2)
-      toast.add({ title: t('event.commandersSavedTitle'), color: 'success' })
+      toast.add({ title: t('tournament.commandersSavedTitle'), color: 'success' })
       tournamentStore.saveCommander(selectedCommanderPairingId.value, selectedPlayerId.value, commander1, commander2)
         .then(result => {
           if (!result.success) {
@@ -101,7 +101,7 @@ export function useTournamentSubmitHandlers(deps: SubmitHandlerDeps) {
       votesStore.setVotes(selectedVotesPlayerId.value, deckVotePlayerId, playVotePlayerId)
       tournamentStore.saveVote(selectedVotesPairingId.value, selectedVotesPlayerId.value, deckVotePlayerId, playVotePlayerId)
         .then((result) => {
-          toast.add({ title: result.success ? t('event.voteSavedTitle') : t('deck.toast.errorTitle'), description: result.success ? undefined : result.error, color: result.success ? 'success' : 'error' })
+          toast.add({ title: result.success ? t('tournament.voteSavedTitle') : t('deck.toast.errorTitle'), description: result.success ? undefined : result.error, color: result.success ? 'success' : 'error' })
           // Same reason as saveRanking: "Punteggi Tavolo" reads round_results
           // directly (deck/play point columns), so it needs a refetch to
           // pick up the vote just saved.

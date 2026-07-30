@@ -13,9 +13,9 @@ const emit = defineEmits<{
 const { t } = useI18n()
 
 const presets: Array<{ key: Exclude<PairingPresetKind, 'custom' | 'reset'>; label: string; icon: string }> = [
-  { key: 'social', label: t('event.pairingPresets.social'), icon: ICONS.players },
-  { key: 'balanced', label: t('event.pairingPresets.balanced'), icon: ICONS.rules },
-  { key: 'competitive', label: t('event.pairingPresets.competitive'), icon: ICONS.standings },
+  { key: 'social', label: t('tournament.pairingPresets.social'), icon: ICONS.players },
+  { key: 'balanced', label: t('tournament.pairingPresets.balanced'), icon: ICONS.rules },
+  { key: 'competitive', label: t('tournament.pairingPresets.competitive'), icon: ICONS.standings },
 ]
 </script>
 
@@ -40,7 +40,7 @@ const presets: Array<{ key: Exclude<PairingPresetKind, 'custom' | 'reset'>; labe
       variant="soft"
       @click="emit('select', 'reset')"
     >
-      {{ t('event.pairingPresets.reset') }}
+      {{ t('tournament.pairingPresets.reset') }}
     </UButton>
 
     <UButton
@@ -49,7 +49,7 @@ const presets: Array<{ key: Exclude<PairingPresetKind, 'custom' | 'reset'>; labe
       :variant="selected === 'custom' ? 'soft' : 'outline'"
       class="pointer-events-none select-none"
     >
-      {{ t('event.pairingPresets.custom') }}
+      {{ t('tournament.pairingPresets.custom') }}
     </UButton>
   </div>
 </template>

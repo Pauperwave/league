@@ -52,7 +52,7 @@ watch(open, async (isOpen) => {
 
 function getPlayerName(id: number): string {
   const p = props.players.find((pl) => pl.id === id)
-  return p ? `${p.name} ${p.surname}` : t('event.killModal.playerFallback', { id })
+  return p ? `${p.name} ${p.surname}` : t('tournament.killModal.playerFallback', { id })
 }
 
 // Matches KillFlowCanvas's edge/badge colors, so a kill's badge here is the
@@ -91,8 +91,8 @@ function onCancel() {
 <template>
   <UModal
     v-model:open="open"
-    :title="t('event.killModal.title')"
-    :description="t('event.killModal.description')"
+    :title="t('tournament.killModal.title')"
+    :description="t('tournament.killModal.description')"
     :ui="{ content: 'max-w-4xl' }"
   >
     <template #body>
@@ -116,9 +116,9 @@ function onCancel() {
         <!-- Text list of registered kills -->
         <div v-if="killsStore.kills.length > 0" class="space-y-2">
           <div class="flex items-center justify-between">
-            <p class="text-sm font-medium text-muted">{{ t('event.killModal.registeredKillsLabel') }}</p>
+            <p class="text-sm font-medium text-muted">{{ t('tournament.killModal.registeredKillsLabel') }}</p>
             <UButton
-              :label="t('event.killModal.resetButton')"
+              :label="t('tournament.killModal.resetButton')"
               :icon="ICONS.delete"
               color="error"
               variant="outline"
@@ -137,7 +137,7 @@ function onCancel() {
               <UIcon
                 :name="ICONS.close"
                 class="size-4 cursor-pointer hover:opacity-70"
-                :aria-label="t('event.killModal.removeKillAriaLabel')"
+                :aria-label="t('tournament.killModal.removeKillAriaLabel')"
                 @click="killsStore.removeKill(kill.killerId, kill.victimId)"
               />
               {{ getPlayerName(kill.killerId) }}
@@ -148,7 +148,7 @@ function onCancel() {
         </div>
 
         <p v-else class="text-sm text-muted text-center py-2">
-          {{ t('event.killModal.noKills') }}
+          {{ t('tournament.killModal.noKills') }}
         </p>
       </div>
     </template>

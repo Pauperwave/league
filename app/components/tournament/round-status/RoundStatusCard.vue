@@ -44,7 +44,7 @@ const filter = ref<RoundStatusFilter>('all')
 const search = ref('')
 
 function tableHaystack(tableNumber: number): string {
-  return tableSearchLabel(tableNumber, t('event.pairing.tableHeading', { n: tableNumber }))
+  return tableSearchLabel(tableNumber, t('tournament.pairing.tableHeading', { n: tableNumber }))
 }
 
 const filteredRankingItems = computed(() =>
@@ -90,12 +90,12 @@ function selectVote(item: { pairingId: number; playerId: number }) {
   <div v-if="pairings.length > 0" class="bg-elevated rounded-xl p-2.5 border border-default shadow-lg space-y-2.5">
     <div class="flex items-center gap-1.5">
       <UIcon :name="ICONS.roundStatus" class="size-4 text-primary" />
-      <h4 class="text-sm font-bold">{{ t('event.roundStatus.title') }}</h4>
+      <h4 class="text-sm font-bold">{{ t('tournament.roundStatus.title') }}</h4>
     </div>
 
     <UFieldGroup class="w-full">
       <UButton
-        :label="t('event.roundStatus.filterAll')"
+        :label="t('tournament.roundStatus.filterAll')"
         size="xs"
         class="flex-1 justify-center"
         :color="filter === 'all' ? 'primary' : 'neutral'"
@@ -103,7 +103,7 @@ function selectVote(item: { pairingId: number; playerId: number }) {
         @click="filter = 'all'"
       />
       <UButton
-        :label="t('event.roundStatus.filterPending')"
+        :label="t('tournament.roundStatus.filterPending')"
         size="xs"
         class="flex-1 justify-center"
         :color="filter === 'pending' ? 'primary' : 'neutral'"
@@ -111,7 +111,7 @@ function selectVote(item: { pairingId: number; playerId: number }) {
         @click="filter = 'pending'"
       />
       <UButton
-        :label="t('event.roundStatus.filterDone')"
+        :label="t('tournament.roundStatus.filterDone')"
         size="xs"
         class="flex-1 justify-center"
         :color="filter === 'done' ? 'primary' : 'neutral'"
@@ -124,14 +124,14 @@ function selectVote(item: { pairingId: number; playerId: number }) {
       v-model="search"
       type="search"
       :icon="ICONS.search"
-      :placeholder="t('event.roundStatus.searchPlaceholder')"
+      :placeholder="t('tournament.roundStatus.searchPlaceholder')"
       size="sm"
       class="w-full"
     />
 
     <div class="space-y-1">
       <RoundStatusSection
-        :title="t('event.roundStatus.sections.rankings')"
+        :title="t('tournament.roundStatus.sections.rankings')"
         :icon="ICONS.standings"
         :done-count="rankingItems.filter(i => i.done).length"
         :total-count="rankingItems.length"
@@ -146,7 +146,7 @@ function selectVote(item: { pairingId: number; playerId: number }) {
       </RoundStatusSection>
 
       <RoundStatusSection
-        :title="t('event.roundStatus.sections.kills')"
+        :title="t('tournament.roundStatus.sections.kills')"
         :icon="ICONS.kills"
         :done-count="killItems.filter(i => i.done).length"
         :total-count="killItems.length"
@@ -161,7 +161,7 @@ function selectVote(item: { pairingId: number; playerId: number }) {
       </RoundStatusSection>
 
       <RoundStatusSection
-        :title="t('event.roundStatus.sections.commanders')"
+        :title="t('tournament.roundStatus.sections.commanders')"
         :icon="ICONS.commander"
         :done-count="commanderItems.filter(i => i.done).length"
         :total-count="commanderItems.length"
@@ -179,7 +179,7 @@ function selectVote(item: { pairingId: number; playerId: number }) {
       </RoundStatusSection>
 
       <RoundStatusSection
-        :title="t('event.roundStatus.sections.votes')"
+        :title="t('tournament.roundStatus.sections.votes')"
         :icon="ICONS.vote"
         :done-count="voteItems.filter(i => i.done).length"
         :total-count="voteItems.length"

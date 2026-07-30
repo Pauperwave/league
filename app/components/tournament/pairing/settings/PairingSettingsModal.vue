@@ -41,8 +41,8 @@ const emit = defineEmits<{
 <template>
   <UModal
     v-model:open="open"
-    :title="t('event.pairingSettings.title')"
-    :description="t('event.pairingSettings.description')"
+    :title="t('tournament.pairingSettings.title')"
+    :description="t('tournament.pairingSettings.description')"
     :ui="{ content: 'sm:max-w-3xl' }"
   >
     <template #body>

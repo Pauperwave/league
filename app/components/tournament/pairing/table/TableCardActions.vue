@@ -21,34 +21,34 @@ const emit = defineEmits<{
   <div class="flex items-center gap-2 @container">
     <div class="flex items-center gap-1.5">
       <UIcon :name="ICONS.tableView" class="size-4 text-primary" />
-      <h3 class="font-semibold whitespace-nowrap">{{ t('event.pairing.tableHeading', { n: tableIndex + 1 }) }}</h3>
+      <h3 class="font-semibold whitespace-nowrap">{{ t('tournament.pairing.tableHeading', { n: tableIndex + 1 }) }}</h3>
     </div>
-    <UTooltip :key="`punteggi-${pairing.pairing_id}`" :content="{ side: 'top' }" :text="t('event.pairing.viewScoresTooltip')">
+    <UTooltip :key="`punteggi-${pairing.pairing_id}`" :content="{ side: 'top' }" :text="t('tournament.pairing.viewScoresTooltip')">
       <UButton
         size="xs"
         variant="outline"
         :leading-icon="ICONS.show"
         @click="emit('viewScores', pairing.pairing_id)"
       >
-        <span class="hidden @sm:inline whitespace-nowrap">{{ t('event.pairing.scoresButtonLabel') }}</span>
+        <span class="hidden @sm:inline whitespace-nowrap">{{ t('tournament.pairing.scoresButtonLabel') }}</span>
       </UButton>
     </UTooltip>
 
     <div class="flex-1" />
 
-    <UTooltip :key="`reset-${pairing.pairing_id}`" :content="{ side: 'top' }" :text="t('event.pairing.resetTableTooltip')">
+    <UTooltip :key="`reset-${pairing.pairing_id}`" :content="{ side: 'top' }" :text="t('tournament.pairing.resetTableTooltip')">
       <UButton
         size="xs"
         variant="outline"
         color="error"
         :icon="ICONS.reset"
-        :aria-label="t('event.pairing.resetTableTooltip')"
+        :aria-label="t('tournament.pairing.resetTableTooltip')"
         @click="emit('resetTable', pairing.pairing_id)"
       />
     </UTooltip>
     <QuickFillButton
-      :tooltip="t('event.pairing.fillConfirm.title')"
-      :aria-label="t('event.pairing.quickFillAriaLabel')"
+      :tooltip="t('tournament.pairing.fillConfirm.title')"
+      :aria-label="t('tournament.pairing.quickFillAriaLabel')"
       @click="emit('quickFill', pairing)"
     />
     <TableStateBadge :is-complete="isComplete" />

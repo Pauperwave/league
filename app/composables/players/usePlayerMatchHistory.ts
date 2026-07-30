@@ -119,7 +119,7 @@ export const PLAYER_MATCH_HISTORY_KEY = ['player-match-history']
 export function usePlayerMatchHistory(playerId: MaybeRefOrGetter<number | undefined>) {
   const supabase = useSupabaseClient()
   const { t } = useI18n()
-  const unknownTournamentName = t('player.matchHistory.unknownEvent')
+  const unknownTournamentName = t('player.matchHistory.unknownTournament')
 
   const { data, isLoading, error } = useQuery({
     key: () => [...PLAYER_MATCH_HISTORY_KEY, toValue(playerId) ?? 'none'],

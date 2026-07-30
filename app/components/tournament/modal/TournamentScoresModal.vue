@@ -37,7 +37,7 @@ const pairing = computed(() =>
 <template>
   <UModal
     v-model:open="open"
-    :title="t('event.scoresModal.title')"
+    :title="t('tournament.scoresModal.title')"
     :ui="{ content: 'sm:max-w-2xl', body: 'p-2 sm:p-3' }"
   >
     <template #body>

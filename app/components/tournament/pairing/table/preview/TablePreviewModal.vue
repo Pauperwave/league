@@ -122,12 +122,12 @@ watch([weights, forbiddenPairs], () => {
 
 
 const scoreItems = computed(() => [
-  { key: 'strengthBalance', label: t('event.tablePreview.scoreItems.strengthBalance'), value: weights.value.strengthBalance, min: 0, max: 3, step: 0.1 },
-  { key: 'novelty', label: t('event.tablePreview.scoreItems.novelty'), value: weights.value.novelty, min: 0, max: 3, step: 0.1 },
-  { key: 'rematch', label: t('event.tablePreview.scoreItems.rematch'), value: weights.value.rematch, min: 0, max: 3, step: 0.1 },
-  { key: 'rotateTable3', label: t('event.tablePreview.scoreItems.rotateTable3'), value: weights.value.rotateTable3, min: 0, max: 3, step: 0.1 },
-  { key: 'tableSize4', label: t('event.tablePreview.scoreItems.tableSize4'), value: weights.value.tableSize4, min: -2, max: 2, step: 0.05 },
-  { key: 'tableSize3', label: t('event.tablePreview.scoreItems.tableSize3'), value: weights.value.tableSize3, min: -2, max: 2, step: 0.05 },
+  { key: 'strengthBalance', label: t('tournament.tablePreview.scoreItems.strengthBalance'), value: weights.value.strengthBalance, min: 0, max: 3, step: 0.1 },
+  { key: 'novelty', label: t('tournament.tablePreview.scoreItems.novelty'), value: weights.value.novelty, min: 0, max: 3, step: 0.1 },
+  { key: 'rematch', label: t('tournament.tablePreview.scoreItems.rematch'), value: weights.value.rematch, min: 0, max: 3, step: 0.1 },
+  { key: 'rotateTable3', label: t('tournament.tablePreview.scoreItems.rotateTable3'), value: weights.value.rotateTable3, min: 0, max: 3, step: 0.1 },
+  { key: 'tableSize4', label: t('tournament.tablePreview.scoreItems.tableSize4'), value: weights.value.tableSize4, min: -2, max: 2, step: 0.05 },
+  { key: 'tableSize3', label: t('tournament.tablePreview.scoreItems.tableSize3'), value: weights.value.tableSize3, min: -2, max: 2, step: 0.05 },
 ] as const)
 
 const confirmLogging = useButtonLogging('Conferma tavoli', {
@@ -217,8 +217,8 @@ function handleDragEnd() {
   if (!isValid.value && dragSnapshot.value) {
     restoreTables(dragSnapshot.value)
     toast.add({
-      title: t('event.tablePreview.invalidMoveTitle'),
-      description: previewError.value || t('event.tablePreview.invalidMoveFallback'),
+      title: t('tournament.tablePreview.invalidMoveTitle'),
+      description: previewError.value || t('tournament.tablePreview.invalidMoveFallback'),
       color: 'error',
     })
   }
@@ -271,8 +271,8 @@ function openTableScoreBreakdown(tableIndex: number) {
 <template>
   <UModal
     v-model:open="open"
-    :title="t('event.tablePreview.title')"
-    :description="t('event.tablePreview.description')"
+    :title="t('tournament.tablePreview.title')"
+    :description="t('tournament.tablePreview.description')"
     :dismissible="dismissible"
     :ui="{ content: modalMaxWidth, footer: 'justify-end gap-1.5' }"
   >

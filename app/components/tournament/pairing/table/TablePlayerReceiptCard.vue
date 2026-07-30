@@ -26,27 +26,27 @@ function formatScore(value: number): string {
 
     <div v-if="detail" class="space-y-1 text-xs">
       <div class="flex items-center justify-between gap-2">
-        <span class="text-muted">{{ t('event.scoreBreakdown.strengthBalance') }}</span>
+        <span class="text-muted">{{ t('tournament.scoreBreakdown.strengthBalance') }}</span>
         <span class="font-mono">{{ formatScore(detail.strengthBalance) }}</span>
       </div>
       <div class="flex items-center justify-between gap-2">
-        <span class="text-muted">{{ t('event.scoreBreakdown.novelty') }}</span>
+        <span class="text-muted">{{ t('tournament.scoreBreakdown.novelty') }}</span>
         <span class="font-mono">{{ formatScore(detail.novelty) }}</span>
       </div>
       <div class="flex items-center justify-between gap-2">
-        <span class="text-muted">{{ t('event.scoreBreakdown.rematch') }}</span>
+        <span class="text-muted">{{ t('tournament.scoreBreakdown.rematch') }}</span>
         <span class="font-mono">{{ formatScore(detail.rematchPenalty) }}</span>
       </div>
       <div class="flex items-center justify-between gap-2">
-        <span class="text-muted">{{ t('event.tablePreview.scoreItems.rotateTable3') }}</span>
+        <span class="text-muted">{{ t('tournament.tablePreview.scoreItems.rotateTable3') }}</span>
         <span class="font-mono">{{ formatScore(detail.rotateTable3) }}</span>
       </div>
       <div class="flex items-center justify-between gap-2 border-b border-dashed border-default/60 pb-1">
-        <span class="text-muted">{{ t('event.scoreBreakdown.tableSizeWeight') }}</span>
+        <span class="text-muted">{{ t('tournament.scoreBreakdown.tableSizeWeight') }}</span>
         <span class="font-mono">{{ formatScore(detail.tableSizeWeight) }}</span>
       </div>
       <div class="flex items-center justify-between gap-2 font-semibold">
-        <span>{{ t('event.scoreBreakdown.playerTotal') }}</span>
+        <span>{{ t('tournament.scoreBreakdown.playerTotal') }}</span>
         <span class="font-mono">{{ formatScore(detail.total) }}</span>
       </div>
     </div>

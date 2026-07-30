@@ -21,12 +21,12 @@ const isOpen = ref(true)
     <UCollapsible v-model:open="isOpen">
       <button type="button" class="flex items-center gap-1.5 mb-1.5 w-full cursor-pointer">
         <UIcon :name="ICONS.booster" class="size-4 text-warning" />
-        <h4 class="text-sm font-bold">{{ t('event.winnerChecklist.title') }}</h4>
+        <h4 class="text-sm font-bold">{{ t('tournament.winnerChecklist.title') }}</h4>
         <UIcon :name="ICONS.chevronDown" class="size-3.5 text-muted transition-transform" :class="isOpen ? '' : '-rotate-90'" />
       </button>
 
       <template #content>
-        <p class="text-xs text-muted mb-1.5">{{ t('event.winnerChecklist.hint') }}</p>
+        <p class="text-xs text-muted mb-1.5">{{ t('tournament.winnerChecklist.hint') }}</p>
 
         <div class="space-y-1">
           <template v-for="entry in winners" :key="entry.pairingId">
@@ -55,7 +55,7 @@ const isOpen = ref(true)
 
               <UCheckbox
                 :model-value="checked[player.id] ?? false"
-                :aria-label="t('event.winnerChecklist.handedOutAriaLabel', { name: `${player.name} ${player.surname}` })"
+                :aria-label="t('tournament.winnerChecklist.handedOutAriaLabel', { name: `${player.name} ${player.surname}` })"
                 @click.stop
                 @update:model-value="emit('toggle', player.id)"
               />

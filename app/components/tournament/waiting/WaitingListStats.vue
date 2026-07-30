@@ -34,7 +34,7 @@ const statsState = computed(() => {
 
   if (count === 0) {
     return {
-      label: t('event.waitingListStats.noPlayers'),
+      label: t('tournament.waitingListStats.noPlayers'),
       color: 'warning' as const,
       show: true
     }
@@ -42,7 +42,7 @@ const statsState = computed(() => {
 
   if (count <= 2) {
     return {
-      label: t('event.waitingListStats.minPlayers', { count }),
+      label: t('tournament.waitingListStats.minPlayers', { count }),
       color: 'warning' as const,
       show: true
     }
@@ -50,7 +50,7 @@ const statsState = computed(() => {
 
   if (count === 5) {
     return {
-      label: t('event.waitingListStats.invalidFive'),
+      label: t('tournament.waitingListStats.invalidFive'),
       color: 'error' as const,
       show: true
     }
@@ -58,7 +58,7 @@ const statsState = computed(() => {
 
   // 3, 4, or 6+ giocatori
   return {
-    label: t('event.waitingListStats.playersCount', { count }),
+    label: t('tournament.waitingListStats.playersCount', { count }),
     color: 'info' as const,
     show: true
   }

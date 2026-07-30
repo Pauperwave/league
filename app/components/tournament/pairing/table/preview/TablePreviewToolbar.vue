@@ -21,18 +21,18 @@ const { t } = useI18n()
 <template>
   <div class="flex flex-wrap items-center justify-between gap-2">
     <div class="text-sm text-muted">
-      {{ t('event.tablePreviewToolbar.totalScoreLabel') }} <span class="font-semibold text-default">{{ totalScore.toFixed(2) }}</span>
+      {{ t('tournament.tablePreviewToolbar.totalScoreLabel') }} <span class="font-semibold text-default">{{ totalScore.toFixed(2) }}</span>
     </div>
 
     <div class="flex flex-wrap items-center gap-2">
       <UButton size="sm" color="neutral" variant="soft" :icon="ICONS.settings" @click="emit('openSettings')">
-        {{ t('event.tablePreviewToolbar.weightsAndConstraints') }}
+        {{ t('tournament.tablePreviewToolbar.weightsAndConstraints') }}
       </UButton>
       <UButton size="sm" color="neutral" variant="outline" :icon="ICONS.optimize" :disabled="loading" @click="emit('optimize')">
-        {{ t('event.tablePreviewToolbar.optimize') }}
+        {{ t('tournament.tablePreviewToolbar.optimize') }}
       </UButton>
       <UButton size="sm" color="neutral" variant="outline" :icon="ICONS.shuffle" :disabled="loading" @click="emit('random')">
-        {{ t('event.tablePreviewToolbar.random') }}
+        {{ t('tournament.tablePreviewToolbar.random') }}
       </UButton>
     </div>
   </div>

@@ -40,7 +40,7 @@ const { t } = useI18n()
     <div class="flex items-center gap-1.5 min-w-0">
       <div v-if="tableNumber !== undefined" class="flex items-center gap-1 shrink-0">
         <UIcon :name="ICONS.tableView" class="size-3.5 text-primary" />
-        <span class="text-sm font-semibold">{{ t('event.pairing.tableHeading', { n: tableNumber }) }}</span>
+        <span class="text-sm font-semibold">{{ t('tournament.pairing.tableHeading', { n: tableNumber }) }}</span>
       </div>
       <PlayerNameTag
         v-else

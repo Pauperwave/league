@@ -108,7 +108,7 @@ function getCellClass(row: number, col: number): string {
 <template>
   <div class="space-y-4">
     <p class="text-sm text-muted-foreground">
-      {{ t('event.scoreGrid.instructions') }}
+      {{ t('tournament.scoreGrid.instructions') }}
     </p>
 
     <div class="space-y-2">
@@ -148,7 +148,7 @@ function getCellClass(row: number, col: number): string {
 
     <!-- Actions -->
     <ModalFooterActions
-      :confirm-label="t('event.scoreGrid.confirmRanking')"
+      :confirm-label="t('tournament.scoreGrid.confirmRanking')"
       :confirm-disabled="!isValidFormation"
       @cancel="handleCancel"
       @confirm="handleSubmit"

@@ -237,14 +237,14 @@ onMounted(() => {
       class="absolute top-[4cqmin] left-[4cqmin] text-muted"
     />
 
-    <UTooltip v-if="isFullscreen" :content="{ side: 'top' }" :text="t('event.roundTimer.exitFullscreenTooltip')">
+    <UTooltip v-if="isFullscreen" :content="{ side: 'top' }" :text="t('tournament.roundTimer.exitFullscreenTooltip')">
       <UButton
         :icon="ICONS.collapse"
         color="neutral"
         variant="ghost"
         size="xl"
         class="absolute top-[4cqmin] right-[4cqmin]"
-        :aria-label="t('event.roundTimer.exitFullscreenTooltip')"
+        :aria-label="t('tournament.roundTimer.exitFullscreenTooltip')"
         @click="toggle"
       />
     </UTooltip>
@@ -283,7 +283,7 @@ onMounted(() => {
           variant="soft"
           :disabled="isExpired"
           :fullscreen="isFullscreen"
-          :tooltip="isExpired ? t('event.roundTimer.expiredTooltip') : t('event.roundTimer.startTooltip')"
+          :tooltip="isExpired ? t('tournament.roundTimer.expiredTooltip') : t('tournament.roundTimer.startTooltip')"
           @click="start"
         />
         <TimerControlButton
@@ -292,7 +292,7 @@ onMounted(() => {
           color="neutral"
           variant="soft"
           :fullscreen="isFullscreen"
-          :tooltip="t('event.roundTimer.pauseTooltip')"
+          :tooltip="t('tournament.roundTimer.pauseTooltip')"
           @click="stop"
         />
 
@@ -301,7 +301,7 @@ onMounted(() => {
           color="error"
           variant="subtle"
           :fullscreen="isFullscreen"
-          :tooltip="t('event.roundTimer.resetTooltip')"
+          :tooltip="t('tournament.roundTimer.resetTooltip')"
           @click="showResetConfirm = true"
         />
 
@@ -311,7 +311,7 @@ onMounted(() => {
           color="neutral"
           variant="ghost"
           :fullscreen="isFullscreen"
-          :tooltip="t('event.roundTimer.fullscreenTooltip')"
+          :tooltip="t('tournament.roundTimer.fullscreenTooltip')"
           @click="toggle"
         />
       </div>
@@ -322,7 +322,7 @@ onMounted(() => {
           color="error"
           variant="outline"
           :fullscreen="isFullscreen"
-          :tooltip="t('event.roundTimer.subtract10Tooltip')"
+          :tooltip="t('tournament.roundTimer.subtract10Tooltip')"
           label="10:00"
           @click="onSubtractClick(10)"
         />
@@ -332,7 +332,7 @@ onMounted(() => {
           color="error"
           variant="outline"
           :fullscreen="isFullscreen"
-          :tooltip="t('event.roundTimer.subtract5Tooltip')"
+          :tooltip="t('tournament.roundTimer.subtract5Tooltip')"
           label="5:00"
           @click="onSubtractClick(5)"
         />
@@ -342,7 +342,7 @@ onMounted(() => {
           color="success"
           variant="outline"
           :fullscreen="isFullscreen"
-          :tooltip="t('event.roundTimer.add5Tooltip')"
+          :tooltip="t('tournament.roundTimer.add5Tooltip')"
           label="5:00"
           @click="addMinutes(5)"
         />
@@ -352,7 +352,7 @@ onMounted(() => {
           color="success"
           variant="outline"
           :fullscreen="isFullscreen"
-          :tooltip="t('event.roundTimer.add10Tooltip')"
+          :tooltip="t('tournament.roundTimer.add10Tooltip')"
           label="10:00"
           @click="addMinutes(10)"
         />
@@ -361,10 +361,10 @@ onMounted(() => {
 
     <ConfirmModal
       v-model:open="showResetConfirm"
-      :title="t('event.roundTimer.resetConfirm.title')"
-      :description="t('event.roundTimer.resetConfirm.description')"
-      :question="t('event.roundTimer.resetConfirm.question')"
-      :confirm-label="t('event.roundTimer.resetConfirm.confirmLabel')"
+      :title="t('tournament.roundTimer.resetConfirm.title')"
+      :description="t('tournament.roundTimer.resetConfirm.description')"
+      :question="t('tournament.roundTimer.resetConfirm.question')"
+      :confirm-label="t('tournament.roundTimer.resetConfirm.confirmLabel')"
       :confirm-icon="ICONS.reset"
       :portal="!isFullscreen"
       @confirm="confirmReset"
@@ -372,10 +372,10 @@ onMounted(() => {
 
     <ConfirmModal
       v-model:open="showSubtractExpireConfirm"
-      :title="t('event.roundTimer.subtractExpireConfirm.title')"
-      :description="t('event.roundTimer.subtractExpireConfirm.description')"
-      :question="t('event.roundTimer.subtractExpireConfirm.question')"
-      :confirm-label="t('event.roundTimer.subtractExpireConfirm.confirmLabel')"
+      :title="t('tournament.roundTimer.subtractExpireConfirm.title')"
+      :description="t('tournament.roundTimer.subtractExpireConfirm.description')"
+      :question="t('tournament.roundTimer.subtractExpireConfirm.question')"
+      :confirm-label="t('tournament.roundTimer.subtractExpireConfirm.confirmLabel')"
       :confirm-icon="ICONS.subtract"
       confirm-color="warning"
       :portal="!isFullscreen"

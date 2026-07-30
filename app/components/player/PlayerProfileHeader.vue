@@ -43,7 +43,7 @@ const { t } = useI18n()
         background="bg-elevated"
         :icon="ICONS.calendarDays"
         :value="playerStats?.tournaments_played ?? 0"
-        :label="t('player.stats.events')"
+        :label="t('player.stats.tournaments')"
       />
       <StatTile
         background="bg-elevated"

@@ -54,8 +54,8 @@ const art2 = computed(() => getArtCrop(commander2Data.value))
 
 const eventCountLabel = computed(() =>
   isUsedInEvents.value
-    ? t('deck.usedInEvents', props.eventCount!, { named: { count: props.eventCount } })
-    : t('deck.notUsedInEvents')
+    ? t('deck.usedInTournaments', props.eventCount!, { named: { count: props.eventCount } })
+    : t('deck.notUsedInTournaments')
 )
 
 // Bracket level (BACKLOG, 2026-07-22): self-assigned per player's own copy of

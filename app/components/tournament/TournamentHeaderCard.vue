@@ -22,9 +22,9 @@ function handleEdit() {
 }
 
 const statusBadge = computed(() => {
-  if (props.tournamentStatus === 'ended') return { color: 'neutral', label: t('event.status.ended') } as const
-  if (props.tournamentStatus === 'playing') return { color: 'success', label: t('event.status.playing') } as const
-  return { color: 'warning', label: t('event.status.registration') } as const
+  if (props.tournamentStatus === 'ended') return { color: 'neutral', label: t('tournament.status.ended') } as const
+  if (props.tournamentStatus === 'playing') return { color: 'success', label: t('tournament.status.playing') } as const
+  return { color: 'warning', label: t('tournament.status.registration') } as const
 })
 </script>
 
@@ -39,7 +39,7 @@ const statusBadge = computed(() => {
           variant="ghost"
           :icon="ICONS.edit"
           size="xs"
-          :aria-label="t('event.editAriaLabel')"
+          :aria-label="t('tournament.editAriaLabel')"
           @click="handleEdit"
         />
         <UBadge :color="statusBadge.color" :icon="tournamentStatus === 'ended' ? ICONS.flag : undefined">

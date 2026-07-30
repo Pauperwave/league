@@ -58,7 +58,7 @@ const router = useRouter()
         :icon="ICONS.add"
         @click="emit('createTournament')"
       >
-        {{ t('league.newEvent') }}
+        {{ t('league.newTournament') }}
       </UButton>
     </div>
 
@@ -73,7 +73,7 @@ const router = useRouter()
 
     <div class="mt-3 flex flex-col flex-1 min-h-0 overflow-hidden">
       <h2 class="text-lg font-semibold mb-2 shrink-0">
-        {{ t('league.scoresByEvent') }}
+        {{ t('league.scoresByTournament') }}
       </h2>
       <TournamentRanking :league-id="leagueId" class="flex-1 min-h-0 overflow-auto" />
     </div>

@@ -36,7 +36,7 @@ const open = computed({
 <template>
   <UModal
     v-model:open="open"
-    :title="t('event.votesModal.title')"
+    :title="t('tournament.votesModal.title')"
     :ui="{ content: 'sm:max-w-md' }"
   >
     <template #description>

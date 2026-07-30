@@ -264,9 +264,9 @@ const submittedByPlayerId = computed<Record<number, boolean>>(() => {
 // ── Computed: UI Text ──────────────────────────────────────────────────────
 
   const standingsTitle = computed(() => {
-    if (tournamentStatus.value === 'ended') return t('event.standingsTitleFinal')
-    if (currentRound.value > 0) return t('event.standingsTitleRound', { round: currentRound.value })
-    return t('event.standingsTitleDefault')
+    if (tournamentStatus.value === 'ended') return t('tournament.standingsTitleFinal')
+    if (currentRound.value > 0) return t('tournament.standingsTitleRound', { round: currentRound.value })
+    return t('tournament.standingsTitleDefault')
   })
 
   const roundDuration = computed(() => {
@@ -275,8 +275,8 @@ const submittedByPlayerId = computed<Record<number, boolean>>(() => {
 
   function handleTimerExpired() {
     toast.add({
-      title: t('event.timerExpiredTitle'),
-      description: t('event.timerExpiredDescription', { round: currentRound.value }),
+      title: t('tournament.timerExpiredTitle'),
+      description: t('tournament.timerExpiredDescription', { round: currentRound.value }),
       color: 'warning',
       icon: ICONS.timerOff,
     })
@@ -289,7 +289,7 @@ const formattedDate = computed(() => {
 })
 
 const leagueName = computed(() => currentLeague.value?.name ?? t('league.fallbackName'))
-const eventName = computed(() => currentTournament.value?.tournament_name ?? t('event.fallbackName'))
+const eventName = computed(() => currentTournament.value?.tournament_name ?? t('tournament.fallbackName'))
 
 const breadcrumbItems = useBreadcrumb(() => [
   { label: t('league.breadcrumb'), to: '/leagues' },
@@ -405,7 +405,7 @@ async function handleUndrawTable(pairingId: number) {
     toast.add({ title: t('deck.toast.errorTitle'), description: result.error, color: 'error' })
     return
   }
-  toast.add({ title: t('event.undrawnTitle'), color: 'success' })
+  toast.add({ title: t('tournament.undrawnTitle'), color: 'success' })
   await refreshDisplayedPairings()
 }
 </script>
@@ -462,7 +462,7 @@ async function handleUndrawTable(pairingId: number) {
             class="mb-4 p-4 rounded-lg border bg-elevated border-muted flex items-center justify-between"
           >
             <span class="text-sm font-medium">
-              {{ t('event.viewingPastRound', { round: viewedRound }) }}
+              {{ t('tournament.viewingPastRound', { round: viewedRound }) }}
             </span>
             <UButton
               size="sm"
@@ -471,7 +471,7 @@ async function handleUndrawTable(pairingId: number) {
               :icon="ICONS.reset"
               @click="clearViewedRound"
             >
-              {{ t('event.backToCurrentRound') }}
+              {{ t('tournament.backToCurrentRound') }}
             </UButton>
           </div>
 
@@ -496,7 +496,7 @@ async function handleUndrawTable(pairingId: number) {
                 v-model:open="showCreatePlayerModal"
                 :player="playerToEdit"
                 :existing-players="players"
-                context="event"
+                context="tournament"
                 @create="playersHandlers.handlePlayerCreate"
                 @update="playersHandlers.handlePlayerUpdate"
                 @select="playersHandlers.handlePlayerSelectFromModal"
@@ -587,11 +587,11 @@ async function handleUndrawTable(pairingId: number) {
 
     <ConfirmModal
       v-model:open="showCancelRoundConfirm"
-      :title="t('event.cancelRound.title')"
-      :description="t('event.cancelRound.description')"
-      :question="t('event.cancelRound.question')"
-      :warning="t('event.cancelRound.warning')"
-      :confirm-label="t('event.cancelRound.confirmLabel')"
+      :title="t('tournament.cancelRound.title')"
+      :description="t('tournament.cancelRound.description')"
+      :question="t('tournament.cancelRound.question')"
+      :warning="t('tournament.cancelRound.warning')"
+      :confirm-label="t('tournament.cancelRound.confirmLabel')"
       :confirm-icon="ICONS.delete"
       :loading="loading"
       @confirm="lifecycle.confirmCancelRound"
@@ -599,11 +599,11 @@ async function handleUndrawTable(pairingId: number) {
 
     <ConfirmModal
       v-model:open="showEndTournamentConfirm"
-      :title="t('event.endEvent.title')"
-      :description="t('event.endEvent.description')"
-      :question="t('event.endEvent.question')"
-      :warning="t('event.endEvent.warning')"
-      :confirm-label="t('event.endEvent.confirmLabel')"
+      :title="t('tournament.endEvent.title')"
+      :description="t('tournament.endEvent.description')"
+      :question="t('tournament.endEvent.question')"
+      :warning="t('tournament.endEvent.warning')"
+      :confirm-label="t('tournament.endEvent.confirmLabel')"
       :confirm-icon="ICONS.flag"
       :loading="loading"
       @confirm="lifecycle.confirmEndEvent"

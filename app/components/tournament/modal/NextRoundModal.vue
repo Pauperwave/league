@@ -21,8 +21,8 @@ function handleConfirm() {
 <template>
   <UModal
     v-model:open="open"
-    :title="t('event.nextRoundModal.title')"
-    :description="t('event.nextRoundModal.description')"
+    :title="t('tournament.nextRoundModal.title')"
+    :description="t('tournament.nextRoundModal.description')"
     :ui="{ footer: 'justify-end' }"
   >
     <template #footer>

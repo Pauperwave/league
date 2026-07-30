@@ -63,7 +63,7 @@ async function onConfirmRefreshCatalog() {
 <template>
   <UModal
     v-model:open="open"
-    :title="t('event.commanderModal.title')"
+    :title="t('tournament.commanderModal.title')"
     :scrollable="true"
     :ui="{
       content: 'w-[calc(100vw-2rem)] max-w-4xl rounded-lg shadow-lg ring ring-default',
