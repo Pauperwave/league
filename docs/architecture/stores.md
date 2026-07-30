@@ -4,7 +4,7 @@
 
 | Store | Type | File | Purpose |
 |-------|------|------|---------|
-| `useEventStore` | Lifecycle | `app/stores/events.ts` | Event lifecycle state machine (registration → playing → ended), round scoring |
+| `useTournamentStore` | Lifecycle | `app/stores/tournaments.ts` | Tournament lifecycle state machine (registration → playing → ended), round scoring |
 | `useRankingsStore` | Session | `app/stores/rankings.ts` | Player rankings per pairing |
 | `useKillsStore` | Session | `app/stores/kills.ts` | Kill tracking in round |
 | `useVotesStore` | Session | `app/stores/votes.ts` | Deck/Play votes |
@@ -32,15 +32,15 @@ export const useXxxStore = defineStore('xxx', () => {
 
 ## The Lifecycle Store
 
-### `useEventStore`
+### `useTournamentStore`
 
-The event lifecycle state machine — `currentEvent` + BFF `$fetch` actions + the ADR-007 `save*` seam. No Supabase client, no read caches (those live in `event/useEventQueries.ts` / `league/useLeagueStandingsQuery.ts`, refreshed by `useEventPage.refreshAfterLifecycle()`).
+The tournament lifecycle state machine — `currentTournament` + BFF `$fetch` actions + the ADR-007 `save*` seam. No Supabase client, no read caches (those live in `tournament/useTournamentQueries.ts` / `league/useLeagueStandingsQuery.ts`, refreshed by `useTournamentPage.refreshAfterLifecycle()`).
 
-**State**: `currentEvent`, `loading` (computed from `loadingCount`), `error`
+**State**: `currentTournament`, `loading` (computed from `loadingCount`), `error`
 
-**Getters**: `isEventEnded`
+**Getters**: `isTournamentEnded`
 
-**Event Lifecycle**: `startEvent` (validates 3+ players, not 5), `nextRound` (server scores the round, advances or ends the event, inserts next pairings), `turnBackRound` (rolls back a round or to registration), `setCurrentEvent`. Plain CRUD (`createEvent`/`updateEvent`/`deleteEvent`) lives in `event/useEventMutations.ts` instead — a Colada `useMutation` per action, same template as leagues/rulesets/decks/players.
+**Tournament Lifecycle**: `startTournament` (validates 3+ players, not 5), `nextRound` (server scores the round, advances or ends the tournament, inserts next pairings), `turnBackRound` (rolls back a round or to registration), `setCurrentTournament`. Plain CRUD (`createTournament`/`updateTournament`/`deleteTournament`) lives in `tournament/useTournamentMutations.ts` instead — a Colada `useMutation` per action, same template as leagues/rulesets/decks/players.
 
 **Round writes** (ADR-007 `save*` seam, each a direct BFF `$fetch`): `saveVote`, `saveCommander`, `savePairingRankings`, `savePairingKills`
 
@@ -50,7 +50,7 @@ The event lifecycle state machine — `currentEvent` + BFF `$fetch` actions + th
 
 ## Session Stores
 
-Ephemeral UI state for the event page. No Supabase calls. `Map<number, ...>` patterns. All have `reset()` and `hydrate()` — the latter is the crash-insurance rehydration entry point fed by `useSessionStorePersistence` (localStorage mirror, one key per event/round). See [`client-caching.md`](client-caching.md) for how this relates to (and differs from) the Colada query cache persistence used elsewhere in the app.
+Ephemeral UI state for the tournament page. No Supabase calls. `Map<number, ...>` patterns. All have `reset()` and `hydrate()` — the latter is the crash-insurance rehydration entry point fed by `useSessionStorePersistence` (localStorage mirror, one key per tournament/round). See [`client-caching.md`](client-caching.md) for how this relates to (and differs from) the Colada query cache persistence used elsewhere in the app.
 
 ### `useRankingsStore`
 
@@ -135,8 +135,8 @@ try {
 
 ### Architecture
 1. **Setup API exclusively** — better TS inference, explicit public API
-2. **Two remaining categories** — the lifecycle store (`events.ts`, BFF-backed state machine) and Session stores (ephemeral UI state); every other domain reads/writes through Colada query/mutation composables instead
-3. **Loading strategy** — `events.ts` uses a `loadingCount` counter since its actions nest; Colada composables expose `isLoading` per query
+2. **Two remaining categories** — the lifecycle store (`tournaments.ts`, BFF-backed state machine) and Session stores (ephemeral UI state); every other domain reads/writes through Colada query/mutation composables instead
+3. **Loading strategy** — `tournaments.ts` uses a `loadingCount` counter since its actions nest; Colada composables expose `isLoading` per query
 4. **Composables as the read layer** — Colada's `useQuery` handles SSR + caching directly; no `useAsyncData` wrapper needed
 5. **Query keys as initialization** — Colada's own cache replaces the old per-store `initialized` flag pattern
 6. **Optimistic updates** — Colada mutations invalidate + refetch rather than hand-patching local state (see `app/composables/CLAUDE.md`)

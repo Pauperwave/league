@@ -39,13 +39,13 @@ Domains migrated to Pinia Colada use array query keys instead of `useAsyncData` 
 | `deck/useDecksQuery.ts` | `['decks']` | `useDeckMutations` |
 | `commanders/useCommanderDecks.ts` | `['deck-usage', playerId]` | `useDeckMutations` |
 | `players/usePlayersQuery.ts` | `['players']` | `usePlayerMutations` |
-| `event/useWaitroom.ts` | `['waitroom', eventId]` | `useWaitroomMutations` (+ manual refresh on start/turn-back) |
-| `event/useEventQueries.ts` | `['events', leagueId]` | `event/useEventMutations` (CRUD, auto) + refresh after lifecycle transitions (useEventPage) |
-| `event/useEventQueries.ts` | `['event-standings', eventId]` | refresh after round transitions (useEventPage) |
-| `event/useEventQueries.ts` | `['pairings', eventId, round]` | invalidated after lifecycle transitions (useEventPage) |
-| `event/useEventQueries.ts` | `['pairing-history', eventId]` | invalidated after lifecycle transitions (useEventPage) |
-| `league/useLeagueStandingsQuery.ts` | `['league-standings', leagueId]` | `event/useEventMutations` (event delete changes the summed aggregate) |
-| `league/useLeagueStandingsQuery.ts` | `['event-standings-multi', ids]` | read-only aggregate (EventRanking) |
+| `tournament/useWaitroom.ts` | `['waitroom', tournamentId]` | `useWaitroomMutations` (+ manual refresh on start/turn-back) |
+| `tournament/useTournamentQueries.ts` | `['events', leagueId]` | `tournament/useTournamentMutations` (CRUD, auto) + refresh after lifecycle transitions (useTournamentPage) |
+| `tournament/useTournamentQueries.ts` | `['event-standings', tournamentId]` | refresh after round transitions (useTournamentPage) |
+| `tournament/useTournamentQueries.ts` | `['pairings', tournamentId, round]` | invalidated after lifecycle transitions (useTournamentPage) |
+| `tournament/useTournamentQueries.ts` | `['pairing-history', tournamentId]` | invalidated after lifecycle transitions (useTournamentPage) |
+| `league/useLeagueStandingsQuery.ts` | `['league-standings', leagueId]` | `tournament/useTournamentMutations` (tournament delete changes the summed aggregate) |
+| `league/useLeagueStandingsQuery.ts` | `['event-standings-multi', ids]` | read-only aggregate (TournamentRanking) |
 | `players/usePlayerStats.ts` | `['player-stats', playerId]` | read-only |
 | `players/usePlayerStats.ts` (all) | `['all-player-stats']` | read-only (players list page) |
 | `players/usePlayerMatchHistory.ts` | `['player-match-history', playerId]` | read-only |
@@ -60,7 +60,7 @@ Domains migrated to Pinia Colada use array query keys instead of `useAsyncData` 
 
 | Page | Key | Purpose |
 |------|-----|---------|
-| — | — | The league/event pages now rely entirely on Colada queries (ADR-015); no page-level `useAsyncData` keys remain. |
+| — | — | The league/tournament pages now rely entirely on Colada queries (ADR-015); no page-level `useAsyncData` keys remain. |
 
 ## Collision History
 

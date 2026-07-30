@@ -29,30 +29,30 @@ leagues.vue
 ```
 league/[id].vue
 ├── UBreadcrumb
-├── LeagueEventsPanel     — event list + create button
-│   └── EventFormModal    — create event
-├── StandingsCard         — cross-event standings (same component as the event page's live standings, unified 2026-07-22)
+├── LeagueEventsPanel     — tournament list + create button
+│   └── TournamentFormModal    — create tournament
+├── StandingsCard         — cross-tournament standings (same component as the tournament page's live standings, unified 2026-07-22)
 │   └── PlayerNameTag     — linked player names
-├── EventFormModal        — edit event
+├── TournamentFormModal        — edit tournament
 ├── LeagueFormModal       — edit league
 └── ConfirmModal          — delete confirmation
 ```
 
 ---
 
-## Page: `/league/:leagueId/event/:eventId`
+## Page: `/league/:leagueId/tournament/:tournamentId`
 
 The most complex page. Components are auto-imported by Nuxt.
 
 ```
-event/[eventId].vue
+tournament/[tournamentId].vue
 ├── UBreadcrumb
-├── EventControlPanel           — stepper + action buttons
-│   ├── EventStepper            — visual phase indicator
-│   ├── StartEventButton        — enabled when canStartEvent
+├── TournamentActionBar         — stepper + action buttons
+│   ├── TournamentStepper       — visual phase indicator
+│   ├── StartTournamentButton   — enabled when canStartTournament
 │   └── NextRoundModal          — confirm round advance
-├── EventHeaderCard             — event name, date, status badge
-│   └── EndedEventBadge         — shown when event ended
+├── TournamentHeaderCard        — tournament name, date, status badge
+│   └── EndedTournamentBadge    — shown when tournament ended
 ├── WaitingList                 — registration phase only
 │   ├── WaitingListTable        — sortable player table
 │   ├── WaitingListStats        — player count + table estimate
@@ -79,7 +79,7 @@ event/[eventId].vue
     │   └── KillFlowCanvas
     │       └── KillPlayerNode
     ├── DeckPlayVotesModal      — brew + play votes
-    ├── EventFormModal          — edit event
+    ├── TournamentFormModal     — edit tournament
     └── PairingSettingsModal    — pairing algorithm settings
         ├── ForbiddenPairsSection
         ├── PairingWeightsSection
@@ -240,14 +240,14 @@ rulesets.vue
 | Component | Purpose |
 |-----------|---------|
 | `CommanderDeckCard` | Deck display (player profile or aggregate browse) |
-| `EventRanking` | Single event ranking view |
+| `TournamentRanking` | Single tournament ranking view |
 
 ### Modals (Generic)
 
 | Component | Purpose |
 |-----------|---------|
 | `ConfirmModal` | Generic confirm/cancel with subject text |
-| `EventFormModal` | Create/edit event |
+| `TournamentFormModal` | Create/edit tournament |
 | `LeagueFormModal` | Create/edit league |
 | `RulesetFormModal` | Create/edit ruleset |
 | `CreatePlayerModal` | Create new player |
@@ -255,7 +255,7 @@ rulesets.vue
 | `DeckEditModal` | Edit borrowed deck status |
 | `DeckCreateModal` | Create new commander deck |
 
-### Modals (Event-Specific)
+### Modals (Tournament-Specific)
 
 | Component | Trigger | Purpose |
 |-----------|---------|---------|
@@ -275,9 +275,9 @@ rulesets.vue
 |-----------|---------|-------|
 | `BaseTable` | Generic data table | Used by Rankings |
 | `RowActionButton` | Wrapper around UButton | Consistent styling |
-| `RowActionButtons` | Button group layout | League/event actions |
+| `RowActionButtons` | Button group layout | League/tournament actions |
 | `CancelButton` | Styled cancel button | Modal dismiss |
-| `DatePicker` | Date selection | Event form |
+| `DatePicker` | Date selection | Tournament form |
 | `CardPreview` | Card hover preview | Commander search |
 | `CommanderSearch` | Autocomplete commander | Deck create/edit |
 
@@ -294,7 +294,7 @@ rulesets.vue
 
 ## Component Directory Structure
 
-Domain folders are all lowercase (see `app/components/CLAUDE.md`); tag names drop the folder prefix entirely (`pathPrefix: false`), so e.g. `event/pairing/table/TableCard.vue` is just `<TableCard>`.
+Domain folders are all lowercase (see `app/components/CLAUDE.md`); tag names drop the folder prefix entirely (`pathPrefix: false`), so e.g. `tournament/pairing/table/TableCard.vue` is just `<TableCard>`.
 
 ```
 app/components/
@@ -317,25 +317,25 @@ app/components/
 │   ├── DeckPlayVotesModal.vue
 │   ├── DeckStatsRow.vue
 │   └── ScryfallLinkButton.vue
-├── event/                        — event page components
+├── tournament/                    — tournament page components
 │   ├── CurrentTime.vue
-│   ├── EndedEventBadge.vue
-│   ├── EventControlPanel.vue
-│   ├── EventHeaderCard.vue
-│   ├── EventRanking.vue
-│   ├── EventStepper.vue
-│   ├── EventTable.vue
+│   ├── EndedTournamentBadge.vue
+│   ├── TournamentActionBar.vue
+│   ├── TournamentHeaderCard.vue
+│   ├── TournamentRanking.vue
+│   ├── TournamentStepper.vue
+│   ├── TournamentsTable.vue
 │   ├── RoundTimer.vue
-│   ├── StartEventButton.vue
+│   ├── StartTournamentButton.vue
 │   ├── TimerControlButton.vue
 │   ├── WinnerChecklist.vue
-│   ├── modal/                    — in-room round modals + event CRUD
-│   │   ├── EventCommanderModal.vue
-│   │   ├── EventFormModal.vue
-│   │   ├── EventKillModal.vue
-│   │   ├── EventScoreModal.vue
-│   │   ├── EventScoresModal.vue
-│   │   ├── EventVotesModal.vue
+│   ├── modal/                    — in-room round modals + tournament CRUD
+│   │   ├── TournamentCommanderModal.vue
+│   │   ├── TournamentFormModal.vue
+│   │   ├── TournamentKillModal.vue
+│   │   ├── TournamentScoreModal.vue
+│   │   ├── TournamentScoresModal.vue
+│   │   ├── TournamentVotesModal.vue
 │   │   └── NextRoundModal.vue
 │   ├── pairing/                  — pairing UI
 │   │   ├── PairingsCard.vue
@@ -400,7 +400,7 @@ app/components/
 │   ├── RulesetFieldGrid.vue
 │   └── RulesetFormModal.vue
 ├── standings/
-│   └── StandingsCard.vue          — shared by `/league/:id` (cross-event) and the event page (live per-round); its own domain folder rather than nested under `event/`, same reasoning as `player/`'s `PlayerNameTag.vue` (ADR-024)
+│   └── StandingsCard.vue          — shared by `/league/:id` (cross-tournament) and the tournament page (live per-round); its own domain folder rather than nested under `tournament/`, same reasoning as `player/`'s `PlayerNameTag.vue` (ADR-024)
 └── ui/                            — generic, domain-agnostic pieces (see ui/CLAUDE.md)
     ├── actions/
     │   ├── QuickFillButton.vue

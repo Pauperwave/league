@@ -27,13 +27,13 @@ All 12 app tables follow the same shape: `anon` gets `SELECT`-only, `service_rol
 | Table | SELECT (anon) | Write | Notes |
 |-------|--------------|-------|-------|
 | `leagues` | ✅ | server-side only | BFF: `/api/leagues/*` |
-| `events` | ✅ | server-side only | BFF: `/api/events/*` |
-| `pairings` | ✅ | server-side only | BFF: `/api/pairings/*`, `/api/events/*/advance-round` etc. |
+| `tournaments` | ✅ | server-side only | BFF: `/api/tournaments/*` |
+| `pairings` | ✅ | server-side only | BFF: `/api/pairings/*`, `/api/tournaments/*/advance-round` etc. |
 | `players` | ✅ | server-side only | BFF: `/api/players/*` |
 | `round_results` | ✅ | server-side only | BFF: `server/utils/roundResults.ts` (shared scaffolding) |
 | `rulesets` | ✅ | server-side only | BFF: `/api/rulesets/*` |
-| `standings` | ✅ | server-side only | BFF: `/api/events/*/advance-round` etc. |
-| `waitroom` | ✅ | server-side only | BFF: `/api/events/*/register-player`/`unregister-player` |
+| `standings` | ✅ | server-side only | BFF: `/api/tournaments/*/advance-round` etc. |
+| `waitroom` | ✅ | server-side only | BFF: `/api/tournaments/*/register-player`/`unregister-player` |
 | `commander_decks` | ✅ | server-side only | BFF: `/api/decks/*` |
 | `mtg_commanders` | ✅ | ❌ Denied (server included) | Read-only lookup table (synced from Scryfall). A plain `select()` is capped at 1000 rows by PostgREST regardless of table size (2986 rows here) — full-catalog reads go through the `get_commander_catalog()` RPC instead, see below |
 
@@ -112,7 +112,7 @@ ORDER BY grantee, privilege_type;
 
 | Table | Primary Key | Purpose |
 |-------|------------|---------|
-| `player_stats` | `player_id` (FK to players) | Events played, total matches, wins, kills, average score |
+| `player_stats` | `player_id` (FK to players) | Tournaments played, total matches, wins, kills, average score |
 | `deck_stats` | `(player_id, commander_1, commander_2)` | Same stats per player+commander combination |
 | `commander_stats` | `(commander_1, commander_2)` | Global aggregates across all players |
 

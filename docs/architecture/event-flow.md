@@ -1,20 +1,20 @@
-# Event Flow / Lifecycle
+# Tournament Flow / Lifecycle
 
 <!-- docs/architecture/event-flow.md -->
 
-Documentation of the event lifecycle from creation through completion.
+Documentation of the tournament lifecycle from creation through completion.
 
-## Event States
+## Tournament States
 
-An event exists in one of three states, derived from DB columns:
+A tournament exists in one of three states, derived from DB columns:
 
-| State | `event_playing` | `event_current_round` | `event_registration_open` | Description |
+| State | `tournament_playing` | `tournament_current_round` | `tournament_registration_open` | Description |
 |-------|-----------------|----------------------|---------------------------|-------------|
 | **registration** | `false` | `0` | `true` (default) | Players can join via waitroom. No pairings exist. |
 | **playing** | `true` | `1..N` | `false` | Active rounds. Pairings and standings exist. |
 | **ended** | `false` | `N` | `false` | All rounds completed. Standings are final. |
 
-> The `events.status` column is a **generated column** computed from `event_current_round` vs `event_round_number`. See `docs/architecture/database.md` for trigger details.
+> The `tournaments.status` column is a **generated column** computed from `tournament_current_round` vs `tournament_round_number`. See `docs/architecture/database.md` for trigger details.
 
 ---
 
@@ -22,22 +22,22 @@ An event exists in one of three states, derived from DB columns:
 
 ### 1. Creation
 
-**Trigger:** League detail page → "Crea Evento" button
+**Trigger:** League detail page → "Crea Torneo" button
 
 **DB mutations:**
-- Insert row into `events` with `event_playing = false`, `event_current_round = 0`, `event_registration_open = true`
+- Insert row into `tournaments` with `tournament_playing = false`, `tournament_current_round = 0`, `tournament_registration_open = true`
 
-**Store action:** `useEventStore.createEvent(leagueId, eventData)`
+**Store action:** `useTournamentStore.createTournament(leagueId, tournamentData)`
 
 ---
 
 ### 2. Registration
 
-**UI:** `EventControlPanel` shows stepper with "Registrazione" step active.
+**UI:** `TournamentActionBar` shows stepper with "Registrazione" step active.
 
 **Actions available:**
-- **Add player to waitroom:** `playerStore.addToWaitingList(eventId, playerId)` → inserts into `waitroom`
-- **Remove player from waitroom:** `playerStore.removeFromWaitingList(eventId, playerId)` → deletes from `waitroom`
+- **Add player to waitroom:** `playerStore.addToWaitingList(tournamentId, playerId)` → inserts into `waitroom`
+- **Remove player from waitroom:** `playerStore.removeFromWaitingList(tournamentId, playerId)` → deletes from `waitroom`
 - **Create new player:** `CreatePlayerModal` → adds to `players` table, then adds to waitroom
 - **Preview tables:** Shows estimated table distribution (4-player / 3-player tables) based on waitroom count
 
@@ -51,28 +51,28 @@ An event exists in one of three states, derived from DB columns:
 
 ---
 
-### 3. Start Event
+### 3. Start Tournament
 
-**Trigger:** "Avvia Evento" button in `EventControlPanel`
+**Trigger:** "Avvia Torneo" button in `TournamentActionBar`
 
-**Precondition:** `canStartEvent` computed (≥3 players, ≠5 players)
+**Precondition:** `canStartTournament` computed (≥3 players, ≠5 players)
 
 **DB mutations (transaction-like sequence):**
 
-1. Read all `waitroom` rows for this event
+1. Read all `waitroom` rows for this tournament
 2. Validate player order (if custom order provided, must match waitroom players exactly)
 3. **Insert standings:** One row per player into `standings` with `standing_player_score = 0`, `victories = 0`, `brew_received = 0`, `play_received = 0`
-4. **Update event:** `event_playing = true`, `event_current_round = 1`, `event_registration_open = false`
-5. **Clear waitroom:** Delete all `waitroom` rows for this event
+4. **Update tournament:** `tournament_playing = true`, `tournament_current_round = 1`, `tournament_registration_open = false`
+5. **Clear waitroom:** Delete all `waitroom` rows for this tournament
 6. **Create pairings:** Insert `pairings` rows for round 1 (table assignment by sequential slice of player order)
 
-**Store action:** `useEventStore.startEvent(eventId, playerOrder?)`
+**Store action:** `useTournamentStore.startTournament(tournamentId, playerOrder?)`
 
 **Post-start data fetch:**
-- `fetchEvents(leagueId)` — refresh event list
-- `fetchPairings(eventId, 1)` — load round 1 pairings
-- `fetchStandings(eventId)` — load initial standings
-- `fetchWaitingPlayers(eventId)` — confirm waitroom cleared
+- `fetchEvents(leagueId)` — refresh tournament list
+- `fetchPairings(tournamentId, 1)` — load round 1 pairings
+- `fetchStandings(tournamentId)` — load initial standings
+- `fetchWaitingPlayers(tournamentId)` — confirm waitroom cleared
 
 ---
 
@@ -102,7 +102,7 @@ Each round follows this pattern:
 
 #### 4b. Next Round
 
-**Trigger:** "Prossimo Round" button in `EventControlPanel`
+**Trigger:** "Prossimo Round" button in `TournamentActionBar`
 
 **Precondition:** All tables in current round have submitted scores.
 
@@ -120,9 +120,9 @@ Each round follows this pattern:
    - `victories` incremented if position === 1
 6. **Batch update standings** (score, victories, brew_received, play_received)
 7. **Update ranks** (sort by score descending, assign `standing_player_rank`)
-8. **Increment round:** `event_current_round += 1`
-9. **Check if ended:** If new round > `event_round_number`
-   - **Ended:** Set `event_playing = false` (no new pairings)
+8. **Increment round:** `tournament_current_round += 1`
+9. **Check if ended:** If new round > `tournament_round_number`
+   - **Ended:** Set `tournament_playing = false` (no new pairings)
    - **Continue:** Generate pairings for next round via optimizer
 
 **Pairing generation (rounds 2+):**
@@ -131,7 +131,7 @@ Each round follows this pattern:
 - Constraints: balanced tables (3p/4p), no rematches, spread skill levels
 - Inserts new `pairings` rows
 
-**Store action:** `useEventStore.nextRound(eventId, currentRound, playerOrder?)`
+**Store action:** `useTournamentStore.nextRound(tournamentId, currentRound, playerOrder?)`
 
 **Auto-triggers:**
 - Denormalized stats tables (`player_stats`, `deck_stats`) recalculated via DB trigger on `round_results` INSERT/UPDATE/DELETE
@@ -141,26 +141,26 @@ Each round follows this pattern:
 
 ### 5. Turn Back Round
 
-**Trigger:** "Torna Indietro" button in `EventControlPanel`
+**Trigger:** "Torna Indietro" button in `TournamentActionBar`
 
 **Behavior depends on current round:**
 
 | Current Round | Action |
 |---------------|--------|
-| Round > 1 | Decrement `event_current_round`, delete pairings for current round |
-| Round 1 | Reset to **registration**: `event_playing = false`, `event_current_round = 0`, `event_registration_open = true`, delete all standings + pairings, restore players to waitroom |
+| Round > 1 | Decrement `tournament_current_round`, delete pairings for current round |
+| Round 1 | Reset to **registration**: `tournament_playing = false`, `tournament_current_round = 0`, `tournament_registration_open = true`, delete all standings + pairings, restore players to waitroom |
 
-**Store action:** `useEventStore.turnBackRound(eventId, currentRound, leagueId)`
+**Store action:** `useTournamentStore.turnBackRound(tournamentId, currentRound, leagueId)`
 
 ---
 
 ### 6. Ended
 
-**Trigger:** Automatic when `nextRound` increments past `event_round_number`
+**Trigger:** Automatic when `nextRound` increments past `tournament_round_number`
 
-**State:** `event_playing = false`, `event_current_round = total_rounds`
+**State:** `tournament_playing = false`, `tournament_current_round = total_rounds`
 
-**UI:** `EventControlPanel` shows "Evento Terminato". Standings are read-only.
+**UI:** `TournamentActionBar` shows "Torneo Terminato". Standings are read-only.
 
 ---
 
@@ -169,7 +169,7 @@ Each round follows this pattern:
 ```
 [Created] ──► [Registration]
                    │
-                   │ "Avvia Evento"
+                   │ "Avvia Torneo"
                    ▼
               [Round 1 Playing] ◄────┐
                    │                   │
@@ -198,8 +198,8 @@ Each round follows this pattern:
 
 | Composable | Responsibility |
 |------------|---------------|
-| `useEventPage()` | Orchestrates all event data, exposes lifecycle actions |
-| `useEventUrl()` | Syncs URL query params with event phase/round/modals |
+| `useTournamentPage()` | Orchestrates all tournament data, exposes lifecycle actions |
+| `useTournamentUrl()` | Syncs URL query params with tournament phase/round/modals |
 | `useLiveStandings()` | Reactive standings computation from pairings + results |
 | `useTableCalculator()` | Table size estimation and preview table generation |
 | `usePairingPresets()` | Saved player order presets for quick start |
@@ -208,10 +208,10 @@ Each round follows this pattern:
 
 | Component | Used In | Purpose |
 |-----------|---------|---------|
-| `EventControlPanel` | Event page | Stepper + action buttons (start, next, back) |
-| `WaitingList` | Event page (registration) | Player list with add/remove |
-| `StandingsCard` | Event page | Live standings table |
-| `PairingsCard` | Event page | Table cards with score submission |
+| `TournamentActionBar` | Tournament page | Stepper + action buttons (start, next, back) |
+| `WaitingList` | Tournament page (registration) | Player list with add/remove |
+| `StandingsCard` | Tournament page | Live standings table |
+| `PairingsCard` | Tournament page | Table cards with score submission |
 | `TableScoreGrid` | Modal | Score entry form per table |
 | `TablePreviewModal` | Modal | Preview table assignments before start |
 | `NextRoundModal` | Modal | Confirm round advancement |
@@ -221,4 +221,4 @@ Each round follows this pattern:
 
 - `docs/architecture/database.md` — Trigger architecture, denormalized stats
 - `docs/architecture/modal-url-sync.md` — URL query param sync for modals
-- `docs/architecture/async-data-keys.md` — Data fetching keys for event page
+- `docs/architecture/async-data-keys.md` — Data fetching keys for tournament page

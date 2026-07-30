@@ -30,12 +30,12 @@ How data moves through the application: **Database → Store → Composable → 
 | Table | Purpose | Writes From |
 |-------|---------|-------------|
 | `leagues` | League definitions | `LeagueFormModal` |
-| `events` | Event metadata + state | `EventFormModal`, `useEventStore` lifecycle actions |
+| `tournaments` | Tournament metadata + state | `TournamentFormModal`, `useTournamentStore` lifecycle actions |
 | `players` | Player roster | `CreatePlayerModal` |
 | `rulesets` | Scoring rules | `RulesetFormModal` |
-| `waitroom` | Event registration queue | `WaitingList` add/remove |
-| `standings` | Live scores + ranks | `startEvent`, `nextRound` |
-| `pairings` | Table assignments per round | `startEvent`, `nextRound` |
+| `waitroom` | Tournament registration queue | `WaitingList` add/remove |
+| `standings` | Live scores + ranks | `startTournament`, `nextRound` |
+| `pairings` | Table assignments per round | `startTournament`, `nextRound` |
 | `round_results` | Per-player round scores | `TableScoreGrid` submit |
 | `commander_decks` | Player deck registry | `DeckCreateModal`, `DeckEditModal` |
 
@@ -71,7 +71,7 @@ See `docs/architecture/database.md` for full trigger documentation.
 
 | Category | Stores | Persistence | Pattern |
 |------------|--------|-------------|---------|
-| **Supabase stores** | `useLeagueStore`, `useEventStore`, `usePlayerStore`, `useRulesetStore`, `useCommanderDeckStore` | Persistent (reactive refs) | `initialized` flag, optimistic updates, `{ success, error?, data? }` returns |
+| **Supabase stores** | `useLeagueStore`, `useTournamentStore`, `usePlayerStore`, `useRulesetStore`, `useCommanderDeckStore` | Persistent (reactive refs) | `initialized` flag, optimistic updates, `{ success, error?, data? }` returns |
 | **Session stores** | `useRankingsStore`, `useKillsStore`, `useVotesStore`, `useCommandersStore` | Ephemeral (per round) | `Map<number, ...>`, `reset()` between rounds |
 
 ### Store Responsibilities
@@ -79,7 +79,7 @@ See `docs/architecture/database.md` for full trigger documentation.
 | Store | Owns | Mutations |
 |-------|------|-----------|
 | `useLeagueStore` | `leagues[]`, loading state | `fetchLeagues`, `createLeague`, `updateLeague`, `deleteLeague` |
-| `useEventStore` | `events[]`, `currentEvent`, `standings[]`, `pairings[]`, `pairingHistory[]` | Full lifecycle: `startEvent`, `nextRound`, `turnBackRound`, `submitRoundResult` |
+| `useTournamentStore` | `tournaments[]`, `currentTournament`, `standings[]`, `pairings[]`, `pairingHistory[]` | Full lifecycle: `startTournament`, `nextRound`, `turnBackRound`, `submitRoundResult` |
 | `usePlayerStore` | `players[]`, `waitingPlayers[]`, `waitroomEntries[]` | `fetchPlayers`, `addToWaitingList`, `removeFromWaitingList` |
 | `useRulesetStore` | `rulesets[]` | `fetchRulesets`, `createRuleset`, `updateRuleset` |
 | `useCommanderDeckStore` | `decks[]` | `fetchDecks`, `fetchDecksByPlayer`, `createDeck`, `updateDeck`, `deleteDeck` |
@@ -93,13 +93,13 @@ See `docs/architecture/database.md` for full trigger documentation.
 Stores are **independent**. Pages/composables orchestrate cross-store coordination:
 
 ```ts
-// useEventPage.ts — orchestrates multiple stores
-const eventStore = useEventStore()
+// useTournamentPage.ts — orchestrates multiple stores
+const tournamentStore = useTournamentStore()
 const playerStore = usePlayerStore()
 
 await Promise.all([
-  eventStore.fetchEvents(leagueId),
-  playerStore.fetchWaitingPlayers(eventId),
+  tournamentStore.fetchEvents(leagueId),
+  playerStore.fetchWaitingPlayers(tournamentId),
 ])
 ```
 
@@ -132,14 +132,14 @@ export function useXxx(id: Ref<number | undefined>) {
 | Composable | Wraps | Returns | Used By |
 |------------|-------|---------|---------|
 | `useLeagues()` | `useLeagueStore.fetchLeagues()` | `{ data, pending, error, refresh }` | `/leagues`, `/league/:id` |
-| `useEvents(leagueId)` | `useEventStore.fetchEvents()` | `{ data, pending, error, refresh }` | `/league/:id` |
-| `usePlayers()` | `usePlayerStore.fetchPlayers()` | `{ data, pending, error, refresh }` | Global (event page, player pages) |
+| `useEvents(leagueId)` | `useTournamentStore.fetchEvents()` | `{ data, pending, error, refresh }` | `/league/:id` |
+| `usePlayers()` | `usePlayerStore.fetchPlayers()` | `{ data, pending, error, refresh }` | Global (tournament page, player pages) |
 | `useRulesets()` | `useRulesetStore.fetchRulesets()` | `{ data, pending, error, refresh }` | `/rulesets` |
-| `useStandings(eventId)` | `useEventStore.fetchStandings()` | `{ data, pending, error, refresh }` | Event page |
-| `usePairings(eventId, round)` | `useEventStore.fetchPairings()` | `{ data, pending, error, refresh }` | Event page |
-| `useWaitroom(eventId)` | `usePlayerStore.fetchWaitingPlayers()` | `{ data, pending, error, refresh }` | Event page |
-| `useRoundResults(eventId, round)` | `useEventStore.fetchPairings()` + join | `{ data, pending, error, refresh }` | Event page |
-| `useTournaments(eventId)` | `useEventStore.fetchPairingHistory()` | `{ data, pending, error, refresh }` | Event page |
+| `useStandings(tournamentId)` | `useTournamentStore.fetchStandings()` | `{ data, pending, error, refresh }` | Tournament page |
+| `usePairings(tournamentId, round)` | `useTournamentStore.fetchPairings()` | `{ data, pending, error, refresh }` | Tournament page |
+| `useWaitroom(tournamentId)` | `usePlayerStore.fetchWaitingPlayers()` | `{ data, pending, error, refresh }` | Tournament page |
+| `useRoundResults(tournamentId, round)` | `useTournamentStore.fetchPairings()` + join | `{ data, pending, error, refresh }` | Tournament page |
+| `useTournaments(tournamentId)` | `useTournamentStore.fetchPairingHistory()` | `{ data, pending, error, refresh }` | Tournament page |
 | `useCommanderDecks(playerId)` | `useCommanderDeckStore.fetchDecksByPlayer()` | `{ data, pending, isDeckInUse, getDeckEventCount }` | Player profile |
 | `usePlayerStats(playerId)` | Direct `player_stats` table query | `{ data: PlayerStats }` | Player profile |
 | `useDeckStats(playerId, c1, c2?)` | Direct `deck_stats` table query | `{ data: DeckStats }` | Player deck page |
@@ -149,8 +149,8 @@ export function useXxx(id: Ref<number | undefined>) {
 
 | Composable | Purpose |
 |------------|---------|
-| `useEventPage()` | Orchestrates all event data and lifecycle actions |
-| `useEventUrl()` | URL query param sync for event page modals |
+| `useTournamentPage()` | Orchestrates all tournament data and lifecycle actions |
+| `useTournamentUrl()` | URL query param sync for tournament page modals |
 | `useLiveStandings()` | Reactive standings from pairings + results |
 | `useTableCalculator()` | Table size estimation and preview generation |
 | `usePairingPresets()` | Saved player order presets |
@@ -191,13 +191,13 @@ User clicks "Aggiungi Giocatore"
 WaitingList.vue emits "add" event
         │
         ▼
-Event page calls addToWaitingList(playerIds)
+Tournament page calls addToWaitingList(playerIds)
         │
         ▼
-useEventPage.ts calls playerStore.addToWaitingList(eventId, playerId)
+useTournamentPage.ts calls playerStore.addToWaitingList(tournamentId, playerId)
         │
         ▼
-usePlayerStore.ts: supabase.from('waitroom').insert({ event_id, player_id })
+usePlayerStore.ts: supabase.from('waitroom').insert({ tournament_id, player_id })
         │
         ▼
 PostgreSQL inserts row
@@ -216,7 +216,7 @@ Vue reactivity updates WaitingList.vue UI
 | Layer | Cache | Invalidation |
 |-------|-------|--------------|
 | **Browser (Colada queries)** | `localStorage`, all Colada query entries — see [`client-caching.md`](client-caching.md) | `staleTime`/`gcTime` per query (5s/5min default, 30 days for the commander catalog); manual `refetch()` |
-| **Browser (session stores)** | `localStorage`, one key per event — see [`client-caching.md`](client-caching.md) | 12h TTL or round-number mismatch (`useSessionStorePersistence`) |
+| **Browser (session stores)** | `localStorage`, one key per tournament — see [`client-caching.md`](client-caching.md) | 12h TTL or round-number mismatch (`useSessionStorePersistence`) |
 | **Nuxt SSR** | `useAsyncData` cache (non-Colada composables only) | `refreshNuxtData(key)` or page navigation |
 | **Pinia store** | Reactive refs (lifecycle + session stores only) | Overwritten on fetch, optimistic updates on mutation |
 | **PostgreSQL** | Materialized view (`commander_stats`) | Refreshed by trigger on `round_results` changes |
@@ -261,7 +261,7 @@ async function handleCreateDeck(deckData) {
 
 ### 4. Cross-Page State via URL
 
-Event modals persist state in URL query params (see `docs/architecture/modal-url-sync.md`):
+Tournament modals persist state in URL query params (see `docs/architecture/modal-url-sync.md`):
 - Modal open/close ↔ query param add/remove
 - Enables back-button dismissal and direct linking
 
@@ -284,4 +284,4 @@ Event modals persist state in URL query params (see `docs/architecture/modal-url
 - `docs/architecture/stores.md` — Pinia store patterns and conventions
 - `docs/architecture/async-data-keys.md` — useAsyncData key naming convention
 - `docs/architecture/database.md` — Trigger architecture and denormalized stats
-- `docs/architecture/event-flow.md` — Event lifecycle and DB mutations
+- `docs/architecture/event-flow.md` — Tournament lifecycle and DB mutations

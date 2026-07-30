@@ -2,9 +2,9 @@
 
 ## Overview
 
-Six query parameters synchronize the event page state with the URL, enabling deep links, refresh persistence, and browser back/forward navigation.
+Six query parameters synchronize the tournament page state with the URL, enabling deep links, refresh persistence, and browser back/forward navigation.
 
-**Core composable:** `app/composables/event/useEventUrl.ts`
+**Core composable:** `app/composables/tournament/useTournamentUrl.ts`
 
 ---
 
@@ -12,7 +12,7 @@ Six query parameters synchronize the event page state with the URL, enabling dee
 
 | Param | Type | Example | Purpose |
 |-------|------|---------|---------|
-| `phase` | `'registration'` \| `'playing'` \| `'ended'` | `phase=playing` | Event stepper phase |
+| `phase` | `'registration'` \| `'playing'` \| `'ended'` | `phase=playing` | Tournament stepper phase |
 | `round` | number | `round=2` | Current/next round number |
 | `preview` | `1` (present/absent) | `preview=1` | Preview overlay open (appended to actual phase) |
 | `scoreModal` | pairing ID | `scoreModal=123` | Score/ranking modal |
@@ -26,21 +26,21 @@ Six query parameters synchronize the event page state with the URL, enabling dee
 
 ### How they're set
 
-- **`syncUrl(phase, round)`** in `useEventUrl.ts` — replaces the URL with current phase and round, preserving other params.
-- **Automatic watcher** in `useEventPage.ts`: watches `[currentPhase, currentRound]` and calls `syncUrl()` whenever they change. The watcher skips if the URL already matches to avoid unnecessary replacements on page reload.
+- **`syncUrl(phase, round)`** in `useTournamentUrl.ts` — replaces the URL with current phase and round, preserving other params.
+- **Automatic watcher** in `useTournamentPage.ts`: watches `[currentPhase, currentRound]` and calls `syncUrl()` whenever they change. The watcher skips if the URL already matches to avoid unnecessary replacements on page reload.
 
 ### Phase transitions
 
 | Transition | Trigger | URL change |
 |---|---|---|
-| Registration | Event created | `phase=registration` |
-| Registration → Preview | Click "Avvia Evento" | `phase=registration&preview=1` |
+| Registration | Tournament created | `phase=registration` |
+| Registration → Preview | Click "Avvia Torneo" | `phase=registration&preview=1` |
 | Confirm start | Click "Conferma" in preview | `phase=playing&round=1` |
 | Playing (round N) | Advance confirmed | `phase=playing&round=N` |
 | Playing → Preview (advance) | Click "Avanti" | `phase=playing&round=N&preview=1` |
 | Confirm advance | Click "Conferma" in preview | `phase=playing&round=N` (new round created) |
 | Cancel round | Click "Annulla round" | `phase=playing&round=N-1` |
-| Event ended | Last round confirmed | `phase=ended` |
+| Tournament ended | Last round confirmed | `phase=ended` |
 | Stepper phase change | User clicks stepper step | Any phase → the clicked phase |
 
 ### URL examples
@@ -56,13 +56,13 @@ Preview + modal:                ?phase=playing&round=2&preview=1&scoreModal=123
 
 The `preview` param is independent of `phase`. This means:
 
-- **`phase` always reflects the actual event state** — no "fake" phase value like `previewTables`.
+- **`phase` always reflects the actual tournament state** — no "fake" phase value like `previewTables`.
 - The auto-watcher that syncs `phase`/`round` never conflicts with the preview overlay, because `phase` stays correct (e.g., `playing`) while `preview=1` is added on top.
 - The preview state is managed by `syncPreview(isOpen)` and `previewFromQuery`.
 
 ### Preview modal watcher
 
-In `eventId.vue`:
+In `[tournamentId].vue`:
 
 ```ts
 watch(showStartPreviewModal, (isOpen) => {
@@ -89,7 +89,7 @@ All four modal params follow the same bidirectional pattern:
 3. A **watcher on the modal's `isOpen` ref** calls `sync*Modal()` on open/close
 4. A **watcher on the `*ModalFromQuery`** opens the modal automatically when the param is present
 
-All four modals are controlled from **`eventId.vue`** — the parent page manages all `show*Modal` refs, `selected*Id` refs, and URL sync watchers.
+All four modals are controlled from **`[tournamentId].vue`** — the parent page manages all `show*Modal` refs, `selected*Id` refs, and URL sync watchers.
 
 ### Score modal (`scoreModal`)
 
@@ -157,6 +157,6 @@ function syncScoreModal(isOpen: boolean, pairingId: number | null) {
 
 | Before | After | Reason |
 |--------|-------|--------|
-| `phase=previewTables` (fake phase) | `preview=1` (separate param) | `phase` always reflects actual event state; no auto-sync conflicts |
-| Kill URL sync inside `KillSystemModal.vue` | Kill URL sync in `eventId.vue` (like other modals) | Uniform pattern for all 4 modals; `v-model:open` from parent |
+| `phase=previewTables` (fake phase) | `preview=1` (separate param) | `phase` always reflects actual tournament state; no auto-sync conflicts |
+| Kill URL sync inside `KillSystemModal.vue` | Kill URL sync in `[tournamentId].vue` (like other modals) | Uniform pattern for all 4 modals; `v-model:open` from parent |
 | Trigger button inside `UModal` default slot | Trigger button in `PairingsCard` as plain `UButton` | Matches score/commander/votes pattern; modal externally controlled |
