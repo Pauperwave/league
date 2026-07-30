@@ -13,7 +13,7 @@ Scoped guidance for `app/composables/`. See the root `CLAUDE.md` and `docs/archi
 
 | Folder | Contains |
 |--------|----------|
-| `event/` | Event page orchestration, lifecycle, URL sync, modals, presets |
+| `tournament/` | Tournament page orchestration, lifecycle, URL sync, modals, presets |
 | `event-pairing/` | The pairing optimizer (`pairingOptimizer.ts`) and preferences — canonical source, see its file-level comment on the scoring invariant before touching weights |
 | `supabase/` | Thin SSR-friendly fetchers that wrap a store's fetch action in `useAsyncData` |
 | `commanders/`, `players/`, `tables/`, `theme/`, `ui/`, `auth/`, `league/`, `deck/` | Feature-scoped composables |

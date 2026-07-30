@@ -4,16 +4,16 @@ Scoped guidance for `app/stores/`. See the root `CLAUDE.md` and `docs/architectu
 
 ## Two store categories — pick the right template
 
-- **The lifecycle store** (`events.ts`): the only remaining persistent-data store, and deliberately so (see below).
-- **Session stores** (`rankings.ts`, `kills.ts`, `votes.ts`, `commanders.ts`): ephemeral per-round UI state, no `supabase` calls, no `initialized`/`loading`. Must implement `reset()` (called between rounds — see `useEventLifecycle.ts`'s `resetSessionStores`).
+- **The lifecycle store** (`tournaments.ts`): the only remaining persistent-data store, and deliberately so (see below).
+- **Session stores** (`rankings.ts`, `kills.ts`, `votes.ts`, `commanders.ts`): ephemeral per-round UI state, no `supabase` calls, no `initialized`/`loading`. Must implement `reset()` (called between rounds — see `useTournamentLifecycle.ts`'s `resetSessionStores`).
 
-**All CRUD and read domains have migrated OFF Supabase stores entirely (ADR-015):** reads live in per-domain Pinia Colada query composables (`app/composables/<domain>/use*Query.ts`), writes in `useMutation` + BFF endpoints — no hybrids. `events.ts` is the one deliberate survivor, and it's narrower than it used to be: plain CRUD (`createEvent`/`updateEvent`/`deleteEvent`) moved out to `event/useEventMutations.ts` (same `useMutation` + `onSettled: invalidate` template as leagues/rulesets/decks/players), leaving the store as just the **lifecycle state machine** (`currentEvent` + `startEvent`/`nextRound`/`turnBackRound` + the ADR-007 `save*` round-result seam) — multi-step orchestration that doesn't fit the single-entity-mutation shape. No Supabase client, no cache state — its read caches are `event/useEventQueries.ts` / `league/useLeagueStandingsQuery.ts`, refreshed by `useEventPage.refreshAfterLifecycle()` (lifecycle transitions) or invalidated automatically by `useEventMutations` (CRUD). Never reintroduce `supabase.from()` reads/writes into a store. The cards/stats slice (`players/usePlayerStats.ts`, `commanders/{useDeckStats,useCommanderStats,useCommanderCards}.ts`, `players/usePlayerMatchHistory.ts`) completed the read-side migration — `player-stats.ts` is deleted; the players list page reads `useAllPlayerStats().getStat` instead. **The only stores left in this folder are `events.ts` and the four session stores.** Session stores are NOT affected — ephemeral UI state is not server state.
+**All CRUD and read domains have migrated OFF Supabase stores entirely (ADR-015):** reads live in per-domain Pinia Colada query composables (`app/composables/<domain>/use*Query.ts`), writes in `useMutation` + BFF endpoints — no hybrids. `tournaments.ts` is the one deliberate survivor, and it's narrower than it used to be: plain CRUD (`createTournament`/`updateTournament`/`deleteTournament`) moved out to `tournament/useTournamentMutations.ts` (same `useMutation` + `onSettled: invalidate` template as leagues/rulesets/decks/players), leaving the store as just the **lifecycle state machine** (`currentTournament` + `startTournament`/`nextRound`/`turnBackRound` + the ADR-007 `save*` round-result seam) — multi-step orchestration that doesn't fit the single-entity-mutation shape. No Supabase client, no cache state — its read caches are `tournament/useTournamentQueries.ts` / `league/useLeagueStandingsQuery.ts`, refreshed by `useTournamentPage.refreshAfterLifecycle()` (lifecycle transitions) or invalidated automatically by `useTournamentMutations` (CRUD). Never reintroduce `supabase.from()` reads/writes into a store. The cards/stats slice (`players/usePlayerStats.ts`, `commanders/{useDeckStats,useCommanderStats,useCommanderCards}.ts`, `players/usePlayerMatchHistory.ts`) completed the read-side migration — `player-stats.ts` is deleted; the players list page reads `useAllPlayerStats().getStat` instead. **The only stores left in this folder are `tournaments.ts` and the four session stores.** Session stores are NOT affected — ephemeral UI state is not server state.
 
 ## The store is the source of truth — `useAsyncData` is only an SSR bridge
 
 There are two caching layers in the data flow (store `items` + `initialized` flags, and the `useAsyncData` key cache in the wrapping composables). Only the store is the source of truth. `useAsyncData` exists solely for SSR orchestration and request dedupe: **never read `data` from a `useAsyncData` return to render domain data — read the store's state.** Correspondingly, invalidation means the store's `force`/`fetch*` path, with the composable's `refresh()` only as the SSR-aware trigger for it. If a component renders from `data` instead of the store, the two caches can disagree and the bug will look like "stale data sometimes" — this is by-design guidance, not a style preference.
 
-Don't blend the two patterns in one store. If a session store needs to persist (like `round_results` writes from rankings/kills/votes/commanders), that persistence goes through `useEventStore`'s `save*`/`upsertRoundResult`, not through the session store itself — see ADR-007 in `docs/PROGRESS.md`.
+Don't blend the two patterns in one store. If a session store needs to persist (like `round_results` writes from rankings/kills/votes/commanders), that persistence goes through `useTournamentStore`'s `save*`/`upsertRoundResult`, not through the session store itself — see ADR-007 in `docs/PROGRESS.md`.
 
 ## Supabase store shape (copy `leagues.ts` as a template)
 
@@ -23,7 +23,7 @@ export const useXxxStore = defineStore('xxx', () => {
 
   const items = ref<Item[]>([])
   const error = ref<string | null>(null)
-  const initialized = ref(false)          // or a loadingCount for stores with many nested async ops (see events.ts)
+  const initialized = ref(false)          // or a loadingCount for stores with many nested async ops (see tournaments.ts)
   const loadingFetch = ref(false)          // per-action flags, OR a single loadingCount — pick one, don't mix
 
   async function fetchItems(force = false) {
@@ -55,9 +55,9 @@ Non-negotiable parts of this shape:
 - `console.error('[useXxxStore] actionName error:', err)` — the `[useXxxStore]` prefix is grepped for in practice; keep it exact.
 - Mutating actions (`create`/`update`/`delete`) return `{ success, data?, error? }` and never throw — callers (pages/composables) check `.success`, they don't try/catch the store call.
 - Local state is updated optimistically after a successful mutation (push/splice/filter on `items.value`), not by refetching.
-- `initialized` (or `initialized: Record<key, boolean>` for per-scope stores like `useEventStore`) exists specifically to make repeated navigation to the same page cheap — `force` bypasses it.
+- `initialized` (or `initialized: Record<key, boolean>` for per-scope stores like `useTournamentStore`) exists specifically to make repeated navigation to the same page cheap — `force` bypasses it.
 
-`useEventStore` (`events.ts`) is the exception to "keep it simple": it's the largest store by far (full event lifecycle, pairing generation, round scoring) and uses a `loadingCount` instead of per-action booleans because operations nest. Read it before extending it, and prefer extracting a module-level helper function (see the top of the file for examples like `fetchRoundData`, `calculateRoundScores`) over adding more inline logic to an already-long action — pure functions get unit tests for free, inline store logic never does. Slimming it this way opportunistically (whenever an action is touched) is committed work: `docs/BACKLOG.md` #6.
+`useTournamentStore` (`tournaments.ts`) is the exception to "keep it simple": it's the largest store by far (full tournament lifecycle, pairing generation, round scoring) and uses a `loadingCount` instead of per-action booleans because operations nest. Read it before extending it, and prefer extracting a module-level helper function (see the top of the file for examples like `fetchRoundData`, `calculateRoundScores`) over adding more inline logic to an already-long action — pure functions get unit tests for free, inline store logic never does. Slimming it this way opportunistically (whenever an action is touched) is committed work: `docs/BACKLOG.md` #6.
 
 ## Session store shape (copy `kills.ts` as a template)
 
@@ -66,8 +66,8 @@ Non-negotiable parts of this shape:
 - Getters that take arguments are `computed(() => (arg) => ...)`, not plain functions — this is what lets them stay reactive when used in templates.
 - Mutating actions that can conflict (e.g. `addKill`) return `{ success, error? }` synchronously (no DB round-trip to await).
 - Every session store ends with `reset()` that clears all its state — this is called on round transitions, not on component unmount.
-- Every session store implements `hydrate(snapshot)` — the **single entry point for external data**. Today it's fed by `useSessionStorePersistence` (`app/composables/event/useSessionStorePersistence.ts`), which mirrors the four stores to localStorage (one key per event, round number embedded so round changes self-invalidate) as crash insurance against mid-round refreshes. When multi-player self-entry lands (`docs/BACKLOG.md` #2), a Supabase Realtime subscription will feed the same `hydrate()` seam — don't add other rehydration paths.
+- Every session store implements `hydrate(snapshot)` — the **single entry point for external data**. Today it's fed by `useSessionStorePersistence` (`app/composables/tournament/useSessionStorePersistence.ts`), which mirrors the four stores to localStorage (one key per event, round number embedded so round changes self-invalidate) as crash insurance against mid-round refreshes. When multi-player self-entry lands (`docs/BACKLOG.md` #2), a Supabase Realtime subscription will feed the same `hydrate()` seam — don't add other rehydration paths.
 
 ## Cross-store coordination
 
-Stores never import or call each other directly. Orchestration happens one level up, in a composable or page (see `useEventPage.ts`, `useEventLifecycle.ts`). If you find yourself wanting `useEventStore` to call `usePlayerStore`, that logic belongs in a composable instead.
+Stores never import or call each other directly. Orchestration happens one level up, in a composable or page (see `useTournamentPage.ts`, `useTournamentLifecycle.ts`). If you find yourself wanting `useTournamentStore` to call `usePlayerStore`, that logic belongs in a composable instead.

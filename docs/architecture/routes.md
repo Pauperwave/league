@@ -18,12 +18,12 @@ Complete inventory of all application routes.
 | Route | File | Description | Key Data |
 |-------|------|-------------|----------|
 | `/leagues` | `pages/leagues/index.vue` | List all leagues | `useLeagues()` |
-| `/league/:id` | `pages/league/[id].vue` | League detail + event list + cross-event standings | `useLeague(id)`, `useEvents(leagueId)` |
-| `/league/:leagueId/event/:eventId` | `pages/league/[leagueId]/event/[eventId].vue` | Event management page (registration, playing, ended) | `useEventPage()` |
+| `/league/:id` | `pages/league/[id].vue` | League detail + tournament list + cross-tournament standings | `useLeague(id)`, `useEvents(leagueId)` |
+| `/league/:leagueId/tournament/:tournamentId` | `pages/league/[leagueId]/tournament/[tournamentId].vue` | Tournament management page (registration, playing, ended) | `useTournamentPage()` |
 
-### Event Page URL Query Params
+### Tournament Page URL Query Params
 
-The event page supports query parameters for modal state persistence:
+The tournament page supports query parameters for modal state persistence:
 
 | Param | Example | Purpose |
 |-------|---------|---------|
@@ -89,7 +89,7 @@ See `docs/architecture/modal-url-sync.md` for full documentation.
 /                           (root hub)
 ├── /leagues                (list)
 │   └── /league/:id         (detail)
-│       └── /league/:leagueId/event/:eventId  (event page)
+│       └── /league/:leagueId/tournament/:tournamentId  (tournament page)
 │
 ├── /players                (list)
 │   └── /player/:slug       (profile)
@@ -130,10 +130,10 @@ The league routes solve the same problem with the *other* available trick: a **m
 
 ```
 pages/league/[leagueId].vue                    ← if it existed, it would pair with…
-pages/league/[leagueId]/event/[eventId].vue    ← …this folder as parent → child
+pages/league/[leagueId]/tournament/[tournamentId].vue    ← …this folder as parent → child
 ```
 
-For `/league/7/event/12`, `league/[leagueId].vue` would take priority over `league/[leagueId]/event/[eventId].vue` — the **league page would render instead of the event page**, unless the league page embedded `<NuxtPage>`. Naming the file `league/[id].vue` breaks the file/folder pairing, so `/league/7` (league detail) and `/league/7/event/12` (event page) stay flat, independent routes. There's a matching warning comment at the top of `app/pages/league/[id].vue`.
+For `/league/7/tournament/12`, `league/[leagueId].vue` would take priority over `league/[leagueId]/tournament/[tournamentId].vue` — the **league page would render instead of the tournament page**, unless the league page embedded `<NuxtPage>`. Naming the file `league/[id].vue` breaks the file/folder pairing, so `/league/7` (league detail) and `/league/7/tournament/12` (tournament page) stay flat, independent routes. There's a matching warning comment at the top of `app/pages/league/[id].vue`.
 
 (The `index.vue` solution used for the player routes above would work here too — `league/[leagueId]/index.vue` — but the `[id]` rename predates it and works; pick either pattern for future cases, just never a same-named file + folder without `<NuxtPage>`.)
 
@@ -144,8 +144,8 @@ For `/league/7/event/12`, `league/[leagueId].vue` would take priority over `leag
 | Param | Type | Source | Example |
 |-------|------|--------|---------|
 | `:id` | `number` | Route params | `/league/150` → `id = 150` |
-| `:leagueId` | `number` | Route params | `/league/150/event/227` → `leagueId = 150` |
-| `:eventId` | `number` | Route params | `eventId = 227` |
+| `:leagueId` | `number` | Route params | `/league/150/tournament/227` → `leagueId = 150` |
+| `:tournamentId` | `number` | Route params | `tournamentId = 227` |
 | `:slug` | `string` | Route params | `/player/alessandro-berti` → `slug = "alessandro-berti"` |
 | `:deckSlug` | `string` | Route params | `/deck/ellie-vengeful-hunter` → `deckSlug = "ellie-vengeful-hunter"` |
 | `:commanderSlug` | `string` | Route params | `/commander/atraxa-grand-unifier` → `commanderSlug = "atraxa-grand-unifier"` |
@@ -162,19 +162,19 @@ All numeric params are parsed via `parseInt()` in composables.
 - **Deck stats button** → `CommanderDeckCard` links to:
   - From player profile: `/player/:slug/deck/:deckSlug`
   - From `/decks` browse: `/deck/:deckSlug`
-- **Event links** → `LeagueEventsPanel` links to `/league/:leagueId/event/:eventId`
+- **Tournament links** → `LeagueEventsPanel` links to `/league/:leagueId/tournament/:tournamentId`
 - **League links** → `LeagueTable` links to `/league/:id`
 - **Commander name links** → `/commanders` table and deck pages link to `/commander/:commanderSlug`
 
 ### Programmatic Navigation
 
 - `navigateTo({ path, query })` — preferred for URL construction with params
-- `router.push()` — used in `useEventUrl.ts` for query sync
+- `router.push()` — used in `useTournamentUrl.ts` for query sync
 
 ---
 
 ## Related Docs
 
 - `docs/architecture/component-hierarchy.md` — Which components render on each route
-- `docs/architecture/event-flow.md` — Event page state transitions
+- `docs/architecture/event-flow.md` — Tournament page state transitions
 - `docs/architecture/modal-url-sync.md` — Query parameter behavior

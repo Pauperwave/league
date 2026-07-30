@@ -71,11 +71,11 @@ Dettaglio completo: [`docs/architecture/stores.md`](docs/architecture/stores.md)
 | `/leagues` | CRUD leghe |
 | `/rulesets` | Gestione ruleset |
 | `/league/[id]` | Eventi di una lega |
-| `/league/[leagueId]/event/[eventId]` | Hub evento (registrazione → playing → ended) |
+| `/league/[leagueId]/tournament/[tournamentId]` | Hub torneo (registrazione → playing → ended) |
 | `/players`, `/player/[slug]` | Roster giocatori, profilo |
 | `/decks`, `/deck/[deckSlug]`, `/player/[slug]/deck/[deckSlug]` | Mazzi commander |
 
-**Nota sul parametro route lega (aggiornata 2026-07-20):** `app/pages/league/[id].vue` usa `route.params.id`, mentre la route annidata evento usa `[leagueId]`. Non è un'inconsistenza da risolvere: è strutturalmente necessario che i due segmenti abbiano nomi diversi (`league/[leagueId]/event/[eventId]` non potrebbe avere due parametri chiamati entrambi `id` sullo stesso percorso), e la pagina lega da sola non ha ambiguità da disambiguare. Discusso e chiuso più volte — non riaprire come TODO.
+**Nota sul parametro route lega (aggiornata 2026-07-20):** `app/pages/league/[id].vue` usa `route.params.id`, mentre la route annidata torneo usa `[leagueId]`. Non è un'inconsistenza da risolvere: è strutturalmente necessario che i due segmenti abbiano nomi diversi (`league/[leagueId]/tournament/[tournamentId]` non potrebbe avere due parametri chiamati entrambi `id` sullo stesso percorso), e la pagina lega da sola non ha ambiguità da disambiguare. Discusso e chiuso più volte — non riaprire come TODO.
 
 ---
 
@@ -87,7 +87,7 @@ Dettaglio completo: [`docs/architecture/stores.md`](docs/architecture/stores.md)
 | `useRulesetStore` | Supabase | Ruleset punteggio |
 | `usePlayerStore` | Supabase | Giocatori + waiting list |
 | `usePlayerStatsStore` | Supabase | Statistiche giocatore denormalizzate (`player_stats`) |
-| `useEventStore` | Supabase | Eventi, standings, pairings, round, round_results |
+| `useTournamentStore` | Supabase | Tornei, standings, pairings, round, round_results |
 | `useCommanderDeckStore` | Supabase | Mazzi commander registrati |
 | `useRankingsStore` | Sessione + DB | Ordine classifica salvato su `round_results.position` via `savePairingRankings` |
 | `useKillsStore` | Sessione + DB | Kill nel round, persistiti su `round_results.number_of_kills` via `savePairingKills` |
@@ -95,7 +95,7 @@ Dettaglio completo: [`docs/architecture/stores.md`](docs/architecture/stores.md)
 | `useCommandersStore` | Sessione + DB | Commander per giocatore, persistiti su `round_results.commander_1` via `saveCommander` |
 
 Tutti gli store usano **Setup API** (`defineStore('id', () => { … })`).
-Gli store di sessione hanno **persistenza ottimistica**: update immediato UI + salvataggio asincrono su `round_results` via `useEventStore` + toast di esito.
+Gli store di sessione hanno **persistenza ottimistica**: update immediato UI + salvataggio asincrono su `round_results` via `useTournamentStore` + toast di esito.
 
 ---
 
@@ -429,6 +429,22 @@ Gli store di sessione hanno **persistenza ottimistica**: update immediato UI + s
 - **Cosa è cambiato:** ogni occorrenza testuale di "Evento"/"Eventi" (e le rispettive forme contratte: "l'evento" → "il torneo", "dell'evento" → "del torneo", "all'evento" → "al torneo") in `i18n/locales/it.json` sostituita con "Torneo"/"Tornei" — **solo i valori delle stringhe**, non le chiavi (`event.fallbackName`, `league.newEvent`, ecc. restano invariate, verranno rinominate in fase 2 insieme al resto del codice). Nessun'altra stringa hardcoded fuori da `it.json` è stata trovata (`app/components/event/StartEventButton.vue`'s "Avvia Evento" nel testo era solo un commento di documentazione in inglese, non copy utente — lasciato invariato).
 - **Icona coerente con il nuovo nome:** l'utente ha notato che l'icona del bottone "Crea Nuovo Evento" (`EventFormModal.vue`, via `useFormModalMeta`'s `createIcon`) era `ICONS.calendarAdd` (`i-lucide-calendar-plus`) — un'icona da "aggiungi al calendario", non da torneo. Cambiata a `ICONS.battle` (`i-lucide-swords`), già usata altrove nel dominio scoring/lega per lo stesso concetto (vedi `icons.ts`, sezione "League / event / scoring"). `ICONS.calendarAdd` non ha più consumer dopo il cambio ma è stata **deliberatamente lasciata** in `icons.ts` (non rimossa nonostante la policy "refactor freely/zero consumer") — l'utente prevede di reintrodurla quando il concetto di "evento" tornerà come entità distinta dal "torneo" nella fase 2/3 del rework (`docs/BACKLOG.md` #8, la data/scadenza a cui un torneo può appartenere).
 - **Verifica:** `pnpm lint` verde; JSON validato con `node -e "JSON.parse(...)"` dopo ogni batch di edit.
+
+### ADR-045 — Rinomina "Evento" → "Torneo": fasi 2+3 combinate (codice + DB reale) (2026-07-30)
+
+- **Decisione utente:** invece di fare prima la fase 2 (codice, con alias temporaneo sui tipi generati dal DB) e poi la fase 3 (schema DB) come pianificato in ADR-044, l'utente ha scelto di fare le due fasi **in un'unica transizione** — nessun alias temporaneo `Tournament = Tables<'events'>`, DB e codice rinominati insieme nella stessa sessione. Motivazione: il progetto non ha consumer esterni ("refactor freely"), quindi il costo di un doppio passaggio (rinomina con alias, poi "per davvero" alla fase 3) è più alto di una migrazione unica ben pianificata.
+- **Collisione di nomi scoperta e risolta prima di tutto:** `TournamentPlayer`/`TournamentTable` esistevano già in `shared/utils/types/index.ts` per il dominio pairing/tavoli (usati in 20 file, nulla a che vedere con l'entità torneo) — rinominati in `PairingPlayer`/`PairingTable`. Durante il rename è emersa una **seconda** collisione non anticipata: `pairingOptimizer.ts` aveva già un proprio `PairingPlayer` locale (struct di scoring con `rank`/`score`/`table3Count`, diverso dal tipo condiviso seat/player con `name`/`surname`) — risolta rinominando il tipo condiviso in `TablePlayer` invece, lasciando lo `PairingPlayer` dell'optimizer intatto. Il file-per-file cross-check di questa collisione (`TablePreviewModal.vue`, `[eventId].vue`, che importavano ENTRAMBI i tipi con lo stesso nome locale) è stato il punto più delicato dell'intera rinomina.
+- **Migrazione DB** (`supabase/migrations/20260730000000_rename_event_to_tournament.sql`, applicata al DB reale via `npx supabase db push` con approvazione esplicita dell'utente): tabella `events`→`tournaments`, tutte le colonne `event_*`→`tournament_*`, `pairings.event_id`/`standings.event_id`/`waitroom.event_id`→`tournament_id` (+ FK rinominate), `player_stats.events_played`/`deck_stats.events_played`→`tournaments_played`, `leagues.valid_events`→`valid_tournaments`, le due policy RLS `"Allow ... read events"` e le funzioni trigger `recalc_player_stats`/`recalc_deck_stats` riscritte con i nuovi nomi colonna. Solo rename, nessun dato toccato — indici/FK/generated column si sono aggiornati automaticamente (Postgres traccia i riferimenti per attnum, non per nome). Guardie difensive (`DO $$ IF EXISTS ... $$`) su PK e policy nel caso i nomi esatti in produzione non corrispondessero a quelli dedotti dalle migration storiche (la tabella `events` risale a prima del tracking delle migration).
+- **Sweep del codice applicativo**, in 7 commit incrementali (ognuno con lint/typecheck/test verdi prima di passare al successivo — mai un commit rotto):
+  1. Collisione `TournamentPlayer`/`TournamentTable` → `PairingPlayer`/`PairingTable`/`TablePlayer` (vedi sopra)
+  2. Migrazione DB + rigenerazione `shared/utils/types/database.ts`
+  3. `Event`/`EventInsert`/`EventStatus` → `Tournament`/`TournamentInsert`/`TournamentStatus`; store `events.ts`→`tournaments.ts` (`useEventStore`→`useTournamentStore`); ogni query/mutation Supabase in composable/endpoint/pagine aggiornata ai nuovi nomi colonna — inclusa una **query dinamica non tipizzata** in `usePlayerMatchHistory.ts` (`.select()` con stringa template e relazione `events:event_id`) che il typecheck non poteva catturare (Supabase non valida staticamente select string-based) e che quindi continuava silenziosamente a interrogare lo schema vecchio finché non è stata trovata per revisione manuale, non dal compilatore
+  4. `app/composables/event/`→`tournament/` (19 file), `app/components/event/`→`tournament/` (48 file), ogni componente `Event*.vue`→`Tournament*.vue` (`EventTable.vue`→`TournamentsTable.vue`, plurale, per non collidere col tipo `PairingTable`... ehm `TournamentTable` — nome non più esistente dopo la fase 1 di questo ADR, quindi in realtà libero, ma tenuto plurale per coerenza con `PlayersTable.vue`)
+  5. `server/api/events/`→`tournaments/`, route pagina `/league/:leagueId/event/:eventId`→`/league/:leagueId/tournament/:tournamentId`
+  6. Sweep finale identificatori cross-file superstiti (`navigateToEvent`, `eventToEdit`/`eventToDelete`, prop `event` di `TournamentFormModal`, emit `viewEvent`/`editEvent` di `LeagueEventsPanel`, `context: 'event' | 'players'` di `CreatePlayerModal`) — diversi erano già mismatch latenti lasciati dallo sweep bulk del commit 3 (nome funzione rinominato, binding template kebab-case dimenticato), scoperti solo da `nuxt typecheck` dopo lo spostamento file
+  7. Namespace i18n `event.*`→`tournament.*` (279 chiavi) + `store.event`→`store.tournament` + le 12 chiavi sparse in `league`/`player`/`deck` (`newEvent`→`newTournament`, ecc.) — rinominate in-place con uno script Python (`json.load`/`dump` con `OrderedDict`, per preservare l'ordine delle chiavi ed evitare un diff enorme da riordino), poi ogni `t('event....')`/`t('store.event....')` in ~50 file aggiornato
+- **Gotcha pratico Windows/sed:** i path comment generati con `sed`'s `s#...#...#` su stringhe contenenti backslash (percorsi Windows tipo `app\composables\tournament\...`) si sono corrotti più volte perché GNU sed interpreta `\t`/`\n` nel testo di sostituzione come tab/newline letterali quando compaiono per coincidenza in un nome di cartella (`component**s\t**ournament`, `test**\n**uxt`) — non un problema di quoting bash, ma di sed stesso. Fix: passare a Python (`str.replace`, nessuna interpretazione di escape) per qualunque riscrittura di path Windows con backslash.
+- **Verifica:** ogni commit intermedio verificato con `pnpm lint`/`pnpm typecheck`/`pnpm test` (187 test) verdi prima di procedere. Verifica manuale in browser non eseguita in questa sessione (richiede dev server + DB reale) — demandata all'utente.
 
 ---
 

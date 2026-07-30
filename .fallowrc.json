@@ -41,37 +41,37 @@
   "health": {
     "thresholdOverrides": [
       {
-        "files": ["app/stores/events.ts"],
-        "functions": ["useEventStore"],
+        "files": ["app/stores/tournaments.ts"],
+        "functions": ["useTournamentStore"],
         "maxUnitSize": 1100
       },
       {
-        "files": ["app/pages/league/?leagueId?/event/?eventId?.vue"],
+        "files": ["app/pages/league/?leagueId?/tournament/?tournamentId?.vue"],
         "maxUnitSize": 650
       },
       {
-        "files": ["app/components/event/pairing/table/preview/TablePreviewModal.vue"],
+        "files": ["app/components/tournament/pairing/table/preview/TablePreviewModal.vue"],
         "maxUnitSize": 360
       },
       {
-        "files": ["app/components/event/pairing/PairingsCard.vue"],
+        "files": ["app/components/tournament/pairing/PairingsCard.vue"],
         "maxUnitSize": 340
       },
       {
-        "files": ["app/components/event/pairing/table/score/TableScoreGrid.vue"],
+        "files": ["app/components/tournament/pairing/table/score/TableScoreGrid.vue"],
         "maxUnitSize": 330
       },
       {
-        "files": ["app/composables/event/useEventPage.ts"],
-        "functions": ["useEventPage"],
+        "files": ["app/composables/tournament/useTournamentPage.ts"],
+        "functions": ["useTournamentPage"],
         "maxUnitSize": 310
       },
       {
-        "files": ["app/components/event/waiting/WaitingListTable.vue"],
+        "files": ["app/components/tournament/waiting/WaitingListTable.vue"],
         "maxUnitSize": 300
       },
       {
-        "files": ["app/components/event/RoundTimer.vue"],
+        "files": ["app/components/tournament/RoundTimer.vue"],
         "maxUnitSize": 270
       },
       {
