@@ -2,23 +2,28 @@
 
 <!-- docs/architecture/state-flow.md -->
 
-How data moves through the application: **Database → Store → Composable → Component**.
+How data moves through the application: **Database ↔ Colada query/mutation composables (or the two remaining Pinia stores) → page composable → Vue component.**
+
+**Reads and writes take different paths (ADR-013/ADR-015):**
+- **Reads** go client → Supabase directly, using the `anon` key (RLS `SELECT`-only policies).
+- **Writes** always go through a `server/api/*` BFF endpoint using the service-role key, which bypasses RLS entirely. **No component or composable ever calls `supabase.from(...).insert/update/delete(...)`** — if you see that in `app/`, it's a regression.
 
 ---
 
 ## Architecture Overview
 
 ```
-┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   PostgreSQL    │────▶│  Pinia Store    │────▶│  Composable     │────▶│   Vue Page      │
-│   (Supabase)    │     │  (Client state) │     │  (SSR wrapper)  │     │   (UI)          │
-└─────────────────┘     └─────────────────┘     └─────────────────┘     └─────────────────┘
-        │                       │                       │                       │
-        │                       │                       │                       │
-   ┌────▼────┐             ┌────▼────┐             ┌────▼────┐             ┌────▼────┐
-   │ Triggers│             │ Reactive│             │useAsync │             │Template │
-   │ (stats) │             │  refs   │             │  Data   │             │ bindings│
-   └─────────┘             └─────────┘             └─────────┘             └─────────┘
+┌─────────────────┐     ┌─────────────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│   PostgreSQL    │◀───▶│  Colada query/mutation   │────▶│  Page composable │────▶│   Vue component │
+│   (Supabase)    │     │  OR Pinia store          │     │  (orchestration) │     │   (UI)          │
+└─────────────────┘     └─────────────────────────┘     └─────────────────┘     └─────────────────┘
+        │                       │                                │                       │
+        │                reads: client → Supabase (anon)         │                       │
+        │                writes: $fetch → server/api/*           │                       │
+   ┌────▼────┐             ┌────▼────┐                      ┌────▼────┐             ┌────▼────┐
+   │ Triggers│             │ useQuery│                      │ combines│             │Template │
+   │ (stats) │             │ cache   │                      │ several │             │ bindings│
+   └─────────┘             └─────────┘                      └─────────┘             └─────────┘
 ```
 
 ---
@@ -27,17 +32,19 @@ How data moves through the application: **Database → Store → Composable → 
 
 ### Tables (App Data)
 
-| Table | Purpose | Writes From |
+| Table | Purpose | Written by (BFF endpoint) |
 |-------|---------|-------------|
-| `leagues` | League definitions | `LeagueFormModal` |
-| `tournaments` | Tournament metadata + state | `TournamentFormModal`, `useTournamentStore` lifecycle actions |
-| `players` | Player roster | `CreatePlayerModal` |
-| `rulesets` | Scoring rules | `RulesetFormModal` |
-| `waitroom` | Tournament registration queue | `WaitingList` add/remove |
-| `standings` | Live scores + ranks | `startTournament`, `nextRound` |
-| `pairings` | Table assignments per round | `startTournament`, `nextRound` |
-| `round_results` | Per-player round scores | `TableScoreGrid` submit |
-| `commander_decks` | Player deck registry | `DeckCreateModal`, `DeckEditModal` |
+| `leagues` | League definitions | `/api/leagues/*` |
+| `tournaments` | Tournament metadata + state | `/api/tournaments/*` (create/update/delete + lifecycle: start/advance-round/turn-back-round) |
+| `players` | Player roster | `/api/players/*` |
+| `rulesets` | Scoring rules | `/api/rulesets/*` |
+| `waitroom` | Tournament registration queue | `/api/tournaments/:id/register-player`/`unregister-player` |
+| `standings` | Live scores + ranks | `/api/tournaments/:id/start`/`advance-round`/`turn-back-round` |
+| `pairings` | Table assignments per round | `/api/tournaments/:id/start`/`advance-round`/`turn-back-round` |
+| `round_results` | Per-player round scores | `/api/pairings/:id/rankings`/`kills`/`commander`/`votes` |
+| `commander_decks` | Player deck registry | `/api/decks/*` |
+
+See `docs/architecture/api.md` for the full entity-by-entity CRUD reference (what's supported, what isn't, deliberate asymmetries).
 
 ### Denormalized Stats Tables
 
@@ -65,99 +72,137 @@ See `docs/architecture/database.md` for full trigger documentation.
 
 ---
 
-## Layer 2: Pinia Stores
+## Layer 2: Colada composables and Pinia stores
 
-### Store Categories
+### Two categories — pick the right one for a new domain
 
-| Category | Stores | Persistence | Pattern |
-|------------|--------|-------------|---------|
-| **Supabase stores** | `useLeagueStore`, `useTournamentStore`, `usePlayerStore`, `useRulesetStore`, `useCommanderDeckStore` | Persistent (reactive refs) | `initialized` flag, optimistic updates, `{ success, error?, data? }` returns |
-| **Session stores** | `useRankingsStore`, `useKillsStore`, `useVotesStore`, `useCommandersStore` | Ephemeral (per round) | `Map<number, ...>`, `reset()` between rounds |
+| Category | Covers | Pattern |
+|----------|--------|---------|
+| **Pinia Colada (ADR-015)** | Every domain except the tournament lifecycle: leagues, rulesets, players, commander decks, player/deck/commander stats, match history, and the tournament domain's own reads (list, standings, pairings, pairing history) and plain CRUD | `use*Query.ts` (`useQuery`, reads) + `use*Mutations.ts` (`useMutation`, writes via `$fetch`, invalidates the query key `onSettled`) |
+| **Pinia stores** | Only two kinds remain | `useTournamentStore` (`app/stores/tournaments.ts`) — the lifecycle state machine, see below. Plus 4 session stores (`rankings`/`kills`/`votes`/`commanders`) — ephemeral per-round UI state, `Map`/`Set`-based, `reset()`/`hydrate()`, no Supabase calls at all |
 
-### Store Responsibilities
-
-| Store | Owns | Mutations |
-|-------|------|-----------|
-| `useLeagueStore` | `leagues[]`, loading state | `fetchLeagues`, `createLeague`, `updateLeague`, `deleteLeague` |
-| `useTournamentStore` | `tournaments[]`, `currentTournament`, `standings[]`, `pairings[]`, `pairingHistory[]` | Full lifecycle: `startTournament`, `nextRound`, `turnBackRound`, `submitRoundResult` |
-| `usePlayerStore` | `players[]`, `waitingPlayers[]`, `waitroomEntries[]` | `fetchPlayers`, `addToWaitingList`, `removeFromWaitingList` |
-| `useRulesetStore` | `rulesets[]` | `fetchRulesets`, `createRuleset`, `updateRuleset` |
-| `useCommanderDeckStore` | `decks[]` | `fetchDecks`, `fetchDecksByPlayer`, `createDeck`, `updateDeck`, `deleteDeck` |
-| `useRankingsStore` | Round rankings (ephemeral) | `setRankings`, `reset` |
-| `useKillsStore` | Kill flow state (ephemeral) | `setKills`, `addKill`, `reset` |
-| `useVotesStore` | Vote selections (ephemeral) | `setVotes`, `reset` |
-| `useCommandersStore` | Commander assignments (ephemeral) | `setCommander`, `reset` |
-
-### Store → Store Communication
-
-Stores are **independent**. Pages/composables orchestrate cross-store coordination:
+### Colada query/mutation pattern
 
 ```ts
-// useTournamentPage.ts — orchestrates multiple stores
-const tournamentStore = useTournamentStore()
-const playerStore = usePlayerStore()
+// app/composables/league/useLeaguesQuery.ts — read side
+export const LEAGUES_KEY = ['leagues']
 
-await Promise.all([
-  tournamentStore.fetchEvents(leagueId),
-  playerStore.fetchWaitingPlayers(tournamentId),
-])
+export function useLeaguesQuery() {
+  const supabase = useSupabaseClient()
+  return useQuery({
+    key: LEAGUES_KEY,
+    query: async () => {
+      const { data, error } = await supabase.from('leagues').select('*')
+      if (error) throw error
+      return data ?? []
+    },
+  })
+}
+
+// app/composables/league/useLeagueMutations.ts — write side
+export function useLeagueMutations() {
+  const queryCache = useQueryCache()
+  const invalidate = () => queryCache.invalidateQueries({ key: LEAGUES_KEY })
+
+  const createLeague = useMutation({
+    mutation: (payload: LeagueFormPayload) =>
+      $fetch('/api/leagues/create', { method: 'POST', body: payload }),
+    onSettled: invalidate,
+  })
+  // ...updateLeague, deleteLeague follow the same shape
+  return { createLeague, updateLeague, deleteLeague }
+}
+```
+
+No `initialized` flag, no manual optimistic patching — Colada's cache + `invalidateQueries` handles both. SSR prefetching is automatic (no `useAsyncData` wrapper needed).
+
+### `useTournamentStore` — the one lifecycle exception
+
+`app/stores/tournaments.ts` owns `currentTournament` plus the multi-step lifecycle transitions (`startTournament`, `nextRound`, `turnBackRound`) and the ADR-007 `save*` round-result seam (`saveVote`, `saveCommander`, `savePairingRankings`, `savePairingKills`) — all direct BFF `$fetch` calls, no Supabase client, no read caches of its own. It's a store and not a Colada mutation because these are genuine multi-step server-orchestrated transitions, not single-entity CRUD. Reads for the tournament page (list, standings, pairings, pairing history) are still Colada queries in `tournament/useTournamentQueries.ts` — the store and the queries are kept in sync explicitly (see Layer 3).
+
+### Store → Store / Query → Store Communication
+
+Stores and Colada caches never call each other directly. Orchestration happens one level up, in a page composable:
+
+```ts
+// useTournamentPage.ts — orchestrates a Colada query + the lifecycle store
+const tournamentStore = useTournamentStore()
+const { data: eventsData } = useEventsQuery(leagueId)   // Colada
+
+// Keep the store's currentTournament in sync with the Colada-cached list;
+// lifecycle actions overwrite it with the fresher server response right after.
+watch(eventsData, (list) => {
+  const found = list?.find(e => e.tournament_id === tournamentId)
+  if (found) tournamentStore.setCurrentTournament(found)
+}, { immediate: true })
 ```
 
 ---
 
-## Layer 3: Composables
+## Layer 3: Page composables
 
-### SSR-Friendly Data Fetching
+### Data Fetching
 
-All Supabase-facing composables wrap store calls in `useAsyncData`:
+Colada's `useQuery` handles SSR prefetch and caching by itself — no `useAsyncData` wrapper is needed for any Colada-backed domain. A page composable's job is to **combine** several queries/mutations/the lifecycle store into the shape a page needs, plus own page-local UI state (modals, selections):
 
 ```ts
-// Pattern: app/composables/supabase/useXxx.ts
-export function useXxx(id: Ref<number | undefined>) {
-  const store = useXxxStore()
+// Pattern, simplified from useLeaguesPage.ts / useTournamentPage.ts
+export function useXxxPage() {
+  const { data, isLoading } = useXxxQuery()        // Colada read
+  const { createXxx, deleteXxx } = useXxxMutations() // Colada write
 
-  return useAsyncData(
-    `domain-scope-${id.value}`,  // unique key per docs/architecture/async-data-keys.md
-    () => store.fetchXxx(id.value),
-    {
-      immediate: true,
-      watch: [id],
+  const showCreateModal = ref(false)               // page-local UI state
+
+  async function handleCreate(payload) {
+    try {
+      await createXxx.mutateAsync(payload)
+    } catch (err) {
+      toast.add({ title: '...', description: toErrorMessage(err, '...'), color: 'error' })
+      return
     }
-  )
+    showCreateModal.value = false
+    toast.add({ title: '...', color: 'success' })
+  }
+
+  return { data, isLoading, showCreateModal, handleCreate }
 }
 ```
 
-### Composable Inventory
+### Composable Inventory (tournament page)
 
-| Composable | Wraps | Returns | Used By |
-|------------|-------|---------|---------|
-| `useLeagues()` | `useLeagueStore.fetchLeagues()` | `{ data, pending, error, refresh }` | `/leagues`, `/league/:id` |
-| `useEvents(leagueId)` | `useTournamentStore.fetchEvents()` | `{ data, pending, error, refresh }` | `/league/:id` |
-| `usePlayers()` | `usePlayerStore.fetchPlayers()` | `{ data, pending, error, refresh }` | Global (tournament page, player pages) |
-| `useRulesets()` | `useRulesetStore.fetchRulesets()` | `{ data, pending, error, refresh }` | `/rulesets` |
-| `useStandings(tournamentId)` | `useTournamentStore.fetchStandings()` | `{ data, pending, error, refresh }` | Tournament page |
-| `usePairings(tournamentId, round)` | `useTournamentStore.fetchPairings()` | `{ data, pending, error, refresh }` | Tournament page |
-| `useWaitroom(tournamentId)` | `usePlayerStore.fetchWaitingPlayers()` | `{ data, pending, error, refresh }` | Tournament page |
-| `useRoundResults(tournamentId, round)` | `useTournamentStore.fetchPairings()` + join | `{ data, pending, error, refresh }` | Tournament page |
-| `useTournaments(tournamentId)` | `useTournamentStore.fetchPairingHistory()` | `{ data, pending, error, refresh }` | Tournament page |
-| `useCommanderDecks(playerId)` | `useCommanderDeckStore.fetchDecksByPlayer()` | `{ data, pending, isDeckInUse, getDeckEventCount }` | Player profile |
-| `usePlayerStats(playerId)` | Direct `player_stats` table query | `{ data: PlayerStats }` | Player profile |
-| `useDeckStats(playerId, c1, c2?)` | Direct `deck_stats` table query | `{ data: DeckStats }` | Player deck page |
-| `useCommanderStats(c1, c2?)` | `commander_stats` materialized view | `{ data: CommanderStats }` | Global deck page |
+`useTournamentPage()` is the most complex orchestration composable — it combines 5 Colada queries, 2 Colada mutation sets, the lifecycle store, and page-local state (viewed round, table estimate):
 
-### Non-Data Composables
+| Source | What it provides |
+|--------|-------------------|
+| `useEventsQuery(leagueId)` (Colada) | Tournament list for the league — also the source `currentTournament` is derived from |
+| `useEventStandingsQuery(tournamentId)` (Colada) | Live standings |
+| `usePairingsQuery(tournamentId, round)` (Colada) | Pairings for a (reactive) round — used twice: current round, and the viewed round |
+| `usePairingHistoryQuery(tournamentId)` (Colada) | Historical pairings, optimizer input |
+| `useWaitroom(tournamentId)` (Colada) | Waiting list + `useWaitroomMutations` for register/unregister |
+| `useTournamentStore()` | `currentTournament`, `startTournament`/`nextRound`/`turnBackRound` |
+| `useTournamentMutations()` (Colada) | Plain CRUD: `createTournament`/`updateTournament`/`deleteTournament` |
 
-| Composable | Purpose |
-|------------|---------|
-| `useTournamentPage()` | Orchestrates all tournament data and lifecycle actions |
-| `useTournamentUrl()` | URL query param sync for tournament page modals |
-| `useLiveStandings()` | Reactive standings from pairings + results |
-| `useTableCalculator()` | Table size estimation and preview generation |
-| `usePairingPresets()` | Saved player order presets |
-| `useOptimizationNotifier()` | Toast notifications for pairing optimizer |
-| `useCommanderCards()` | Local DB commander card data fetching |
-| `useCommanderSearch()` | Commander autocomplete search, filtered client-side from `useCommanderCatalogQuery()`'s cached catalog |
-| `useCommanderWhitelists()` | Partner/background/companion whitelists derived from `useCommanderCatalogQuery()` |
+**After a lifecycle transition** (`start`/`nextRound`/`turnBackRound`), `refreshAfterLifecycle()` refetches/invalidates exactly the Colada queries that transition touches (events list, standings, waitroom, pairings, pairing history) — the store's own state is already fresh from the transition's own server response.
+
+### Other Composables
+
+| Composable | Wraps | Used By |
+|------------|-------|---------|
+| `usePlayersQuery()` | `players` table (Colada) | Global (tournament page, player pages) |
+| `useRulesetsQuery()` | `rulesets` table (Colada) | `/rulesets`, tournament page (ruleset lookup) |
+| `useLeagueById(leagueId)` | Derives from `useLeaguesQuery()`'s cached list — no per-id fetch | `/league/:id`, tournament page |
+| `useCommanderDecks(playerId)` | `commander_decks` + usage (Colada) | Player profile |
+| `usePlayerStats(playerId)` | Direct `player_stats` table query (Colada) | Player profile |
+| `useDeckStats(playerId, c1, c2?)` | Direct `deck_stats` table query (Colada) | Player deck page |
+| `useCommanderStats(c1, c2?)` | `commander_stats` materialized view (Colada) | Global deck page |
+| `useTournamentUrl()` | URL query param sync for tournament page phase/round | Tournament page |
+| `useLiveStandings()` | Reactive standings from pairings + results | Tournament page |
+| `useTableCalculator()` | Table size estimation and preview generation | Tournament page |
+| `usePairingPresets()` | Saved player order presets | Tournament page (preview modal) |
+| `useOptimizationNotifier()` | Toast notifications for pairing optimizer | Tournament page (preview modal) |
+| `useCommanderCards()` | Local DB commander card data fetching | Deck/commander pages |
+| `useCommanderSearch()` | Commander autocomplete search, filtered client-side from `useCommanderCatalogQuery()`'s cached catalog | Commander modal |
+| `useCommanderWhitelists()` | Partner/background/companion whitelists derived from `useCommanderCatalogQuery()` | Commander modal |
 
 ---
 
@@ -166,9 +211,9 @@ export function useXxx(id: Ref<number | undefined>) {
 ### Data Binding Pattern
 
 ```vue
-<!-- Page receives data from composable -->
+<!-- Page receives data from a page composable -->
 <script setup>
-const { data: players, pending } = usePlayers()  // ← Layer 3
+const { data: players, pending } = usePlayersPage()  // ← Layer 3
 </script>
 
 <template>
@@ -182,7 +227,7 @@ const { data: players, pending } = usePlayers()  // ← Layer 3
 </template>
 ```
 
-### Two-Way Flow: User Action → Store → DB
+### Two-Way Flow: User Action → BFF → DB → Colada Cache
 
 ```
 User clicks "Aggiungi Giocatore"
@@ -194,16 +239,20 @@ WaitingList.vue emits "add" event
 Tournament page calls addToWaitingList(playerIds)
         │
         ▼
-useTournamentPage.ts calls playerStore.addToWaitingList(tournamentId, playerId)
+useTournamentPage.ts calls registerPlayers.mutateAsync(playerIds)
         │
         ▼
-usePlayerStore.ts: supabase.from('waitroom').insert({ tournament_id, player_id })
+useWaitroomMutations.ts: $fetch('/api/tournaments/:id/register-player', { method: 'POST', body: { playerIds } })
         │
         ▼
-PostgreSQL inserts row
+server/api/tournaments/[tournamentId]/register-player.post.ts inserts into `waitroom`
+  using the service-role key (bypasses RLS)
         │
         ▼
-Store updates local: waitroomEntries.value.push(newEntry)
+Mutation's onSettled invalidates the ['waitroom', tournamentId] Colada query
+        │
+        ▼
+useWaitroom(tournamentId)'s useQuery refetches from Supabase (anon key, SELECT-only)
         │
         ▼
 Vue reactivity updates WaitingList.vue UI
@@ -215,47 +264,43 @@ Vue reactivity updates WaitingList.vue UI
 
 | Layer | Cache | Invalidation |
 |-------|-------|--------------|
-| **Browser (Colada queries)** | `localStorage`, all Colada query entries — see [`client-caching.md`](client-caching.md) | `staleTime`/`gcTime` per query (5s/5min default, 30 days for the commander catalog); manual `refetch()` |
+| **Browser (Colada queries)** | `localStorage`, all Colada query entries — see [`client-caching.md`](client-caching.md) | `staleTime`/`gcTime` per query (5s/5min default, 30 days for the commander catalog); manual `refetch()`; mutation `onSettled: invalidate` |
 | **Browser (session stores)** | `localStorage`, one key per tournament — see [`client-caching.md`](client-caching.md) | 12h TTL or round-number mismatch (`useSessionStorePersistence`) |
-| **Nuxt SSR** | `useAsyncData` cache (non-Colada composables only) | `refreshNuxtData(key)` or page navigation |
-| **Pinia store** | Reactive refs (lifecycle + session stores only) | Overwritten on fetch, optimistic updates on mutation |
+| **Pinia store (`useTournamentStore`)** | Reactive ref (`currentTournament`), no other cache state | Overwritten by each lifecycle action's own server response, and kept in sync with the Colada-cached tournament list via an explicit `watch` |
 | **PostgreSQL** | Materialized view (`commander_stats`) | Refreshed by trigger on `round_results` changes |
 
 ---
 
 ## Key Patterns
 
-### 1. SSR + Client Hydration
+### 1. SSR + Client Hydration (Colada)
 
 ```ts
-// Composable returns SSR-fetched data
-const { data } = useAsyncData('players', () => store.fetchPlayers())
-
-// On client, data is hydrated from server payload
-// On subsequent interactions, call refresh()
+// useQuery prefetches on the server automatically — no useAsyncData needed
+const { data, isLoading } = useLeaguesQuery()
+// On client, data is hydrated from the server payload; refetch() forces a re-read
 ```
 
-### 2. Optimistic Updates
+### 2. Invalidate-and-Refetch, Not Manual Optimistic Patching
 
 ```ts
-// Store updates local state before DB confirms
-async function createDeck(deckData) {
-  const result = await supabase.from('commander_decks').insert(deckData)
-  if (result.data) {
-    decks.value.push(result.data)  // optimistic
-  }
-}
+// Mutation invalidates the query key; Colada refetches server truth itself
+const createLeague = useMutation({
+  mutation: (payload) => $fetch('/api/leagues/create', { method: 'POST', body: payload }),
+  onSettled: () => queryCache.invalidateQueries({ key: LEAGUES_KEY }),
+})
 ```
 
-### 3. Refresh After Mutation
+### 3. Lifecycle Transitions Refresh a Specific Set of Queries
 
 ```ts
-// After store mutation, invalidate composable cache
-async function handleCreateDeck(deckData) {
-  const result = await deckStore.createDeck(deckData)
-  if (result.success) {
-    refreshNuxtData(`commander-decks-${playerId.value}`)  // invalidate composable
-  }
+// After a multi-step BFF transition, refetch exactly what it touched —
+// see useTournamentPage.ts's refreshAfterLifecycle()
+async function startTournament(playerOrder?: number[]) {
+  const result = await tournamentStore.startTournament(tournamentId, playerOrder)
+  if (!result.success) return false
+  await refreshAfterLifecycle()
+  return true
 }
 ```
 
@@ -271,9 +316,9 @@ Tournament modals persist state in URL query params (see `docs/architecture/moda
 
 | Pattern | Why Avoid | Correct Approach |
 |---------|-----------|----------------|
-| Calling `supabase` directly in components | Leaks DB logic into UI | Use store actions |
-| Storing `useAsyncData` in Pinia | `useAsyncData` is page-level | Keep in composables/pages |
-| Manual cache invalidation everywhere | Fragile | Use `refreshNuxtData(key)` consistently |
+| Calling `supabase.from(...).insert/update/delete(...)` in components or composables | Bypasses the BFF authorization boundary (ADR-013) — a genuine security regression, not just a style issue | `useMutation` → `$fetch('/api/...')` to a BFF endpoint |
+| Adding a `useAsyncData` wrapper around a Colada query | Redundant — Colada's `useQuery` already SSR-prefetches and caches | Call the `use*Query()` composable directly |
+| Manually patching Colada cache data after a mutation | Fragile, drifts from server truth | `onSettled: () => queryCache.invalidateQueries({ key })` |
 | Props drilling through 3+ layers | Unmaintainable | Use composables or stores at appropriate level |
 | `fetch()` without error handling | Silent failures | Use `$fetch` (ofetch) or always check `response.ok` |
 
@@ -281,7 +326,8 @@ Tournament modals persist state in URL query params (see `docs/architecture/moda
 
 ## Related Docs
 
-- `docs/architecture/stores.md` — Pinia store patterns and conventions
-- `docs/architecture/async-data-keys.md` — useAsyncData key naming convention
+- `docs/architecture/stores.md` — The two remaining store categories in detail
+- `docs/architecture/async-data-keys.md` — Colada query key naming convention and full key inventory
 - `docs/architecture/database.md` — Trigger architecture and denormalized stats
+- `docs/architecture/api.md` — Entity-by-entity CRUD reference (BFF endpoints)
 - `docs/architecture/event-flow.md` — Tournament lifecycle and DB mutations

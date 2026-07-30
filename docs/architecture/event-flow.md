@@ -27,7 +27,7 @@ A tournament exists in one of three states, derived from DB columns:
 **DB mutations:**
 - Insert row into `tournaments` with `tournament_playing = false`, `tournament_current_round = 0`, `tournament_registration_open = true`
 
-**Store action:** `useTournamentStore.createTournament(leagueId, tournamentData)`
+**Not a lifecycle action** — plain CRUD via Colada: `useTournamentMutations().createTournament.mutateAsync(payload)` → `POST /api/tournaments/create`, invalidates the tournament-list query on settle. (Lifecycle actions — start/next/turn-back-round below — are the only tournament writes that go through `useTournamentStore` instead.)
 
 ---
 
@@ -36,18 +36,16 @@ A tournament exists in one of three states, derived from DB columns:
 **UI:** `TournamentActionBar` shows stepper with "Registrazione" step active.
 
 **Actions available:**
-- **Add player to waitroom:** `playerStore.addToWaitingList(tournamentId, playerId)` → inserts into `waitroom`
-- **Remove player from waitroom:** `playerStore.removeFromWaitingList(tournamentId, playerId)` → deletes from `waitroom`
-- **Create new player:** `CreatePlayerModal` → adds to `players` table, then adds to waitroom
+- **Add player to waitroom:** `useTournamentPage()`'s `addToWaitingList(playerIds)` → `useWaitroomMutations(tournamentId).registerPlayers.mutateAsync(playerIds)` (Colada) → `POST /api/tournaments/:id/register-player` → inserts into `waitroom`
+- **Remove player from waitroom:** `removeFromWaitingList(playerIds)` → `unregisterPlayers.mutateAsync(playerIds)` → `POST /api/tournaments/:id/unregister-player` → deletes from `waitroom`
+- **Create new player:** `CreatePlayerModal` → adds to `players` table (Colada `usePlayerMutations`), then adds to waitroom
 - **Preview tables:** Shows estimated table distribution (4-player / 3-player tables) based on waitroom count
 
 **Validation for start:**
 - Minimum 3 players
 - Cannot start with exactly 5 players
 
-**Store data:**
-- `playerStore.waitingPlayers` — array of `player_id`s
-- `playerStore.waitroomEntries` — full waitroom rows with timestamps
+**Data source:** `useWaitroom(tournamentId)` (Colada query, `['waitroom', tournamentId]`) exposes `waitingPlayers` (array of `player_id`s) and `waitroomEntries` (full waitroom rows with timestamps).
 
 ---
 
@@ -66,13 +64,9 @@ A tournament exists in one of three states, derived from DB columns:
 5. **Clear waitroom:** Delete all `waitroom` rows for this tournament
 6. **Create pairings:** Insert `pairings` rows for round 1 (table assignment by sequential slice of player order)
 
-**Store action:** `useTournamentStore.startTournament(tournamentId, playerOrder?)`
+**Store action:** `useTournamentStore.startTournament(tournamentId, playerOrder?)` — single atomic BFF call, all 6 mutations above happen server-side in one request.
 
-**Post-start data fetch:**
-- `fetchEvents(leagueId)` — refresh tournament list
-- `fetchPairings(tournamentId, 1)` — load round 1 pairings
-- `fetchStandings(tournamentId)` — load initial standings
-- `fetchWaitingPlayers(tournamentId)` — confirm waitroom cleared
+**After start — `refreshAfterLifecycle()`** (in `useTournamentPage.ts`, called by every lifecycle action): refetches/invalidates exactly the Colada queries this transition touches — the tournament-list query (`useEventsQuery`), standings (`useEventStandingsQuery`), waitroom (`useWaitroom`), and invalidates the pairings/pairing-history query keys for this tournament. The store's own `currentTournament` is already fresh from `startTournament`'s own server response — no separate refetch needed for it.
 
 ---
 
@@ -91,14 +85,13 @@ Each round follows this pattern:
 - Brew vote (best deck)
 - Play votes (best play ×2)
 
-**DB mutations:**
-- Insert into `round_results` (one per player at the table)
-- Update `pairings` status to indicate completion
+**DB mutations:** upsert into `round_results` (by `pairing_id`+`player_id`) via `server/utils/roundResults.ts`'s shared `upsertRoundResult` — four narrow endpoints, not a generic round-result CRUD:
 
-**Store actions:**
-- `submitRoundResult(pairingId, playerId, data)` — insert
-- `updateRoundResult(pairingId, playerId, data)` — upsert
-- `saveCommander(playerId, commanderName)` — update `commander_decks` if new
+**Store actions** (`useTournamentStore`'s ADR-007 `save*` seam, each a direct BFF `$fetch`, called from `useTournamentSubmitHandlers.ts`'s modal submit handlers):
+- `savePairingRankings(pairingId, rankings)` → `POST /api/pairings/:id/rankings`
+- `savePairingKills(pairingId, kills)` → `POST /api/pairings/:id/kills`
+- `saveCommander(pairingId, playerId, commander1, commander2?)` → `POST /api/pairings/:id/commander`
+- `saveVote(pairingId, playerId, brewVote, playVote)` → `POST /api/pairings/:id/votes`
 
 #### 4b. Next Round
 
@@ -150,7 +143,7 @@ Each round follows this pattern:
 | Round > 1 | Decrement `tournament_current_round`, delete pairings for current round |
 | Round 1 | Reset to **registration**: `tournament_playing = false`, `tournament_current_round = 0`, `tournament_registration_open = true`, delete all standings + pairings, restore players to waitroom |
 
-**Store action:** `useTournamentStore.turnBackRound(tournamentId, currentRound, leagueId)`
+**Store action:** `useTournamentStore.turnBackRound(tournamentId, currentRound)` — same `refreshAfterLifecycle()` pattern as start/nextRound.
 
 ---
 
@@ -219,6 +212,7 @@ Each round follows this pattern:
 
 ## Related Docs
 
+- `docs/architecture/state-flow.md` — General Colada/BFF data-flow architecture (what's a store vs. a Colada query/mutation, and why)
 - `docs/architecture/database.md` — Trigger architecture, denormalized stats
 - `docs/architecture/modal-url-sync.md` — URL query param sync for modals
 - `docs/architecture/async-data-keys.md` — Data fetching keys for tournament page
