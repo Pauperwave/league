@@ -166,6 +166,16 @@ const showSubtractExpireConfirm = ref(false)
 const pendingSubtractMinutes = ref(0)
 
 // ---------------------------------------------------------------------------
+// Skip pre-timer / force-end turni confirmations
+// ---------------------------------------------------------------------------
+// Both jump the sequence forward early (skipping SISTEMATEVI's remaining
+// time, or TURNI's) — not destructive in the "lose data" sense Reset is,
+// but consequential enough (skips the whole round or ends the game outright)
+// to gate behind a lighter confirmation too.
+const showSkipPreConfirm = ref(false)
+const showForceEndTurnsConfirm = ref(false)
+
+// ---------------------------------------------------------------------------
 // Phase transitions
 // ---------------------------------------------------------------------------
 
@@ -229,6 +239,15 @@ function skipPreTimer() {
   logPhase('roundStart')
   elapsed.value = 0
   startTime.value = isRunning.value ? Date.now() : null
+}
+
+/**
+ * ConfirmModal's own @confirm doesn't close itself (see ConfirmModal.vue —
+ * only its cancel/dismiss paths do) — the caller is expected to close it.
+ */
+function confirmSkipPre() {
+  skipPreTimer()
+  showSkipPreConfirm.value = false
 }
 
 // ---------------------------------------------------------------------------
@@ -303,6 +322,33 @@ function reset() {
 function confirmReset() {
   reset()
   showResetConfirm.value = false
+}
+
+const forceEndTurnsLogging = useButtonLogging(t('logging.timer.forceEndTurns'), { round: () => props.round })
+
+/**
+ * Lets the organizer force TURNI to end right now instead of waiting out
+ * the remaining 15 minutes, going straight to the terminal FINE PARTITA
+ * state — same end-of-sequence effect as TURNI expiring naturally
+ * (advancePastExpiry's last branch), just triggered early and explicitly,
+ * so the interval needs to be paused here instead of relying on the tick
+ * handler's own post-advance pause.
+ */
+function forceEndTurns() {
+  if (phase.value !== 'turns') return
+  forceEndTurnsLogging.logClick()
+  logPhase('turnsEnd')
+  pause()
+  phase.value = 'ended'
+  startTime.value = null
+  elapsed.value = 0
+  isRunning.value = false
+  playLoop('warning')
+}
+
+function confirmForceEndTurns() {
+  forceEndTurns()
+  showForceEndTurnsConfirm.value = false
 }
 
 /** Tracks the minutes argument of the last addMinutes/subtractMinutes call, for logging context. */
@@ -473,7 +519,17 @@ onMounted(() => {
           variant="subtle"
           :fullscreen="isFullscreen"
           :tooltip="t('tournament.roundTimer.skipPreTooltip')"
-          @click="skipPreTimer"
+          @click="showSkipPreConfirm = true"
+        />
+
+        <TimerControlButton
+          v-if="phase === 'turns'"
+          :icon="ICONS.flag"
+          color="error"
+          variant="subtle"
+          :fullscreen="isFullscreen"
+          :tooltip="t('tournament.roundTimer.forceEndTooltip')"
+          @click="showForceEndTurnsConfirm = true"
         />
 
         <TimerControlButton
@@ -560,6 +616,29 @@ onMounted(() => {
       confirm-color="warning"
       :portal="!isFullscreen"
       @confirm="confirmSubtractExpire"
+    />
+
+    <ConfirmModal
+      v-model:open="showSkipPreConfirm"
+      :title="t('tournament.roundTimer.skipPreConfirm.title')"
+      :description="t('tournament.roundTimer.skipPreConfirm.description')"
+      :question="t('tournament.roundTimer.skipPreConfirm.question')"
+      :confirm-label="t('tournament.roundTimer.skipPreConfirm.confirmLabel')"
+      :confirm-icon="ICONS.forward"
+      confirm-color="warning"
+      :portal="!isFullscreen"
+      @confirm="confirmSkipPre"
+    />
+
+    <ConfirmModal
+      v-model:open="showForceEndTurnsConfirm"
+      :title="t('tournament.roundTimer.forceEndConfirm.title')"
+      :description="t('tournament.roundTimer.forceEndConfirm.description')"
+      :question="t('tournament.roundTimer.forceEndConfirm.question')"
+      :confirm-label="t('tournament.roundTimer.forceEndConfirm.confirmLabel')"
+      :confirm-icon="ICONS.flag"
+      :portal="!isFullscreen"
+      @confirm="confirmForceEndTurns"
     />
   </div>
 </template>

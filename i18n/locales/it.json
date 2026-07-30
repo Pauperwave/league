@@ -90,7 +90,8 @@
       "roundEnd": "Timer round terminato",
       "turnsStart": "Timer turni avviato",
       "turnsEnd": "Timer turni terminato",
-      "skipPre": "Pre-round saltato"
+      "skipPre": "Pre-round saltato",
+      "forceEndTurns": "Fine partita forzata"
     },
     "tournament": {
       "edit": "Torneo modificato",
@@ -594,6 +595,7 @@
       "pauseTooltip": "Pausa timer",
       "resetTooltip": "Resetta timer",
       "skipPreTooltip": "Salta al round",
+      "forceEndTooltip": "Termina partita",
       "add5Tooltip": "Aggiungi 5 minuti",
       "add10Tooltip": "Aggiungi 10 minuti",
       "subtract5Tooltip": "Togli 5 minuti",
@@ -611,6 +613,18 @@
         "description": "Stai per togliere tempo al round",
         "question": "Questa sottrazione farà scadere subito il timer, continuare",
         "confirmLabel": "Sottrai"
+      },
+      "skipPreConfirm": {
+        "title": "Salta preparazione",
+        "description": "Stai per saltare i minuti rimanenti di preparazione e avviare subito il round",
+        "question": "Sei sicuro di voler saltare alla fase di gioco",
+        "confirmLabel": "Salta"
+      },
+      "forceEndConfirm": {
+        "title": "Termina partita",
+        "description": "Stai per terminare subito i turni e passare a fine partita",
+        "question": "Sei sicuro di voler terminare la partita ora",
+        "confirmLabel": "Termina"
       },
       "phases": {
         "pre": "SISTEMATEVI",
