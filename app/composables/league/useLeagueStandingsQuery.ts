@@ -48,6 +48,7 @@ export function useLeagueStandingsQuery(leagueId: number) {
         player_id: number
         standing_player_score: number | null
         victories: number | null
+        kills: number | null
         brew_received: number | null
         play_received: number | null
         players: Pick<Player, 'player_id' | 'player_name' | 'player_surname' | 'formats_played' | 'is_active'> | null
@@ -60,6 +61,7 @@ export function useLeagueStandingsQuery(leagueId: number) {
           player_id,
           standing_player_score,
           victories,
+          kills,
           brew_received,
           play_received,
           players:player_id (player_id, player_name, player_surname, formats_played, is_active)
@@ -73,6 +75,7 @@ export function useLeagueStandingsQuery(leagueId: number) {
         if (existing) {
           existing.standing_player_score = (existing.standing_player_score ?? 0) + (s.standing_player_score ?? 0)
           existing.victories = (existing.victories ?? 0) + (s.victories ?? 0)
+          existing.kills = (existing.kills ?? 0) + (s.kills ?? 0)
           existing.brew_received = (existing.brew_received ?? 0) + (s.brew_received ?? 0)
           existing.play_received = (existing.play_received ?? 0) + (s.play_received ?? 0)
         }
@@ -84,6 +87,7 @@ export function useLeagueStandingsQuery(leagueId: number) {
             standing_player_score: s.standing_player_score ?? 0,
             standing_player_rank: null,
             victories: s.victories ?? 0,
+            kills: s.kills ?? 0,
             brew_received: s.brew_received ?? 0,
             play_received: s.play_received ?? 0,
             players: s.players
