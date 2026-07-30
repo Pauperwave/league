@@ -22,6 +22,7 @@ Committed, actionable work items, ranked by priority with a rough effort estimat
 | 15 | [Winner checklist + `table_wins` stat (booster pack reward per round)](#15-winner-checklist--table_wins-stat-booster-pack-reward-per-round) | P2 | M |
 | 16 | [League standings don't use `valid_events` — sums every event instead of best-N](#16-league-standings-dont-use-valid_events--sums-every-event-instead-of-best-n) | P2 | M |
 | 17 | [In-app "info/regolamento" page](#17-in-app-inforegolamento-page) | P3 | S |
+| 18 | [Introduce "event" as a standalone entity (date/venue), separate from tournament](#18-introduce-event-as-a-standalone-entity-datevenue-separate-from-tournament) | P3 | L |
 
 ---
 
@@ -183,15 +184,15 @@ A `deleted_at timestamptz null` column (leagues/events, maybe decks) instead of/
 
 ## 8. Decouple tournament from league (rename itself is done)
 
-Raised 2026-07-19. **The event → tournament rename is complete (2026-07-30) — see ADR-044 and ADR-045 in `docs/PROGRESS.md`.** All three originally-planned phases shipped in one session: phase 1 (UI text, 2026-07-30) and phases 2+3 (code + database, combined per user decision, same day) — DB table `events` → `tournaments` with every `event_*` column renamed, the `Event`/`EventInsert`/`EventStatus` type family → `Tournament`/`TournamentInsert`/`TournamentStatus`, the store/composable/component folders and file names, every server route (`/api/tournaments/*`), the page route (`/league/[leagueId]/tournament/[tournamentId]`), and the i18n `event.*` namespace → `tournament.*`. What remains is *only* the decoupling described below — the naming is no longer a factor.
+Raised 2026-07-19. **The event → tournament rename is complete (2026-07-30) — see ADR-044/045/046 in `docs/PROGRESS.md`.** All three originally-planned phases shipped in one session: phase 1 (UI text, 2026-07-30) and phases 2+3 (code + database, combined per user decision, same day) — DB table `events` → `tournaments` with every `event_*` column renamed, the `Event`/`EventInsert`/`EventStatus` type family → `Tournament`/`TournamentInsert`/`TournamentStatus`, the store/composable/component folders and file names, every server route (`/api/tournaments/*`), the page route (`/league/[leagueId]/tournament/[tournamentId]`), and the i18n `event.*` namespace → `tournament.*`. Verified end-to-end via all 4 Playwright E2E specs run against the real production DB (ADR-046), including a real trigger-function bug the rename surfaced. What remains is *only* the decoupling described below — the naming is no longer a factor.
 
 "Tournament" is still modeled as always belonging to exactly one league (`tournaments.league_id`), but should be able to:
 
 - belong to a league (today's only shape), **or**
-- be linked to a single one-off event with no league, **or**
+- be linked to a single one-off event with no league (see item #18 below — that item is the prerequisite for this branch, the "event" entity doesn't exist yet), **or**
 - stand completely alone, tied to neither a league nor an event.
 
-This is a real schema/FK change making the league relationship optional and auditing every place that currently assumes "a tournament always has a league" (pairing generation, standings aggregation, waitroom, breadcrumbs, `api.md`/`database.md` docs) — not a rename, a genuine new capability. Note the concept it reintroduces: a lightweight "event" (a date/venue a tournament can optionally link to) is a *different* thing from the tournament entity the rename above already claimed the name for — `ICONS.calendarAdd` was deliberately kept unused in `icons.ts` for exactly this future entity.
+This is a real schema/FK change making the league relationship optional and auditing every place that currently assumes "a tournament always has a league" (pairing generation, standings aggregation, waitroom, breadcrumbs, `api.md`/`database.md` docs) — not a rename, a genuine new capability.
 
 **Deliberately P3/someday, not next**: the standing priority is making the *current* tournament lifecycle (registration → playing → round advance → ended) rock solid first.
 
@@ -255,6 +256,26 @@ This isn't a new finding — it's already half-acknowledged in ADR-026 (`docs/PR
 Same source as #16 (the old `@legacommander` Telegram bot). Beyond scoring, the bot answered static FAQ content that has no equivalent anywhere in the app today: link to the full external rulebook, entry fee (5€, prizes per stage), venue address, season calendar, proxy card policy (max 10, must be printed). None of this is a scoring/logic gap — it's informational content currently living nowhere once the bot is retired.
 
 A simple static page (`/info` or similar), sourced from i18n content like the rest of the app's UI-facing strings, covering: rules link, fees, venue, calendar, proxy policy. No CMS/admin editing needed — this is occasional-update content, a hardcoded i18n block is enough for the scale of one club league.
+
+---
+
+## 18. Introduce "event" as a standalone entity (date/venue), separate from tournament
+
+Raised 2026-07-30, same conversation as the event→tournament rename (ADR-044/045/046). Once "tournament" claimed the name "event" used to have, the *original* meaning of "event" — a real-world date/venue occasion (e.g. a specific club meetup night) — has no entity of its own anymore. Today a `tournament` conflates two things: the competition (rounds, pairings, standings) and the occasion it happens at (when, where). Splitting them out would let:
+
+- multiple tournaments happen at the same event (occasion), or
+- an event exist with no tournament yet scheduled, or
+- a tournament exist standing alone with no event at all (matches today's behavior).
+
+This is the entity item #8's "decoupling" work depends on — #8's second bullet ("be linked to a single one-off event with no league") only makes sense once this entity exists; right now it's aspirational, there's nothing to link to. **Do this one first if both are ever picked up**, since #8's schema work would otherwise need to be redone.
+
+**Concrete markers already left for this, found instead of invented while implementing the rename:**
+- `ICONS.calendarAdd` (`app/utils/icons.ts`) was deliberately kept even though it lost its only consumer (`TournamentFormModal.vue`, now on `ICONS.battle`) — reserved for this future entity's create/edit UI.
+- The naming precedent is already set: this repo's convention would make it `events` (table), `event_id`/`event_*` columns, `useEventStore`-shaped composables, etc. — the exact names phase 2/3 of the rename just vacated. No naming decision needed, just re-derive it symmetrically from how `tournament` was structured.
+
+**Needs a real design pass before implementing, not just a migration**: what fields does an event actually need (date, venue name/address, notes — anything else)? Does `tournaments` gain an optional `event_id` FK, or does the relationship go the other way (an event has many tournaments)? How does this interact with `leagues.valid_events`/`valid_tournaments` (BACKLOG #16) and the season-calendar info page (BACKLOG #17) — are those really about tournaments or about events? Worth resolving those semantics questions together rather than three separate migrations.
+
+**Deliberately P3/someday, not next** — same reasoning as #8: the current tournament lifecycle should stay the priority until it's rock solid.
 
 ---
 
