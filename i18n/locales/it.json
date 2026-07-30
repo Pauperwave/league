@@ -611,6 +611,8 @@
         "confirmLabel": "Sottrai"
       },
       "phases": {
+        "pre": "SISTEMATEVI",
+        "round": "GIOCO",
         "turns": "TURNI",
         "ended": "FINE PARTITA"
       }

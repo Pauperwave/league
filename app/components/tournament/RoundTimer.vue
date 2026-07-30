@@ -111,6 +111,16 @@ const isPaused = computed(() => phase.value !== 'ended' && isTimerPaused(isRunni
 /** Human-readable MM:SS string for the remaining time in the current phase. */
 const display = computed(() => formatDuration(remaining.value))
 
+/** Phase label shown to the right of the timer icon (one per phase, including the terminal "ended" state). */
+const phaseLabel = computed(() => t(`tournament.roundTimer.phases.${phase.value}`))
+
+/** Phase label color — matches the phase's urgency (yellow for get-ready/turns, green for active play, red for game over). */
+const phaseLabelColorClass = computed(() => {
+  if (phase.value === 'round') return 'text-success'
+  if (phase.value === 'ended') return 'text-error'
+  return 'text-warning'
+})
+
 // ---------------------------------------------------------------------------
 // Fullscreen
 // ---------------------------------------------------------------------------
@@ -371,42 +381,32 @@ onMounted(() => {
       />
     </UTooltip>
 
-    <template v-if="phase !== 'ended'">
-      <UIcon
-        :name="ICONS.timer"
-        :class="[
-          isExpired ? 'text-error' : isRunning ? 'text-primary' : 'text-muted',
-          isFullscreen ? 'size-[20cqmin]' : 'size-5',
-        ]"
-      />
+    <UIcon
+      :name="ICONS.timer"
+      :class="[
+        isExpired ? 'text-error' : isRunning ? 'text-primary' : 'text-muted',
+        isFullscreen ? 'size-[20cqmin]' : 'size-5',
+      ]"
+    />
 
-      <!-- Countdown display -->
-      <div class="flex flex-col" :class="isFullscreen ? 'items-center' : 'items-start'">
-        <span
-          v-if="phase === 'turns'"
-          class="font-bold uppercase tracking-wide text-warning"
-          :class="isFullscreen ? 'text-[6cqmin]' : 'text-xs'"
-        >
-          {{ t('tournament.roundTimer.phases.turns') }}
-        </span>
-        <span
-          class="font-mono font-bold tabular-nums leading-none"
-          :class="[
-            isExpired ? 'text-error' : 'text-default',
-            isFullscreen ? 'text-[32cqmin]' : 'text-2xl',
-          ]"
-        >
-          {{ display }}
-        </span>
-      </div>
-    </template>
-
+    <!-- Phase label — always to the right of the icon, one per phase. -->
     <span
-      v-else
-      class="font-bold uppercase tracking-wide text-error"
-      :class="isFullscreen ? 'text-[16cqmin]' : 'text-2xl'"
+      class="font-bold uppercase tracking-wide"
+      :class="[phaseLabelColorClass, isFullscreen ? 'text-[10cqmin]' : 'text-sm']"
     >
-      {{ t('tournament.roundTimer.phases.ended') }}
+      {{ phaseLabel }}
+    </span>
+
+    <!-- Countdown display — nothing left to count once "ended". -->
+    <span
+      v-if="phase !== 'ended'"
+      class="font-mono font-bold tabular-nums leading-none"
+      :class="[
+        isExpired ? 'text-error' : 'text-default',
+        isFullscreen ? 'text-[32cqmin]' : 'text-2xl',
+      ]"
+    >
+      {{ display }}
     </span>
 
     <!-- Controls — two groups that wrap independently onto their own line
