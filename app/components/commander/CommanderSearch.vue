@@ -61,34 +61,12 @@ watch(modelValue, (name) => {
       :ui="{ content: 'max-h-96' }"
     >
       <template #item-label="{ item }">
-        <UTooltip
-          :disabled="!item.imageUrl"
-          :delay-duration="200"
-          :ui="{ content: 'p-1' }"
-        >
-          <span class="flex items-center gap-2 min-w-0">
-            <span
-              v-if="item.tokens?.length"
-              class="shrink-0 bg-gray-950 p-1 rounded"
-            >
-              <ManaCost :mana-cost="item.tokens.join('')" size="sm" />
-            </span>
-            <span class="truncate">
-              <component :is="() => highlightFuzzyChars(item.label, item.matchIndices ?? [])" />
-            </span>
-          </span>
-
-          <template
-            v-if="item.imageUrl"
-            #content
-          >
-            <img
-              :src="item.imageUrl"
-              :alt="item.label"
-              class="w-48 rounded"
-            >
-          </template>
-        </UTooltip>
+        <CommanderSuggestionRow
+          :label="item.label"
+          :tokens="item.tokens"
+          :match-indices="item.matchIndices"
+          :image-url="item.imageUrl"
+        />
       </template>
     </USelectMenu>
 
