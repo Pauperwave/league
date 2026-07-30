@@ -418,7 +418,7 @@ onMounted(() => {
 
       <span
         class="font-bold uppercase tracking-wide"
-        :class="[phaseLabelColorClass, isFullscreen ? 'text-[10cqmin]' : 'text-sm']"
+        :class="[phaseLabelColorClass, isFullscreen ? 'text-[20cqmin]' : 'text-md']"
       >
         {{ phaseLabel }}
       </span>
