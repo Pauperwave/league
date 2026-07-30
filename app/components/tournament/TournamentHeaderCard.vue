@@ -3,8 +3,8 @@
 import type { TournamentStatus } from '#shared/utils/types'
 
 const props = defineProps<{
-  eventName: string
-  eventDate: string
+  tournamentName: string
+  tournamentDate: string
   tournamentStatus: TournamentStatus
 }>()
 
@@ -14,7 +14,7 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
-const editLogging = useButtonLogging('Edit Event', { eventName: () => props.eventName })
+const editLogging = useButtonLogging('Edit Event', { tournamentName: () => props.tournamentName })
 
 function handleEdit() {
   editLogging.logClick()
@@ -33,7 +33,7 @@ const statusBadge = computed(() => {
     <UIcon :name="ICONS.calendar" class="size-5 text-primary mt-1" />
     <div>
       <div class="flex items-center gap-2">
-        <h1 class="text-2xl font-bold">{{ eventName }}</h1>
+        <h1 class="text-2xl font-bold">{{ tournamentName }}</h1>
         <UButton
           color="neutral"
           variant="ghost"
@@ -46,7 +46,7 @@ const statusBadge = computed(() => {
           {{ statusBadge.label }}
         </UBadge>
       </div>
-      <p class="text-sm text-muted">{{ eventDate }}</p>
+      <p class="text-sm text-muted">{{ tournamentDate }}</p>
     </div>
   </div>
 </template>

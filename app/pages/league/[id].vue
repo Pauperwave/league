@@ -22,9 +22,9 @@ const { t } = useI18n()
 const leagueId = Number(route.params.id)
 
 const {
-  createTournament: createEventMutation,
-  updateTournament: updateEventMutation,
-  deleteTournament: deleteEventMutation
+  createTournament: createTournamentMutation,
+  updateTournament: updateTournamentMutation,
+  deleteTournament: deleteTournamentMutation
 } = useTournamentMutations()
 
 const { data: rulesetsData, isLoading: rulesetsLoading } = useRulesetsQuery()
@@ -64,16 +64,16 @@ const showCreateModal = ref(false)
 const showLeagueEditModal = ref(false)
 
 const showTournamentEditModal = ref(false)
-const eventToEdit = ref<Tournament | null>(null)
+const tournamentToEdit = ref<Tournament | null>(null)
 
 const showDeleteConfirm = ref(false)
-const eventToDelete = ref<Tournament | null>(null)
+const tournamentToDelete = ref<Tournament | null>(null)
 
 // — Navigation —
-function navigateToEvent(event: Tournament) {
+function navigateToTournament(event: Tournament) {
   logDebug('LeagueDetailPage', 'Navigating to event', {
     tournamentId: event.tournament_id,
-    eventName: event.tournament_name,
+    tournamentName: event.tournament_name,
     eventPlaying: event.tournament_playing,
     eventRegistrationOpen: event.tournament_registration_open,
     eventCurrentRound: event.tournament_current_round,
@@ -85,10 +85,10 @@ function navigateToEvent(event: Tournament) {
 // — Tournament CRUD —
 async function createTournament(data: TournamentCreatePayload) {
   try {
-    await createEventMutation.mutateAsync({
-      tournament_name: data.eventName,
+    await createTournamentMutation.mutateAsync({
+      tournament_name: data.tournamentName,
       league_id: leagueId,
-      tournament_datetime: data.eventDate,
+      tournament_datetime: data.tournamentDate,
       tournament_round_number: data.numRound,
       tournament_round_duration: data.roundDuration,
       tournament_registration_open: true,
@@ -105,18 +105,18 @@ async function createTournament(data: TournamentCreatePayload) {
   showCreateModal.value = false
   toast.add({
     title: t('event.toast.createdTitle'),
-    description: t('event.toast.createdDescription', { name: data.eventName }),
+    description: t('event.toast.createdDescription', { name: data.tournamentName }),
     color: 'success'
   })
 }
 
 async function updateTournament({ id, data }: TournamentUpdatePayload) {
   try {
-    await updateEventMutation.mutateAsync({
+    await updateTournamentMutation.mutateAsync({
       id,
       data: {
-        tournament_name: data.eventName,
-        tournament_datetime: data.eventDate ?? undefined,
+        tournament_name: data.tournamentName,
+        tournament_datetime: data.tournamentDate ?? undefined,
         tournament_round_number: data.numRound,
         tournament_round_duration: data.roundDuration,
       },
@@ -131,29 +131,29 @@ async function updateTournament({ id, data }: TournamentUpdatePayload) {
   }
 
   showTournamentEditModal.value = false
-  eventToEdit.value = null
+  tournamentToEdit.value = null
   toast.add({
     title: t('event.toast.updatedTitle'),
-    description: t('event.toast.updatedDescription', { name: data.eventName }),
+    description: t('event.toast.updatedDescription', { name: data.tournamentName }),
     color: 'success'
   })
 }
 
-function openEditEvent(event: Tournament) {
-  eventToEdit.value = event
+function openEditTournament(event: Tournament) {
+  tournamentToEdit.value = event
   showTournamentEditModal.value = true
 }
 
-function openDeleteEvent(event: Tournament) {
-  eventToDelete.value = event
+function openDeleteTournament(event: Tournament) {
+  tournamentToDelete.value = event
   showDeleteConfirm.value = true
 }
 
-async function confirmDeleteEvent() {
-  if (!eventToDelete.value) return
+async function confirmDeleteTournament() {
+  if (!tournamentToDelete.value) return
 
   try {
-    await deleteEventMutation.mutateAsync(eventToDelete.value.tournament_id)
+    await deleteTournamentMutation.mutateAsync(tournamentToDelete.value.tournament_id)
   } catch (err) {
     toast.add({
       title: t('event.toast.deleteErrorTitle'),
@@ -166,7 +166,7 @@ async function confirmDeleteEvent() {
   }
 
   showDeleteConfirm.value = false
-  eventToDelete.value = null
+  tournamentToDelete.value = null
   toast.add({
     title: t('event.toast.deletedTitle'),
     description: t('event.toast.deletedDescription'),
@@ -195,10 +195,10 @@ const { updateLeague } = useLeagueUpdate(() => {
           :events="events ?? []"
           :events-loading="eventsLoading"
           @edit-league="showLeagueEditModal = true"
-          @create-event="showCreateModal = true"
-          @view-event="navigateToEvent"
-          @edit-event="openEditEvent"
-          @delete-event="openDeleteEvent"
+          @create-tournament="showCreateModal = true"
+          @view-tournament="navigateToTournament"
+          @edit-tournament="openEditTournament"
+          @delete-tournament="openDeleteTournament"
         />
       </div>
 
@@ -214,14 +214,14 @@ const { updateLeague } = useLeagueUpdate(() => {
     <!-- Modals -->
     <TournamentFormModal
       v-model:open="showCreateModal"
-      :event="null"
+      :tournament="null"
       :league-id="leagueId"
       @create="createTournament"
     />
 
     <TournamentFormModal
       v-model:open="showTournamentEditModal"
-      :event="eventToEdit"
+      :tournament="tournamentToEdit"
       :league-id="leagueId"
       @update="updateTournament"
     />
@@ -238,9 +238,9 @@ const { updateLeague } = useLeagueUpdate(() => {
       v-model:open="showDeleteConfirm"
       :description="t('league.confirmDeleteEventDescription')"
       :question="t('league.confirmDeleteEventQuestion')"
-      :subject="eventToDelete?.tournament_name"
+      :subject="tournamentToDelete?.tournament_name"
       :confirm-icon="ICONS.delete"
-      @confirm="confirmDeleteEvent"
+      @confirm="confirmDeleteTournament"
     />
   </div>
 </template>

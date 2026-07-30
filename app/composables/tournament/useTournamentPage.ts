@@ -28,7 +28,7 @@ export function useTournamentPage() {
     refetch: refreshWaitroom,
   } = useWaitroom(tournamentId)
   const { registerPlayers, unregisterPlayers } = useWaitroomMutations(tournamentId)
-  const { updateTournament: updateEventMutation } = useTournamentMutations()
+  const { updateTournament: updateTournamentMutation } = useTournamentMutations()
   const { data: eventsData, isLoading: eventsLoading, refetch: refreshEventsQuery } = useEventsQuery(leagueId)
   const { data: standingsData, refetch: refreshStandingsQuery } = useEventStandingsQuery(tournamentId)
   const { data: pairingHistoryData } = usePairingHistoryQuery(tournamentId)
@@ -175,11 +175,11 @@ export function useTournamentPage() {
 
   async function updateTournament({ id, data }: TournamentUpdatePayload) {
     try {
-      await updateEventMutation.mutateAsync({
+      await updateTournamentMutation.mutateAsync({
         id,
         data: {
-          tournament_name: data.eventName,
-          tournament_datetime: data.eventDate ?? undefined,
+          tournament_name: data.tournamentName,
+          tournament_datetime: data.tournamentDate ?? undefined,
           tournament_round_number: data.numRound,
           tournament_round_duration: data.roundDuration,
         },

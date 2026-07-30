@@ -19,8 +19,8 @@ const {
 const emit = defineEmits<{
   editLeague: []
   createTournament: []
-  viewEvent: [event: Tournament]
-  editEvent: [event: Tournament]
+  viewTournament: [event: Tournament]
+  editTournament: [event: Tournament]
   deleteTournament: [event: Tournament]
 }>()
 
@@ -66,8 +66,8 @@ const router = useRouter()
       :events="events"
       :loading="eventsLoading"
       class="flex-none"
-      @view="(e) => emit('viewEvent', e)"
-      @edit="(e) => emit('editEvent', e)"
+      @view="(e) => emit('viewTournament', e)"
+      @edit="(e) => emit('editTournament', e)"
       @delete="(e) => emit('deleteTournament', e)"
     />
 

@@ -425,8 +425,8 @@ async function handleUndrawTable(pairingId: number) {
       </UButton>
       <TournamentHeaderCard
         v-if="tournamentStatus !== 'playing' && !isViewingPastRound"
-        :event-name="eventName"
-        :event-date="formattedDate"
+        :tournament-name="eventName"
+        :tournament-date="formattedDate"
         :tournament-status="tournamentStatus"
         @edit="showTournamentEditModal = true"
       />
@@ -672,7 +672,7 @@ async function handleUndrawTable(pairingId: number) {
 
     <TournamentFormModal
       v-model:open="showTournamentEditModal"
-      :event="currentTournament ?? null"
+      :tournament="currentTournament ?? null"
       :league-id="leagueId"
       @update="lifecycle.handleUpdateEvent"
     />

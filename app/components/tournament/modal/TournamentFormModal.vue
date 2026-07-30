@@ -12,8 +12,8 @@ const DEFAULT_ROUND_DURATION = 75 // 1:15 hours
 
 // — Valibot Schema —
 const EventFormSchema = v.object({
-  eventName: v.pipe(v.string(), v.trim(), v.minLength(1)),
-  eventDate: v.nullable(v.string()),
+  tournamentName: v.pipe(v.string(), v.trim(), v.minLength(1)),
+  tournamentDate: v.nullable(v.string()),
   numRound: v.pipe(v.number(), v.minValue(1), v.maxValue(10)),
   roundDuration: v.pipe(v.number(), v.minValue(10), v.maxValue(120)),
 })
@@ -22,30 +22,30 @@ const EventFormSchema = v.object({
 
 // Internal reactive form state
 interface EventForm {
-  eventName: string
-  eventDate: CalendarDate | null  // CalendarDate for DatePicker binding
+  tournamentName: string
+  tournamentDate: CalendarDate | null  // CalendarDate for DatePicker binding
   numRound: number
   roundDuration: number
 }
 
-// Emitted payload — eventDate serialized to ISO string for callers.
+// Emitted payload — tournamentDate serialized to ISO string for callers.
 // Exported: this is the single source of truth for the shape, consumed by
 // useTournamentLifecycle.ts, useTournamentPage.ts, and pages/league/[id].vue instead
 // of each redeclaring their own structurally-compatible-by-accident copy.
 export interface TournamentCreatePayload {
-  eventName: string
-  eventDate: string
+  tournamentName: string
+  tournamentDate: string
   numRound: number
   roundDuration: number
 }
 
 export interface TournamentUpdatePayload {
   id: number
-  data: Omit<TournamentCreatePayload, 'eventDate'> & { eventDate: string | null }
+  data: Omit<TournamentCreatePayload, 'tournamentDate'> & { tournamentDate: string | null }
 }
 
 const props = defineProps<{
-  event: Tournament | null
+  tournament: Tournament | null
   leagueId: number
 }>()
 
@@ -56,10 +56,10 @@ const emit = defineEmits<{
 
 const open = defineModel<boolean>('open', { default: false })
 
-const submitLogging = useButtonLogging('Submit Tournament Form', { isEditing: () => isEditing.value, eventName: () => form.eventName })
+const submitLogging = useButtonLogging('Submit Tournament Form', { isEditing: () => isEditing.value, tournamentName: () => form.tournamentName })
 
 // — Derived modal state —
-const isEditing = computed(() => !!props.event)
+const isEditing = computed(() => !!props.tournament)
 const { title: modalTitle, description: modalDescription, icon: modalIcon, submitLabel, handleCancel } = useFormModalMeta({
   isEditing,
   namespace: 'event',
@@ -70,24 +70,24 @@ const { title: modalTitle, description: modalDescription, icon: modalIcon, submi
 
 // — Form —
 const defaultForm = (): EventForm => ({
-  eventName: '',
-  eventDate: getToday(),
+  tournamentName: '',
+  tournamentDate: getToday(),
   numRound: 2,
   roundDuration: DEFAULT_ROUND_DURATION,
 })
 
 const form = shallowReactive<EventForm>(defaultForm())
 
-const isValid = computed(() => !!form.eventName.trim())
+const isValid = computed(() => !!form.tournamentName.trim())
 
 watch(open, (isOpen) => {
   if (!isOpen) return
 
-  const e = props.event
+  const e = props.tournament
   Object.assign(form, e
     ? {
-        eventName: e.tournament_name,
-        eventDate: parseDateString(e.tournament_datetime),
+        tournamentName: e.tournament_name,
+        tournamentDate: parseDateString(e.tournament_datetime),
         numRound: e.tournament_round_number ?? 2,
         roundDuration: e.tournament_round_duration ?? DEFAULT_ROUND_DURATION,
       }
@@ -100,12 +100,12 @@ function toIsoDate(date: CalendarDate | null): string | null {
 }
 
 function handleSubmit() {
-  const eventDate = toIsoDate(form.eventDate)
-  const eventName = form.eventName.trim()
+  const tournamentDate = toIsoDate(form.tournamentDate)
+  const tournamentName = form.tournamentName.trim()
 
   const data = {
-    eventName,
-    eventDate,
+    tournamentName,
+    tournamentDate,
     numRound: form.numRound,
     roundDuration: form.roundDuration,
   }
@@ -116,22 +116,22 @@ function handleSubmit() {
     return
   }
 
-  if (!isEditing.value && !parsed.output.eventDate) {
+  if (!isEditing.value && !parsed.output.tournamentDate) {
     logError('TournamentFormModal', 'Tournament date required for creation')
     return
   }
 
   submitLogging.logClick()
 
-  if (isEditing.value && props.event) {
+  if (isEditing.value && props.tournament) {
     emit('update', {
-      id: props.event.tournament_id,
+      id: props.tournament.tournament_id,
       data: parsed.output,
     })
   } else {
     emit('create', {
       ...parsed.output,
-      eventDate: parsed.output.eventDate ?? '',
+      tournamentDate: parsed.output.tournamentDate ?? '',
     })
     Object.assign(form, defaultForm())
   }
@@ -158,12 +158,12 @@ function handleSubmit() {
           <UFormField :label="t('event.form.nameLabel')" required>
             <UInput
               id="field-name"
-              v-model="form.eventName"
+              v-model="form.tournamentName"
               :placeholder="t('event.form.namePlaceholder')"
               class="w-full"
             />
           </UFormField>
-          <DatePicker v-model="form.eventDate" :label="t('event.form.dateLabel')" />
+          <DatePicker v-model="form.tournamentDate" :label="t('event.form.dateLabel')" />
         </div>
 
         <div class="grid grid-cols-2 gap-4">
