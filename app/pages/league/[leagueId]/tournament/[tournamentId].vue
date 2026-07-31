@@ -27,7 +27,8 @@ const {
   tournamentStatus, canStartTournament, waitingPlayers, waitroomEntries, pairings, standings,
   players, tableEstimate, getPlayerName, getPlayer,
   addToWaitingList, removeFromWaitingList, startTournament, nextRound, turnBackRound, updateTournament,
-  pairingHistory, leagueTable3Counts, loading, previewTables, viewedRound, isViewingPastRound, viewRound, clearViewedRound,
+  pairingHistory, leagueTable3Counts, loading, previewTables, viewedRound, isViewingPastRound, isCorrectingLastRound, viewRound, clearViewedRound,
+  viewingRegistration, viewRegistration, registrations,
   displayedPairings, refreshDisplayedPairings,
 } = useTournamentPage()
 
@@ -320,6 +321,15 @@ function handleCancelRoundClick() {
   stepper.value?.prev()
 }
 
+// Non-destructive counterpart to "Annulla round" for an ended tournament:
+// opens the last round's pairings for editing (score/kill/commander/votes)
+// without deleting or regenerating anything. currentRound is NOT the last
+// playable round once ended (advance-round.post.ts leaves it at
+// totalRounds + 1) — totalRounds is the real last round to correct.
+function handleCorrectLastRound() {
+  viewRound(totalRounds.value)
+}
+
 // ── Modal Open Handlers ──────────────────────────────────────────────────
 
 function handleOpenScoreModal(pairingId: number, tableIndex: number) {
@@ -479,6 +489,7 @@ async function handleUndrawTable(pairingId: number) {
         @advance="lifecycle.handleAdvance"
         @end="showEndTournamentConfirm = true"
         @cancel-round="handleCancelRoundClick"
+        @correct-last-round="handleCorrectLastRound"
       />
 
       <TournamentStepper
@@ -486,17 +497,24 @@ async function handleUndrawTable(pairingId: number) {
         :current-round="currentRound"
         :total-rounds="totalRounds"
         :tournament-status="tournamentStatus"
+        :viewed-round="viewedRound"
+        :viewing-registration="viewingRegistration"
         @step-changed="lifecycle.handleStepChanged"
         @view-round="viewRound"
+        @view-registration="viewRegistration"
       >
         <template #content>
-          <!-- Viewing Past Round Banner -->
+          <!-- Viewing Past Round / Correcting Last Round / Viewing Registration Banner -->
           <div
-            v-if="isViewingPastRound"
+            v-if="isViewingPastRound || isCorrectingLastRound || viewingRegistration"
             class="mb-4 p-4 rounded-lg border bg-elevated border-muted flex items-center justify-between"
           >
             <span class="text-sm font-medium">
-              {{ t('tournament.viewingPastRound', { round: viewedRound }) }}
+              {{ viewingRegistration
+                ? t('tournament.viewingRegistration')
+                : isCorrectingLastRound
+                  ? t('tournament.correctingLastRound', { round: viewedRound })
+                  : t('tournament.viewingPastRound', { round: viewedRound }) }}
             </span>
             <UButton
               size="sm"
@@ -505,12 +523,24 @@ async function handleUndrawTable(pairingId: number) {
               :icon="ICONS.reset"
               @click="clearViewedRound"
             >
-              {{ t('tournament.backToCurrentRound') }}
+              {{ isCorrectingLastRound
+                ? t('tournament.backToEndedTournament')
+                : viewingRegistration
+                  ? t('tournament.backToTournament')
+                  : t('tournament.backToCurrentRound') }}
             </UButton>
           </div>
 
+          <!-- Registration Preview (past registration snapshot, read-only) -->
+          <div v-if="viewingRegistration">
+            <TournamentRegistrationTable
+              :registrations="registrations"
+              :players="players"
+            />
+          </div>
+
           <!-- Registration / Ended Phase -->
-          <div v-if="tournamentStatus !== 'playing' && !isViewingPastRound">
+          <div v-else-if="tournamentStatus !== 'playing' && !isViewingPastRound && !isCorrectingLastRound">
             <div v-if="tournamentStatus === 'registration'" class="space-y-4">
               <WaitingList
                 :waiting-players="waitingPlayers"
@@ -553,7 +583,7 @@ async function handleUndrawTable(pairingId: number) {
           >
             <div class="space-y-4">
               <RoundTimer
-                v-if="!isViewingPastRound && currentRound > 0"
+                v-if="!isViewingPastRound && !isCorrectingLastRound && currentRound > 0"
                 :key="currentRound"
                 :duration-minutes="roundDuration"
                 :round="currentRound"
@@ -576,7 +606,7 @@ async function handleUndrawTable(pairingId: number) {
             </div>
             <div class="space-y-4">
               <RoundStatusCard
-                v-if="!isViewingPastRound"
+                v-if="!isViewingPastRound && !isCorrectingLastRound"
                 :pairings="displayedPairings"
                 :tournament-players="tournamentPlayers"
                 @open-score-modal="handleOpenScoreModal"
@@ -585,7 +615,7 @@ async function handleUndrawTable(pairingId: number) {
                 @open-votes-modal="handleOpenVotesModal"
               />
               <WinnerChecklist
-                v-if="!isViewingPastRound"
+                v-if="!isViewingPastRound && !isCorrectingLastRound"
                 :winners="winners"
                 :checked="winnersChecked"
                 @toggle="toggleWinnerChecked"

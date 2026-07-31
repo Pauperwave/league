@@ -17,6 +17,7 @@ const emit = defineEmits<{
   cancelRound: []
   advance: []
   end: []
+  correctLastRound: []
 }>()
 
 const showStartButton = computed(() => props.tournamentStatus === 'registration')
@@ -43,9 +44,18 @@ const endEventLogging = useButtonLogging(t('logging.tournament.endEvent'), {
   totalRounds: () => props.totalRounds,
 })
 
+const correctLastRoundLogging = useButtonLogging(t('logging.tournament.correctLastRound'), {
+  currentRound: () => props.currentRound,
+})
+
 function cancelRound() {
   cancelRoundLogging.logClick()
   emit('cancelRound')
+}
+
+function correctLastRound() {
+  correctLastRoundLogging.logClick()
+  emit('correctLastRound')
 }
 
 function handleStartEvent() {
@@ -72,7 +82,7 @@ function handleAdvanceOrEnd() {
     />
   </div>
 
-  <div v-else-if="tournamentStatus === 'playing' || tournamentStatus === 'ended'" class="flex gap-2 justify-start">
+  <div v-else-if="tournamentStatus === 'playing'" class="flex gap-2 justify-start">
     <UTooltip :content="{ side: 'top' }" :text="t('tournament.controlPanel.backToPreviousRoundTooltip')">
       <UButton
         :leading-icon="ICONS.back"
@@ -84,7 +94,7 @@ function handleAdvanceOrEnd() {
       </UButton>
     </UTooltip>
 
-    <UTooltip v-if="tournamentStatus === 'playing'" :content="{ side: 'top' }" :text="isLastRound ? t('tournament.controlPanel.endEventTooltip') : (props.canAdvance ? t('tournament.controlPanel.advanceTooltip') : t('tournament.controlPanel.incompleteDataTooltip'))">
+    <UTooltip :content="{ side: 'top' }" :text="isLastRound ? t('tournament.controlPanel.endEventTooltip') : (props.canAdvance ? t('tournament.controlPanel.advanceTooltip') : t('tournament.controlPanel.incompleteDataTooltip'))">
       <UButton
         :trailing-icon="isLastRound ? ICONS.flag : ICONS.forward"
         :color="props.canAdvance ? 'success' : 'neutral'"
@@ -92,6 +102,19 @@ function handleAdvanceOrEnd() {
         @click="handleAdvanceOrEnd"
       >
         {{ isLastRound ? t('tournament.endEvent.title') : t('tournament.controlPanel.advanceButton') }}
+      </UButton>
+    </UTooltip>
+  </div>
+
+  <div v-else-if="tournamentStatus === 'ended'" class="flex gap-2 justify-start">
+    <UTooltip :content="{ side: 'top' }" :text="t('tournament.correctLastRound.tooltip')">
+      <UButton
+        :leading-icon="ICONS.edit"
+        color="neutral"
+        variant="outline"
+        @click="correctLastRound"
+      >
+        {{ t('tournament.correctLastRound.button') }}
       </UButton>
     </UTooltip>
   </div>

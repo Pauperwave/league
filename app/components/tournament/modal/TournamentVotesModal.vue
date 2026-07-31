@@ -52,6 +52,11 @@ function onContentOpenAutoFocus(event: Event) {
   event.preventDefault()
   ;(event.target as HTMLElement | null)?.focus()
 }
+
+// `tabindex` isn't part of UModal's typed `close` (ButtonProps) prop, but it
+// still falls through to the underlying <button> element at runtime — a
+// non-literal binding sidesteps TS's excess-property check on the prop.
+const closeButtonProps: Record<string, unknown> = { tabindex: -1 }
 </script>
 
 <template>
@@ -60,7 +65,7 @@ function onContentOpenAutoFocus(event: Event) {
     :title="t('tournament.votesModal.title')"
     :ui="{ content: 'sm:max-w-4xl' }"
     :content="{ onOpenAutoFocus: onContentOpenAutoFocus }"
-    :close="{ tabindex: -1 }"
+    :close="closeButtonProps"
   >
     <template #description>
       <PlayerNameTag

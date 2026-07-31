@@ -5,19 +5,24 @@ import type { TournamentStatus } from '#shared/utils/types'
 
 const { t } = useI18n()
 
-const props = defineProps<{
+const { currentRound, totalRounds, tournamentStatus, viewedRound = null, viewingRegistration = false } = defineProps<{
   /** Current round number (1-based) */
   currentRound: number
   /** Total number of rounds in the tournament */
   totalRounds: number
   /** Current tournament status */
   tournamentStatus: TournamentStatus
+  /** Round currently being viewed (read-only preview of a past round), if any */
+  viewedRound?: number | null
+  /** True while showing the read-only past-registration table */
+  viewingRegistration?: boolean
 }>()
 
 const stepper = useTemplateRef('stepper')
 
 const emit = defineEmits<{
   viewRound: [round: number]
+  viewRegistration: []
 }>()
 
 defineSlots<{
@@ -25,26 +30,44 @@ defineSlots<{
   content: (props: { item: StepperItem }) => any
 }>()
 
+// advance-round.post.ts leaves tournament_current_round at totalRounds + 1
+// once a tournament ends (its "one past the last round" convention) — so
+// currentRound is NOT the last playable round once ended. Every "is this the
+// last round" check below must go through this instead of currentRound.
+const lastPlayableRound = computed(() => tournamentStatus === 'ended' ? totalRounds : currentRound)
+
 const items = computed<StepperItem[]>(() => {
   const steps: StepperItem[] = [
     {
       title: t('tournament.stepper.registrationTitle'),
-      description: t('tournament.stepper.registrationDescription'),
-      icon: ICONS.registration,
+      description: viewingRegistration
+        ? t('tournament.stepper.registrationViewing')
+        : t('tournament.stepper.registrationDescription'),
+      icon: viewingRegistration ? ICONS.show : ICONS.registration,
       value: 'registration',
+      ui: viewingRegistration ? { indicator: 'ring-2 ring-primary' } : undefined,
     },
   ]
 
-  for (let i = 1; i <= props.totalRounds; i++) {
+  for (let i = 1; i <= totalRounds; i++) {
+    const isViewed = viewedRound === i
+    const isCorrecting = isViewed && tournamentStatus === 'ended' && i === lastPlayableRound.value
     steps.push({
       title: t('tournament.stepper.roundTitle', { n: i }),
-      description: i < props.currentRound
-        ? t('tournament.stepper.roundCompleted')
-        : i === props.currentRound
-          ? t('tournament.stepper.roundInProgress')
-          : t('tournament.stepper.roundPending'),
-      icon: ICONS.battle,
+      description: isCorrecting
+        ? t('tournament.stepper.roundCorrecting')
+        : isViewed
+          ? t('tournament.stepper.roundViewing')
+          : i < currentRound
+            ? t('tournament.stepper.roundCompleted')
+            : i === currentRound
+              ? t('tournament.stepper.roundInProgress')
+              : t('tournament.stepper.roundPending'),
+      icon: isViewed ? ICONS.show : ICONS.battle,
       value: `round-${i}`,
+      // Distinct ring so a viewed past round reads as "previewing", not as
+      // the tournament's actual current-round progress marker.
+      ui: isViewed ? { indicator: 'ring-2 ring-primary' } : undefined,
     })
   }
 
@@ -59,34 +82,59 @@ const items = computed<StepperItem[]>(() => {
 })
 
 const currentStep = computed(() => {
-  if (props.tournamentStatus === 'ended') return 'ended'
-  if (props.currentRound > 0) return `round-${props.currentRound}`
+  if (tournamentStatus === 'ended') return 'ended'
+  if (currentRound > 0) return `round-${currentRound}`
   return 'registration'
 })
 
-const internalStep = ref(currentStep.value)
-watch(currentStep, (val) => { internalStep.value = val })
+// Follows the viewed round/registration when previewing, otherwise the
+// tournament's actual current step — so the stepper's active indicator
+// tracks what's on screen instead of always snapping back.
+const displayStep = computed(() => {
+  if (viewingRegistration) return 'registration'
+  if (viewedRound !== null) return `round-${viewedRound}`
+  return currentStep.value
+})
+
+const internalStep = ref(displayStep.value)
+watch(displayStep, (val) => { internalStep.value = val })
 
 /** The round being navigated to in the last handleStepClick call, for logging context. */
 const lastViewedRound = ref(0)
 
 const viewRoundLogging = useButtonLogging(t('logging.tournament.viewRound'), {
   round: () => lastViewedRound.value,
-  currentRound: () => props.currentRound,
+  currentRound: () => currentRound,
+})
+
+const viewRegistrationLogging = useButtonLogging(t('logging.tournament.viewRegistration'), {
+  currentRound: () => currentRound,
 })
 
 function handleStepClick(value: string | number | undefined) {
-  // Always reset back to the current step to prevent visual state from changing
-  internalStep.value = currentStep.value
+  // Once the tournament has left registration, that step becomes the
+  // read-only "who signed up, when, how they paid" preview.
+  if (value === 'registration' && tournamentStatus !== 'registration') {
+    viewRegistrationLogging.logClick()
+    emit('viewRegistration')
+    return
+  }
 
   if (typeof value === 'string' && value.startsWith('round-')) {
     const round = parseInt(value.replace('round-', ''), 10)
-    if (round < props.currentRound) {
+    // Once ended, the last round (round === lastPlayableRound) is also
+    // navigable — that's the "correct last round" entry point, not just past rounds.
+    const isNavigable = round < lastPlayableRound.value || (round === lastPlayableRound.value && tournamentStatus === 'ended')
+    if (isNavigable) {
       lastViewedRound.value = round
       viewRoundLogging.logClick()
       emit('viewRound', round)
+      return
     }
   }
+
+  // Any other click (registration while registering/ended/future round) isn't navigable — snap back.
+  internalStep.value = displayStep.value
 }
 
 defineExpose({

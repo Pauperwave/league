@@ -23,6 +23,7 @@ Committed, actionable work items, ranked by priority with a rough effort estimat
 | 16 | [League standings don't use `valid_events` — sums every event instead of best-N](#16-league-standings-dont-use-valid_events--sums-every-event-instead-of-best-n) | P2 | M |
 | 17 | [In-app "info/regolamento" page](#17-in-app-inforegolamento-page) | P3 | S |
 | 18 | [Introduce "event" as a standalone entity (date/venue), separate from tournament](#18-introduce-event-as-a-standalone-entity-datevenue-separate-from-tournament) | P3 | L |
+| 21 | [Correct pairing/table mistakes on an ended tournament](#21-correct-pairingtable-mistakes-on-an-ended-tournament) | P3 | M |
 
 ---
 
@@ -298,6 +299,14 @@ Raised 2026-07-31, from a fairness analysis of tavoli-da-3 (`calculatePlayerTabl
 ~~**Design question raised and still open:** should this historical count be fetched via a new query (`useHistoricalTable3Counts(leagueId)`...) or should the player carry this as their own denormalized data (avoiding an extra round-trip on every tournament-start)?~~ — resolved: went with the query (option A), reusing the existing pairing-history query infrastructure rather than a denormalized `players` column (option B, kept below as a future escalation if this ever needs to avoid the extra round-trip):
 
 **Option B (not implemented, escalation path):** a denormalized column on `players` (e.g. `players.table3_count_total`), maintained by a trigger on `pairings` INSERT/DELETE — same pattern already used for `player_stats`/`commander_stats`. Would remove this query entirely (the count travels with every existing `players` fetch), at the cost of a trigger to maintain and a drift risk if ever bypassed by a direct write. Worth it only if the added query in option A is ever shown to be a real bottleneck — tournament-start isn't a high-frequency operation, so not expected soon.
+
+---
+
+## 21. Correct pairing/table mistakes on an ended tournament
+
+Raised 2026-07-31, same session as ADR-051 (`docs/PROGRESS.md`). The new "Correggi risultati" flow for an ended tournament (non-destructive editing of the last round's scores/kills/commanders/votes) deliberately does **not** cover a wrong table assignment (e.g. a player seated at the wrong pairing) — that still has no non-destructive fix once the tournament has ended. The only existing tool that touches pairings is the destructive turn-back-round delete+regenerate flow, no longer reachable from `ended` after this session's change.
+
+**Needs a design pass**: does this warrant a dedicated "move player between tables" admin action for a past/ended round (editing `pairings` rows directly, not regenerating), or is the destructive rollback the only sane way to fix a wrong seating (since it structurally changes who played whom)? Left open, not decided.
 
 ---
 

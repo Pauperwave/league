@@ -4,7 +4,7 @@
 // pairing history. Reads stay client → Supabase (ADR-013). The tournament
 // store keeps only the lifecycle state machine — these queries are
 // refreshed/invalidated by useTournamentPage after lifecycle writes.
-import type { Tournament, StandingWithPlayer, Pairing, PairingWithResults, Kill, Player, PaymentMethod } from '#shared/utils/types'
+import type { Tournament, StandingWithPlayer, Pairing, PairingWithResults, Kill, Player, PaymentMethod, TournamentRegistration } from '#shared/utils/types'
 import type { Database } from '#shared/utils/types/database'
 import type { PairingHistoryEntry } from '~/composables/event-pairing/pairingOptimizer'
 import { aggregatePointBreakdowns, resolveTournamentRuleset } from '#shared/utils/roundScoring'
@@ -35,7 +35,7 @@ export function useEventsQuery(leagueId: number) {
 }
 
 /**
- * Payment method per player for one or more tournaments (tournament_payments)
+ * Payment method per player for one or more tournaments (tournament_registrations)
  * — fetched separately and merged client-side, no join, same recompute-on-read
  * pattern as kills/placementPoints. Written once at tournament start
  * (server/api/tournaments/:id/start.post.ts) and never touched again.
@@ -48,17 +48,50 @@ async function fetchTournamentPayments(
   if (!tournamentIds.length) return payments
 
   const { data, error } = await supabase
-    .from('tournament_payments')
+    .from('tournament_registrations')
     .select('player_id, payment_method')
     .in('tournament_id', tournamentIds)
 
   if (error) throw error
 
   for (const row of data ?? []) {
-    payments.set(row.player_id, row.payment_method as PaymentMethod)
+    if (row.payment_method) payments.set(row.player_id, row.payment_method as PaymentMethod)
   }
 
   return payments
+}
+
+/** Query key for a tournament's registration snapshot — read-only, written once at tournament start. */
+export const TOURNAMENT_REGISTRATIONS_KEY = ['tournament-registrations']
+
+/**
+ * Read-only registration snapshot (player, when they joined the waitroom,
+ * how they paid) for a tournament that has already started — the "click on
+ * the Registrazione step" past-registration view. `waitroom` itself is
+ * deleted the moment the tournament starts (start.post.ts), so this is the
+ * only surviving source for that data once playing/ended.
+ */
+export function useTournamentRegistrationsQuery(tournamentId: number) {
+  const supabase = useSupabaseClient()
+
+  return useQuery({
+    key: [...TOURNAMENT_REGISTRATIONS_KEY, tournamentId],
+    query: async (): Promise<TournamentRegistration[]> => {
+      const { data, error } = await supabase
+        .from('tournament_registrations')
+        .select('player_id, registered_at, payment_method')
+        .eq('tournament_id', tournamentId)
+        .order('registered_at', { ascending: true })
+
+      if (error) throw error
+
+      return (data ?? []).map(row => ({
+        playerId: row.player_id,
+        registeredAt: row.registered_at,
+        paymentMethod: row.payment_method as PaymentMethod | null,
+      }))
+    },
+  })
 }
 
 /** Query key for a single tournament's standings — refreshed after round transitions. */

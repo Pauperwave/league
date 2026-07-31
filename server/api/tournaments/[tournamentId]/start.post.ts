@@ -34,10 +34,13 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  // Validate the waitroom and the confirmed player order against it.
+  // Validate the waitroom and the confirmed player order against it. inserted_at
+  // is snapshotted below into tournament_registrations before the waitroom row
+  // is deleted — it's the only surviving record of the actual registration time
+  // once the tournament is playing/ended.
   const { data: waitingPlayers, error: waitingError } = await supabase
     .from('waitroom')
-    .select('player_id')
+    .select('player_id, inserted_at')
     .eq('tournament_id', tournamentId)
     .order('inserted_at', { ascending: true })
 
@@ -49,6 +52,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const waitroomIds = (waitingPlayers ?? []).map(player => player.player_id)
+  const insertedAtByPlayerId = new Map((waitingPlayers ?? []).map(player => [player.player_id, player.inserted_at]))
   const count = waitroomIds.length
   if (count < 3 || count === 5) {
     throw createError({
@@ -99,25 +103,32 @@ export default defineEventHandler(async (event) => {
   }
   console.log('[api/start] standings created', { tournamentId, players: standingsData.length })
 
-  // Payment method (POS/Contanti) chosen in the waiting list — snapshotted
-  // here since useWaitingListFlags clears its localStorage the moment this
-  // call succeeds. Only players actually being seated (selectedOrder) can
-  // have a row; a stale/tampered payload for someone else is silently
-  // dropped rather than rejecting the whole start.
-  const validPayments = (payments ?? []).filter(p => selectedOrder.includes(p.playerId))
-  if (validPayments.length) {
-    const { error: paymentsError } = await supabase.from('tournament_payments').insert(
-      validPayments.map(p => ({ tournament_id: tournamentId, player_id: p.playerId, payment_method: p.paymentMethod }))
-    )
-    if (paymentsError) {
-      console.error('[api/start] tournament_payments insert failed', { tournamentId, paymentsError })
-      throw createError({
-        statusCode: 500,
-        statusMessage: paymentsError.message
-      })
-    }
-    console.log('[api/start] tournament_payments recorded', { tournamentId, count: validPayments.length })
+  // Registration snapshot (registered_at + payment method) for every seated
+  // player — the only surviving source of this data once the waitroom row
+  // below is deleted. Payment method (POS/Contanti) was chosen in the waiting
+  // list and is snapshotted here since useWaitingListFlags clears its
+  // localStorage the moment this call succeeds; a stale/tampered payload for
+  // a player outside selectedOrder is silently dropped rather than rejecting
+  // the whole start.
+  const paymentByPlayerId = new Map(
+    (payments ?? []).filter(p => selectedOrder.includes(p.playerId)).map(p => [p.playerId, p.paymentMethod])
+  )
+  const { error: registrationsError } = await supabase.from('tournament_registrations').insert(
+    selectedOrder.map(playerId => ({
+      tournament_id: tournamentId,
+      player_id: playerId,
+      registered_at: insertedAtByPlayerId.get(playerId) ?? null,
+      payment_method: paymentByPlayerId.get(playerId) ?? null,
+    }))
+  )
+  if (registrationsError) {
+    console.error('[api/start] tournament_registrations insert failed', { tournamentId, registrationsError })
+    throw createError({
+      statusCode: 500,
+      statusMessage: registrationsError.message
+    })
   }
+  console.log('[api/start] tournament_registrations recorded', { tournamentId, count: selectedOrder.length })
 
   const { data: updatedTournament, error: updateError } = await supabase
     .from('tournaments')

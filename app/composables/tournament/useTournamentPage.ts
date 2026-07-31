@@ -33,6 +33,7 @@ export function useTournamentPage() {
   const { data: eventsData, isLoading: eventsLoading, refetch: refreshEventsQuery } = useEventsQuery(leagueId)
   const { data: standingsData, refetch: refreshStandingsQuery } = useEventStandingsQuery(tournamentId)
   const { data: pairingHistoryData } = usePairingHistoryQuery(tournamentId)
+  const { data: registrationsData } = useTournamentRegistrationsQuery(tournamentId)
   const { data: leagueTable3CountsData } = useLeagueTable3CountsQuery(leagueId, tournamentId)
 
   // Colada resolves the league from the cached list (SSR-prefetched) — no
@@ -206,8 +207,25 @@ export function useTournamentPage() {
 
   // ── Viewed round state (for viewing past round results without changing event state) ──
   const viewedRound = ref<number | null>(null)
+  // True while showing the read-only past-registration table (player,
+  // registration time, payment method) — mutually exclusive with viewedRound.
+  const viewingRegistration = ref(false)
 
-  const isViewingPastRound = computed(() => viewedRound.value !== null && viewedRound.value < currentRound.value)
+  // advance-round.post.ts sets tournament_current_round to round_number + 1
+  // the moment a tournament ends (its "one past the last round" convention —
+  // verified against real data, every ended tournament has current_round =
+  // round_number + 1) — so currentRound is NOT the last playable round once
+  // ended. lastPlayableRound corrects for that everywhere "the last round"
+  // is meant, without changing currentRound's own DB-accurate meaning.
+  const lastPlayableRound = computed(() => tournamentStatus.value === 'ended' ? totalRounds.value : currentRound.value)
+
+  const isViewingPastRound = computed(() => viewedRound.value !== null && viewedRound.value < lastPlayableRound.value)
+
+  // Once a tournament has ended, its last round is no longer "current" in the
+  // playing sense — viewing it is how an admin corrects a score/kill entry
+  // mistake in place, without the destructive turn-back-round delete+regenerate
+  // flow. Distinct from isViewingPastRound (always readonly).
+  const isCorrectingLastRound = computed(() => tournamentStatus.value === 'ended' && viewedRound.value === lastPlayableRound.value)
 
   // Two instances of the pairings query: the current round (live-standings
   // input) and the displayed round (past-round viewing). When the keys match
@@ -216,11 +234,22 @@ export function useTournamentPage() {
   const { data: displayedPairingsData, refetch: refreshDisplayedPairings } = usePairingsQuery(tournamentId, () => viewedRound.value ?? currentRound.value)
 
   function viewRound(round: number) {
-    viewedRound.value = round === currentRound.value ? null : round
+    // While playing, clicking the current round again means "leave the past-round
+    // preview". Once ended, the "current" round is the one being corrected, so
+    // viewing it must stick instead of clearing back to null.
+    const leavingView = round === currentRound.value && tournamentStatus.value !== 'ended'
+    viewedRound.value = leavingView ? null : round
+    viewingRegistration.value = false
+  }
+
+  function viewRegistration() {
+    viewingRegistration.value = true
+    viewedRound.value = null
   }
 
   function clearViewedRound() {
     viewedRound.value = null
+    viewingRegistration.value = false
   }
 
   const pairings = computed(() => pairingsData.value ?? [])
@@ -249,8 +278,12 @@ export function useTournamentPage() {
     refreshDisplayedPairings,
     viewedRound: computed(() => viewedRound.value),
     isViewingPastRound,
+    isCorrectingLastRound,
     viewRound,
     clearViewedRound,
+    viewingRegistration: computed(() => viewingRegistration.value),
+    viewRegistration,
+    registrations: computed(() => registrationsData.value ?? []),
     pairingHistory: computed(() => pairingHistoryData.value ?? []),
     leagueTable3Counts: computed(() => leagueTable3CountsData.value ?? new Map<number, number>()),
     standings: computed(() => standingsData.value ?? []),

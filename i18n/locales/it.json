@@ -102,10 +102,12 @@
       "submitForm": "Form torneo confermato",
       "cancelForm": "Form torneo annullato",
       "cancelRound": "Round annullato",
+      "correctLastRound": "Correzione ultimo round avviata",
       "startEvent": "Evento avviato",
       "advanceRound": "Round avanzato",
       "endEvent": "Torneo evento terminato",
       "viewRound": "Round visualizzato",
+      "viewRegistration": "Iscrizioni visualizzate",
       "refreshCommanderCatalog": "Catalogo comandanti aggiornato",
       "confirmKills": "Uccisioni confermate",
       "confirmVotes": "Voti confermati"
@@ -543,6 +545,10 @@
     "timerExpiredDescription": "Il tempo del round {round} è terminato",
     "viewingPastRound": "Visualizzando il round {round}",
     "backToCurrentRound": "Torna al round corrente",
+    "correctingLastRound": "Correzione risultati round {round}",
+    "backToEndedTournament": "Torna a fine torneo",
+    "backToTournament": "Torna al torneo",
+    "viewingRegistration": "Visualizzazione iscrizioni",
     "notEnoughPlayers": "Servono almeno 3 giocatori",
     "tooManyForFive": "Non si può giocare con 5 giocatori",
     "tablesOf4": "{count} tavolo da 4 | {count} tavoli da 4",
@@ -554,6 +560,10 @@
       "question": "Sei sicuro di voler tornare al round precedente",
       "warning": "I dati del round corrente andranno persi.",
       "confirmLabel": "Annulla round"
+    },
+    "correctLastRound": {
+      "button": "Correggi risultati",
+      "tooltip": "Correggi i risultati dell'ultimo round senza cancellare nulla"
     },
     "endEvent": {
       "title": "Termina torneo",
@@ -589,10 +599,13 @@
     "stepper": {
       "registrationTitle": "Registrazione",
       "registrationDescription": "Iscrizioni aperte",
+      "registrationViewing": "In visualizzazione",
       "roundTitle": "Round {n}",
       "roundCompleted": "Completato",
       "roundInProgress": "In corso",
       "roundPending": "In attesa",
+      "roundViewing": "In visualizzazione",
+      "roundCorrecting": "In correzione",
       "endedDescription": "Torneo concluso"
     },
     "startButton": "Avvia Torneo",
@@ -672,6 +685,14 @@
         "description": "Stai per rimuovere più giocatori dalla lista d'attesa",
         "question": "Sei sicuro di voler rimuovere {count} giocatori selezionati"
       }
+    },
+    "registrationTable": {
+      "playerColumn": "Giocatore",
+      "registeredAtColumn": "Iscritto il",
+      "paymentColumn": "Pagamento",
+      "paymentUnknown": "Non registrato",
+      "unknownTime": "Data non disponibile",
+      "emptyTitle": "Nessuna iscrizione registrata"
     },
     "waitingListStats": {
       "noPlayers": "Nessun giocatore",

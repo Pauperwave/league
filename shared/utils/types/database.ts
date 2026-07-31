@@ -578,23 +578,26 @@ export type Database = {
           },
         ]
       }
-      tournament_payments: {
+      tournament_registrations: {
         Row: {
           created_at: string
-          payment_method: string
+          payment_method: string | null
           player_id: number
+          registered_at: string | null
           tournament_id: number
         }
         Insert: {
           created_at?: string
-          payment_method: string
+          payment_method?: string | null
           player_id: number
+          registered_at?: string | null
           tournament_id: number
         }
         Update: {
           created_at?: string
-          payment_method?: string
+          payment_method?: string | null
           player_id?: number
+          registered_at?: string | null
           tournament_id?: number
         }
         Relationships: [

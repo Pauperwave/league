@@ -59,8 +59,16 @@ export type NewPlayer = Omit<PlayerInsert, 'player_id'>
 
 // ─── Extended Types ─────────────────────────────────────────────────────────
 
-/** How a player paid for a tournament (tournament_payments table) — POS or Contanti. */
+/** How a player paid for a tournament (tournament_registrations table) — POS or Contanti. */
 export type PaymentMethod = 'pos' | 'cash'
+
+/** A player's registration snapshot for a tournament (tournament_registrations table). */
+export interface TournamentRegistration {
+  playerId: number
+  /** Original waitroom insertion time, snapshotted at tournament start — null for tournaments started before this column existed. */
+  registeredAt: string | null
+  paymentMethod: PaymentMethod | null
+}
 
 // Full player data - for compatibility with existing code that expects full player
 export interface StandingWithPlayer extends Standing {
@@ -73,7 +81,7 @@ export interface StandingWithPlayer extends Standing {
   brewPoints?: number
   /** play_received weighted by the ruleset's rule_set_play. */
   playPoints?: number
-  /** How this player paid for the tournament (tournament_payments) — null if not recorded. */
+  /** How this player paid for the tournament (tournament_registrations) — null if not recorded. */
   paymentMethod?: PaymentMethod | null
 }
 
