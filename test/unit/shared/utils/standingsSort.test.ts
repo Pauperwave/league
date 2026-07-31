@@ -7,6 +7,7 @@ function makeStanding(overrides: Partial<StandingSortable> & { player_id: number
   return {
     standing_player_score: null,
     victories: null,
+    kills: null,
     brew_received: null,
     play_received: null,
     ...overrides,
@@ -28,16 +29,23 @@ describe('compareStandings', () => {
     expect([a, b].sort(compareStandings).map(s => s.player_id)).toEqual([2, 1])
   })
 
-  it('breaks a score+victories tie by brew_received (regression: this is the tie-break the ended-tournament view was skipping)', () => {
-    const a = makeStanding({ player_id: 1, standing_player_score: 25, victories: 1, brew_received: 2 })
-    const b = makeStanding({ player_id: 2, standing_player_score: 25, victories: 1, brew_received: 5 })
+  it('breaks a score+victories tie by kills, before falling to the vote-based criteria (ADR-047)', () => {
+    const a = makeStanding({ player_id: 1, standing_player_score: 25, victories: 1, kills: 2 })
+    const b = makeStanding({ player_id: 2, standing_player_score: 25, victories: 1, kills: 5 })
 
     expect([a, b].sort(compareStandings).map(s => s.player_id)).toEqual([2, 1])
   })
 
-  it('breaks a score+victories+brew tie by play_received', () => {
-    const a = makeStanding({ player_id: 1, standing_player_score: 10, victories: 1, brew_received: 1, play_received: 1 })
-    const b = makeStanding({ player_id: 2, standing_player_score: 10, victories: 1, brew_received: 1, play_received: 3 })
+  it('breaks a score+victories+kills tie by brew_received (regression: this is the tie-break the ended-tournament view was skipping)', () => {
+    const a = makeStanding({ player_id: 1, standing_player_score: 25, victories: 1, kills: 2, brew_received: 2 })
+    const b = makeStanding({ player_id: 2, standing_player_score: 25, victories: 1, kills: 2, brew_received: 5 })
+
+    expect([a, b].sort(compareStandings).map(s => s.player_id)).toEqual([2, 1])
+  })
+
+  it('breaks a score+victories+kills+brew tie by play_received', () => {
+    const a = makeStanding({ player_id: 1, standing_player_score: 10, victories: 1, kills: 1, brew_received: 1, play_received: 1 })
+    const b = makeStanding({ player_id: 2, standing_player_score: 10, victories: 1, kills: 1, brew_received: 1, play_received: 3 })
 
     expect([a, b].sort(compareStandings).map(s => s.player_id)).toEqual([2, 1])
   })

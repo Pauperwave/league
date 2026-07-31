@@ -59,6 +59,7 @@ const standingsTotals = computed(() => {
         player_id: standing.player_id,
         standing_player_score: 0,
         victories: 0,
+        kills: 0,
         brew_received: 0,
         play_received: 0,
       }
@@ -66,6 +67,7 @@ const standingsTotals = computed(() => {
         player_id: standing.player_id,
         standing_player_score: (current.standing_player_score ?? 0) + (standing.standing_player_score ?? 0),
         victories: (current.victories ?? 0) + (standing.victories ?? 0),
+        kills: (current.kills ?? 0) + (standing.kills ?? 0),
         brew_received: (current.brew_received ?? 0) + (standing.brew_received ?? 0),
         play_received: (current.play_received ?? 0) + (standing.play_received ?? 0),
       })
@@ -87,6 +89,7 @@ const sortedPlayers = computed(() => {
     player_id: playerId,
     standing_player_score: 0,
     victories: 0,
+    kills: 0,
     brew_received: 0,
     play_received: 0,
   })

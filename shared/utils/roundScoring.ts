@@ -12,6 +12,7 @@ export interface StandingAccumulator {
   player_id: number
   standing_player_score: number
   victories: number
+  kills: number
   brew_received: number
   play_received: number
 }
@@ -90,6 +91,7 @@ export async function fetchRoundData(supabase: SupabaseClient<Database>, tournam
       player_id: s.player_id,
       standing_player_score: 0,
       victories: 0,
+      kills: 0,
       brew_received: 0,
       play_received: 0,
     }])
@@ -271,6 +273,7 @@ export function calculateRoundScores(
       if (acc) {
         acc.standing_player_score += scored.totalScore
         acc.victories += (scored.position === 1 && !isDraw) ? 1 : 0
+        acc.kills += scored.numberOfKills
         acc.brew_received += scored.brewVote
         acc.play_received += scored.totalPlayCount
       }

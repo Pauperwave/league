@@ -56,6 +56,7 @@ function makeStandingsMap(playerIds: number[]): Map<number, StandingAccumulator>
     player_id: id,
     standing_player_score: 0,
     victories: 0,
+    kills: 0,
     brew_received: 0,
     play_received: 0,
   }]))
@@ -348,6 +349,7 @@ describe('calculateRoundScores', () => {
 
     // rank(4) + kills(3*2=6) + brewVote(1*1=1) + playVote(1*1=1) = 12
     expect(standingsMap.get(1)?.standing_player_score).toBe(12)
+    expect(standingsMap.get(1)?.kills).toBe(3)
     expect(standingsMap.get(1)?.brew_received).toBe(1)
     expect(standingsMap.get(1)?.play_received).toBe(1)
   })
