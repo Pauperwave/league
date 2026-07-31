@@ -11,11 +11,18 @@ interface Props {
   icon: string
   doneCount: number
   totalCount: number
+  /** When true, forces the section open (e.g. an active search has matches in it). */
+  forceOpen?: boolean
 }
 
-const { title, icon, doneCount, totalCount } = defineProps<Props>()
+const { title, icon, doneCount, totalCount, forceOpen = false } = defineProps<Props>()
 
-const isOpen = ref(false)
+const manuallyOpen = ref(false)
+
+const isOpen = computed({
+  get: () => manuallyOpen.value || forceOpen,
+  set: value => manuallyOpen.value = value,
+})
 
 const percent = computed(() => totalCount === 0 ? 0 : Math.round((doneCount / totalCount) * 100))
 </script>

@@ -135,6 +135,7 @@ function selectVote(item: { pairingId: number; playerId: number }) {
         :icon="ICONS.standings"
         :done-count="rankingItems.filter(i => i.done).length"
         :total-count="rankingItems.length"
+        :force-open="search !== '' && filteredRankingItems.length > 0"
       >
         <RoundStatusRow
           v-for="item in filteredRankingItems"
@@ -150,6 +151,7 @@ function selectVote(item: { pairingId: number; playerId: number }) {
         :icon="ICONS.kills"
         :done-count="killItems.filter(i => i.done).length"
         :total-count="killItems.length"
+        :force-open="search !== '' && filteredKillItems.length > 0"
       >
         <RoundStatusRow
           v-for="item in filteredKillItems"
@@ -165,6 +167,7 @@ function selectVote(item: { pairingId: number; playerId: number }) {
         :icon="ICONS.commander"
         :done-count="commanderItems.filter(i => i.done).length"
         :total-count="commanderItems.length"
+        :force-open="search !== '' && filteredCommanderItems.length > 0"
       >
         <RoundStatusRow
           v-for="item in filteredCommanderItems"
@@ -183,6 +186,7 @@ function selectVote(item: { pairingId: number; playerId: number }) {
         :icon="ICONS.vote"
         :done-count="voteItems.filter(i => i.done).length"
         :total-count="voteItems.length"
+        :force-open="search !== '' && filteredVoteItems.length > 0"
       >
         <RoundStatusRow
           v-for="item in filteredVoteItems"
