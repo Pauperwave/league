@@ -192,7 +192,7 @@ function createPaymentMethodColumn(): TableColumn<WaitingPlayer> {
         h(UButton, {
           label: t('tournament.waitingListTable.posLabel'),
           icon: ICONS.paymentPos,
-          color: method === 'pos' ? 'success' : 'neutral',
+          color: method === 'pos' ? 'info' : 'neutral',
           variant: method === 'pos' ? 'solid' : 'outline',
           'aria-label': t('tournament.waitingListTable.posAriaLabel', { name: fullName(player) }),
           onClick: () => togglePaymentMethod(player.playerId, 'pos'),

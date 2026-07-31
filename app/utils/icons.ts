@@ -118,7 +118,7 @@ export const ICONS = {
   registration: 'i-lucide-clipboard-list',
   paid: 'i-lucide-dollar-sign',
   paymentPos: 'i-lucide-credit-card',
-  paymentCash: 'i-lucide-banknote',
+  paymentCash: 'i-lucide-coins',
   gameplay: 'i-lucide-gamepad-2',
   total: 'i-lucide-calculator',
   statsLink: 'i-lucide-bar-chart-3',
