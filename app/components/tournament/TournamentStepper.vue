@@ -108,13 +108,12 @@ defineExpose({
         // Step nav (registration + every round + ended) scrolls horizontally
         // on narrow screens instead of squeezing every item's title/description
         // to fit the viewport — only the nav header, not the per-step content
-        // below it (max-w-2xl/mx-auto/justify-center apply to the header
-        // alone — putting them on the whole component instead would also
-        // shrink the content panel below it, e.g. the waiting list, to the
-        // same narrow width). items are shrink-0/w-auto (sized to content),
-        // so without justify-center they'd just pack against the header's
-        // own left edge instead of centering as a group.
-        header: 'max-w-2xl mx-auto overflow-x-auto pb-1 justify-center',
+        // below it. Left-aligned (no justify-center/max-w-2xl/mx-auto, removed
+        // 2026-07-31 — centering a handful of shrink-0/w-auto items left large
+        // empty gutters on both sides, inconsistent with the rest of the
+        // page's full-width left-aligned layout) so items pack against the
+        // header's own left edge, same as the breadcrumb/table above and below it.
+        header: 'overflow-x-auto pb-1 justify-start',
         item: 'shrink-0 min-w-28 w-auto',
       }"
       @update:model-value="handleStepClick"
