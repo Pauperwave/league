@@ -1,75 +1,32 @@
 // app\composables\event-pairing\pairingPreferences.ts
-import type { PairingForbiddenPair, PairingWeights } from '#shared/utils/types'
+import type { PairingWeights } from '#shared/utils/types'
 import { DEFAULT_PAIRING_WEIGHTS } from './pairingOptimizer'
-
-interface PairingPreferences {
-  weights: PairingWeights
-  forbiddenPairs: PairingForbiddenPair[]
-}
 
 function storageKey(tournamentId: number): string {
   return `pairing-preferences-event-${tournamentId}`
 }
 
-function normalizeForbiddenPairs(pairs: PairingForbiddenPair[]): PairingForbiddenPair[] {
-  const dedup = new Set<string>()
-  const result: PairingForbiddenPair[] = []
-
-  for (const pair of pairs) {
-    if (pair.playerA === pair.playerB) continue
-    // Keep original order, only remove duplicates
-    const key = `${pair.playerA}-${pair.playerB}`
-    const reverseKey = `${pair.playerB}-${pair.playerA}`
-    if (dedup.has(key) || dedup.has(reverseKey)) continue
-
-    dedup.add(key)
-    result.push({ playerA: pair.playerA, playerB: pair.playerB })
-  }
-
-  return result
-}
-
-export function getPairingPreferences(tournamentId: number): PairingPreferences {
-  const fallback: PairingPreferences = {
-    weights: { ...DEFAULT_PAIRING_WEIGHTS },
-    forbiddenPairs: [],
-  }
-
-  if (!import.meta.client) return fallback
+export function getPairingWeights(tournamentId: number): PairingWeights {
+  if (!import.meta.client) return { ...DEFAULT_PAIRING_WEIGHTS }
 
   try {
     const raw = localStorage.getItem(storageKey(tournamentId))
-    if (!raw) return fallback
+    if (!raw) return { ...DEFAULT_PAIRING_WEIGHTS }
 
-    const parsed = JSON.parse(raw) as Partial<PairingPreferences>
+    const parsed = JSON.parse(raw) as Partial<{ weights: Partial<PairingWeights> }>
 
     return {
-      weights: {
-        ...DEFAULT_PAIRING_WEIGHTS,
-        ...(parsed.weights ?? {}),
-      },
-      forbiddenPairs: normalizeForbiddenPairs(parsed.forbiddenPairs ?? []),
+      ...DEFAULT_PAIRING_WEIGHTS,
+      ...(parsed.weights ?? {}),
     }
   }
   catch {
-    return fallback
+    return { ...DEFAULT_PAIRING_WEIGHTS }
   }
 }
 
-export function savePairingPreferences(tournamentId: number, prefs: PairingPreferences): void {
+export function savePairingWeights(tournamentId: number, weights: PairingWeights): void {
   if (!import.meta.client) return
 
-  const normalized: PairingPreferences = {
-    weights: {
-      ...DEFAULT_PAIRING_WEIGHTS,
-      ...prefs.weights,
-    },
-    forbiddenPairs: normalizeForbiddenPairs(prefs.forbiddenPairs),
-  }
-
-  localStorage.setItem(storageKey(tournamentId), JSON.stringify(normalized))
-}
-
-export function normalizePairingForbiddenPairs(pairs: PairingForbiddenPair[]): PairingForbiddenPair[] {
-  return normalizeForbiddenPairs(pairs)
+  localStorage.setItem(storageKey(tournamentId), JSON.stringify({ weights }))
 }

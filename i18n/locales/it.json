@@ -823,7 +823,7 @@
       "addPair": "Aggiungi coppia",
       "resolveConflicts": "Risolvi conflitti",
       "empty": "Nessuna coppia vietata",
-      "storageNote": "I valori sono salvati nel LocalStorage del browser con chiave"
+      "storageNote": "Le coppie vietate sono globali: valgono per tutti i tornei."
     },
     "pairingPresets": {
       "social": "Sociale",

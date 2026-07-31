@@ -48,8 +48,10 @@ const pairPlayerA = ref<string>('')
 const pairPlayerB = ref<string>('')
 const hasAutoOptimized = ref(false)
 
-const initialPreferences = computed(() => getPairingPreferences(tournamentId))
 const toast = useToast()
+
+const { data: avoidPairsData } = useAvoidPairsQuery()
+const { addAvoidPair, removeAvoidPair } = useAvoidPairsMutations()
 
 const {
   localTables,
@@ -70,8 +72,6 @@ const {
   scoreDetails,
   weights,
   forbiddenPairs,
-  addForbiddenPair,
-  removeForbiddenPair,
   setWeights,
   setForbiddenPairs,
   conflictingTables,
@@ -79,8 +79,8 @@ const {
   playersForScoring: playersForScoring,
   history: history,
   currentRound: currentRound,
-  initialWeights: initialPreferences.value.weights,
-  initialForbiddenPairs: initialPreferences.value.forbiddenPairs,
+  initialWeights: getPairingWeights(tournamentId),
+  initialForbiddenPairs: avoidPairsData.value ?? [],
 })
 
 watch(
@@ -95,10 +95,16 @@ watch(open, (value) => {
   if (value) {
     hasAutoOptimized.value = false
     reset()
-    const prefs = getPairingPreferences(tournamentId)
-    setWeights(prefs.weights)
-    setForbiddenPairs(prefs.forbiddenPairs)
+    setWeights(getPairingWeights(tournamentId))
+    setForbiddenPairs(avoidPairsData.value ?? [])
   }
+})
+
+// Keeps the in-preview forbidden-pairs set aligned with the global DB list
+// (avoid-pairs are no longer per-tournament state) — refetches after
+// addForbiddenPairFromSelectors/removeForbiddenPair invalidate the query.
+watch(avoidPairsData, (pairs) => {
+  setForbiddenPairs(pairs ?? [])
 })
 
 // Round 1 has no pairing history yet, so the optimizer's table3Count-based
@@ -121,11 +127,8 @@ watch(
   }
 )
 
-watch([weights, forbiddenPairs], () => {
-  savePairingPreferences(tournamentId, {
-    weights: weights.value,
-    forbiddenPairs: forbiddenPairs.value,
-  })
+watch(weights, () => {
+  savePairingWeights(tournamentId, weights.value)
 }, { deep: true })
 
 
@@ -174,14 +177,18 @@ function updateWeight(key: keyof PairingWeights, value: number) {
   setWeights({ [key]: Number(value.toFixed(2)) })
 }
 
-function addForbiddenPairFromSelectors() {
+async function addForbiddenPairFromSelectors() {
   const a = Number(pairPlayerA.value)
   const b = Number(pairPlayerB.value)
   if (!a || !b || a === b) return
 
-  addForbiddenPair(a, b)
+  await addAvoidPair.mutateAsync({ playerA: a, playerB: b })
   pairPlayerA.value = ''
   pairPlayerB.value = ''
+}
+
+async function removeForbiddenPairFromModal(playerA: number, playerB: number) {
+  await removeAvoidPair.mutateAsync({ playerA, playerB })
 }
 
 const { selectedPreset, applyWeightPreset } = usePairingPresets(weights, setWeights)
@@ -323,12 +330,11 @@ function openTableScoreBreakdown(tableIndex: number) {
     :score-items="scoreItems"
     :forbidden-pairs="forbiddenPairs"
     :all-players="allPlayers"
-    :tournament-id="tournamentId"
     @select-preset="applyWeightPreset"
     @update-weight="updateWeight"
     @add-pair="addForbiddenPairFromSelectors"
     @resolve-conflicts="autoResolveConflicts"
-    @remove-pair="(playerA, playerB) => removeForbiddenPair(playerA, playerB)"
+    @remove-pair="removeForbiddenPairFromModal"
   />
 
   <TableScoreBreakdownModal

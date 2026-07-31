@@ -723,3 +723,20 @@ export function optimizePairings(params: {
 export function getForbiddenPairKey(playerA: number, playerB: number): string {
   return pairKey(playerA, playerB)
 }
+
+/** Drops self-pairs and duplicate (order-insensitive) entries, keeping first occurrence order. */
+export function normalizePairingForbiddenPairs(pairs: PairingForbiddenPair[]): PairingForbiddenPair[] {
+  const seen = new Set<string>()
+  const result: PairingForbiddenPair[] = []
+
+  for (const pair of pairs) {
+    if (pair.playerA === pair.playerB) continue
+    const key = getForbiddenPairKey(pair.playerA, pair.playerB)
+    if (seen.has(key)) continue
+
+    seen.add(key)
+    result.push({ playerA: pair.playerA, playerB: pair.playerB })
+  }
+
+  return result
+}

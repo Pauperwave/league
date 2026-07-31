@@ -329,6 +329,39 @@ export type Database = {
           },
         ]
       }
+      player_avoid_pairs: {
+        Row: {
+          created_at: string
+          player_a_id: number
+          player_b_id: number
+        }
+        Insert: {
+          created_at?: string
+          player_a_id: number
+          player_b_id: number
+        }
+        Update: {
+          created_at?: string
+          player_a_id?: number
+          player_b_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "player_avoid_pairs_player_a_id_fkey"
+            columns: ["player_a_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["player_id"]
+          },
+          {
+            foreignKeyName: "player_avoid_pairs_player_b_id_fkey"
+            columns: ["player_b_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["player_id"]
+          },
+        ]
+      }
       player_stats: {
         Row: {
           average_score: number

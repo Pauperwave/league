@@ -16,7 +16,6 @@ interface Player {
 const props = defineProps<{
   forbiddenPairs: ForbiddenPair[]
   allPlayers: Player[]
-  tournamentId: number
 }>()
 
 const emit = defineEmits<{
@@ -40,8 +39,6 @@ const canAddForbiddenPair = computed(() => {
   if (!pairPlayerA.value || !pairPlayerB.value) return false
   return pairPlayerA.value !== pairPlayerB.value
 })
-
-const pairingStorageKey = computed(() => `pairing-preferences-event-${props.tournamentId}`)
 
 const forbiddenPairsDisplay = computed(() => {
   const playerMap = new Map(props.allPlayers.map(player => [player.id, player.name]))
@@ -118,7 +115,6 @@ const forbiddenPairsDisplay = computed(() => {
 
     <div class="text-xs text-muted">
       {{ t('tournament.forbiddenPairs.storageNote') }}
-      <code>{{ pairingStorageKey }}</code>.
     </div>
   </section>
 </template>

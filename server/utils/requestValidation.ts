@@ -103,6 +103,18 @@ export const tournamentFormBodySchema = v.object({
 })
 
 /**
+ * Body schema shared by the avoid-pairs create/delete endpoints — a pair of
+ * distinct player ids (order doesn't matter, the endpoint normalizes it).
+ */
+export const avoidPairBodySchema = v.pipe(
+  v.object({
+    playerA: v.pipe(v.number(), v.integer(), v.minValue(1)),
+    playerB: v.pipe(v.number(), v.integer(), v.minValue(1)),
+  }),
+  v.check(input => input.playerA !== input.playerB, 'playerA and playerB must be different players'),
+)
+
+/**
  * Read the request body and validate it against a valibot schema, throwing
  * the uniform 400 on malformed input.
  */
