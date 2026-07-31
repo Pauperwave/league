@@ -12,6 +12,8 @@ const props = defineProps<{
 const emit = defineEmits<{
   submit: [deckVotePlayerId: number | null, playVotePlayerId: number | null]
   cancel: []
+  /** A voted-on player has no commander recorded yet — opens the commander-assignment modal for them. */
+  assignCommander: [playerId: number]
 }>()
 
 const { t } = useI18n()
@@ -36,78 +38,71 @@ function handleConfirm() {
   submitVotesLogging.logClick()
   emit('submit', localDeckVotePlayerId.value, localPlayVotePlayerId.value)
 }
+
+// Arrow-key roving tabindex — see useRovingTabindex.ts. One instance per
+// grid, since each is its own independent radiogroup-like widget.
+const deckRoving = useRovingTabindex(() => props.otherPlayers.length)
+const playRoving = useRovingTabindex(() => props.otherPlayers.length)
+
+// Footer lives in the parent (TournamentVotesModal's #footer slot, see
+// CommanderModal.vue for the same submit/canSubmit exposure pattern) — this
+// lets the confirm button sit in UModal's actual footer instead of at the
+// end of the body content.
+defineExpose({ submit: handleConfirm })
 </script>
 
 <template>
-  <div class="space-y-4">
-    <div v-if="ruleset" class="flex items-center justify-between gap-2 text-xs text-muted">
-      <span>{{ t('deck.votes.rulesetLabel', { name: ruleset.name }) }}</span>
-      <UTooltip :text="t('deck.votes.rulesetLinkTooltip')">
-        <UButton
-          color="primary"
-          variant="ghost"
-          size="xs"
-          :icon="ICONS.rules"
-          to="/rulesets"
-          :aria-label="t('deck.votes.rulesetLinkTooltip')"
-        />
-      </UTooltip>
-    </div>
-
+  <div class="space-y-6">
     <div>
-      <div class="flex items-center gap-2 mb-2">
-        <label class="text-sm font-medium">{{ t('deck.votes.preferredDeck') }}</label>
-        <UBadge v-if="ruleset?.rule_set_brew != null" color="info" variant="subtle" size="sm">
+      <div class="flex items-center gap-2 mb-3">
+        <label class="text-md font-medium">{{ t('deck.votes.preferredDeck') }}</label>
+        <UBadge v-if="ruleset?.rule_set_brew != null" color="info" variant="subtle" size="md">
           {{ t('deck.votes.weightBadge', { weight: ruleset.rule_set_brew }) }}
         </UBadge>
       </div>
-      <div class="flex flex-wrap gap-2">
-        <UButton
-          v-for="player in otherPlayers"
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3" role="group" :aria-label="t('deck.votes.preferredDeck')">
+        <CommanderVoteCard
+          v-for="(player, index) in otherPlayers"
           :key="`deck-${player.id}`"
-          :variant="localDeckVotePlayerId === player.id ? 'solid' : 'outline'"
-          :color="localDeckVotePlayerId === player.id ? 'primary' : 'neutral'"
-          class="h-auto"
-          @click="() => { localDeckVotePlayerId = player.id }"
-        >
-          <UAvatar size="xs" :src="player.avatarUrl || generatePlayerAvatar(player.id)" :alt="player.name" />
-          <span class="flex flex-col items-start leading-tight text-left">
-            <span>{{ player.name }}</span>
-            <span class="font-semibold">{{ player.surname }}</span>
-          </span>
-        </UButton>
+          :ref="(el) => deckRoving.setItemRef(index, el as { focus: () => void } | null)"
+          :commander-name="player.commander1 ?? null"
+          :name="player.name"
+          :surname="player.surname"
+          :avatar-url="player.avatarUrl"
+          :player-id="player.id"
+          :selected="localDeckVotePlayerId === player.id"
+          :tabindex="deckRoving.tabindexFor(index)"
+          @click="() => { localDeckVotePlayerId = player.id; deckRoving.focusIndex(index) }"
+          @assign="emit('assignCommander', player.id)"
+          @navigate="(direction) => deckRoving.onNavigate(index, direction)"
+        />
       </div>
     </div>
 
     <div>
-      <div class="flex items-center gap-2 mb-2">
-        <label class="text-sm font-medium">{{ t('deck.votes.bestPlay') }}</label>
-        <UBadge v-if="ruleset?.rule_set_play != null" color="info" variant="subtle" size="sm">
+      <div class="flex items-center gap-2 mb-3">
+        <label class="text-md font-medium">{{ t('deck.votes.bestPlay') }}</label>
+        <UBadge v-if="ruleset?.rule_set_play != null" color="info" variant="subtle" size="md">
           {{ t('deck.votes.weightBadge', { weight: ruleset.rule_set_play }) }}
         </UBadge>
       </div>
-      <div class="flex flex-wrap gap-2">
-        <UButton
-          v-for="player in otherPlayers"
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3" role="group" :aria-label="t('deck.votes.bestPlay')">
+        <CommanderVoteCard
+          v-for="(player, index) in otherPlayers"
           :key="`play-${player.id}`"
-          :variant="localPlayVotePlayerId === player.id ? 'solid' : 'outline'"
-          :color="localPlayVotePlayerId === player.id ? 'primary' : 'neutral'"
-          class="h-auto"
-          @click="() => { localPlayVotePlayerId = player.id }"
-        >
-          <UAvatar size="xs" :src="player.avatarUrl || generatePlayerAvatar(player.id)" :alt="player.name" />
-          <span class="flex flex-col items-start leading-tight text-left">
-            <span>{{ player.name }}</span>
-            <span class="font-semibold">{{ player.surname }}</span>
-          </span>
-        </UButton>
+          :ref="(el) => playRoving.setItemRef(index, el as { focus: () => void } | null)"
+          :commander-name="player.commander1 ?? null"
+          :name="player.name"
+          :surname="player.surname"
+          :avatar-url="player.avatarUrl"
+          :player-id="player.id"
+          :selected="localPlayVotePlayerId === player.id"
+          :tabindex="playRoving.tabindexFor(index)"
+          @click="() => { localPlayVotePlayerId = player.id; playRoving.focusIndex(index) }"
+          @assign="emit('assignCommander', player.id)"
+          @navigate="(direction) => playRoving.onNavigate(index, direction)"
+        />
       </div>
     </div>
-
-    <ModalFooterActions
-      :confirm-label="t('common.save')"
-      @cancel="emit('cancel')"
-      @confirm="handleConfirm"
-    />
   </div>
 </template>
