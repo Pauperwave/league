@@ -705,6 +705,10 @@ export type Database = {
         | "Cubo Vintage"
         | "Cubo Commander"
         | "Premodern"
+        | "Old School"
+        | "Draft"
+        | "Sealed"
+        | "Limited"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -850,6 +854,10 @@ export const Constants = {
         "Cubo Vintage",
         "Cubo Commander",
         "Premodern",
+        "Old School",
+        "Draft",
+        "Sealed",
+        "Limited",
       ],
     },
   },
