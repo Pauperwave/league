@@ -180,6 +180,74 @@ export function calculatePlayerTableScore(
   }
 }
 
+/**
+ * "Patta" (draw, see handleDrawSubmit/PairingTableActions.vue): zero kills
+ * for everyone and everyone tied for 1st. Nobody actually *won* the table in
+ * this case — the winner is whoever's still alive at the end of the round,
+ * and a draw means nobody was — so unlike a genuine 2+-way tie for 1st
+ * (which still credits every tied player a victory), a draw credits nobody.
+ */
+export function isDrawTable(tableResults: RoundResult[]): boolean {
+  return tableResults.length > 0
+    && tableResults.every(r => r.position === 1)
+    && tableResults.every(r => (r.number_of_kills ?? 0) === 0)
+}
+
+export interface PlayerPointBreakdown {
+  kills: number
+  placementPoints: number
+  /** Subset of placementPoints earned specifically at winning (non-draw) tables — a breakdown, not additive on top of placementPoints. */
+  victoryPoints: number
+  brewPoints: number
+  playPoints: number
+}
+
+/**
+ * Per-player kills/placement/brew/play recompute for a set of pairings (with
+ * nested round_results) under one ruleset — the read-side counterpart to
+ * `calculateRoundScores` (which writes). Shared by `useEventStandingsQuery`
+ * (single tournament) and `useLeagueStandingsQuery` (summed across a
+ * league's tournaments, one call per tournament since each could in
+ * principle carry a different ruleset) so the two views can't drift.
+ */
+export function aggregatePointBreakdowns(
+  pairings: { pairing_id: number; round_results?: RoundResult[] | null }[],
+  posValues: number[],
+  ruleset: Ruleset | null,
+): Map<number, PlayerPointBreakdown> {
+  const breakdowns = new Map<number, PlayerPointBreakdown>()
+
+  const ensure = (playerId: number): PlayerPointBreakdown => {
+    let entry = breakdowns.get(playerId)
+    if (!entry) {
+      entry = { kills: 0, placementPoints: 0, victoryPoints: 0, brewPoints: 0, playPoints: 0 }
+      breakdowns.set(playerId, entry)
+    }
+    return entry
+  }
+
+  for (const pairing of pairings) {
+    const tableResults = pairing.round_results ?? []
+    const isDraw = isDrawTable(tableResults)
+
+    for (const result of tableResults) {
+      const scored = calculatePlayerTableScore(result.player_id, tableResults, posValues, ruleset)
+      if (!scored) continue
+
+      const entry = ensure(result.player_id)
+      entry.kills += scored.numberOfKills
+      entry.placementPoints += scored.scoreRank
+      entry.brewPoints += scored.brewScore
+      entry.playPoints += scored.playScore
+      if (scored.position === 1 && !isDraw) {
+        entry.victoryPoints += scored.scoreRank
+      }
+    }
+  }
+
+  return breakdowns
+}
+
 /** Calculate scores from round results and update accumulator */
 export function calculateRoundScores(
   pairings: Pairing[],
@@ -197,16 +265,7 @@ export function calculateRoundScores(
     ] as Array<number | null>).filter((pid): pid is number => pid !== null)
 
     const tableResults = results.filter(r => r.pairing_id === pairing.pairing_id)
-
-    // "Patta" (draw, see handleDrawSubmit/PairingTableActions.vue): zero
-    // kills for everyone and everyone tied for 1st. Nobody actually *won*
-    // the table in this case — the winner is whoever's still alive at the
-    // end of the round, and a draw means nobody was — so unlike a genuine
-    // 2+-way tie for 1st (which still credits every tied player a victory),
-    // a draw credits nobody.
-    const isDraw = tableResults.length > 0
-      && tableResults.every(r => r.position === 1)
-      && tableResults.every(r => (r.number_of_kills ?? 0) === 0)
+    const isDraw = isDrawTable(tableResults)
 
     for (const playerId of playerIds) {
       const scored = calculatePlayerTableScore(playerId, tableResults, posValues, ruleset)

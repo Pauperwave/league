@@ -5,7 +5,8 @@
 // they used to share its standings ref with the per-tournament standings, an
 // implicit coupling between two different pages.
 import { compareStandings } from '#shared/utils/standingsSort'
-import { calculatePlayerTableScore, resolveTournamentRuleset } from '#shared/utils/roundScoring'
+import { aggregatePointBreakdowns, resolveTournamentRuleset } from '#shared/utils/roundScoring'
+import type { PlayerPointBreakdown } from '#shared/utils/roundScoring'
 import type { StandingWithPlayer, Player } from '#shared/utils/types'
 import type { Database } from '#shared/utils/types/database'
 
@@ -26,87 +27,58 @@ async function fetchStandingsForTournaments<T>(
 }
 
 /**
- * Sums `round_results.number_of_kills` per player — pulled out of
- * `fetchKillsByPlayer` so the aggregation itself (the part that was
- * actually wrong before, see 2026-07-31 fix) is unit-testable without a
- * Supabase client.
+ * Sums per-tournament PlayerPointBreakdowns into one entry per player —
+ * pulled out of `fetchPointBreakdownsByPlayer` so the summing itself is
+ * unit-testable without a Supabase client.
  */
-export function aggregateKillsByPlayer(
-  results: { player_id: number; number_of_kills: number | null }[]
-): Map<number, number> {
-  const killsMap = new Map<number, number>()
+export function sumPointBreakdowns(
+  perTournament: Map<number, PlayerPointBreakdown>[]
+): Map<number, PlayerPointBreakdown> {
+  const summed = new Map<number, PlayerPointBreakdown>()
 
-  for (const r of results) {
-    killsMap.set(r.player_id, (killsMap.get(r.player_id) ?? 0) + (r.number_of_kills ?? 0))
+  for (const tournamentMap of perTournament) {
+    for (const [playerId, breakdown] of tournamentMap) {
+      const existing = summed.get(playerId)
+      if (existing) {
+        existing.kills += breakdown.kills
+        existing.placementPoints += breakdown.placementPoints
+        existing.victoryPoints += breakdown.victoryPoints
+        existing.brewPoints += breakdown.brewPoints
+        existing.playPoints += breakdown.playPoints
+      }
+      else {
+        summed.set(playerId, { ...breakdown })
+      }
+    }
   }
 
-  return killsMap
+  return summed
 }
 
 /**
- * Kills aren't a `standings` column (recompute-on-read, same pattern as
- * `useEventStandingsQuery`'s single-tournament version) — derived from
- * `round_results.number_of_kills` via each tournament's pairings.
+ * Kills/placement/victory/brew/play points aren't `standings` columns
+ * (recompute-on-read, same pattern as `useEventStandingsQuery`'s
+ * single-tournament version) — resolved per tournament since each one can
+ * (in principle) sit under a different ruleset, then summed across the set.
  */
-async function fetchKillsByPlayer(
+async function fetchPointBreakdownsByPlayer(
   supabase: ReturnType<typeof useSupabaseClient<Database>>,
   tournamentIds: number[]
-): Promise<Map<number, number>> {
-  const { data: pairingsData, error: pairingsError } = await supabase
-    .from('pairings')
-    .select('pairing_id')
-    .in('tournament_id', tournamentIds)
-
-  if (pairingsError) throw pairingsError
-
-  const pairingIds = (pairingsData ?? []).map(p => p.pairing_id)
-  if (!pairingIds.length) return new Map()
-
-  const { data: resultsData, error: resultsError } = await supabase
-    .from('round_results')
-    .select('player_id, number_of_kills')
-    .not('number_of_kills', 'is', null)
-    .in('pairing_id', pairingIds)
-
-  if (resultsError) throw resultsError
-
-  return aggregateKillsByPlayer(resultsData ?? [])
-}
-
-/**
- * Placement points aren't a `standings` column either (same recompute-on-read
- * gap as kills — see 2026-07-31 fix) — resolved per tournament since each one
- * can (in principle) sit under a different ruleset, same as
- * `useEventStandingsQuery`'s single-tournament version.
- */
-async function fetchPlacementPointsByPlayer(
-  supabase: ReturnType<typeof useSupabaseClient<Database>>,
-  tournamentIds: number[]
-): Promise<Map<number, number>> {
-  const placementPointsMap = new Map<number, number>()
-
-  await Promise.all(tournamentIds.map(async (tournamentId) => {
+): Promise<Map<number, PlayerPointBreakdown>> {
+  const perTournament = await Promise.all(tournamentIds.map(async (tournamentId) => {
     const { data: pairingsData, error: pairingsError } = await supabase
       .from('pairings')
       .select('pairing_id, round_results (*)')
       .eq('tournament_id', tournamentId)
 
     if (pairingsError) throw pairingsError
-    if (!pairingsData?.length) return
+    if (!pairingsData?.length) return new Map<number, PlayerPointBreakdown>()
 
     const { posValues, ruleset } = await resolveTournamentRuleset(supabase, tournamentId)
-
-    for (const pairing of pairingsData) {
-      const tableResults = pairing.round_results ?? []
-      for (const result of tableResults) {
-        const scored = calculatePlayerTableScore(result.player_id, tableResults, posValues, ruleset)
-        if (!scored) continue
-        placementPointsMap.set(result.player_id, (placementPointsMap.get(result.player_id) ?? 0) + scored.scoreRank)
-      }
-    }
+    return aggregatePointBreakdowns(pairingsData, posValues, ruleset)
   }))
 
-  return placementPointsMap
+  return sumPointBreakdowns(perTournament)
 }
 
 /** Row shape selected by `useLeagueStandingsQuery`'s `standings` query — exported for its aggregation test. */
@@ -122,15 +94,14 @@ export interface LeagueStandingRow {
 /**
  * Sums per-tournament `standings` rows into one row per player (a player who
  * appears in N tournaments gets one summed entry) and merges in the
- * recomputed kill counts, then applies the shared tie-break sort. Pulled out
- * of `useLeagueStandingsQuery` so the actual summing logic — the part that
- * silently dropped kills before the 2026-07-31 fix — is unit-testable
- * without a Supabase client.
+ * recomputed point breakdown, then applies the shared tie-break sort. Pulled
+ * out of `useLeagueStandingsQuery` so the actual summing logic — the part
+ * that silently dropped kills/placementPoints before the 2026-07-31 fixes —
+ * is unit-testable without a Supabase client.
  */
 export function aggregateLeagueStandings(
   rows: LeagueStandingRow[],
-  killsMap: Map<number, number>,
-  placementPointsMap: Map<number, number>
+  breakdowns: Map<number, PlayerPointBreakdown>
 ): StandingWithPlayer[] {
   const playerMap = new Map<number, StandingWithPlayer>()
 
@@ -143,6 +114,7 @@ export function aggregateLeagueStandings(
       existing.play_received = (existing.play_received ?? 0) + (s.play_received ?? 0)
     }
     else {
+      const breakdown = breakdowns.get(s.player_id)
       playerMap.set(s.player_id, {
         standing_id: 0,
         tournament_id: null,
@@ -150,8 +122,11 @@ export function aggregateLeagueStandings(
         standing_player_score: s.standing_player_score ?? 0,
         standing_player_rank: null,
         victories: s.victories ?? 0,
-        kills: killsMap.get(s.player_id) ?? 0,
-        placementPoints: placementPointsMap.get(s.player_id) ?? 0,
+        kills: breakdown?.kills ?? 0,
+        placementPoints: breakdown?.placementPoints ?? 0,
+        victoryPoints: breakdown?.victoryPoints ?? 0,
+        brewPoints: breakdown?.brewPoints ?? 0,
+        playPoints: breakdown?.playPoints ?? 0,
         brew_received: s.brew_received ?? 0,
         play_received: s.play_received ?? 0,
         players: s.players
@@ -190,7 +165,7 @@ export function useLeagueStandingsQuery(leagueId: number) {
 
       const tournamentIds = tournamentsData.map(e => e.tournament_id)
 
-      const [standingsData, killsMap, placementPointsMap] = await Promise.all([
+      const [standingsData, breakdowns] = await Promise.all([
         fetchStandingsForTournaments<LeagueStandingRow>(
           supabase,
           tournamentIds,
@@ -203,11 +178,10 @@ export function useLeagueStandingsQuery(leagueId: number) {
             players:player_id (player_id, player_name, player_surname, formats_played, is_active)
           `
         ),
-        fetchKillsByPlayer(supabase, tournamentIds),
-        fetchPlacementPointsByPlayer(supabase, tournamentIds),
+        fetchPointBreakdownsByPlayer(supabase, tournamentIds),
       ])
 
-      return aggregateLeagueStandings(standingsData ?? [], killsMap, placementPointsMap)
+      return aggregateLeagueStandings(standingsData ?? [], breakdowns)
     },
   })
 }
@@ -222,7 +196,7 @@ export function useMultipleEventStandingsQuery(tournamentIds: MaybeRefOrGetter<n
       const ids = toValue(tournamentIds)
       if (!ids.length) return []
 
-      const [{ data, error }, killsMap, placementPointsMap] = await Promise.all([
+      const [{ data, error }, breakdowns] = await Promise.all([
         supabase
           .from('standings')
           .select(`
@@ -230,16 +204,18 @@ export function useMultipleEventStandingsQuery(tournamentIds: MaybeRefOrGetter<n
             players:player_id (player_id, player_name, player_surname)
           `)
           .in('tournament_id', ids),
-        fetchKillsByPlayer(supabase, ids),
-        fetchPlacementPointsByPlayer(supabase, ids),
+        fetchPointBreakdownsByPlayer(supabase, ids),
       ])
 
       if (error) throw error
 
       return (data ?? []).map(s => ({
         ...s,
-        kills: killsMap.get(s.player_id) ?? 0,
-        placementPoints: placementPointsMap.get(s.player_id) ?? 0,
+        kills: breakdowns.get(s.player_id)?.kills ?? 0,
+        placementPoints: breakdowns.get(s.player_id)?.placementPoints ?? 0,
+        victoryPoints: breakdowns.get(s.player_id)?.victoryPoints ?? 0,
+        brewPoints: breakdowns.get(s.player_id)?.brewPoints ?? 0,
+        playPoints: breakdowns.get(s.player_id)?.playPoints ?? 0,
         players: s.players
           ? sanitizePlayer({
             player_id: s.players.player_id,

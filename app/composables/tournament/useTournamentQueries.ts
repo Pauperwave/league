@@ -7,7 +7,8 @@
 import type { Tournament, StandingWithPlayer, Pairing, PairingWithResults, Kill } from '#shared/utils/types'
 import type { Database } from '#shared/utils/types/database'
 import type { PairingHistoryEntry } from '~/composables/event-pairing/pairingOptimizer'
-import { calculatePlayerTableScore, resolveTournamentRuleset } from '#shared/utils/roundScoring'
+import { aggregatePointBreakdowns, resolveTournamentRuleset } from '#shared/utils/roundScoring'
+import type { PlayerPointBreakdown } from '#shared/utils/roundScoring'
 
 type PairingRoundIds = Pick<Pairing, 'pairing_round' | 'pairing_player1_id' | 'pairing_player2_id' | 'pairing_player3_id' | 'pairing_player4_id'>
 
@@ -58,41 +59,19 @@ export function useEventStandingsQuery(tournamentId: number) {
         .select('pairing_id, round_results (*)')
         .eq('tournament_id', tournamentId)
 
-      const pairingIds = (pairingsData ?? []).map(p => p.pairing_id)
-
-      const killsMap = new Map<number, number>()
-      if (pairingIds.length) {
-        const { data: resultsData } = await supabase
-          .from('round_results')
-          .select('player_id, number_of_kills')
-          .not('number_of_kills', 'is', null)
-          .in('pairing_id', pairingIds)
-
-        for (const r of resultsData ?? []) {
-          const pid = r.player_id
-          const count = r.number_of_kills ?? 0
-          killsMap.set(pid, (killsMap.get(pid) ?? 0) + count)
-        }
-      }
-
-      const placementPointsMap = new Map<number, number>()
+      let breakdowns = new Map<number, PlayerPointBreakdown>()
       if (pairingsData?.length) {
         const { posValues, ruleset } = await resolveTournamentRuleset(supabase, tournamentId)
-
-        for (const pairing of pairingsData) {
-          const tableResults = pairing.round_results ?? []
-          for (const result of tableResults) {
-            const scored = calculatePlayerTableScore(result.player_id, tableResults, posValues, ruleset)
-            if (!scored) continue
-            placementPointsMap.set(result.player_id, (placementPointsMap.get(result.player_id) ?? 0) + scored.scoreRank)
-          }
-        }
+        breakdowns = aggregatePointBreakdowns(pairingsData, posValues, ruleset)
       }
 
       return (data ?? []).map(s => ({
         ...s,
-        kills: killsMap.get(s.player_id) ?? 0,
-        placementPoints: placementPointsMap.get(s.player_id) ?? 0,
+        kills: breakdowns.get(s.player_id)?.kills ?? 0,
+        placementPoints: breakdowns.get(s.player_id)?.placementPoints ?? 0,
+        victoryPoints: breakdowns.get(s.player_id)?.victoryPoints ?? 0,
+        brewPoints: breakdowns.get(s.player_id)?.brewPoints ?? 0,
+        playPoints: breakdowns.get(s.player_id)?.playPoints ?? 0,
         players: s.players
           ? sanitizePlayer({
             player_id: s.players.player_id,

@@ -44,6 +44,10 @@ describe('cloneStandings', () => {
       standing_player_score: 0,
       victories: 0,
       kills: 0,
+      placementPoints: 0,
+      victoryPoints: 0,
+      brewPoints: 0,
+      playPoints: 0,
       brew_received: 0,
       play_received: 0,
     })
@@ -98,7 +102,9 @@ describe('calculatePlayerTableScore', () => {
     const score = calculatePlayerTableScore(1, [1, 2, 3], posValues, null, [], ruleset, getDeckVote, getPlayVote)
 
     expect(score.brewVote).toBe(1)
+    expect(score.brewScore).toBe(ruleset.rule_set_brew)
     expect(score.totalPlayCount).toBe(1)
+    expect(score.playScore).toBe(ruleset.rule_set_play)
     expect(score.totalScore).toBe(ruleset.rule_set_brew + ruleset.rule_set_play)
   })
 
@@ -114,7 +120,7 @@ describe('updateStanding', () => {
     const [standing] = cloneStandings([makeStanding(1)])
     const result = standing ? [standing] : []
 
-    updateStanding(result, 1, { totalScore: 10, position: 1, numberOfKills: 2, brewVote: 1, totalPlayCount: 1 })
+    updateStanding(result, 1, { totalScore: 10, position: 1, numberOfKills: 2, brewVote: 1, brewScore: 3, totalPlayCount: 1, playScore: 4, scoreRank: 6 })
 
     expect(result[0]).toMatchObject({
       standing_player_score: 10,
@@ -129,14 +135,44 @@ describe('updateStanding', () => {
     const [standing] = cloneStandings([makeStanding(1)])
     const result = standing ? [standing] : []
 
-    updateStanding(result, 1, { totalScore: 5, position: 2, numberOfKills: 0, brewVote: 0, totalPlayCount: 0 })
+    updateStanding(result, 1, { totalScore: 5, position: 2, numberOfKills: 0, brewVote: 0, brewScore: 0, totalPlayCount: 0, playScore: 0, scoreRank: 3 })
 
     expect(result[0]?.victories).toBe(0)
   })
 
   it('is a no-op when the player has no matching standing', () => {
     const result = cloneStandings([makeStanding(1)])
-    updateStanding(result, 999, { totalScore: 10, position: 1, numberOfKills: 0, brewVote: 0, totalPlayCount: 0 })
+    updateStanding(result, 999, { totalScore: 10, position: 1, numberOfKills: 0, brewVote: 0, brewScore: 0, totalPlayCount: 0, playScore: 0, scoreRank: 4 })
     expect(result[0]?.standing_player_score).toBe(0)
+  })
+
+  it('accumulates brewPoints and playPoints regardless of position', () => {
+    const [standing] = cloneStandings([makeStanding(1)])
+    const result = standing ? [standing] : []
+
+    updateStanding(result, 1, { totalScore: 5, position: 2, numberOfKills: 0, brewVote: 1, brewScore: 3, totalPlayCount: 1, playScore: 2, scoreRank: 2 })
+
+    expect(result[0]?.brewPoints).toBe(3)
+    expect(result[0]?.playPoints).toBe(2)
+  })
+
+  it('only credits victoryPoints when position is exactly 1 — a subset of placementPoints, not additive on top', () => {
+    const [standing] = cloneStandings([makeStanding(1)])
+    const result = standing ? [standing] : []
+
+    updateStanding(result, 1, { totalScore: 6, position: 1, numberOfKills: 0, brewVote: 0, brewScore: 0, totalPlayCount: 0, playScore: 0, scoreRank: 6 })
+
+    expect(result[0]?.placementPoints).toBe(6)
+    expect(result[0]?.victoryPoints).toBe(6)
+  })
+
+  it('does not credit victoryPoints for a non-winning position, even though placementPoints still accrues', () => {
+    const [standing] = cloneStandings([makeStanding(1)])
+    const result = standing ? [standing] : []
+
+    updateStanding(result, 1, { totalScore: 3, position: 2, numberOfKills: 0, brewVote: 0, brewScore: 0, totalPlayCount: 0, playScore: 0, scoreRank: 3 })
+
+    expect(result[0]?.placementPoints).toBe(3)
+    expect(result[0]?.victoryPoints).toBe(0)
   })
 })

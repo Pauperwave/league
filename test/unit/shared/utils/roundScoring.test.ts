@@ -1,6 +1,6 @@
 // test\unit\shared\utils\roundScoring.test.ts
 import { describe, expect, it } from 'vitest'
-import { buildPairingRows, buildRoundOneTables, calculatePlayerTableScore, calculateRoundScores } from '#shared/utils/roundScoring'
+import { aggregatePointBreakdowns, buildPairingRows, buildRoundOneTables, calculatePlayerTableScore, calculateRoundScores, isDrawTable } from '#shared/utils/roundScoring'
 import type { Pairing, RoundResult, Ruleset } from '#shared/utils/types'
 import type { StandingAccumulator } from '#shared/utils/roundScoring'
 
@@ -219,6 +219,99 @@ describe('calculatePlayerTableScore', () => {
     ]
 
     expect(calculatePlayerTableScore(1, results, [0, 4, 3, 2, 1], ruleset)?.totalPlayCount).toBe(1)
+  })
+})
+
+describe('isDrawTable', () => {
+  it('is true when everyone is tied for 1st with zero kills', () => {
+    const results = [1, 2, 3, 4].map(playerId => makeResult({ pairing_id: 1, player_id: playerId, position: 1, number_of_kills: 0 }))
+    expect(isDrawTable(results)).toBe(true)
+  })
+
+  it('is false when someone has a kill, even if everyone is tied for 1st', () => {
+    const results = [
+      makeResult({ pairing_id: 1, player_id: 1, position: 1, number_of_kills: 1 }),
+      makeResult({ pairing_id: 1, player_id: 2, position: 1, number_of_kills: 0 }),
+    ]
+    expect(isDrawTable(results)).toBe(false)
+  })
+
+  it('is false when not everyone is tied for 1st', () => {
+    const results = [
+      makeResult({ pairing_id: 1, player_id: 1, position: 1, number_of_kills: 0 }),
+      makeResult({ pairing_id: 1, player_id: 2, position: 2, number_of_kills: 0 }),
+    ]
+    expect(isDrawTable(results)).toBe(false)
+  })
+
+  it('is false for an empty table', () => {
+    expect(isDrawTable([])).toBe(false)
+  })
+})
+
+describe('aggregatePointBreakdowns', () => {
+  it('sums kills, placement, brew, and play points per player across pairings', () => {
+    const ruleset = makeRuleset({ rule_set_kill: 2, rule_set_brew: 1, rule_set_play: 1 })
+    const pairings = [
+      {
+        pairing_id: 1,
+        round_results: [
+          makeResult({ pairing_id: 1, player_id: 1, position: 1, number_of_kills: 3 }),
+          makeResult({ pairing_id: 1, player_id: 2, position: 2, brew_vote: 1, play_vote_1: 1 }),
+        ],
+      },
+    ]
+
+    const breakdowns = aggregatePointBreakdowns(pairings, [0, 4, 3, 2, 1], ruleset)
+
+    // Player 2's row votes brew+play for player 1, so player 1 earns those points, not player 2.
+    expect(breakdowns.get(1)).toMatchObject({ kills: 3, placementPoints: 4, victoryPoints: 4, brewPoints: 1, playPoints: 1 })
+    expect(breakdowns.get(2)).toMatchObject({ kills: 0, placementPoints: 3, victoryPoints: 0, brewPoints: 0, playPoints: 0 })
+  })
+
+  it('excludes a "Patta" (draw) table\'s points from victoryPoints but still counts them in placementPoints', () => {
+    const ruleset = makeRuleset()
+    const pairings = [
+      {
+        pairing_id: 1,
+        round_results: [1, 2].map(playerId => makeResult({ pairing_id: 1, player_id: playerId, position: 1, number_of_kills: 0 })),
+      },
+    ]
+
+    const breakdowns = aggregatePointBreakdowns(pairings, [0, 4, 3, 2, 1], ruleset)
+
+    expect(breakdowns.get(1)?.placementPoints).toBeGreaterThan(0)
+    expect(breakdowns.get(1)?.victoryPoints).toBe(0)
+  })
+
+  it('accumulates across multiple pairings for the same player', () => {
+    const ruleset = makeRuleset()
+    const pairings = [
+      { pairing_id: 1, round_results: [makeResult({ pairing_id: 1, player_id: 1, position: 1, number_of_kills: 1 })] },
+      {
+        pairing_id: 2,
+        round_results: [
+          makeResult({ pairing_id: 2, player_id: 1, position: 2, number_of_kills: 2 }),
+          makeResult({ pairing_id: 2, player_id: 3, position: 1 }),
+        ],
+      },
+    ]
+
+    const breakdowns = aggregatePointBreakdowns(pairings, [0, 4, 3, 2, 1], ruleset)
+
+    expect(breakdowns.get(1)?.kills).toBe(3)
+    // Only the first (won) table's placement points count toward victoryPoints.
+    expect(breakdowns.get(1)?.victoryPoints).toBe(4)
+    expect(breakdowns.get(1)?.placementPoints).toBe(4 + 3)
+  })
+
+  it('treats a pairing with no round_results as contributing nothing', () => {
+    const breakdowns = aggregatePointBreakdowns([{ pairing_id: 1, round_results: [] }], [0, 4, 3, 2, 1], makeRuleset())
+    expect(breakdowns.size).toBe(0)
+  })
+
+  it('returns an empty map for no pairings', () => {
+    expect(aggregatePointBreakdowns([], [0, 4, 3, 2, 1], makeRuleset()).size).toBe(0)
   })
 })
 

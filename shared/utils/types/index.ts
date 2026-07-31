@@ -64,6 +64,12 @@ export interface StandingWithPlayer extends Standing {
   players?: Player
   placementPoints?: number
   kills?: number
+  /** Sum of scoreRank earned specifically at winning (non-draw) tables — a breakdown of placementPoints, not additive on top of it. */
+  victoryPoints?: number
+  /** brew_received weighted by the ruleset's rule_set_brew. */
+  brewPoints?: number
+  /** play_received weighted by the ruleset's rule_set_play. */
+  playPoints?: number
 }
 
 export interface PairingWithResults extends Pairing {

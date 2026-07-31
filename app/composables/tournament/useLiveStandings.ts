@@ -20,6 +20,9 @@ interface StandingWithDefaults extends StandingWithPlayer {
   victories: number
   kills: number
   placementPoints: number
+  victoryPoints: number
+  brewPoints: number
+  playPoints: number
   brew_received: number
   play_received: number
 }
@@ -29,7 +32,9 @@ interface PlayerTableScore {
   position: number
   numberOfKills: number
   brewVote: number
+  brewScore: number
   totalPlayCount: number
+  playScore: number
   scoreRank: number
 }
 
@@ -44,6 +49,9 @@ export function cloneStandings(base: StandingWithPlayer[]): StandingWithDefaults
     victories: s.victories ?? 0,
     kills: s.kills ?? 0,
     placementPoints: s.placementPoints ?? 0,
+    victoryPoints: s.victoryPoints ?? 0,
+    brewPoints: s.brewPoints ?? 0,
+    playPoints: s.playPoints ?? 0,
     brew_received: s.brew_received ?? 0,
     play_received: s.play_received ?? 0,
   }))
@@ -77,12 +85,14 @@ export function calculatePlayerTableScore(
     scoreRank = Math.floor(rankSum / samePositionCount)
   }
 
+  const brewScore = brewVote * (r.rule_set_brew ?? 0)
+  const playScore = totalPlayCount * (r.rule_set_play ?? 0)
   const totalScore = scoreRank
     + numberOfKills * (r.rule_set_kill ?? 0)
-    + brewVote * (r.rule_set_brew ?? 0)
-    + totalPlayCount * (r.rule_set_play ?? 0)
+    + brewScore
+    + playScore
 
-  return { totalScore, position, numberOfKills, brewVote, totalPlayCount, scoreRank }
+  return { totalScore, position, numberOfKills, brewVote, brewScore, totalPlayCount, playScore, scoreRank }
 }
 
 export function updateStanding(
@@ -97,6 +107,9 @@ export function updateStanding(
   standing.victories += score.position === 1 ? 1 : 0
   standing.kills += score.numberOfKills
   standing.placementPoints += score.scoreRank
+  standing.victoryPoints += score.position === 1 ? (score.scoreRank ?? 0) : 0
+  standing.brewPoints += score.brewScore ?? 0
+  standing.playPoints += score.playScore ?? 0
   standing.brew_received += score.brewVote
   standing.play_received += score.totalPlayCount
 }
