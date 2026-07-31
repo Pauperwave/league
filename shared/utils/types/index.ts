@@ -59,6 +59,9 @@ export type NewPlayer = Omit<PlayerInsert, 'player_id'>
 
 // ─── Extended Types ─────────────────────────────────────────────────────────
 
+/** How a player paid for a tournament (tournament_payments table) — POS or Contanti. */
+export type PaymentMethod = 'pos' | 'cash'
+
 // Full player data - for compatibility with existing code that expects full player
 export interface StandingWithPlayer extends Standing {
   players?: Player
@@ -70,6 +73,8 @@ export interface StandingWithPlayer extends Standing {
   brewPoints?: number
   /** play_received weighted by the ruleset's rule_set_play. */
   playPoints?: number
+  /** How this player paid for the tournament (tournament_payments) — null if not recorded. */
+  paymentMethod?: PaymentMethod | null
 }
 
 export interface PairingWithResults extends Pairing {

@@ -150,6 +150,17 @@ function handleToggleFullscreen() {
                         <UIcon :name="ICONS.playVotes" class="size-4 text-success" />
                         <span>{{ standing.playPoints ?? 0 }}</span>
                       </div>
+                      <UTooltip
+                        v-if="standing.paymentMethod"
+                        :content="{ side: 'top' }"
+                        :text="standing.paymentMethod === 'pos' ? t('tournament.waitingListTable.posLabel') : t('tournament.waitingListTable.cashLabel')"
+                      >
+                        <UIcon
+                          :name="standing.paymentMethod === 'pos' ? ICONS.paymentPos : ICONS.paymentCash"
+                          class="size-4"
+                          :class="standing.paymentMethod === 'pos' ? 'text-info' : 'text-success'"
+                        />
+                      </UTooltip>
                     </div>
                   </div>
                 </div>

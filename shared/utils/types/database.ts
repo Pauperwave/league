@@ -575,6 +575,42 @@ export type Database = {
           },
         ]
       }
+      tournament_payments: {
+        Row: {
+          created_at: string
+          payment_method: string
+          player_id: number
+          tournament_id: number
+        }
+        Insert: {
+          created_at?: string
+          payment_method: string
+          player_id: number
+          tournament_id: number
+        }
+        Update: {
+          created_at?: string
+          payment_method?: string
+          player_id?: number
+          tournament_id?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_payments_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "players"
+            referencedColumns: ["player_id"]
+          },
+          {
+            foreignKeyName: "tournament_payments_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["tournament_id"]
+          },
+        ]
+      }
       tournaments: {
         Row: {
           league_id: number | null

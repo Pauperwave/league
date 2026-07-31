@@ -1,12 +1,13 @@
 // app\composables\tournament\useTournamentLifecycle.ts
 import type { TournamentUpdatePayload } from '~/components/tournament/modal/TournamentFormModal.vue'
+import type { PaymentMethod } from '~/composables/tournament/useWaitingListFlags'
 
 interface LifecycleDeps {
   // Tournament actions from useTournamentPage
   tournamentId: number
   nextRound: (playerOrder?: number[]) => Promise<boolean>
   turnBackRound: () => Promise<boolean>
-  startTournament: (playerOrder: number[]) => Promise<boolean>
+  startTournament: (playerOrder: number[], payments?: { playerId: number; paymentMethod: PaymentMethod }[]) => Promise<boolean>
   updateTournament: (payload: TournamentUpdatePayload) => Promise<boolean>
 
   // State refs
@@ -77,7 +78,14 @@ export function useTournamentLifecycle(deps: LifecycleDeps) {
 
   async function handlePreviewConfirm(playerOrder: number[]) {
     if (tournamentStatus.value === 'registration') {
-      const ok = await startTournament(playerOrder)
+      // Snapshot payment methods before startTournament persists them
+      // server-side and clearWaitingListFlags wipes localStorage below.
+      const flags = readWaitingListFlags(tournamentId)
+      const payments = Object.entries(flags)
+        .filter((entry): entry is [string, { paymentMethod: PaymentMethod }] => entry[1].paymentMethod !== null)
+        .map(([playerId, flag]) => ({ playerId: Number(playerId), paymentMethod: flag.paymentMethod }))
+
+      const ok = await startTournament(playerOrder, payments)
       if (ok) {
         clearWaitingListFlags(tournamentId)
         showStartPreviewModal.value = false

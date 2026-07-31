@@ -73,4 +73,20 @@ describe('mergeEventStandings', () => {
 
     expect(result?.players).toBeUndefined()
   })
+
+  it('merges the payment method onto the matching row', () => {
+    const rows = [makeRow({ player_id: 1 }), makeRow({ player_id: 2 })]
+    const payments = new Map<number, 'pos' | 'cash'>([[1, 'pos'], [2, 'cash']])
+
+    const result = mergeEventStandings(rows, new Map(), payments)
+
+    expect(result.find(r => r.player_id === 1)?.paymentMethod).toBe('pos')
+    expect(result.find(r => r.player_id === 2)?.paymentMethod).toBe('cash')
+  })
+
+  it('defaults paymentMethod to null when not recorded', () => {
+    const [result] = mergeEventStandings([makeRow({ player_id: 1 })], new Map())
+
+    expect(result?.paymentMethod).toBeNull()
+  })
 })

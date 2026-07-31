@@ -1,6 +1,7 @@
 // app\composables\tournament\useTournamentPage.ts
 import type { Player } from '#shared/utils/types'
 import type { TournamentUpdatePayload } from '~/components/tournament/modal/TournamentFormModal.vue'
+import type { PaymentMethod } from '~/composables/tournament/useWaitingListFlags'
 import { useTournamentUrl } from './useTournamentUrl'
 
 export function useTournamentPage() {
@@ -147,10 +148,10 @@ export function useTournamentPage() {
     ])
   }
 
-  async function startTournament(playerOrder?: number[]) {
+  async function startTournament(playerOrder?: number[], payments?: { playerId: number; paymentMethod: PaymentMethod }[]) {
     if (!canStartTournament.value) return false
 
-    const result = await tournamentStore.startTournament(tournamentId, playerOrder)
+    const result = await tournamentStore.startTournament(tournamentId, playerOrder, payments)
     if (!result.success) return false
 
     await refreshAfterLifecycle()

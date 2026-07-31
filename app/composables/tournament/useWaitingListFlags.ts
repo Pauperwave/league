@@ -1,6 +1,7 @@
 // app\composables\tournament\useWaitingListFlags.ts
+import type { PaymentMethod } from '#shared/utils/types'
 
-export type PaymentMethod = 'pos' | 'cash'
+export type { PaymentMethod }
 
 export interface WaitingListFlags {
   paymentMethod: PaymentMethod | null
@@ -53,4 +54,15 @@ export function useWaitingListFlags(tournamentId: number) {
 export function clearWaitingListFlags(tournamentId: number) {
   if (typeof window === 'undefined') return
   localStorage.removeItem(waitingListFlagsKey(tournamentId))
+}
+
+/**
+ * One-off synchronous read for a click handler (e.g. `handlePreviewConfirm`
+ * snapshotting payment methods before `startTournament` persists them and
+ * `clearWaitingListFlags` wipes localStorage) — not reactive, so none of the
+ * SSR-hydration concerns above apply; only ever called from a client-triggered action.
+ */
+export function readWaitingListFlags(tournamentId: number): Record<number, WaitingListFlags> {
+  if (typeof window === 'undefined') return {}
+  return getCached<Record<number, WaitingListFlags>>(waitingListFlagsKey(tournamentId), FLAGS_TTL_MS) ?? {}
 }

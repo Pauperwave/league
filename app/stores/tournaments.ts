@@ -1,6 +1,7 @@
 // app\stores\tournaments.ts
 // fallow-ignore-file code-duplication -- intentional store CRUD boilerplate, see app/stores/CLAUDE.md
 import type { Tournament, Kill } from '#shared/utils/types'
+import type { PaymentMethod } from '~/composables/tournament/useWaitingListFlags'
 
 /**
  * The tournament lifecycle state machine (ADR-015 carve-out): currentTournament plus
@@ -47,7 +48,7 @@ export const useTournamentStore = defineStore('tournaments', () => {
    * transition (validate waitroom + order → zeroed standings → flip to playing
    * → clear waitroom → round-1 pairings from the confirmed order).
    */
-  async function startTournament(tournamentId: number, playerOrder?: number[]) {
+  async function startTournament(tournamentId: number, playerOrder?: number[], payments?: { playerId: number; paymentMethod: PaymentMethod }[]) {
     // Re-entrancy guard (BACKLOG #13): a double-click/retry while a previous
     // lifecycle action is still in flight is rejected here, not just
     // discouraged in the UI — `loading` already tracks any in-flight action.
@@ -60,7 +61,7 @@ export const useTournamentStore = defineStore('tournaments', () => {
     try {
       const { event: updatedTournament } = await $fetch(`/api/tournaments/${tournamentId}/start`, {
         method: 'POST',
-        body: { playerOrder },
+        body: { playerOrder, payments },
       })
 
       console.log('[useTournamentStore] start ok', { tournamentId })

@@ -4,7 +4,7 @@
 // pairing history. Reads stay client → Supabase (ADR-013). The tournament
 // store keeps only the lifecycle state machine — these queries are
 // refreshed/invalidated by useTournamentPage after lifecycle writes.
-import type { Tournament, StandingWithPlayer, Pairing, PairingWithResults, Kill, Player } from '#shared/utils/types'
+import type { Tournament, StandingWithPlayer, Pairing, PairingWithResults, Kill, Player, PaymentMethod } from '#shared/utils/types'
 import type { Database } from '#shared/utils/types/database'
 import type { PairingHistoryEntry } from '~/composables/event-pairing/pairingOptimizer'
 import { aggregatePointBreakdowns, resolveTournamentRuleset } from '#shared/utils/roundScoring'
@@ -34,6 +34,33 @@ export function useEventsQuery(leagueId: number) {
   })
 }
 
+/**
+ * Payment method per player for one or more tournaments (tournament_payments)
+ * — fetched separately and merged client-side, no join, same recompute-on-read
+ * pattern as kills/placementPoints. Written once at tournament start
+ * (server/api/tournaments/:id/start.post.ts) and never touched again.
+ */
+async function fetchTournamentPayments(
+  supabase: ReturnType<typeof useSupabaseClient<Database>>,
+  tournamentIds: number[]
+): Promise<Map<number, PaymentMethod>> {
+  const payments = new Map<number, PaymentMethod>()
+  if (!tournamentIds.length) return payments
+
+  const { data, error } = await supabase
+    .from('tournament_payments')
+    .select('player_id, payment_method')
+    .in('tournament_id', tournamentIds)
+
+  if (error) throw error
+
+  for (const row of data ?? []) {
+    payments.set(row.player_id, row.payment_method as PaymentMethod)
+  }
+
+  return payments
+}
+
 /** Query key for a single tournament's standings — refreshed after round transitions. */
 export const EVENT_STANDINGS_KEY = ['event-standings']
 
@@ -61,7 +88,8 @@ export interface EventStandingRow {
  */
 export function mergeEventStandings(
   rows: EventStandingRow[],
-  breakdowns: Map<number, PlayerPointBreakdown>
+  breakdowns: Map<number, PlayerPointBreakdown>,
+  payments: Map<number, PaymentMethod> = new Map()
 ): StandingWithPlayer[] {
   return rows
     .map(s => ({
@@ -71,6 +99,7 @@ export function mergeEventStandings(
       killPoints: breakdowns.get(s.player_id)?.killPoints ?? 0,
       brewPoints: breakdowns.get(s.player_id)?.brewPoints ?? 0,
       playPoints: breakdowns.get(s.player_id)?.playPoints ?? 0,
+      paymentMethod: payments.get(s.player_id) ?? null,
       players: s.players
         ? sanitizePlayer({
           player_id: s.players.player_id,
@@ -110,7 +139,9 @@ export function useEventStandingsQuery(tournamentId: number) {
         breakdowns = aggregatePointBreakdowns(pairingsData, posValues, ruleset)
       }
 
-      return mergeEventStandings(data ?? [], breakdowns)
+      const payments = await fetchTournamentPayments(supabase, [tournamentId])
+
+      return mergeEventStandings(data ?? [], breakdowns, payments)
     },
   })
 }

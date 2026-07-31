@@ -10,11 +10,15 @@ import { buildRoundOneTables, buildPairingRows } from '#shared/utils/roundScorin
 
 const bodySchema = v.object({
   playerOrder: v.optional(v.array(v.pipe(v.number(), v.integer(), v.minValue(1)))),
+  payments: v.optional(v.array(v.object({
+    playerId: v.pipe(v.number(), v.integer(), v.minValue(1)),
+    paymentMethod: v.picklist(['pos', 'cash']),
+  }))),
 })
 
 export default defineEventHandler(async (event) => {
   const tournamentId = requireIdParam(event, 'tournamentId')
-  const { playerOrder } = await requireValidBody(event, bodySchema)
+  const { playerOrder, payments } = await requireValidBody(event, bodySchema)
 
   console.log('[api/start] request', { tournamentId, playerOrderLength: playerOrder?.length ?? 0 })
 
@@ -94,6 +98,26 @@ export default defineEventHandler(async (event) => {
     })
   }
   console.log('[api/start] standings created', { tournamentId, players: standingsData.length })
+
+  // Payment method (POS/Contanti) chosen in the waiting list — snapshotted
+  // here since useWaitingListFlags clears its localStorage the moment this
+  // call succeeds. Only players actually being seated (selectedOrder) can
+  // have a row; a stale/tampered payload for someone else is silently
+  // dropped rather than rejecting the whole start.
+  const validPayments = (payments ?? []).filter(p => selectedOrder.includes(p.playerId))
+  if (validPayments.length) {
+    const { error: paymentsError } = await supabase.from('tournament_payments').insert(
+      validPayments.map(p => ({ tournament_id: tournamentId, player_id: p.playerId, payment_method: p.paymentMethod }))
+    )
+    if (paymentsError) {
+      console.error('[api/start] tournament_payments insert failed', { tournamentId, paymentsError })
+      throw createError({
+        statusCode: 500,
+        statusMessage: paymentsError.message
+      })
+    }
+    console.log('[api/start] tournament_payments recorded', { tournamentId, count: validPayments.length })
+  }
 
   const { data: updatedTournament, error: updateError } = await supabase
     .from('tournaments')
