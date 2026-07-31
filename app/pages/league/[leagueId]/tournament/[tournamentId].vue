@@ -27,7 +27,7 @@ const {
   tournamentStatus, canStartTournament, waitingPlayers, waitroomEntries, pairings, standings,
   players, tableEstimate, getPlayerName, getPlayer,
   addToWaitingList, removeFromWaitingList, startTournament, nextRound, turnBackRound, updateTournament,
-  pairingHistory, loading, previewTables, viewedRound, isViewingPastRound, viewRound, clearViewedRound,
+  pairingHistory, leagueTable3Counts, loading, previewTables, viewedRound, isViewingPastRound, viewRound, clearViewedRound,
   displayedPairings, refreshDisplayedPairings,
 } = useTournamentPage()
 
@@ -221,7 +221,11 @@ const winners = useWinners(displayedPairings, tournamentPlayers, rankingsStore)
 const { checked: winnersChecked, toggle: toggleWinnerChecked } = useWinnerChecklist(tournamentId, currentRound)
 
 const pairingPlayersForScoring = computed<PairingPlayer[]>(() => {
-  const table3Counter = new Map<number, number>()
+  // Tonight's rotation (this tournament's own already-played rounds) plus the
+  // league's history from every other tournament (BACKLOG #20) — summed, not
+  // replaced, so round 1 (which has no rounds of its own yet) still inherits
+  // a real signal instead of starting from zero every time.
+  const table3Counter = new Map<number, number>(leagueTable3Counts.value)
   for (const entry of pairingHistory.value) {
     if (entry.players.length !== 3) continue
     for (const playerId of entry.players) {
