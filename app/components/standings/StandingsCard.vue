@@ -62,7 +62,7 @@ function handleToggleFullscreen() {
   <div
     ref="standingsRef"
     class="bg-linear-to-b from-primary/10 to-transparent rounded-xl p-3 border-2 border-primary/30 shadow-lg"
-    :class="isFullscreen ? 'h-screen w-screen overflow-auto bg-default flex flex-col justify-center' : ''"
+    :class="isFullscreen ? 'h-screen w-screen overflow-auto bg-default flex flex-col' : ''"
   >
     <div class="flex items-center justify-end gap-1 mb-1">
       <UTooltip :content="{ side: 'top' }" :text="t('tournament.standingsCard.copyTooltip')">
