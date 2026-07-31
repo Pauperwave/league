@@ -565,6 +565,7 @@
       "ended": "Terminato"
     },
     "table": {
+      "day": "Giorno",
       "date": "Data",
       "round": "Round",
       "status": "Stato",

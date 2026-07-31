@@ -11,6 +11,12 @@ export function formatDate(date: string | null): string {
   return new Date(date).toLocaleDateString('it-IT')
 }
 
+export function formatWeekday(date: string | null): string {
+  if (!date) return 'N/A'
+  const label = new Date(date).toLocaleDateString('it-IT', { weekday: 'long' })
+  return label.charAt(0).toUpperCase() + label.slice(1)
+}
+
 export function getToday(): CalendarDate {
   return today(getLocalTimeZone())
 }

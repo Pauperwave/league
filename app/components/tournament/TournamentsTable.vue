@@ -78,6 +78,12 @@ const columns: TableColumn<Tournament>[] = [
     cell: ({ row }) => h('span', { class: 'font-semibold' }, row.getValue('tournament_name'))
   },
   {
+    id: 'weekday',
+    header: t('tournament.table.day'),
+    enableSorting: false,
+    cell: ({ row }) => formatWeekday(row.original.tournament_datetime)
+  },
+  {
     accessorKey: 'tournament_datetime',
     header: sortableHeader(t('tournament.table.date'), UButton),
     cell: ({ row }) => formatDate(row.getValue('tournament_datetime'))
