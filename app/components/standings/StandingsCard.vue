@@ -132,7 +132,7 @@ function handleToggleFullscreen() {
                     <div v-if="isDeveloperView" class="flex items-center gap-1.5">
                       <div class="flex items-center gap-1 text-md text-muted" :title="t('player.stats.wins')">
                         <UIcon :name="ICONS.victories" class="size-4 text-warning" />
-                        <span>{{ standing.victories ?? 0 }} ({{ standing.victoryPoints ?? 0 }})</span>
+                        <span>{{ standing.victories ?? 0 }}</span>
                       </div>
                       <div class="flex items-center gap-1 text-md text-muted" :title="t('tournament.tableScoresModal.placementColumn')">
                         <UIcon :name="ICONS.standings" class="size-4 text-primary" />
@@ -140,15 +140,15 @@ function handleToggleFullscreen() {
                       </div>
                       <div class="flex items-center gap-1 text-md text-muted" :title="t('player.stats.kills')">
                         <UIcon :name="ICONS.kills" class="size-4 text-error" />
-                        <span>{{ standing.kills ?? 0 }}</span>
+                        <span>{{ standing.killPoints ?? 0 }}</span>
                       </div>
                       <div class="flex items-center gap-1 text-md text-muted" :title="t('tournament.standingsCard.brewVotesTooltip')">
                         <UIcon :name="ICONS.brewVotes" class="size-4 text-info" />
-                        <span>{{ standing.brew_received ?? 0 }} ({{ standing.brewPoints ?? 0 }})</span>
+                        <span>{{ standing.brewPoints ?? 0 }}</span>
                       </div>
                       <div class="flex items-center gap-1 text-md text-muted" :title="t('tournament.standingsCard.playVotesTooltip')">
                         <UIcon :name="ICONS.playVotes" class="size-4 text-success" />
-                        <span>{{ standing.play_received ?? 0 }} ({{ standing.playPoints ?? 0 }})</span>
+                        <span>{{ standing.playPoints ?? 0 }}</span>
                       </div>
                     </div>
                   </div>

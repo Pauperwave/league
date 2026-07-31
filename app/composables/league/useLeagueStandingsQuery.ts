@@ -42,7 +42,7 @@ export function sumPointBreakdowns(
       if (existing) {
         existing.kills += breakdown.kills
         existing.placementPoints += breakdown.placementPoints
-        existing.victoryPoints += breakdown.victoryPoints
+        existing.killPoints += breakdown.killPoints
         existing.brewPoints += breakdown.brewPoints
         existing.playPoints += breakdown.playPoints
       }
@@ -124,7 +124,7 @@ export function aggregateLeagueStandings(
         victories: s.victories ?? 0,
         kills: breakdown?.kills ?? 0,
         placementPoints: breakdown?.placementPoints ?? 0,
-        victoryPoints: breakdown?.victoryPoints ?? 0,
+        killPoints: breakdown?.killPoints ?? 0,
         brewPoints: breakdown?.brewPoints ?? 0,
         playPoints: breakdown?.playPoints ?? 0,
         brew_received: s.brew_received ?? 0,
@@ -213,7 +213,7 @@ export function useMultipleEventStandingsQuery(tournamentIds: MaybeRefOrGetter<n
         ...s,
         kills: breakdowns.get(s.player_id)?.kills ?? 0,
         placementPoints: breakdowns.get(s.player_id)?.placementPoints ?? 0,
-        victoryPoints: breakdowns.get(s.player_id)?.victoryPoints ?? 0,
+        killPoints: breakdowns.get(s.player_id)?.killPoints ?? 0,
         brewPoints: breakdowns.get(s.player_id)?.brewPoints ?? 0,
         playPoints: breakdowns.get(s.player_id)?.playPoints ?? 0,
         players: s.players

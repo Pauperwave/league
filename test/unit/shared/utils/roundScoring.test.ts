@@ -265,27 +265,12 @@ describe('aggregatePointBreakdowns', () => {
     const breakdowns = aggregatePointBreakdowns(pairings, [0, 4, 3, 2, 1], ruleset)
 
     // Player 2's row votes brew+play for player 1, so player 1 earns those points, not player 2.
-    expect(breakdowns.get(1)).toMatchObject({ kills: 3, placementPoints: 4, victoryPoints: 4, brewPoints: 1, playPoints: 1 })
-    expect(breakdowns.get(2)).toMatchObject({ kills: 0, placementPoints: 3, victoryPoints: 0, brewPoints: 0, playPoints: 0 })
-  })
-
-  it('excludes a "Patta" (draw) table\'s points from victoryPoints but still counts them in placementPoints', () => {
-    const ruleset = makeRuleset()
-    const pairings = [
-      {
-        pairing_id: 1,
-        round_results: [1, 2].map(playerId => makeResult({ pairing_id: 1, player_id: playerId, position: 1, number_of_kills: 0 })),
-      },
-    ]
-
-    const breakdowns = aggregatePointBreakdowns(pairings, [0, 4, 3, 2, 1], ruleset)
-
-    expect(breakdowns.get(1)?.placementPoints).toBeGreaterThan(0)
-    expect(breakdowns.get(1)?.victoryPoints).toBe(0)
+    expect(breakdowns.get(1)).toMatchObject({ kills: 3, placementPoints: 4, killPoints: 6, brewPoints: 1, playPoints: 1 })
+    expect(breakdowns.get(2)).toMatchObject({ kills: 0, placementPoints: 3, killPoints: 0, brewPoints: 0, playPoints: 0 })
   })
 
   it('accumulates across multiple pairings for the same player', () => {
-    const ruleset = makeRuleset()
+    const ruleset = makeRuleset({ rule_set_kill: 2 })
     const pairings = [
       { pairing_id: 1, round_results: [makeResult({ pairing_id: 1, player_id: 1, position: 1, number_of_kills: 1 })] },
       {
@@ -300,8 +285,7 @@ describe('aggregatePointBreakdowns', () => {
     const breakdowns = aggregatePointBreakdowns(pairings, [0, 4, 3, 2, 1], ruleset)
 
     expect(breakdowns.get(1)?.kills).toBe(3)
-    // Only the first (won) table's placement points count toward victoryPoints.
-    expect(breakdowns.get(1)?.victoryPoints).toBe(4)
+    expect(breakdowns.get(1)?.killPoints).toBe(3 * 2)
     expect(breakdowns.get(1)?.placementPoints).toBe(4 + 3)
   })
 

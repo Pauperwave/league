@@ -69,7 +69,7 @@ export function useEventStandingsQuery(tournamentId: number) {
         ...s,
         kills: breakdowns.get(s.player_id)?.kills ?? 0,
         placementPoints: breakdowns.get(s.player_id)?.placementPoints ?? 0,
-        victoryPoints: breakdowns.get(s.player_id)?.victoryPoints ?? 0,
+        killPoints: breakdowns.get(s.player_id)?.killPoints ?? 0,
         brewPoints: breakdowns.get(s.player_id)?.brewPoints ?? 0,
         playPoints: breakdowns.get(s.player_id)?.playPoints ?? 0,
         players: s.players

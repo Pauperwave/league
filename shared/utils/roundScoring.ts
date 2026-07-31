@@ -196,8 +196,7 @@ export function isDrawTable(tableResults: RoundResult[]): boolean {
 export interface PlayerPointBreakdown {
   kills: number
   placementPoints: number
-  /** Subset of placementPoints earned specifically at winning (non-draw) tables — a breakdown, not additive on top of placementPoints. */
-  victoryPoints: number
+  killPoints: number
   brewPoints: number
   playPoints: number
 }
@@ -220,7 +219,7 @@ export function aggregatePointBreakdowns(
   const ensure = (playerId: number): PlayerPointBreakdown => {
     let entry = breakdowns.get(playerId)
     if (!entry) {
-      entry = { kills: 0, placementPoints: 0, victoryPoints: 0, brewPoints: 0, playPoints: 0 }
+      entry = { kills: 0, placementPoints: 0, killPoints: 0, brewPoints: 0, playPoints: 0 }
       breakdowns.set(playerId, entry)
     }
     return entry
@@ -228,7 +227,6 @@ export function aggregatePointBreakdowns(
 
   for (const pairing of pairings) {
     const tableResults = pairing.round_results ?? []
-    const isDraw = isDrawTable(tableResults)
 
     for (const result of tableResults) {
       const scored = calculatePlayerTableScore(result.player_id, tableResults, posValues, ruleset)
@@ -237,11 +235,9 @@ export function aggregatePointBreakdowns(
       const entry = ensure(result.player_id)
       entry.kills += scored.numberOfKills
       entry.placementPoints += scored.scoreRank
+      entry.killPoints += scored.killScore
       entry.brewPoints += scored.brewScore
       entry.playPoints += scored.playScore
-      if (scored.position === 1 && !isDraw) {
-        entry.victoryPoints += scored.scoreRank
-      }
     }
   }
 
