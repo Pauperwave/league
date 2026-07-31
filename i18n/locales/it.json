@@ -642,7 +642,10 @@
     "waitingListTable": {
       "selectAllAriaLabel": "Seleziona tutti",
       "selectRowAriaLabel": "Seleziona {name}",
-      "paidAriaLabel": "Pagato per {name}",
+      "posAriaLabel": "POS per {name}",
+      "cashAriaLabel": "Contanti per {name}",
+      "posLabel": "POS",
+      "cashLabel": "Contanti",
       "playerColumn": "Giocatore",
       "timeColumn": "Inserito alle",
       "paidColumn": "Pagato",

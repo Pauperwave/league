@@ -2,6 +2,7 @@
 
 import type { Player, NewPlayer } from '#shared/utils/types'
 import type { PlayerUpdatePayload } from '~/composables/players/usePlayerMutations'
+import type { PaymentMethod } from '~/composables/tournament/useWaitingListFlags'
 
 interface EventPlayersDeps {
   // Actions from useTournamentPage
@@ -74,7 +75,7 @@ export function useTournamentPlayers(deps: EventPlayersDeps) {
     toast.add({ title: t('tournament.playerAddedTitle'), description: t('tournament.playerAddedDescription'), color: 'success' })
   }
 
-  function handlePlayerStatusUpdate(payload: { playerId: number, paid: boolean }) {
+  function handlePlayerStatusUpdate(payload: { playerId: number, paymentMethod: PaymentMethod | null }) {
     logDebug('useTournamentPlayers', 'Player status updated:', payload)
   }
 

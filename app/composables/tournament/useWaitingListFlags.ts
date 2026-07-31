@@ -1,7 +1,9 @@
 // app\composables\tournament\useWaitingListFlags.ts
 
+export type PaymentMethod = 'pos' | 'cash'
+
 export interface WaitingListFlags {
-  paid: boolean
+  paymentMethod: PaymentMethod | null
 }
 
 function waitingListFlagsKey(tournamentId: number): string {
@@ -14,23 +16,25 @@ function waitingListFlagsKey(tournamentId: number): string {
 const FLAGS_TTL_MS = 30 * 24 * 60 * 60 * 1000
 
 /**
- * Per-tournament "pagato" checkbox state for the waiting list —
- * ephemeral by design (confirmed 2026-07-14: "just for remembering right in
- * that moment", see docs/TODO.md), but persisted to localStorage so a page
- * refresh during registration doesn't silently reset every checkbox. Cleared
- * once the tournament actually starts (see useTournamentLifecycle.ts's
+ * Per-tournament payment state for the waiting list (POS / Contanti / not
+ * paid) — ephemeral by design (confirmed 2026-07-14: "just for remembering
+ * right in that moment", see docs/TODO.md; the payment-method selector that
+ * replaced the plain "pagato" checkbox on 2026-07-31 kept the same ephemeral
+ * contract), but persisted to localStorage so a page refresh during
+ * registration doesn't silently reset every selection. Cleared once the
+ * tournament actually starts (see useTournamentLifecycle.ts's
  * handlePreviewConfirm) since the waitroom itself is cleared then too.
  *
  * Deliberately NOT read synchronously at setup (unlike a plain
  * `useLocalStorage` ref) — SSR has no `localStorage` access, so a synchronous
- * read makes the server-rendered checkboxes (always empty) mismatch the
- * client's real persisted values at hydration time, which Nuxt UI's
- * `UCheckbox` doesn't reliably repaint (confirmed live: the value was
- * correctly hydrated internally, but the checkbox stayed visually unchecked
- * until an unrelated click forced a real re-render). Reading in `onMounted`
- * instead means SSR and the first client render produce an identical, empty
- * starting state, and the real values apply via a normal post-mount reactive
- * update — the same kind of update a user click already triggers correctly.
+ * read makes the server-rendered buttons (always unselected) mismatch the
+ * client's real persisted values at hydration time, which Nuxt UI doesn't
+ * reliably repaint (confirmed live on the old `UCheckbox` version: the value
+ * was correctly hydrated internally, but stayed visually unchanged until an
+ * unrelated click forced a real re-render). Reading in `onMounted` instead
+ * means SSR and the first client render produce an identical, empty starting
+ * state, and the real values apply via a normal post-mount reactive update —
+ * the same kind of update a user click already triggers correctly.
  */
 export function useWaitingListFlags(tournamentId: number) {
   const flags = ref<Record<number, WaitingListFlags>>({})

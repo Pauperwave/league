@@ -1,10 +1,11 @@
 <!-- app\components\tournament\waiting\WaitingListTable.vue -->
 <script setup lang="ts">
-import type { TableColumn, CheckboxProps } from '@nuxt/ui'
+import type { TableColumn } from '@nuxt/ui'
 import type { Row, Table } from '@tanstack/vue-table'
-import { UCheckbox } from '#components'
+import { UCheckbox, UFieldGroup, UButton } from '#components'
 import RowActionButtons from '~/components/ui/actions/RowActionButtons.vue'
 import PlayerNameTag from '~/components/player/PlayerNameTag.vue'
+import type { PaymentMethod } from '~/composables/tournament/useWaitingListFlags'
 
 const { t } = useI18n()
 
@@ -14,7 +15,7 @@ interface WaitingPlayer {
   name: string
   surname: string
   time: string
-  paid: boolean
+  paymentMethod: PaymentMethod | null
 }
 
 function fullName(player: WaitingPlayer): string {
@@ -26,7 +27,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  update: [{ playerId: number; paid: boolean }]
+  update: [{ playerId: number; paymentMethod: PaymentMethod | null }]
   edit: [playerId: number]
   remove: [playerId: number]
   batchRemove: [playerIds: number[]]
@@ -38,20 +39,20 @@ const emit = defineEmits<{
 const searchQuery = ref('')
 const rowSelection = ref<Record<string, boolean>>({})
 
-const playerState = reactive<Record<number, { paid: boolean }>>(
-  Object.fromEntries(props.data.map(p => [p.playerId, { paid: p.paid }]))
+const playerState = reactive<Record<number, { paymentMethod: PaymentMethod | null }>>(
+  Object.fromEntries(props.data.map(p => [p.playerId, { paymentMethod: p.paymentMethod }]))
 )
 
 watch(() => props.data, (data) => {
   data.forEach(p => {
-    playerState[p.playerId] = { paid: p.paid }
+    playerState[p.playerId] = { paymentMethod: p.paymentMethod }
   })
 }, { deep: true })
 
 function emitUpdate(playerId: number) {
   const state = playerState[playerId]
   if (!state) return
-  emit('update', { playerId, paid: state.paid })
+  emit('update', { playerId, paymentMethod: state.paymentMethod })
 }
 
 // --- Removal confirmation ---
@@ -118,7 +119,7 @@ const selectedPlayerIds = computed(() =>
 const hasSelection = computed(() => selectedPlayerIds.value.length > 0)
 
 const allSelectedPaid = computed(() =>
-  hasSelection.value && selectedPlayerIds.value.every(id => playerState[id]?.paid)
+  hasSelection.value && selectedPlayerIds.value.every(id => playerState[id]?.paymentMethod !== null)
 )
 
 function executeBatch(updateFn: ((id: number) => void) | null, batchEmitFn: (ids: number[]) => void) {
@@ -132,9 +133,12 @@ function executeBatch(updateFn: ((id: number) => void) | null, batchEmitFn: (ids
   lastSelectedRowIndex = null
 }
 
+// Batch action has no per-player method choice — defaults to POS when
+// marking (the more common case in practice); individual rows can still
+// override to Contanti afterward.
 function handleToggleMarkPaid() {
-  const newValue = !allSelectedPaid.value
-  executeBatch(id => setPlayer(id, 'paid', newValue), ids => emit('batchMarkPaid', ids))
+  const newValue: PaymentMethod | null = allSelectedPaid.value ? null : 'pos'
+  executeBatch(id => setPaymentMethod(id, newValue), ids => emit('batchMarkPaid', ids))
 }
 
 // --- Batch removal confirmation ---
@@ -159,39 +163,50 @@ function handleConfirmBatchRemove() {
   executeBatch(null, ids => emit('batchRemove', ids))
 }
 
-function togglePlayer(playerId: number, field: 'paid') {
+/** Clicking the already-selected method unmarks payment; clicking the other one switches to it. */
+function togglePaymentMethod(playerId: number, method: PaymentMethod) {
   const state = playerState[playerId]
-  if (!state) return
-  setPlayer(playerId, field, !state[field])
+  const next = state?.paymentMethod === method ? null : method
+  setPaymentMethod(playerId, next)
 }
 
-function setPlayer(playerId: number, field: 'paid', value: boolean) {
+function setPaymentMethod(playerId: number, method: PaymentMethod | null) {
   const state = playerState[playerId]
   if (!state) return
-  state[field] = value
+  state.paymentMethod = method
   emitUpdate(playerId)
 }
 
 // --- Columns ---
 
-function createToggleColumn(
-  id: 'paid',
-  color: CheckboxProps['color'],
-  headerKey: string,
-  ariaLabelKey: string,
-): TableColumn<WaitingPlayer> {
+function createPaymentMethodColumn(): TableColumn<WaitingPlayer> {
   return {
-    id,
-    header: t(headerKey),
+    id: 'paymentMethod',
+    header: t('tournament.waitingListTable.paidColumn'),
     enableHiding: false,
-    meta: { class: { th: 'text-center w-20', td: 'text-center' } },
-    cell: ({ row }) =>
-      h(UCheckbox, {
-        modelValue: playerState[row.original.playerId]?.[id] ?? false,
-        color,
-        'aria-label': t(ariaLabelKey, { name: fullName(row.original) }),
-        'onUpdate:modelValue': () => togglePlayer(row.original.playerId, id),
-      }),
+    meta: { class: { th: 'text-center w-40', td: 'text-center' } },
+    cell: ({ row }) => {
+      const player = row.original
+      const method = playerState[player.playerId]?.paymentMethod ?? null
+      return h(UFieldGroup, { size: 'xs' }, () => [
+        h(UButton, {
+          label: t('tournament.waitingListTable.posLabel'),
+          icon: ICONS.paymentPos,
+          color: method === 'pos' ? 'success' : 'neutral',
+          variant: method === 'pos' ? 'solid' : 'outline',
+          'aria-label': t('tournament.waitingListTable.posAriaLabel', { name: fullName(player) }),
+          onClick: () => togglePaymentMethod(player.playerId, 'pos'),
+        }),
+        h(UButton, {
+          label: t('tournament.waitingListTable.cashLabel'),
+          icon: ICONS.paymentCash,
+          color: method === 'cash' ? 'success' : 'neutral',
+          variant: method === 'cash' ? 'solid' : 'outline',
+          'aria-label': t('tournament.waitingListTable.cashAriaLabel', { name: fullName(player) }),
+          onClick: () => togglePaymentMethod(player.playerId, 'cash'),
+        }),
+      ])
+    },
   }
 }
 
@@ -247,7 +262,7 @@ const columns = computed<TableColumn<WaitingPlayer>[]>(() => [
     header: t('tournament.waitingListTable.timeColumn'),
     meta: { class: { th: 'text-center', td: 'text-center' } },
   },
-  createToggleColumn('paid', 'success', 'tournament.waitingListTable.paidColumn', 'tournament.waitingListTable.paidAriaLabel'),
+  createPaymentMethodColumn(),
   {
     id: 'actions',
     header: t('tournament.waitingListTable.actionsColumn'),
@@ -282,7 +297,7 @@ const meta = computed(() => ({
   class: {
     tr: (row: { original: WaitingPlayer }) => {
       const state = playerState[row.original.playerId]
-      if (state?.paid) return 'bg-success/10 hover:bg-success/20'
+      if (state?.paymentMethod !== null) return 'bg-success/10 hover:bg-success/20'
       return 'hover:bg-muted/50'
     },
   },

@@ -1,7 +1,7 @@
 <!-- app\components\tournament\waiting\WaitingList.vue -->
 <script setup lang="ts">
 import type { Player } from '#shared/utils/types'
-import type { WaitingListFlags } from '~/composables/tournament/useWaitingListFlags'
+import type { WaitingListFlags, PaymentMethod } from '~/composables/tournament/useWaitingListFlags'
 
 const { t } = useI18n()
 
@@ -17,10 +17,10 @@ const playersById = computed(() => new Map(props.players.map(p => [p.player_id, 
 
 const { flags } = useWaitingListFlags(props.tournamentId)
 
-function handleUpdate(payload: { playerId: number, paid: boolean }) {
+function handleUpdate(payload: { playerId: number, paymentMethod: PaymentMethod | null }) {
   flags.value = {
     ...flags.value,
-    [payload.playerId]: { paid: payload.paid },
+    [payload.playerId]: { paymentMethod: payload.paymentMethod },
   }
   emit('update', payload)
 }
@@ -33,7 +33,7 @@ function forgetFlags(playerIds: number[]) {
 }
 
 const emit = defineEmits<{
-  update: [{ playerId: number, paid: boolean }]
+  update: [{ playerId: number, paymentMethod: PaymentMethod | null }]
   edit: [playerId: number]
   remove: [playerId: number]
   batchRemove: [playerIds: number[]]
@@ -88,7 +88,7 @@ const tableData = computed(() => {
       name: player?.player_name ?? t('league.ranking.playerFallback', { id: playerId }),
       surname: player?.player_surname ?? '',
       time: formatTime(props.waitroomEntries?.get(playerId)),
-      paid: flags.value[playerId]?.paid ?? false,
+      paymentMethod: flags.value[playerId]?.paymentMethod ?? null,
     }
   })
 })
