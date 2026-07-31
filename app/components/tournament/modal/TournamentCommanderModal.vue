@@ -50,13 +50,36 @@ function onSubmit() {
 const { isLoading: isRefreshingCatalog, refetch: refetchCatalog } = useCommanderWhitelists()
 
 const showRefreshCatalogConfirm = ref(false)
+const isSyncingCatalog = ref(false)
 
 const refreshCatalogLogging = useButtonLogging(t('logging.tournament.refreshCommanderCatalog'))
+const toast = useToast()
 
 async function onConfirmRefreshCatalog() {
   refreshCatalogLogging.logClick()
-  await refetchCatalog()
-  showRefreshCatalogConfirm.value = false
+  isSyncingCatalog.value = true
+  try {
+    // Actually resyncs mtg_commanders from Scryfall first (only inserts
+    // cards not already in the DB), then refetches the client cache so new
+    // commanders show up immediately without waiting for the 30-day expiry.
+    const { added } = await $fetch('/api/admin/sync-commanders', { method: 'POST' })
+    await refetchCatalog()
+    toast.add({
+      title: added > 0
+        ? t('commander.refreshCatalogConfirm.successWithNew', { count: added })
+        : t('commander.refreshCatalogConfirm.successNoNew'),
+      color: 'success'
+    })
+  } catch (err) {
+    toast.add({
+      title: t('commander.refreshCatalogConfirm.error'),
+      description: err instanceof Error ? err.message : String(err),
+      color: 'error'
+    })
+  } finally {
+    isSyncingCatalog.value = false
+    showRefreshCatalogConfirm.value = false
+  }
 }
 </script>
 
@@ -104,10 +127,10 @@ async function onConfirmRefreshCatalog() {
         <template #start>
           <UButton
             :icon="ICONS.refresh"
-            :label="isRefreshingCatalog ? t('commander.refreshingCatalog') : t('commander.refreshCatalog')"
+            :label="isRefreshingCatalog || isSyncingCatalog ? t('commander.refreshingCatalog') : t('commander.refreshCatalog')"
             variant="outline"
             color="warning"
-            :loading="isRefreshingCatalog"
+            :loading="isRefreshingCatalog || isSyncingCatalog"
             @click="() => { showRefreshCatalogConfirm = true }"
           />
         </template>
@@ -124,7 +147,7 @@ async function onConfirmRefreshCatalog() {
     :confirm-label="t('commander.refreshCatalog')"
     :confirm-icon="ICONS.refresh"
     confirm-color="warning"
-    :loading="isRefreshingCatalog"
+    :loading="isRefreshingCatalog || isSyncingCatalog"
     @confirm="onConfirmRefreshCatalog"
   />
 </template>

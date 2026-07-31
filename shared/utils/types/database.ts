@@ -181,6 +181,7 @@ export type Database = {
           partner_group_tag: string | null
           partner_type: string | null
           partner_with_scryfall_id: string | null
+          released_at: string | null
           scryfall_id: string
           scryfall_url: string | null
           type_line: string | null
@@ -210,6 +211,7 @@ export type Database = {
           partner_group_tag?: string | null
           partner_type?: string | null
           partner_with_scryfall_id?: string | null
+          released_at?: string | null
           scryfall_id: string
           scryfall_url?: string | null
           type_line?: string | null
@@ -239,6 +241,7 @@ export type Database = {
           partner_group_tag?: string | null
           partner_type?: string | null
           partner_with_scryfall_id?: string | null
+          released_at?: string | null
           scryfall_id?: string
           scryfall_url?: string | null
           type_line?: string | null
