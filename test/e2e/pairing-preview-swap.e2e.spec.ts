@@ -1,12 +1,15 @@
 // test\e2e\pairing-preview-swap.e2e.spec.ts
-// UI-driven reproduction of the ADR-037 fix: dragging a player from one full
-// (4/4) table onto another full table in the "Anteprima Tavoli" preview must
-// swap the two players instead of being silently rejected. Preconditions
-// (players/league/tournament/registration) are seeded via the API for speed —
-// only the drag itself is driven through the real UI, same split as
+// UI-driven check for the ADR-049 behavior: dragging a player from one full
+// (4/4) table onto another full table in the "Anteprima Tavoli" preview is no
+// longer auto-resolved into a swap or silently reverted (that was ADR-037's
+// approach) — the drop is applied as-is, leaving both tables temporarily
+// invalid (5/3), and "Conferma" is disabled until the arrangement is fixed
+// (either by dragging someone back, or via the swap the user performs by hand).
+// Preconditions (players/league/tournament/registration) are seeded via the API
+// for speed — only the drag itself is driven through the real UI, same split as
 // deck-create.e2e.spec.ts. The tournament is never actually started (the preview
-// opens before that BFF call, and this test cancels out of it), so cleanup
-// only ever has to remove the tournament/league/players, never pairings/standings.
+// opens before that BFF call, and this test cancels out of it), so cleanup only
+// ever has to remove the tournament/league/players, never pairings/standings.
 import { expect, test } from '@playwright/test'
 import { cleanup } from './helpers/cleanup'
 import { testTag } from './helpers/testTag'
@@ -37,7 +40,7 @@ test.afterEach(async ({ request }) => {
   playerSurnames.length = 0
 })
 
-test('dragging a player from one full table to another swaps them instead of rejecting the move', async ({ page, request }) => {
+test('dragging a player from one full table to another leaves the drop as-is and disables Confirm until fixed', async ({ page, request }) => {
   // 8 disposable players (2 full tables of 4) — same first name (testTag),
   // distinct surnames so each is uniquely identifiable in the DOM.
   for (let i = 0; i < 8; i++) {
@@ -98,13 +101,15 @@ test('dragging a player from one full table to another swaps them instead of rej
   expect(table1Before).toHaveLength(4)
   expect(table2Before).toHaveLength(4)
 
+  const confirmButton = dialog.getByRole('button', { name: 'Conferma' })
+  await expect(confirmButton).toBeEnabled()
+
   // Drag the THIRD seated player in table 1 onto table 2 — deliberately not
   // the first, so this actually exercises "the dragged player is whichever
-  // handle the mouse is on," not just index 0. Both tables are full, so a
-  // plain move would leave table 2 at 5/table 1 at 3 (invalid);
-  // attemptTableSwap should turn it into a swap instead. TableCard.vue's
-  // VueDraggable uses forceFallback (mouse-simulated drag, not native HTML5
-  // DnD), so a plain mouse down/move/up sequence drives it.
+  // handle the mouse is on," not just index 0. Both tables are full, so this
+  // now simply leaves table 2 at 5 and table 1 at 3 — no auto-swap, no
+  // revert. TableCard.vue's VueDraggable uses forceFallback (mouse-simulated
+  // drag, not native HTML5 DnD), so a plain mouse down/move/up drives it.
   const movedSurname = table1Before[2]!
   const dragHandle = table1.getByRole('button', { name: 'Trascina giocatore' }).nth(2)
   const dropTarget = table2.locator('.grid').first()
@@ -119,22 +124,18 @@ test('dragging a player from one full table to another swaps them instead of rej
   await page.mouse.move(targetBox.x + targetBox.width / 2, targetBox.y + targetBox.height / 2, { steps: 20 })
   await page.mouse.up()
 
-  // No "invalid move" toast — the swap should have resolved the arrangement.
-  await expect(page.getByText('Spostamento non valido')).toHaveCount(0)
-
+  // The drop landed as-is: table 2 now holds the moved player alongside its
+  // original 4 (5 total), table 1 is down to 3 — no auto-swap resolved it.
   const table1After = await surnamesIn(table1)
   const table2After = await surnamesIn(table2)
-
-  expect(table1After).toHaveLength(4)
-  expect(table2After).toHaveLength(4)
-  // The dragged player must have landed in table 2.
+  expect(table1After).toHaveLength(3)
+  expect(table2After).toHaveLength(5)
   expect(table2After).toContain(movedSurname)
   expect(table1After).not.toContain(movedSurname)
-  // Exactly one of table 2's original occupants must have swapped back into table 1.
-  const swappedBack = table1After.filter(s => table2Before.includes(s))
-  expect(swappedBack).toHaveLength(1)
-  // Every player accounted for exactly once across both tables.
-  expect([...table1After, ...table2After].sort()).toEqual([...playerSurnames].sort())
+
+  // The arrangement is invalid (a table outside 3-4 occupants) — Confirm
+  // must be disabled until the user fixes it themselves.
+  await expect(confirmButton).toBeDisabled()
 
   // Cancel out — never actually start the tournament, so cleanup has nothing to
   // do beyond the tournament/league/players (no pairings/standings ever created).

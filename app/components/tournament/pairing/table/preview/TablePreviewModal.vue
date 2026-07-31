@@ -46,7 +46,6 @@ const showTableScoreBreakdown = ref(false)
 const selectedTableIndex = ref<number | null>(null)
 const pairPlayerA = ref<string>('')
 const pairPlayerB = ref<string>('')
-const dragSnapshot = ref<PairingTable[] | null>(null)
 const hasAutoOptimized = ref(false)
 
 const initialPreferences = computed(() => getPairingPreferences(tournamentId))
@@ -102,12 +101,22 @@ watch(open, (value) => {
   }
 })
 
+// Round 1 has no pairing history yet, so the optimizer's table3Count-based
+// rotation signal is always 0 for everyone — it degrades to a plain rank
+// sort, which systematically seats lower-ranked players at the 3-player
+// tables (a rank-driven bias, not a random one). Randomizing instead removes
+// that bias; round 2+ keeps the optimizer, which has real rotation data to
+// work with by then.
 watch(
   () => [open.value, loading, playersForScoring.length] as const,
   ([isOpen, isLoading, playersCount]) => {
     if (!isOpen || isLoading || hasAutoOptimized.value) return
     if (!playersCount && !localTables.value.length) return
-    runOptimizer(140)
+    if (currentRound === 1) {
+      randomizeTables()
+    } else {
+      runOptimizer(140)
+    }
     hasAutoOptimized.value = true
   }
 )
@@ -198,7 +207,6 @@ function randomizeNow() {
 }
 
 function handleDragStart() {
-  dragSnapshot.value = cloneCurrentTables()
   setDragging(true)
 }
 
@@ -208,29 +216,15 @@ const dragSeatLogging = useButtonLogging(t('logging.pairing.dragSeat'), {
   wasValid: () => isValid.value,
 })
 
+// No forced revert/swap-detection on drop anymore — a drag can freely leave
+// tables in an intermediate, temporarily-invalid shape (e.g. moving one
+// player out of a full table without immediately moving someone back).
+// `tableStatus()`'s per-table badge already gives live feedback, and
+// `isValid`/`previewError` gate the Confirm button (see #footer below) —
+// validity only actually matters at confirm time.
 function handleDragEnd() {
   setDragging(false)
-
-  if (!isValid.value && dragSnapshot.value) {
-    // Moving a single player between two full tables is never valid on its
-    // own (one ends up with 5) — try turning it into a two-way swap first
-    // (see useTableDnd.ts's attemptTableSwap) before falling back to a
-    // full revert.
-    const swapped = attemptTableSwap(dragSnapshot.value, localTables.value)
-    if (swapped) restoreTables(swapped)
-  }
-
-  if (!isValid.value && dragSnapshot.value) {
-    restoreTables(dragSnapshot.value)
-    toast.add({
-      title: t('tournament.tablePreview.invalidMoveTitle'),
-      description: previewError.value || t('tournament.tablePreview.invalidMoveFallback'),
-      color: 'error',
-    })
-  }
-
   dragSeatLogging.logClick()
-  dragSnapshot.value = null
 }
 
 
@@ -313,7 +307,11 @@ function openTableScoreBreakdown(tableIndex: number) {
         :confirm-disabled="!isValid"
         @cancel="handleCancel"
         @confirm="handleConfirm"
-      />
+      >
+        <template v-if="!isValid" #start>
+          <span class="text-sm text-error">{{ previewError }}</span>
+        </template>
+      </ModalFooterActions>
     </template>
   </UModal>
 

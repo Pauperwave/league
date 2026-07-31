@@ -279,6 +279,29 @@ This is the entity item #8's "decoupling" work depends on — #8's second bullet
 
 ---
 
+## 19. Normalize vote-derived score for 3-player tables
+
+Raised 2026-07-31, from a fairness analysis of tavoli-da-3 (`calculatePlayerTableScore`, `shared/utils/roundScoring.ts`): a player at a 3-player table has only 2 opponents who can vote for them, vs 3 at a 4-player table — a structural ceiling gap on `brewScore`/`playScore` (2 vs 3 max votes) that has nothing to do with actual play quality. Verified against real tournament data (torneo #284, `/league/185/tournament/284`): applying a `3/opponentCount` normalization factor (1.5× at a 3-table) moved the 3rd/4th standings positions and 5 other pairs — a real, non-trivial effect, not just theoretical.
+
+**Proposed fix:** in `calculatePlayerTableScore`, multiply `brewScore`/`playScore` by `3 / (tableResults.length - 1)` and round each component with `Math.round()` (not a raw fractional multiply) — this keeps `standings.standing_player_score` as `bigint` (verified via the PostgREST OpenAPI schema — no DB migration needed), at the cost of a small (±0.5) rounding bias at the low end of the vote count instead of exact proportional parity.
+
+**Priority:** do this one first among the tavoli-da-3 fairness items below — it's the smallest, most self-contained change (one function, no schema change, no new query) with an immediate per-tournament effect, versus #20 below which needs new data plumbing and validation before it's worth building.
+
+---
+
+## 20. Historical (cross-tournament) table3Count for round-1 seating fairness
+
+Raised 2026-07-31, same conversation as #19. Two separate but related seating-fairness gaps found:
+
+- **Round 1 seating is currently rank-biased, not random:** `TablePreviewModal.vue` auto-runs the pairing optimizer on open, but at round 1 there's no `pairingHistory` yet, so the optimizer's `table3Count` rotation signal is 0 for everyone and the ordering degrades to a plain `rank` sort — systematically pushing lower-ranked players toward the 3-player tables. **Fixed already** (ADR-049, 2026-07-31): round 1 now auto-randomizes instead of auto-optimizing.
+- **Still open:** `table3Count` (`pairingOptimizer.ts`) is only ever computed from the *current tournament's* `pairingHistory` (`app/pages/league/[leagueId]/tournament/[tournamentId].vue:223-237`), so a player who's chronically seated at 3-player tables across many past tournaments in the same league gets no compensating priority for 4-player tables — each tournament starts the rotation signal from zero.
+
+**Design question raised and still open:** should this historical count be fetched via a new query (`useHistoricalTable3Counts(leagueId)`, counting `pairings` rows with `pairing_is_full = false` per player across the league's past tournaments), or should the player carry this as their own denormalized data (avoiding an extra round-trip on every tournament-start)? No decision made yet — needs a design pass (where would a player-carried counter live — `players` table? `player_stats`? how does it get updated — trigger on pairing insert, like the existing `player_stats`/`commander_stats` triggers?) before implementing either way.
+
+**Deliberately deferred, not next:** requires new data plumbing either way, and should be validated against real historical data first (how many players are actually "chronic" 3-table sitters across a league's history — is this a real, recurring problem or a theoretical one?) before investing in either the query or the denormalization approach.
+
+---
+
 ## Historical notes
 
 - **Reinventing-the-wheel audit (2026-05-27):** recorded here only so the "9 of 11 fixed" count in `docs/PROGRESS.md`'s 2026-07-13 changelog entry is traceable. Fixed: `toErrorMessage()` extraction, `useEventUrl.ts`'s generic `setQueryParam`, `app/utils/math.ts`'s `roundToDecimals`/`isCloseTo`, `sanitizePlayer()` consistency, `upperFirst.ts` removed. Went moot: the Scryfall card-search composables it flagged (`useCardWhitelists`/`useCardSearch`) no longer exist — that feature was migrated to Supabase-backed data instead of patched in place.

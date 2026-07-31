@@ -814,8 +814,6 @@
     "tablePreview": {
       "title": "Anteprima Tavoli",
       "description": "Trascina i giocatori per comporre i tavoli prima di avviare il torneo",
-      "invalidMoveTitle": "Spostamento non valido",
-      "invalidMoveFallback": "Questa disposizione non è consentita",
       "invalidTableSizes": "Ogni tavolo deve avere tra 3 e 4 giocatori",
       "duplicatePlayers": "Ci sono giocatori duplicati nei tavoli",
       "missingPlayers": "Mancano giocatori nella disposizione tavoli",

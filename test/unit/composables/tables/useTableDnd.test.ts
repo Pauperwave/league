@@ -2,7 +2,7 @@
 import { describe, expect, it } from 'vitest'
 import { defineComponent, h } from 'vue'
 import { mount } from '@vue/test-utils'
-import { attemptTableSwap, useTableDnd } from '~/composables/tables/useTableDnd'
+import { useTableDnd } from '~/composables/tables/useTableDnd'
 import { createI18nTestPlugin } from '#test/helpers/mocks'
 import type { PairingTable, PairingPlayer } from '#shared/utils/types'
 
@@ -157,48 +157,6 @@ describe('useTableDnd', () => {
       const seats = localTables.value[0]!.seats
       expect(seats).toHaveLength(4)
       expect(seats.map(s => s.player?.id ?? null)).toEqual([1, 2, null, null])
-    })
-  })
-
-  describe('attemptTableSwap', () => {
-    function occupantIds(t: PairingTable): number[] {
-      return t.seats.map(s => s.player?.id).filter((id): id is number => id !== undefined)
-    }
-
-    it('turns a plain move into a full table into a two-way swap', () => {
-      const before = [table('t1', 1, [1, 2, 3, 4]), table('t2', 2, [5, 6, 7, 8])]
-      // Simulates VueDraggable's emit: player 4 dragged out of t1 (now 3
-      // occupants) and appended into t2 (now 5, still holding all of 5-8).
-      const after = [table('t1', 1, [1, 2, 3]), table('t2', 2, [5, 6, 7, 8, 4])]
-
-      const result = attemptTableSwap(before, after)
-      expect(result).not.toBeNull()
-
-      const [t1, t2] = result!
-      expect(occupantIds(t1!)).toHaveLength(4)
-      expect(occupantIds(t2!)).toHaveLength(4)
-      // Player 4 must have landed in t2 (that's the point of the drag).
-      expect(occupantIds(t2!)).toContain(4)
-      // Exactly one of t2's original occupants must have moved to t1.
-      const swappedBack = occupantIds(t1!).filter(id => id !== 1 && id !== 2 && id !== 3)
-      expect(swappedBack).toHaveLength(1)
-      expect([5, 6, 7, 8]).toContain(swappedBack[0])
-      // No player duplicated or lost across both tables.
-      expect([...occupantIds(t1!), ...occupantIds(t2!)].sort()).toEqual([1, 2, 3, 4, 5, 6, 7, 8])
-    })
-
-    it('returns null when no table is over capacity', () => {
-      const before = [table('t1', 1, [1, 2, 3, 4]), table('t2', 2, [5, 6, 7, 8])]
-      const after = [table('t1', 1, [1, 2, 3, 4]), table('t2', 2, [5, 6, 7, 8])]
-
-      expect(attemptTableSwap(before, after)).toBeNull()
-    })
-
-    it('returns null when the overflow table did not exist before the drag (no baseline to diff against)', () => {
-      const before = [table('t1', 1, [1, 2, 3, 4])]
-      const after = [table('t1', 1, [1, 2, 3, 4, 5])]
-
-      expect(attemptTableSwap(before, after)).toBeNull()
     })
   })
 
