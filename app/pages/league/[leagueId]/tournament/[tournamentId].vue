@@ -253,7 +253,9 @@ const tablePlayersForVotes = computed(() => {
   const pairing = pairings.value.find(p => getPairingPlayerIds(p).includes(selectedVotesPlayerId.value!))
   if (!pairing) return []
   const playerIds = getPairingPlayerIds(pairing)
-  return tournamentPlayers.value.filter(p => playerIds.includes(p.id) && p.id !== selectedVotesPlayerId.value)
+  return tournamentPlayers.value
+    .filter(p => playerIds.includes(p.id) && p.id !== selectedVotesPlayerId.value)
+    .map(p => ({ ...p, commander1: commandersStore.getCommander1(p.id) }))
 })
 
 // ── Computed: Rankings & Submissions ───────────────────────────────────────
@@ -326,6 +328,27 @@ function handleOpenCommanderModal(pairingId: number, playerId: number) {
   selectedCommanderPairingId.value = pairingId
   selectedPlayerId.value = playerId
   showCommanderModal.value = true
+}
+
+// True while the commander modal was opened FROM the votes modal
+// (CommanderVoteCard's "Assegna comandante", when a voted-on player has no
+// commander yet) — reopens the votes modal once the commander modal closes
+// (submit or cancel) instead of leaving the admin stranded on it.
+const pendingVotesReopen = ref(false)
+
+function handleAssignCommanderFromVotes(playerId: number) {
+  if (selectedVotesPairingId.value === null) return
+  pendingVotesReopen.value = true
+  showVotesModal.value = false
+  handleOpenCommanderModal(selectedVotesPairingId.value, playerId)
+}
+
+function handleCommanderModalClosed() {
+  showCommanderModal.value = false
+  if (pendingVotesReopen.value) {
+    pendingVotesReopen.value = false
+    showVotesModal.value = true
+  }
 }
 
 // Every player seated anywhere in the current round — same list
@@ -642,9 +665,9 @@ async function handleUndrawTable(pairingId: number) {
       :table-player-ids="commanderModalTablePlayerIds"
       @submit="(commander1, commander2) => {
         if (submitHandlers.handleCommanderSubmit(commander1, commander2))
-          showCommanderModal = false
+          handleCommanderModalClosed()
       }"
-      @cancel="showCommanderModal = false"
+      @cancel="handleCommanderModalClosed()"
     />
 
     <TournamentScoresModal
@@ -677,6 +700,7 @@ async function handleUndrawTable(pairingId: number) {
           showVotesModal = false
       }"
       @cancel="showVotesModal = false"
+      @assign-commander="handleAssignCommanderFromVotes"
     />
 
     <TournamentFormModal

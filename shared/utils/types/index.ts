@@ -87,6 +87,8 @@ export interface TablePlayer {
   surname: string
   seed?: number
   avatarUrl?: string
+  /** First commander for the current round, when the caller has it on hand (e.g. DeckPlayVotesModal's player picker) — not populated by every TablePlayer producer. */
+  commander1?: string | null
 }
 
 export interface Seat {

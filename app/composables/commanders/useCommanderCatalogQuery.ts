@@ -10,6 +10,7 @@ export interface CommanderCatalogRow {
   manaCost: string | null
   edhrecRank: number | null
   imageUrl: string | null
+  artCropUrl: string | null
 }
 
 export const COMMANDER_CATALOG_KEY = ['commander-catalog']
@@ -33,6 +34,7 @@ interface CommanderCatalogRawRow {
   mana_cost: string | null
   edhrec_rank: number | null
   image_url: string | null
+  art_crop_url: string | null
 }
 
 async function fetchCommanderCatalog(
@@ -50,6 +52,7 @@ async function fetchCommanderCatalog(
     manaCost: row.mana_cost,
     edhrecRank: row.edhrec_rank,
     imageUrl: row.image_url,
+    artCropUrl: row.art_crop_url,
   }))
 }
 

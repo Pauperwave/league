@@ -92,6 +92,7 @@ async function onConfirmRefreshCatalog() {
       content: 'w-[calc(100vw-2rem)] max-w-4xl rounded-lg shadow-lg ring ring-default',
       body: 'flex-1 p-4 sm:p-6'
     }"
+    :content="{ onCloseAutoFocus: (e: Event) => e.preventDefault() }"
   >
     <template #description>
       <PlayerNameTag

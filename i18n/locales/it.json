@@ -424,9 +424,7 @@
     "votes": {
       "preferredDeck": "Mazzo preferito",
       "bestPlay": "Miglior giocata",
-      "rulesetLabel": "Regolamento: {name}",
-      "rulesetLinkTooltip": "Vai al regolamento",
-      "weightBadge": "+{weight} pt"
+      "weightBadge": "+{weight} punti"
     },
     "newModal": {
       "title": "Nuovo Deck",
@@ -468,6 +466,9 @@
     "search": {
       "recentlyUsedGroup": "Mazzi già giocati",
       "allCommandersGroup": "Tutti i comandanti"
+    },
+    "voteCard": {
+      "assignCommander": "Assegna comandante"
     },
     "refreshCatalog": "Aggiorna elenco carte",
     "refreshingCatalog": "Aggiornamento in corso...",
@@ -704,7 +705,7 @@
       "title": "Punteggi Tavolo"
     },
     "votesModal": {
-      "title": "Voti Mazzo e Giocata"
+      "title": "Inserimento Voti"
     },
     "scoreModal": {
       "title": "Inserisci classifica",

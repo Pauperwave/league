@@ -27,6 +27,8 @@ CommanderModal.vue            wires commander1's type to commander2's whitelist
 
 A manual refresh button in `CommanderModal.vue` (`onRefreshCatalog` → `refetch()`) exists specifically because the cache is long-lived enough that a real catalog update wouldn't otherwise surface for up to a month.
 
+**Field growth follows one rule: add it to the RPC, don't add a new query.** `get_commander_catalog()` has grown three times this way — `image_url` (original), `scryfall_id` (2026-07-29, `partner_with` auto-fill below), and `art_crop_url` (2026-07-31, `supabase/migrations/20260731030000_add_art_crop_url_to_commander_catalog_rpc.sql` — `CommanderVoteCard.vue`'s vote-picker needs the cropped artwork, not the full-card `image_url` already there, and a dedicated per-name query for it was tried and reverted specifically because it fired a fresh Supabase request every time the votes modal opened). Same non-bumped-key tradeoff each time: an already-persisted pre-migration cache just misses the new field until the manual refresh or the natural 30-day expiry (see the `partner_with` auto-fill note below for the full reasoning) — not worth a versioning scheme for one field.
+
 ## 2. Deriving the whitelists
 
 `useCommanderWhitelists()` takes the catalog (a flat array of `CommanderCatalogRow`) and, via a single `computed()`, buckets every card by its `partnerType` into named arrays:
