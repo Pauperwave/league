@@ -527,6 +527,7 @@ async function handleUndrawTable(pairingId: number) {
             <div class="space-y-4">
               <RoundTimer
                 v-if="!isViewingPastRound && currentRound > 0"
+                :key="currentRound"
                 :duration-minutes="roundDuration"
                 :round="currentRound"
                 @expired="handleTimerExpired"
