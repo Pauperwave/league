@@ -65,14 +65,14 @@ function handleAdvanceOrEnd() {
 </script>
 
 <template>
-  <div v-if="showStartButton" class="flex justify-center">
+  <div v-if="showStartButton" class="flex justify-start">
     <StartTournamentButton
       :disabled="!canStartTournament"
       @click="handleStartEvent"
     />
   </div>
 
-  <div v-else-if="tournamentStatus === 'playing' || tournamentStatus === 'ended'" class="flex gap-2 justify-center">
+  <div v-else-if="tournamentStatus === 'playing' || tournamentStatus === 'ended'" class="flex gap-2 justify-start">
     <UTooltip :content="{ side: 'top' }" :text="t('tournament.controlPanel.backToPreviousRoundTooltip')">
       <UButton
         :leading-icon="ICONS.back"
