@@ -4,7 +4,7 @@
 // pairing history. Reads stay client → Supabase (ADR-013). The tournament
 // store keeps only the lifecycle state machine — these queries are
 // refreshed/invalidated by useTournamentPage after lifecycle writes.
-import type { Tournament, StandingWithPlayer, Pairing, PairingWithResults, Kill } from '#shared/utils/types'
+import type { Tournament, StandingWithPlayer, Pairing, PairingWithResults, Kill, Player } from '#shared/utils/types'
 import type { Database } from '#shared/utils/types/database'
 import type { PairingHistoryEntry } from '~/composables/event-pairing/pairingOptimizer'
 import { aggregatePointBreakdowns, resolveTournamentRuleset } from '#shared/utils/roundScoring'
@@ -37,7 +37,51 @@ export function useEventsQuery(leagueId: number) {
 /** Query key for a single tournament's standings — refreshed after round transitions. */
 export const EVENT_STANDINGS_KEY = ['event-standings']
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
+/** Row shape selected by `useEventStandingsQuery`'s `standings` query — exported for its merge test. */
+export interface EventStandingRow {
+  standing_id: number
+  tournament_id: number | null
+  player_id: number
+  standing_player_score: number | null
+  standing_player_rank: number | null
+  victories: number | null
+  brew_received: number | null
+  play_received: number | null
+  players: Pick<Player, 'player_id' | 'player_name' | 'player_surname'> | null
+}
+
+/**
+ * Merges the recomputed point breakdown onto each standings row and applies
+ * the shared tie-break sort. Pulled out of `useEventStandingsQuery` so the
+ * merge+sort — the part that silently used arbitrary DB row order for tied
+ * scores before the 2026-07-31 fix — is unit-testable without a Supabase
+ * client. Unlike the league-wide version, rows here are already one per
+ * player (single tournament, no summing across tournaments needed), so the
+ * real persisted standing_id/tournament_id/standing_player_rank are kept as-is.
+ */
+export function mergeEventStandings(
+  rows: EventStandingRow[],
+  breakdowns: Map<number, PlayerPointBreakdown>
+): StandingWithPlayer[] {
+  return rows
+    .map(s => ({
+      ...s,
+      kills: breakdowns.get(s.player_id)?.kills ?? 0,
+      placementPoints: breakdowns.get(s.player_id)?.placementPoints ?? 0,
+      killPoints: breakdowns.get(s.player_id)?.killPoints ?? 0,
+      brewPoints: breakdowns.get(s.player_id)?.brewPoints ?? 0,
+      playPoints: breakdowns.get(s.player_id)?.playPoints ?? 0,
+      players: s.players
+        ? sanitizePlayer({
+          player_id: s.players.player_id,
+          player_name: s.players.player_name,
+          player_surname: s.players.player_surname,
+        }) as Player
+        : undefined,
+    }))
+    .sort(compareStandings)
+}
+
 export function useEventStandingsQuery(tournamentId: number) {
   const supabase = useSupabaseClient()
 
@@ -66,27 +110,10 @@ export function useEventStandingsQuery(tournamentId: number) {
         breakdowns = aggregatePointBreakdowns(pairingsData, posValues, ruleset)
       }
 
-      return (data ?? [])
-        .map(s => ({
-          ...s,
-          kills: breakdowns.get(s.player_id)?.kills ?? 0,
-          placementPoints: breakdowns.get(s.player_id)?.placementPoints ?? 0,
-          killPoints: breakdowns.get(s.player_id)?.killPoints ?? 0,
-          brewPoints: breakdowns.get(s.player_id)?.brewPoints ?? 0,
-          playPoints: breakdowns.get(s.player_id)?.playPoints ?? 0,
-          players: s.players
-            ? sanitizePlayer({
-              player_id: s.players.player_id,
-              player_name: s.players.player_name,
-              player_surname: s.players.player_surname,
-            }) as any
-            : undefined,
-        }))
-        .sort(compareStandings) as StandingWithPlayer[]
+      return mergeEventStandings(data ?? [], breakdowns)
     },
   })
 }
-/* eslint-enable @typescript-eslint/no-explicit-any */
 
 /** Query key prefix for per-round pairings — invalidated after round transitions. */
 export const PAIRINGS_KEY = ['pairings']
