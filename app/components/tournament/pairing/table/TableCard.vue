@@ -72,6 +72,7 @@ const seatsModel = computed({
         handle=".drag-handle"
         :animation="180"
         :force-fallback="true"
+        :fallback-on-body="true"
         ghost-class="!opacity-0"
         chosen-class="scale-95"
         @start="emit('dragStart')"
