@@ -9,6 +9,7 @@ import type { Database } from '#shared/utils/types/database'
 import type { PairingHistoryEntry } from '~/composables/event-pairing/pairingOptimizer'
 import { aggregatePointBreakdowns, resolveTournamentRuleset } from '#shared/utils/roundScoring'
 import type { PlayerPointBreakdown } from '#shared/utils/roundScoring'
+import { compareStandings } from '#shared/utils/standingsSort'
 
 type PairingRoundIds = Pick<Pairing, 'pairing_round' | 'pairing_player1_id' | 'pairing_player2_id' | 'pairing_player3_id' | 'pairing_player4_id'>
 
@@ -65,21 +66,23 @@ export function useEventStandingsQuery(tournamentId: number) {
         breakdowns = aggregatePointBreakdowns(pairingsData, posValues, ruleset)
       }
 
-      return (data ?? []).map(s => ({
-        ...s,
-        kills: breakdowns.get(s.player_id)?.kills ?? 0,
-        placementPoints: breakdowns.get(s.player_id)?.placementPoints ?? 0,
-        killPoints: breakdowns.get(s.player_id)?.killPoints ?? 0,
-        brewPoints: breakdowns.get(s.player_id)?.brewPoints ?? 0,
-        playPoints: breakdowns.get(s.player_id)?.playPoints ?? 0,
-        players: s.players
-          ? sanitizePlayer({
-            player_id: s.players.player_id,
-            player_name: s.players.player_name,
-            player_surname: s.players.player_surname,
-          }) as any
-          : undefined,
-      })) as StandingWithPlayer[]
+      return (data ?? [])
+        .map(s => ({
+          ...s,
+          kills: breakdowns.get(s.player_id)?.kills ?? 0,
+          placementPoints: breakdowns.get(s.player_id)?.placementPoints ?? 0,
+          killPoints: breakdowns.get(s.player_id)?.killPoints ?? 0,
+          brewPoints: breakdowns.get(s.player_id)?.brewPoints ?? 0,
+          playPoints: breakdowns.get(s.player_id)?.playPoints ?? 0,
+          players: s.players
+            ? sanitizePlayer({
+              player_id: s.players.player_id,
+              player_name: s.players.player_name,
+              player_surname: s.players.player_surname,
+            }) as any
+            : undefined,
+        }))
+        .sort(compareStandings) as StandingWithPlayer[]
     },
   })
 }
