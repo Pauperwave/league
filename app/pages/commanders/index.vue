@@ -3,6 +3,7 @@
 import type { Component } from 'vue'
 import type { TableColumn } from '@nuxt/ui'
 import ManaCost from '~/components/commander/ManaCost.vue'
+import CommanderLinkTooltip from '~/components/commander/CommanderLinkTooltip.vue'
 
 const { t } = useI18n()
 
@@ -96,12 +97,7 @@ const columns: TableColumn<CommanderRow>[] = [
   {
     accessorKey: 'name',
     header: sortableHeader(t('commander.index.nameColumn'), UButton),
-    cell: ({ row }) =>
-      h(
-        resolveComponent('NuxtLink'),
-        { to: `/commander/${slugify(row.original.name)}`, class: 'text-primary hover:underline font-medium' },
-        () => row.original.name
-      ),
+    cell: ({ row }) => h(CommanderLinkTooltip, { name: row.original.name }),
   },
   statColumn('playerCount', t('deck.statsPlayers')),
   statColumn('matchCount', t('player.stats.matches')),
@@ -125,7 +121,18 @@ const breadcrumbItems = useBreadcrumb(() => [
         :icon="ICONS.search"
         :placeholder="t('commander.index.searchPlaceholder')"
         class="w-64"
-      />
+      >
+        <template v-if="searchQuery" #trailing>
+          <UButton
+            color="neutral"
+            variant="link"
+            size="xs"
+            :icon="ICONS.clear"
+            :padded="false"
+            @click="searchQuery = ''"
+          />
+        </template>
+      </UInput>
     </PageHeaderRow>
 
     <!-- Loading -->
