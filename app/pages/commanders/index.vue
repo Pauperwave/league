@@ -25,6 +25,8 @@ const catalogByName = computed(() => new Map((catalogData.value ?? []).map(row =
 interface CommanderRow {
   name: string
   manaCost: string | null
+  cmc: number | null
+  colorIdentity: string[]
   playerCount: number
   matchCount: number
   winCount: number
@@ -39,6 +41,8 @@ const allRows = computed<CommanderRow[]>(() => {
     return {
       name,
       manaCost: catalogByName.value.get(name)?.manaCost ?? null,
+      cmc: catalogByName.value.get(name)?.cmc ?? null,
+      colorIdentity: catalogByName.value.get(name)?.colorIdentity ?? [],
       playerCount: agg?.playerCount ?? 0,
       matchCount: agg?.matchCount ?? 0,
       winCount: agg?.winCount ?? 0,
@@ -76,9 +80,13 @@ const statColumn = (
 
 const columns: TableColumn<CommanderRow>[] = [
   {
-    accessorKey: 'manaCost',
-    header: t('deck.sortOptions.manaCost'),
-    enableSorting: false,
+    accessorKey: 'cmc',
+    header: sortableHeader(t('deck.sortOptions.manaCost'), UButton),
+    // Conventional MTG collection sort: color group first (W, U, B, R, G, multicolor, colorless), then mana value within each group.
+    sortingFn: (a, b) => {
+      const colorDiff = colorGroupRank(a.original.colorIdentity) - colorGroupRank(b.original.colorIdentity)
+      return colorDiff !== 0 ? colorDiff : (a.original.cmc ?? -1) - (b.original.cmc ?? -1)
+    },
     cell: ({ row }) =>
       catalogLoading.value
         ? h(resolveComponent('USkeleton') as Component, { class: 'h-4 w-16' })

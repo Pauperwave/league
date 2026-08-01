@@ -69,15 +69,12 @@ function compareFrequency(a: CommanderDeck, b: CommanderDeck): number {
   return (aggA?.match_count ?? 0) - (aggB?.match_count ?? 0)
 }
 
-// WUBRG order for color sorting
-const colorOrder = ['W', 'U', 'B', 'R', 'G']
-
 function colorSortKey(deck: CommanderDeck): string {
   const colors = getCommanderData(deck)?.colorIdentity ?? []
   if (colors.length === 0) return 'ZZZZ'
   const count = colors.length.toString().padStart(2, '0')
   const order = colors
-    .sort((c1, c2) => colorOrder.indexOf(c1) - colorOrder.indexOf(c2))
+    .sort((c1, c2) => WUBRG_ORDER.indexOf(c1) - WUBRG_ORDER.indexOf(c2))
     .join('')
   return `${count}${order}`
 }

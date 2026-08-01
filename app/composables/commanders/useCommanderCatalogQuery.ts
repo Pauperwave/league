@@ -8,6 +8,8 @@ export interface CommanderCatalogRow {
   keywords: string[]
   partnerWithScryfallId: string | null
   manaCost: string | null
+  cmc: number | null
+  colorIdentity: string[]
   edhrecRank: number | null
   imageUrl: string | null
   artCropUrl: string | null
@@ -32,6 +34,8 @@ interface CommanderCatalogRawRow {
   keywords: string[] | null
   partner_with_scryfall_id: string | null
   mana_cost: string | null
+  cmc: number | null
+  color_identity: string[] | null
   edhrec_rank: number | null
   image_url: string | null
   art_crop_url: string | null
@@ -50,6 +54,8 @@ async function fetchCommanderCatalog(
     keywords: row.keywords ?? [],
     partnerWithScryfallId: row.partner_with_scryfall_id,
     manaCost: row.mana_cost,
+    cmc: row.cmc,
+    colorIdentity: row.color_identity ?? [],
     edhrecRank: row.edhrec_rank,
     imageUrl: row.image_url,
     artCropUrl: row.art_crop_url,
