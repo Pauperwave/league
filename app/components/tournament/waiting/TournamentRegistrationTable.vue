@@ -16,7 +16,7 @@ const playersById = computed(() => new Map(players.map(p => [p.player_id, p])))
 
 function formatRegisteredAt(iso: string | null): string {
   if (!iso) return t('tournament.registrationTable.unknownTime')
-  return new Date(iso).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' })
+  return new Date(iso).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
 }
 
 interface RegistrationRow {
@@ -73,10 +73,11 @@ const columns = computed<TableColumn<RegistrationRow>[]>(() => [
       if (!method) {
         return h('span', { class: 'text-muted text-sm' }, t('tournament.registrationTable.paymentUnknown'))
       }
+      const display = PAYMENT_METHOD_DISPLAY[method]
       return h(UBadge, {
-        label: method === 'pos' ? t('tournament.waitingListTable.posLabel') : t('tournament.waitingListTable.cashLabel'),
-        icon: method === 'pos' ? ICONS.paymentPos : ICONS.paymentCash,
-        color: method === 'pos' ? 'info' : 'success',
+        label: t(display.labelKey),
+        icon: display.icon,
+        color: display.color,
         variant: 'subtle',
       })
     },

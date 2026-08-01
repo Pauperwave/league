@@ -664,6 +664,7 @@
       "cashAriaLabel": "Contanti per {name}",
       "posLabel": "POS",
       "cashLabel": "Contanti",
+      "freeLabel": "Omaggio",
       "playerColumn": "Giocatore",
       "timeColumn": "Inserito alle",
       "paidColumn": "Pagato",

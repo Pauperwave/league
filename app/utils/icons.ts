@@ -119,6 +119,7 @@ export const ICONS = {
   paid: 'i-lucide-dollar-sign',
   paymentPos: 'i-lucide-credit-card',
   paymentCash: 'i-lucide-coins',
+  paymentFree: 'i-lucide-ticket',
   gameplay: 'i-lucide-gamepad-2',
   total: 'i-lucide-calculator',
   statsLink: 'i-lucide-bar-chart-3',

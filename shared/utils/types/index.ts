@@ -59,8 +59,8 @@ export type NewPlayer = Omit<PlayerInsert, 'player_id'>
 
 // ─── Extended Types ─────────────────────────────────────────────────────────
 
-/** How a player paid for a tournament (tournament_registrations table) — POS or Contanti. */
-export type PaymentMethod = 'pos' | 'cash'
+/** How a player paid for a tournament (tournament_registrations table) — POS, Contanti, or 'free' for omaggio/complimentary seats (never set through the live waiting-list flow, only via direct registration snapshot). */
+export type PaymentMethod = 'pos' | 'cash' | 'free'
 
 /** A player's registration snapshot for a tournament (tournament_registrations table). */
 export interface TournamentRegistration {
