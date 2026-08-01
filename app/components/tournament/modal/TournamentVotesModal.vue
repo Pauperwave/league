@@ -88,7 +88,6 @@ const closeButtonProps: Record<string, unknown> = { tabindex: -1 }
         :other-players="tablePlayersForVotes"
         :ruleset="ruleset"
         @submit="(d, p) => emit('submit', d, p)"
-        @cancel="emit('cancel')"
         @assign-commander="(playerId) => emit('assignCommander', playerId)"
       />
     </template>

@@ -11,7 +11,6 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   submit: [deckVotePlayerId: number | null, playVotePlayerId: number | null]
-  cancel: []
   /** A voted-on player has no commander recorded yet — opens the commander-assignment modal for them. */
   assignCommander: [playerId: number]
 }>()
