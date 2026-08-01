@@ -92,6 +92,7 @@ async function createTournament(data: TournamentCreatePayload) {
       tournament_round_number: data.numRound,
       tournament_round_duration: data.roundDuration,
       tournament_registration_open: true,
+      tournament_format: data.tournamentFormat,
     })
   } catch (err) {
     toast.add({
@@ -119,6 +120,7 @@ async function updateTournament({ id, data }: TournamentUpdatePayload) {
         tournament_datetime: data.tournamentDate ?? undefined,
         tournament_round_number: data.numRound,
         tournament_round_duration: data.roundDuration,
+        tournament_format: data.tournamentFormat,
       },
     })
   } catch (err) {

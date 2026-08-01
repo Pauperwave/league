@@ -656,6 +656,7 @@ export type Database = {
           status: string | null
           tournament_current_round: number | null
           tournament_datetime: string | null
+          tournament_format: Database["public"]["Enums"]["mtg_formats"]
           tournament_id: number
           tournament_name: string
           tournament_playing: boolean | null
@@ -668,6 +669,7 @@ export type Database = {
           status?: string | null
           tournament_current_round?: number | null
           tournament_datetime?: string | null
+          tournament_format?: Database["public"]["Enums"]["mtg_formats"]
           tournament_id?: number
           tournament_name: string
           tournament_playing?: boolean | null
@@ -680,6 +682,7 @@ export type Database = {
           status?: string | null
           tournament_current_round?: number | null
           tournament_datetime?: string | null
+          tournament_format?: Database["public"]["Enums"]["mtg_formats"]
           tournament_id?: number
           tournament_name?: string
           tournament_playing?: boolean | null

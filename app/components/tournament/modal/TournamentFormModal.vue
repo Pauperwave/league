@@ -2,13 +2,16 @@
 <script setup lang="ts">
 // fallow-ignore-file code-duplication -- FormModal invocation boilerplate, see app/components/ui/CLAUDE.md
 import type { CalendarDate } from '@internationalized/date'
-import type { Tournament } from '#shared/utils/types'
+import type { MtgFormat, Tournament } from '#shared/utils/types'
+import { Constants } from '#shared/utils/types/database'
 import * as v from 'valibot'
 
 const { t } = useI18n()
 
 // — Constants —
 const DEFAULT_ROUND_DURATION = 75 // 1:15 hours
+const DEFAULT_FORMAT: MtgFormat = 'Commander'
+const formatItems = [...Constants.public.Enums.mtg_formats]
 
 // — Valibot Schema —
 const TournamentFormSchema = v.object({
@@ -16,6 +19,7 @@ const TournamentFormSchema = v.object({
   tournamentDate: v.nullable(v.string()),
   numRound: v.pipe(v.number(), v.minValue(1), v.maxValue(10)),
   roundDuration: v.pipe(v.number(), v.minValue(10), v.maxValue(120)),
+  tournamentFormat: v.picklist(Constants.public.Enums.mtg_formats),
 })
 
 // — Types —
@@ -26,6 +30,7 @@ interface TournamentForm {
   tournamentDate: CalendarDate | null  // CalendarDate for DatePicker binding
   numRound: number
   roundDuration: number
+  tournamentFormat: MtgFormat
 }
 
 // Emitted payload — tournamentDate serialized to ISO string for callers.
@@ -37,6 +42,7 @@ export interface TournamentCreatePayload {
   tournamentDate: string
   numRound: number
   roundDuration: number
+  tournamentFormat: MtgFormat
 }
 
 export interface TournamentUpdatePayload {
@@ -74,6 +80,7 @@ const defaultForm = (): TournamentForm => ({
   tournamentDate: getToday(),
   numRound: 2,
   roundDuration: DEFAULT_ROUND_DURATION,
+  tournamentFormat: DEFAULT_FORMAT,
 })
 
 const form = shallowReactive<TournamentForm>(defaultForm())
@@ -90,6 +97,7 @@ watch(open, (isOpen) => {
         tournamentDate: parseDateString(e.tournament_datetime),
         numRound: e.tournament_round_number ?? 2,
         roundDuration: e.tournament_round_duration ?? DEFAULT_ROUND_DURATION,
+        tournamentFormat: e.tournament_format,
       }
     : defaultForm()
   )
@@ -108,6 +116,7 @@ function handleSubmit() {
     tournamentDate,
     numRound: form.numRound,
     roundDuration: form.roundDuration,
+    tournamentFormat: form.tournamentFormat,
   }
 
   const parsed = v.safeParse(TournamentFormSchema, data)
@@ -187,6 +196,14 @@ function handleSubmit() {
             />
           </UFormField>
         </div>
+
+        <UFormField :label="t('tournament.form.formatLabel')">
+          <USelectMenu
+            v-model="form.tournamentFormat"
+            :items="formatItems"
+            class="w-full"
+          />
+        </UFormField>
       </form>
   </FormModal>
 </template>

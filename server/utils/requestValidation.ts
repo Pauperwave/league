@@ -100,6 +100,7 @@ export const tournamentFormBodySchema = v.object({
   tournament_round_number: v.pipe(v.number(), v.integer(), v.minValue(1)),
   tournament_round_duration: v.pipe(v.number(), v.integer(), v.minValue(1)),
   tournament_registration_open: v.optional(v.boolean(), true),
+  tournament_format: v.optional(v.picklist(Constants.public.Enums.mtg_formats), 'Commander'),
 })
 
 /**

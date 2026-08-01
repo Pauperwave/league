@@ -721,7 +721,8 @@
       "namePlaceholder": "Es. Commander Night #1",
       "dateLabel": "Data",
       "numRoundLabel": "Numero Round",
-      "roundDurationLabel": "Durata Round (min)"
+      "roundDurationLabel": "Durata Round (min)",
+      "formatLabel": "Formato"
     },
     "scoresModal": {
       "title": "Punteggi Tavolo"
