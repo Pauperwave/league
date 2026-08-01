@@ -62,7 +62,7 @@ const scryfallSearchUrl = computed(() =>
   commanderName.value ? `https://scryfall.com/search?q=!"${encodeURIComponent(commanderName.value)}"` : '#'
 )
 
-const { textColor, mutedColor, tooltipTheme } = useChartTheme()
+const { colors, tooltipTheme } = useChartTheme()
 
 const winRateOption = computed<ECOption>(() => {
   const wins = stats.value?.winCount ?? 0
@@ -77,15 +77,15 @@ const winRateOption = computed<ECOption>(() => {
       icon: 'circle',
       itemWidth: 10,
       itemHeight: 10,
-      textStyle: { color: textColor.value },
+      textStyle: { color: colors.value.text },
     },
     title: {
       text: `${winRatePercent}%`,
       subtext: t('commander.page.chartWins'),
       left: 'center',
       top: '40%',
-      textStyle: { fontSize: 26, fontWeight: 700, color: textColor.value },
-      subtextStyle: { fontSize: 12, color: mutedColor.value },
+      textStyle: { fontSize: 26, fontWeight: 700, color: colors.value.text },
+      subtextStyle: { fontSize: 12, color: colors.value.textSecondary },
     },
     series: [{
       type: 'pie',
@@ -94,8 +94,8 @@ const winRateOption = computed<ECOption>(() => {
       label: { show: false },
       labelLine: { show: false },
       data: [
-        { value: wins, name: t('commander.page.chartWins'), itemStyle: { color: '#10b981' } },
-        { value: others, name: t('commander.page.chartOtherMatches'), itemStyle: { color: '#9ca3af' } },
+        { value: wins, name: t('commander.page.chartWins'), itemStyle: { color: colors.value.palette[1] } },
+        { value: others, name: t('commander.page.chartOtherMatches'), itemStyle: { color: colors.value.textSecondary } },
       ],
     }],
   }
