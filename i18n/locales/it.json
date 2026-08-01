@@ -1016,7 +1016,30 @@
     "allPlayers": "Tutti i Giocatori",
     "allDecks": "Tutti i Deck",
     "allCommanders": "Tutti i Comandanti",
-    "viewRulesets": "Vedi Regolamenti"
+    "viewRulesets": "Vedi Regolamenti",
+    "viewPayments": "Pagamenti"
+  },
+  "payments": {
+    "overview": {
+      "breadcrumb": "Pagamenti",
+      "empty": "Nessun pagamento registrato",
+      "emptyFiltered": "Nessun pagamento per i filtri selezionati",
+      "searchPlaceholder": "Cerca giocatore...",
+      "unknownLeague": "Lega sconosciuta",
+      "allLeagues": "Tutte le leghe",
+      "allTournaments": "Tutti i tornei",
+      "allFormats": "Tutti i formati",
+      "allPaymentMethods": "Tutti i metodi",
+      "tournamentColumn": "Torneo",
+      "leagueColumn": "Lega",
+      "formatColumn": "Formato",
+      "amountColumn": "Importo",
+      "totalCount": "0 iscrizioni | 1 iscrizione | {count} iscrizioni",
+      "totalAmount": "Totale: {amount}",
+      "trendChartTitle": "Iscritti per tappa",
+      "amountChartTitle": "Incassato per metodo",
+      "methodMixChartTitle": "Metodi di pagamento"
+    }
   },
   "error": {
     "title404": "Pagina non trovata",

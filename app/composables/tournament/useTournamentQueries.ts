@@ -34,6 +34,26 @@ export function useEventsQuery(leagueId: number) {
   })
 }
 
+/** Query key for the tournaments list across every league — the payments overview page. */
+export const ALL_EVENTS_KEY = ['events-all']
+
+export function useAllEventsQuery() {
+  const supabase = useSupabaseClient()
+
+  return useQuery({
+    key: ALL_EVENTS_KEY,
+    query: async (): Promise<Tournament[]> => {
+      const { data, error } = await supabase
+        .from('tournaments')
+        .select('*')
+        .order('tournament_datetime', { ascending: false })
+
+      if (error) throw error
+      return data ?? []
+    },
+  })
+}
+
 /**
  * Payment method per player for one or more tournaments (tournament_registrations)
  * — fetched separately and merged client-side, no join, same recompute-on-read
@@ -90,6 +110,44 @@ export function useTournamentRegistrationsQuery(tournamentId: number) {
         registeredAt: row.registered_at,
         paymentMethod: row.payment_method as PaymentMethod | null,
       }))
+    },
+  })
+}
+
+/** Query key for every tournament's registration snapshot at once — the payments overview page. */
+export const ALL_TOURNAMENT_REGISTRATIONS_KEY = ['tournament-registrations-all']
+
+/**
+ * Registration snapshots for every tournament that has one, grouped by
+ * tournament_id — same read-only data as `useTournamentRegistrationsQuery`,
+ * fetched in one round trip for the cross-league payments overview instead
+ * of one query per tournament.
+ */
+export function useAllTournamentRegistrationsQuery() {
+  const supabase = useSupabaseClient()
+
+  return useQuery({
+    key: ALL_TOURNAMENT_REGISTRATIONS_KEY,
+    query: async (): Promise<Map<number, TournamentRegistration[]>> => {
+      const { data, error } = await supabase
+        .from('tournament_registrations')
+        .select('tournament_id, player_id, registered_at, payment_method')
+        .order('registered_at', { ascending: true })
+
+      if (error) throw error
+
+      const byTournament = new Map<number, TournamentRegistration[]>()
+      for (const row of data ?? []) {
+        const registration: TournamentRegistration = {
+          playerId: row.player_id,
+          registeredAt: row.registered_at,
+          paymentMethod: row.payment_method as PaymentMethod | null,
+        }
+        const existing = byTournament.get(row.tournament_id)
+        if (existing) existing.push(registration)
+        else byTournament.set(row.tournament_id, [registration])
+      }
+      return byTournament
     },
   })
 }

@@ -41,6 +41,9 @@ Domains migrated to Pinia Colada use array query keys instead of `useAsyncData` 
 | `players/usePlayersQuery.ts` | `['players']` | `usePlayerMutations` |
 | `tournament/useWaitroom.ts` | `['waitroom', tournamentId]` | `useWaitroomMutations` (+ manual refresh on start/turn-back) |
 | `tournament/useTournamentQueries.ts` | `['events', leagueId]` | `tournament/useTournamentMutations` (CRUD, auto) + refresh after lifecycle transitions (useTournamentPage) |
+| `tournament/useTournamentQueries.ts` | `['events-all']` | read-only (payments overview page, all leagues) |
+| `tournament/useTournamentQueries.ts` | `['tournament-registrations', tournamentId]` | read-only (single-tournament past-registration view) |
+| `tournament/useTournamentQueries.ts` | `['tournament-registrations-all']` | read-only (payments overview page, all leagues) |
 | `tournament/useTournamentQueries.ts` | `['event-standings', tournamentId]` | refresh after round transitions (useTournamentPage) |
 | `tournament/useTournamentQueries.ts` | `['pairings', tournamentId, round]` | invalidated after lifecycle transitions (useTournamentPage) |
 | `tournament/useTournamentQueries.ts` | `['pairing-history', tournamentId]` | invalidated after lifecycle transitions (useTournamentPage) |

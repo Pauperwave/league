@@ -55,6 +55,14 @@ const { t } = useI18n()
         >
           {{ t('home.viewRulesets') }}
         </UButton>
+        <UButton
+          to="/payments"
+          color="neutral"
+          size="md"
+          :icon="ICONS.registration"
+        >
+          {{ t('home.viewPayments') }}
+        </UButton>
       </div>
     </div>
   </div>
