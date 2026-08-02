@@ -5,7 +5,13 @@ import type { TournamentStatus } from '#shared/utils/types'
 
 const { t } = useI18n()
 
-const { currentRound, totalRounds, tournamentStatus, viewedRound = null, viewingRegistration = false } = defineProps<{
+const {
+  currentRound,
+  totalRounds,
+  tournamentStatus,
+  viewedRound = null,
+  viewingRegistration = false
+} = defineProps<{
   /** Current round number (1-based) */
   currentRound: number
   /** Total number of rounds in the tournament */
@@ -45,7 +51,7 @@ const items = computed<StepperItem[]>(() => {
         : t('tournament.stepper.registrationDescription'),
       icon: viewingRegistration ? ICONS.show : ICONS.registration,
       value: 'registration',
-      ui: viewingRegistration ? { indicator: 'ring-2 ring-primary' } : undefined,
+      ui: viewingRegistration ? { trigger: 'bg-primary text-inverted' } : undefined,
     },
   ]
 
@@ -65,9 +71,9 @@ const items = computed<StepperItem[]>(() => {
               : t('tournament.stepper.roundPending'),
       icon: isViewed ? ICONS.show : ICONS.battle,
       value: `round-${i}`,
-      // Distinct ring so a viewed past round reads as "previewing", not as
-      // the tournament's actual current-round progress marker.
-      ui: isViewed ? { indicator: 'ring-2 ring-primary' } : undefined,
+      // Distinct trigger color so a viewed past round reads as "previewing",
+      // not as the tournament's actual current-round progress marker.
+      ui: isViewed ? { trigger: 'bg-primary text-inverted' } : undefined,
     })
   }
 
