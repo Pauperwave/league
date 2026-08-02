@@ -122,6 +122,14 @@ export default defineEventHandler(async (event) => {
     }))
   )
   if (registrationsError) {
+    // Same TOCTOU as the standings insert above: a concurrent/retried start
+    // already wrote these rows. Clean 409, not a scary 500.
+    if (registrationsError.code === '23505') {
+      throw createError({
+        statusCode: 409,
+        statusMessage: 'Tournament has already started'
+      })
+    }
     console.error('[api/start] tournament_registrations insert failed', { tournamentId, registrationsError })
     throw createError({
       statusCode: 500,
