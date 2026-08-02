@@ -172,7 +172,8 @@ describe('useTableDnd', () => {
       // Reverse order of the 7 actually-seated players (1-4 at t1, 5-7 at t2)
       replaceByPlayerOrder([7, 6, 5, 4, 3, 2, 1])
 
-      const seatedIds = (t: PairingTable) => t.seats.map(s => s.player?.id).filter((id): id is number => id !== undefined)
+      const seatedIds = (t: PairingTable) =>
+        t.seats.map(s => s.player?.id).filter((id): id is number => id !== undefined)
 
       expect(seatedIds(localTables.value[0]!)).toEqual([7, 6, 5, 4])
       expect(seatedIds(localTables.value[1]!)).toEqual([3, 2, 1])
@@ -190,11 +191,15 @@ describe('useTableDnd', () => {
 
       randomizeTables()
 
-      const seatedIds = (t: PairingTable) => t.seats.map(s => s.player?.id).filter((id): id is number => id !== undefined)
+      const seatedIds = (t: PairingTable) =>
+        t.seats.map(s => s.player?.id).filter((id): id is number => id !== undefined)
 
       expect(seatedIds(localTables.value[0]!)).toHaveLength(4)
       expect(seatedIds(localTables.value[1]!)).toHaveLength(3)
-      expect([...seatedIds(localTables.value[0]!), ...seatedIds(localTables.value[1]!)].sort()).toEqual([1, 2, 3, 4, 5, 6, 7])
+      expect([
+        ...seatedIds(localTables.value[0]!),
+        ...seatedIds(localTables.value[1]!)
+      ].sort()).toEqual([1, 2, 3, 4, 5, 6, 7])
     })
   })
 })
