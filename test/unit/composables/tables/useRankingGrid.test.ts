@@ -11,7 +11,12 @@ const fourPlayers: RankingGridPlayer[] = [
 
 describe('useRankingGrid', () => {
   it('initializes a 4x4 grid with everyone in the first row when no saved ranking', () => {
-    const { grid, gridSize, initializeGrid, isValidFormation } = useRankingGrid(() => fourPlayers)
+    const {
+      grid,
+      gridSize,
+      initializeGrid,
+      isValidFormation
+    } = useRankingGrid(() => fourPlayers)
     initializeGrid()
 
     expect(gridSize.value).toBe(4)
@@ -35,8 +40,12 @@ describe('useRankingGrid', () => {
       { playerId: 3, rank: 4 },
       { playerId: 4, rank: 3 },
     ]
-    const { initializeGrid, isValidFormation, getRanking, getRankingWithRanks } =
-      useRankingGrid(() => fourPlayers, () => saved)
+    const {
+      initializeGrid,
+      isValidFormation,
+      getRanking,
+      getRankingWithRanks
+    } = useRankingGrid(() => fourPlayers, () => saved)
     initializeGrid()
 
     expect(isValidFormation.value).toBe(true)
@@ -85,7 +94,12 @@ describe('useRankingGrid', () => {
 
   it('counts unresolvable players toward the grid size but never places them', () => {
     const withMissing = [fourPlayers[0], undefined, fourPlayers[2], fourPlayers[3]]
-    const { gridSize, grid, initializeGrid, isValidFormation } = useRankingGrid(() => withMissing)
+    const {
+      gridSize,
+      grid,
+      initializeGrid,
+      isValidFormation
+    } = useRankingGrid(() => withMissing)
     initializeGrid()
 
     expect(gridSize.value).toBe(4)
@@ -94,7 +108,12 @@ describe('useRankingGrid', () => {
   })
 
   it('moves a player within its column on drop and rejects cross-column drops', () => {
-    const { grid, initializeGrid, handleDragStart, handleDrop } = useRankingGrid(() => fourPlayers)
+    const {
+      grid,
+      initializeGrid,
+      handleDragStart,
+      handleDrop
+    } = useRankingGrid(() => fourPlayers)
     initializeGrid()
 
     const dragEvent = {

@@ -11,7 +11,12 @@ export const WAITROOM_KEY = ['waitroom']
 export function useWaitroom(tournamentId: number) {
   const supabase = useSupabaseClient()
 
-  const { data, isLoading, error, refetch } = useQuery({
+  const {
+    data,
+    isLoading,
+    error,
+    refetch
+  } = useQuery({
     key: [...WAITROOM_KEY, tournamentId],
     query: async (): Promise<{ player_id: number, inserted_at: string | null }[]> => {
       const { data: rows, error: waitroomError } = await supabase

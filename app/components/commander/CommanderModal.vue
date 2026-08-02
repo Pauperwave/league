@@ -25,7 +25,12 @@ const commander2 = ref(props.commander2 || '')
 // isLoading/refetch for the "Aggiorna elenco carte" button live in
 // TournamentCommanderModal (footer), which calls this same composable — the
 // underlying query is shared/cached, so both stay in sync.
-const { whitelists, getPartnerType, getAllowedPartners, getExactPartnerName } = useCommanderWhitelists()
+const {
+  whitelists,
+  getPartnerType,
+  getAllowedPartners,
+  getExactPartnerName
+} = useCommanderWhitelists()
 
 // Computed: what partner type does commander1 have?
 const commander1PartnerType = computed(() => {

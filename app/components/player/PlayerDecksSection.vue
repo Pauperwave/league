@@ -11,7 +11,12 @@ interface Props {
   getTournamentCount: (deck: CommanderDeck) => number
 }
 
-const { loading, decks, slug, getTournamentCount } = defineProps<Props>()
+const {
+  loading,
+  decks,
+  slug,
+  getTournamentCount
+} = defineProps<Props>()
 
 const emit = defineEmits<{
   addDeck: []

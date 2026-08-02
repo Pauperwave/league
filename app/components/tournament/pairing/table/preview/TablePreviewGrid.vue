@@ -3,7 +3,13 @@
 import type { Seat, PairingTable } from '#shared/utils/types'
 import type { TableStatus } from '~/composables/tables/useTableDnd'
 
-const { tables, isDragging, getTableCardClass, getTableStatus, getTableScore } = defineProps<{
+const {
+  tables,
+  isDragging,
+  getTableCardClass,
+  getTableStatus,
+  getTableScore
+} = defineProps<{
   tables: PairingTable[]
   isDragging: boolean
   getTableCardClass: (table: PairingTable) => string

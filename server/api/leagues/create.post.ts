@@ -7,7 +7,13 @@ import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
 
 export default defineEventHandler(async (event) => {
-  const { name, startsAt, endsAt, rulesetId, validTournaments } = await requireValidBody(event, leagueFormBodySchema)
+  const {
+    name,
+    startsAt,
+    endsAt,
+    rulesetId,
+    validTournaments
+  } = await requireValidBody(event, leagueFormBodySchema)
 
   console.log('[api/leagues/create] request', { name, startsAt, endsAt, rulesetId, validTournaments })
 

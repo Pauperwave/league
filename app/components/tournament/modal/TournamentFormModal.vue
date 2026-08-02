@@ -66,7 +66,13 @@ const submitLogging = useButtonLogging(t('logging.tournament.submitForm'), { isE
 
 // — Derived modal state —
 const isEditing = computed(() => !!props.tournament)
-const { title: modalTitle, description: modalDescription, icon: modalIcon, submitLabel, handleCancel } = useFormModalMeta({
+const {
+  title: modalTitle,
+  description: modalDescription,
+  icon: modalIcon,
+  submitLabel,
+  handleCancel
+} = useFormModalMeta({
   isEditing,
   namespace: 'tournament',
   createIcon: ICONS.battle,

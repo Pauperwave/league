@@ -7,7 +7,12 @@ interface Props {
   imageUrl?: string | null
 }
 
-const { label, tokens = [], matchIndices = [], imageUrl } = defineProps<Props>()
+const {
+  label,
+  tokens = [],
+  matchIndices = [],
+  imageUrl
+} = defineProps<Props>()
 
 const tooltipOpen = ref(false)
 const anchor = ref({ x: 0, y: 0 })

@@ -15,7 +15,13 @@ interface Props {
   forceOpen?: boolean
 }
 
-const { title, icon, doneCount, totalCount, forceOpen = false } = defineProps<Props>()
+const {
+  title,
+  icon,
+  doneCount,
+  totalCount,
+  forceOpen = false
+} = defineProps<Props>()
 
 const manuallyOpen = ref(false)
 

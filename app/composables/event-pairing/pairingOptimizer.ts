@@ -342,7 +342,12 @@ function aggregateTableScore(
     rotateTable3: number
   }
 ): PairingTableScore {
-  const { strengthTotal, novelty, rematchPenalty, rotateTable3 } = params
+  const {
+    strengthTotal,
+    novelty,
+    rematchPenalty,
+    rotateTable3
+  } = params
   const size = table.length
   const tableSizeWeight = size === 4 ? weights.tableSize4 : weights.tableSize3
   const tableSizePerPlayer = table.length > 0 ? tableSizeWeight / table.length : 0
@@ -664,7 +669,12 @@ export function optimizePairings(params: {
   currentRound: number
   swapTimeBudgetMs?: number
 }): PairingOptimizerResult {
-  const { players, history, forbiddenPairs, currentRound } = params
+  const {
+    players,
+    history,
+    forbiddenPairs,
+    currentRound
+  } = params
   const swapTimeBudgetMs = params.swapTimeBudgetMs ?? 120
   const { getTableSizes } = useTableCalculator()
 

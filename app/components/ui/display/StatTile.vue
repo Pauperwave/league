@@ -8,7 +8,13 @@ interface Props {
   background?: string
 }
 
-const { icon, value, label, color = 'text-primary', background = 'bg-default' } = defineProps<Props>()
+const {
+  icon,
+  value,
+  label,
+  color = 'text-primary',
+  background = 'bg-default'
+} = defineProps<Props>()
 </script>
 
 <template>

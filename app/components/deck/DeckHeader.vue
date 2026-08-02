@@ -8,7 +8,12 @@ interface Props {
   companionName?: string | null
 }
 
-const { displayName, manaCost, loading = false, companionName } = defineProps<Props>()
+const {
+  displayName,
+  manaCost,
+  loading = false,
+  companionName
+} = defineProps<Props>()
 </script>
 
 <template>

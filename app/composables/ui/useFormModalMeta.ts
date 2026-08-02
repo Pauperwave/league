@@ -14,7 +14,13 @@ interface UseFormModalMetaOptions {
  * `<namespace>.form.{createTitle,editTitle,createDescription,editDescription}`
  * and `<namespace>.form.submitCreate` i18n keys (see i18n/locales/it.json).
  */
-export function useFormModalMeta({ isEditing, namespace, createIcon, cancelLoggingLabel, open }: UseFormModalMetaOptions) {
+export function useFormModalMeta({
+  isEditing,
+  namespace,
+  createIcon,
+  cancelLoggingLabel,
+  open
+}: UseFormModalMetaOptions) {
   const { t } = useI18n()
 
   const title = computed(() => isEditing.value ? t(`${namespace}.form.editTitle`) : t(`${namespace}.form.createTitle`))

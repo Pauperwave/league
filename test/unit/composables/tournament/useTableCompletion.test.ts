@@ -101,7 +101,12 @@ describe('useTableCompletion', () => {
   })
 
   it('isTableComplete requires a ranking, every seated player to have a commander, every seated player to have voted, and kills confirmed', () => {
-    const { isTableComplete, rankingsStore, commandersStore, votesStore } = setupCompletion()
+    const {
+      isTableComplete,
+      rankingsStore,
+      commandersStore,
+      votesStore
+    } = setupCompletion()
     const playerIds = [1, 2, 3, 4]
     const pairing: PairingWithResults = makePairing()
 
@@ -121,7 +126,12 @@ describe('useTableCompletion', () => {
   })
 
   it('isTableComplete stays false if only some seated players have a commander set', () => {
-    const { isTableComplete, rankingsStore, commandersStore, votesStore } = setupCompletion()
+    const {
+      isTableComplete,
+      rankingsStore,
+      commandersStore,
+      votesStore
+    } = setupCompletion()
     const playerIds = [1, 2, 3, 4]
     const pairing: PairingWithResults = makePairing({ round_results: [makeResult({ number_of_kills: 0 })] })
 
@@ -133,7 +143,12 @@ describe('useTableCompletion', () => {
   })
 
   it('isTableComplete stays false if kills have not been confirmed, even with rankings, commanders, and votes complete', () => {
-    const { isTableComplete, rankingsStore, commandersStore, votesStore } = setupCompletion()
+    const {
+      isTableComplete,
+      rankingsStore,
+      commandersStore,
+      votesStore
+    } = setupCompletion()
     const playerIds = [1, 2, 3, 4]
     const pairing: PairingWithResults = makePairing()
 

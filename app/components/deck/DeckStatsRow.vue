@@ -11,7 +11,15 @@ interface Props {
   average: number
 }
 
-const { firstIcon, firstValue, firstLabel, matches, wins, kills, average } = defineProps<Props>()
+const {
+  firstIcon,
+  firstValue,
+  firstLabel,
+  matches,
+  wins,
+  kills,
+  average
+} = defineProps<Props>()
 
 const { t } = useI18n()
 </script>

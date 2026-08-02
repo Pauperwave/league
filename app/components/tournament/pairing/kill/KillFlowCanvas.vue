@@ -19,7 +19,13 @@ import type { TablePlayer } from '#shared/utils/types'
 // match; otherwise setEdges()/etc. can silently write to an orphaned store
 // that <VueFlow> never renders.
 const FLOW_ID = 'kill-flow'
-const { setEdges, onInit, zoomIn, zoomOut, fitView } = useVueFlow(FLOW_ID)
+const {
+  setEdges,
+  onInit,
+  zoomIn,
+  zoomOut,
+  fitView
+} = useVueFlow(FLOW_ID)
 
 // Toggled by the lock/unlock control button — nodes stay permanently
 // non-draggable (they're fixed chips), so "interactive" here only means

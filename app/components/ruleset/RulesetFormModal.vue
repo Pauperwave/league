@@ -46,7 +46,13 @@ const RulesetUpdateSchema = v.object({
 })
 
 const isEditing = computed(() => !!props.ruleset)
-const { title, description, icon, submitLabel, handleCancel } = useFormModalMeta({
+const {
+  title,
+  description,
+  icon,
+  submitLabel,
+  handleCancel
+} = useFormModalMeta({
   isEditing,
   namespace: 'ruleset',
   createIcon: ICONS.rules,

@@ -34,7 +34,12 @@ const votesStore = useVotesStore()
 const pairingsRef = toRef(props, 'pairings')
 const playersRef = toRef(props, 'tournamentPlayers')
 
-const { rankingItems, killItems, commanderItems, voteItems } = useRoundStatus(
+const {
+  rankingItems,
+  killItems,
+  commanderItems,
+  voteItems
+} = useRoundStatus(
   pairingsRef, playersRef, rankingsStore, commandersStore, votesStore,
 )
 

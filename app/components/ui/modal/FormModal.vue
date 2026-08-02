@@ -10,7 +10,15 @@ interface Props {
   submitIcon?: string
 }
 
-const { title, description, icon, submitLabel, formId, disabled = false, submitIcon } = defineProps<Props>()
+const {
+  title,
+  description,
+  icon,
+  submitLabel,
+  formId,
+  disabled = false,
+  submitIcon
+} = defineProps<Props>()
 
 const open = defineModel<boolean>('open', { default: false })
 

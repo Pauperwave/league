@@ -25,7 +25,13 @@ const { t } = useI18n()
 
 // — Derived modal state —
 const isEditing = computed(() => !!props.player)
-const { title: modalTitle, description: modalDescription, icon: modalIcon, submitLabel, handleCancel } = useFormModalMeta({
+const {
+  title: modalTitle,
+  description: modalDescription,
+  icon: modalIcon,
+  submitLabel,
+  handleCancel
+} = useFormModalMeta({
   isEditing,
   namespace: 'player',
   createIcon: ICONS.addPlayer,

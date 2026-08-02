@@ -68,7 +68,14 @@ export function useSessionStorePersistence(params: {
   commandersStore: CommandersStoreLike
   votesStore: VotesStoreLike
 }) {
-  const { tournamentId, currentRound, rankingsStore, killsStore, commandersStore, votesStore } = params
+  const {
+    tournamentId,
+    currentRound,
+    rankingsStore,
+    killsStore,
+    commandersStore,
+    votesStore
+  } = params
   const key = sessionSnapshotKey(tournamentId)
 
   function buildSnapshot(): SessionSnapshot {

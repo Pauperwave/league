@@ -33,7 +33,13 @@ const open = defineModel<boolean>('open', { default: false })
 const submitLogging = useButtonLogging(t('logging.league.submitForm'), { isEditing: () => isEditing.value, data: () => ({ name: form.name, startsAt: form.startsAt?.toString(), endsAt: form.endsAt?.toString(), rulesetId: form.rulesetId }) })
 
 const isEditing = computed(() => !!props.league)
-const { title, description, icon, submitLabel, handleCancel } = useFormModalMeta({
+const {
+  title,
+  description,
+  icon,
+  submitLabel,
+  handleCancel
+} = useFormModalMeta({
   isEditing,
   namespace: 'league',
   createIcon: ICONS.standings,

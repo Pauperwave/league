@@ -3,7 +3,12 @@ import { describe, expect, it } from 'vitest'
 import { useTableCalculator } from '~/composables/tables/useTableCalculator'
 
 describe('useTableCalculator', () => {
-  const { calculateTables, getTableSizes, buildPreviewTables, formatTableEstimate } = useTableCalculator()
+  const {
+    calculateTables,
+    getTableSizes,
+    buildPreviewTables,
+    formatTableEstimate
+  } = useTableCalculator()
 
   describe('calculateTables', () => {
     it('rejects fewer than 3 players', () => {

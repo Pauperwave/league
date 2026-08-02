@@ -9,7 +9,14 @@ interface Props {
   suffix?: string
 }
 
-const { to, playerName, playerSurname, playerId, isBorrowed = false, suffix = '' } = defineProps<Props>()
+const {
+  to,
+  playerName,
+  playerSurname,
+  playerId,
+  isBorrowed = false,
+  suffix = ''
+} = defineProps<Props>()
 
 const { t } = useI18n()
 </script>

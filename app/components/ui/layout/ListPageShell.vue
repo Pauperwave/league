@@ -16,7 +16,14 @@ interface Props {
   loading?: boolean
 }
 
-const { breadcrumbItems, title, addLabel, error = null, errorMessage = '', loading = false } = defineProps<Props>()
+const {
+  breadcrumbItems,
+  title,
+  addLabel,
+  error = null,
+  errorMessage = '',
+  loading = false
+} = defineProps<Props>()
 
 const emit = defineEmits<{
   add: []

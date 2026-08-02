@@ -211,7 +211,12 @@ const tableToUndraw = computed(() =>
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const { hasRanking, hasKills, isDraw, isTableComplete } = useTableCompletion(rankingsStore, commandersStore, votesStore)
+const {
+  hasRanking,
+  hasKills,
+  isDraw,
+  isTableComplete
+} = useTableCompletion(rankingsStore, commandersStore, votesStore)
 
 // ─── Handlers ─────────────────────────────────────────────────────────────────
 

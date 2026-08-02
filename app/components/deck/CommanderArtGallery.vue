@@ -9,7 +9,14 @@ interface Props {
   loading?: boolean
 }
 
-const { image1, image1Alt, hasPartner = false, image2 = null, image2Alt = '', loading = false } = defineProps<Props>()
+const {
+  image1,
+  image1Alt,
+  hasPartner = false,
+  image2 = null,
+  image2Alt = '',
+  loading = false
+} = defineProps<Props>()
 
 const panes = computed(() => {
   const result = [{ image: image1, alt: image1Alt }]

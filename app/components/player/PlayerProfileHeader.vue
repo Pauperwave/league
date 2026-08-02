@@ -17,7 +17,12 @@ interface Props {
   borrowedDeckCount: number
 }
 
-const { player, playerStats = null, ownedDeckCount, borrowedDeckCount } = defineProps<Props>()
+const {
+  player,
+  playerStats = null,
+  ownedDeckCount,
+  borrowedDeckCount
+} = defineProps<Props>()
 
 const { t } = useI18n()
 </script>
