@@ -71,7 +71,10 @@ const selectedDate = computed({
             <UButton
               color="neutral"
               size="sm"
-              @click="() => { selectedDate = getToday(); open = false }"
+              @click="() => {
+                selectedDate = getToday()
+                open = false
+              }"
             >
               {{ t('common.today') }}
             </UButton>

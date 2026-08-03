@@ -95,7 +95,11 @@ function handleToggleFullscreen() {
     </div>
     <UCollapsible v-model:open="isOpen">
       <button type="button" class="flex items-center justify-center gap-1.5 mb-2 w-full cursor-pointer">
-        <UIcon :name="ICONS.standings" class="text-primary" :class="isFullscreen ? 'size-8' : 'size-4'" />
+        <UIcon
+          :name="ICONS.standings"
+          class="text-primary"
+          :class="isFullscreen ? 'size-8' : 'size-4'"
+        />
         <h4 class="font-bold text-primary" :class="isFullscreen ? 'text-3xl' : 'text-base'">{{ displayTitle }}</h4>
         <UIcon
           :name="ICONS.chevronDown"

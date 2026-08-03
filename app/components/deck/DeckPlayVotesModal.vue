@@ -43,6 +43,15 @@ function handleConfirm() {
 const deckRoving = useRovingTabindex(() => props.otherPlayers.length)
 const playRoving = useRovingTabindex(() => props.otherPlayers.length)
 
+function selectDeckVote(player: TablePlayer, index: number) {
+  localDeckVotePlayerId.value = player.id
+  deckRoving.focusIndex(index)
+}
+function selectPlayVote(player: TablePlayer, index: number) {
+  localPlayVotePlayerId.value = player.id
+  playRoving.focusIndex(index)
+}
+
 // Footer lives in the parent (TournamentVotesModal's #footer slot, see
 // CommanderModal.vue for the same submit/canSubmit exposure pattern) — this
 // lets the confirm button sit in UModal's actual footer instead of at the
@@ -64,7 +73,11 @@ defineExpose({ submit: handleConfirm })
           {{ t('deck.votes.weightBadge', { weight: ruleset.rule_set_brew }) }}
         </UBadge>
       </div>
-      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3" role="group" :aria-label="t('deck.votes.preferredDeck')">
+      <div
+        class="grid grid-cols-2 sm:grid-cols-3 gap-3"
+        role="group"
+        :aria-label="t('deck.votes.preferredDeck')"
+      >
         <CommanderVoteCard
           v-for="(player, index) in otherPlayers"
           :key="`deck-${player.id}`"
@@ -76,7 +89,7 @@ defineExpose({ submit: handleConfirm })
           :player-id="player.id"
           :selected="localDeckVotePlayerId === player.id"
           :tabindex="deckRoving.tabindexFor(index)"
-          @click="() => { localDeckVotePlayerId = player.id; deckRoving.focusIndex(index) }"
+          @click="() => selectDeckVote(player, index)"
           @assign="emit('assignCommander', player.id)"
           @navigate="(direction) => deckRoving.onNavigate(index, direction)"
         />
@@ -95,7 +108,11 @@ defineExpose({ submit: handleConfirm })
           {{ t('deck.votes.weightBadge', { weight: ruleset.rule_set_play }) }}
         </UBadge>
       </div>
-      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3" role="group" :aria-label="t('deck.votes.bestPlay')">
+      <div
+        class="grid grid-cols-2 sm:grid-cols-3 gap-3"
+        role="group"
+        :aria-label="t('deck.votes.bestPlay')"
+      >
         <CommanderVoteCard
           v-for="(player, index) in otherPlayers"
           :key="`play-${player.id}`"
@@ -107,7 +124,7 @@ defineExpose({ submit: handleConfirm })
           :player-id="player.id"
           :selected="localPlayVotePlayerId === player.id"
           :tabindex="playRoving.tabindexFor(index)"
-          @click="() => { localPlayVotePlayerId = player.id; playRoving.focusIndex(index) }"
+          @click="() => selectPlayVote(player, index)"
           @assign="emit('assignCommander', player.id)"
           @navigate="(direction) => playRoving.onNavigate(index, direction)"
         />

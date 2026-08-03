@@ -118,7 +118,11 @@ defineExpose({ focus: () => rootEl.value?.focus() })
             wrap
             class="min-w-0"
           />
-          <UIcon v-if="selected" :name="ICONS.success" class="ms-auto text-primary size-5 shrink-0" />
+          <UIcon
+            v-if="selected"
+            :name="ICONS.success"
+            class="ms-auto text-primary size-5 shrink-0"
+          />
         </div>
       </template>
     </UCard>

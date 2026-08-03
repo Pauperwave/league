@@ -138,7 +138,10 @@ const tableData = computed(() => {
       :data="tableData"
       @update="handleUpdate"
       @edit="emit('edit', $event)"
-      @remove="(playerId: number) => { forgetFlags([playerId]); emit('remove', playerId) }"
+      @remove="(playerId: number) => {
+        forgetFlags([playerId])
+        emit('remove', playerId)
+      }"
       @batch-remove="(playerIds: number[]) => {
         forgetFlags(playerIds)
         emit('batchRemove', playerIds)

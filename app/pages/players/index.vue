@@ -107,7 +107,10 @@ async function handlePlayerUpdate(payload: PlayerUpdatePayload) {
       :type="emptyState"
       :search-query="searchQuery"
       @create-player="openCreateModal"
-      @clear-filter="() => { showOnlyWithDecks = false; showOnlyActive = false }"
+      @clear-filter="() => {
+        showOnlyWithDecks = false
+        showOnlyActive = false
+      }"
     />
 
     <CreatePlayerModal
