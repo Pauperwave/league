@@ -305,36 +305,6 @@ function openTableScoreBreakdown(tableIndex: number) {
           @drag-end="handleDragEnd"
           @open-breakdown="openTableScoreBreakdown"
         />
-
-        <ul>
-          <li>TODO:</li>
-          <li>
-            In "Dettaglio calcolo tavolo" se il valore è 0.00 allora barralo e/o mettilo
-            in text-muted
-          </li>
-          <li>In "Dettaglio calcolo tavolo" spiegazione delle voci in UTooltip</li>
-          <li>
-            Perché sembra che il tasto "ottimizza" stia riproponendo l'ordine di iscrizione al primo
-            turno? Forse deriva da come calcola "Bilanciamento"?
-          </li>
-          <li>
-            L'inserimento nell'ordine di registrazione non dovrebbe contare nulla nel primo turno
-          </li>
-          <li>mettere animazione del random button (farlo vedere anche al primo giro)</li>
-          <li>mettere peso "Rotazione tavoli da 3" anche al primo turno dai dati storici</li>
-          <li>
-            qui metti il json dei tavoli come nell'esempio su
-            https://vue-draggable-plus.pages.dev/en/demo/basic/
-          </li>
-          <li>
-            ho notato un bug grave: se il numero di partecipanti di un tavolo è 5/3 e premi
-            "Ottimizza" va a rimuovere un giocatore ogni volta
-          </li>
-          <li>
-            a che cosa serve effettivamente il "Punteggio totale: 17.40"? All'utente non serve
-            a molto mi pare
-          </li>
-        </ul>
       </div>
     </template>
 

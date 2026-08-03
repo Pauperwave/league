@@ -2,6 +2,20 @@
 
 Loose observations and open questions — not yet committed, ranked work. For that, see `docs/BACKLOG.md`.
 
+## Pairing preview (`TablePreviewModal.vue`) — notes moved out of a `<ul>` left in the template (2026-08-04)
+
+These were a scratch TODO list literally rendered in the modal's own markup — moved here, not yet scoped. Reordered by tackling priority 2026-08-04:
+
+1. ~~**Possibile bug:** con un tavolo da 5/3 partecipanti, premere "Ottimizza" rimuove un giocatore ogni volta~~ — root-caused e fixato 2026-08-04: `useTableCalculator.ts`'s `calculateTables` restituisce `canPlay: false` per esattamente 5 giocatori totali (nessuno split 3/4 valido), quindi `getTableSizes(5)` ritorna `[]`. Senza guardia, `optimizePairings` costruiva zero tavoli e `scoreSolution([])` ritornava `totalScore: 0` (il `for` non gira mai) — un punteggio **finito** che batteva il `-Infinity` iniziale, quindi `optimizePairings` tornava un risultato "valido" ma vuoto. Il chiamante (`useTableDnd.ts`'s `runOptimizer`) controlla solo `Number.isFinite(result.totalScore)` prima di chiamare `replaceByPlayerOrder(result.tables.flat())` — con `tables: []` questo svuota silenziosamente ogni posto a tavolo. Fix: `optimizePairings` ritorna subito `{ tables: [], totalScore: -Infinity, tableScores: [] }` quando `tableSizes` è vuoto. **Non riprodotto live in browser** (richiede un torneo reale con esattamente 5 iscritti) — verificato via lettura del codice + nuovo test di regressione (`pairingOptimizer.test.ts`, "returns an invalid (non-finite) result for an unplayable player count instead of wiping the seating").
+2. Il tasto "Ottimizza" sembra riproporre l'ordine di iscrizione al primo turno — capire se dipende da come viene calcolato "Bilanciamento".
+3. L'ordine di registrazione non dovrebbe contare nulla nel pairing del primo turno.
+4. Applicare il peso "Rotazione tavoli da 3" anche al primo turno, usando i dati storici.
+5. "Dettaglio calcolo tavolo": se il valore è 0.00 barralo e/o mettilo in `text-muted`.
+6. "Dettaglio calcolo tavolo": aggiungere una spiegazione delle voci in `UTooltip`.
+7. A cosa serve realmente il "Punteggio totale" mostrato all'utente (es. "17.40")? Sembra poco utile così com'è.
+8. Animazione sul bottone random (farla vedere anche al primo giro).
+9. Serializzare i tavoli in JSON come nell'esempio su https://vue-draggable-plus.pages.dev/en/demo/basic/.
+
 ## Upgrade Nuxt to 4.5 and Nuxt UI to 4.10 (2026-07-21)
 
 Currently on `nuxt@^4.4.8` / `@nuxt/ui@^4.9.0`. Do this as its own isolated pass (`pnpm typecheck` + `pnpm lint` clean, then a manual smoke pass through the event lifecycle) rather than folding it into an unrelated feature change — Nuxt UI has broken component APIs across minor versions before. Check `@nuxt/ui`'s peer `typescript` range hasn't moved past `^5.9.x` before bumping (see root `CLAUDE.md`'s note on staying off TypeScript 6.x/7.0 for now).

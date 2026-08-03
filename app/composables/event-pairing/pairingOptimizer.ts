@@ -706,6 +706,18 @@ export function optimizePairings(params: {
   const rematchMap = buildRematchMap(history)
   const tableSizes = getTableSizes(players.length)
 
+  // getTableSizes returns [] for an unplayable player count (< 3, or exactly
+  // 5 — no valid 3/4-seat split exists). Without this guard, every attempt
+  // below builds zero tables and scoreSolution([]) returns 0 (its loop never
+  // runs) — a *finite* score that beats the initial -Infinity `best`, so
+  // optimizePairings would return a spuriously "valid" empty result and the
+  // caller (runOptimizer's Number.isFinite check) would silently wipe every
+  // seat assignment via replaceByPlayerOrder([]). Bug found via BACKLOG/TODO
+  // sweep 2026-08-04 — see docs/TODO.md.
+  if (!tableSizes.length) {
+    return { tables: [], totalScore: Number.NEGATIVE_INFINITY, tableScores: [] }
+  }
+
   const orderByRank = [...players].sort((a, b) => a.rank - b.rank)
   const orderByTable3Need = [...players]
     .sort((a, b) => a.table3Count - b.table3Count || a.rank - b.rank)

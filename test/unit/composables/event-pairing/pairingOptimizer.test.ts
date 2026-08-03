@@ -77,6 +77,28 @@ describe('pairingOptimizer', () => {
     expect(conflicts).toBe(false)
   })
 
+  it('returns an invalid (non-finite) result for an unplayable player count instead of wiping the seating', () => {
+    // Regression: getTableSizes(5) returns [] (no valid 3/4-seat split for
+    // exactly 5 players), and without a guard every build attempt produced
+    // zero tables scoring a *finite* 0 — beating the initial -Infinity
+    // `best` and returning a spuriously "valid" empty result. The caller
+    // (useTableDnd's runOptimizer) only checks Number.isFinite before
+    // calling replaceByPlayerOrder(result.tables.flat()), so that silently
+    // wiped every seat assignment on the preview.
+    const fivePlayers = players.slice(0, 5)
+
+    const result = optimizePairings({
+      players: fivePlayers,
+      history,
+      forbiddenPairs: [],
+      currentRound: 3,
+      weights: DEFAULT_PAIRING_WEIGHTS,
+    })
+
+    expect(Number.isFinite(result.totalScore)).toBe(false)
+    expect(result.tables).toEqual([])
+  })
+
   it('penalizes invalid manual tables with forbidden pairs', () => {
     const scored = scorePairingTables({
       tables: [[1, 2, 3, 4], [5, 6, 7, 8]],
