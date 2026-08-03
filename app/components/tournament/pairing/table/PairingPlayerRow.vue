@@ -28,7 +28,9 @@ const emit = defineEmits<{
       <UTooltip
         :key="`cmd-${playerId}-${hasCommander ? 1 : 0}`"
         :content="{ side: 'right' }"
-        :text="hasCommander ? t('tournament.pairing.commanderSetTooltip') : t('tournament.pairing.commanderNotSetTooltip')"
+        :text="hasCommander
+          ? t('tournament.pairing.commanderSetTooltip')
+          : t('tournament.pairing.commanderNotSetTooltip')"
       >
         <UButton
           size="sm"

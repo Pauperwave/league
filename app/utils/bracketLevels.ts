@@ -29,7 +29,8 @@ export const BRACKET_LEVELS: readonly BracketLevelDefinition[] = Array.from({ le
   }
 })
 
-/** Semantic color per bracket (success→info→primary→warning→error), a casual→competitive intensity ramp using app.config.ts's existing tokens — not a new palette. */
+/** Semantic color per bracket (success→info→primary→warning→error), a
+ * casual→competitive intensity ramp using app.config.ts's existing tokens — not a new palette. */
 export const BRACKET_COLORS: Record<BracketLevel, SemanticColor> = {
   1: 'success',
   2: 'info',

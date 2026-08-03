@@ -13,7 +13,8 @@ export interface ChartThemeColors {
   splitLine: string
   tooltipBackground: string
   tooltipBorder: string
-  /** 8-slot categorical palette, fixed order — never cycle/reassign per filter. Same reference instance used in the blog project's useChartTheme.ts. */
+  /** 8-slot categorical palette, fixed order — never cycle/reassign per filter.
+   * Same reference instance used in the blog project's useChartTheme.ts. */
   palette: string[]
 }
 

@@ -30,7 +30,10 @@ function sameWeights(left: PairingWeights, right: PairingWeights): boolean {
     && isCloseTo(left.tableSize3, right.tableSize3)
 }
 
-export function usePairingPresets(weights: Ref<PairingWeights>, setWeights: (nextWeights: Partial<PairingWeights>) => void) {
+export function usePairingPresets(
+  weights: Ref<PairingWeights>,
+  setWeights: (nextWeights: Partial<PairingWeights>) => void
+) {
   const selectedPreset = computed<PairingPresetKind>(() => {
     const current = weights.value
 

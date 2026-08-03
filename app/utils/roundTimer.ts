@@ -32,7 +32,11 @@ export function calculateResumeStartTime(nowMs: number, elapsedSeconds: number):
  * New bonus-minutes total after subtracting, floored so the round's total
  * duration (base + bonus) never goes below zero.
  */
-export function clampSubtractedBonus(currentBonusMinutes: number, minutesToSubtract: number, durationMinutes: number): number {
+export function clampSubtractedBonus(
+  currentBonusMinutes: number,
+  minutesToSubtract: number,
+  durationMinutes: number
+): number {
   return Math.max(currentBonusMinutes - minutesToSubtract, -durationMinutes)
 }
 
@@ -48,7 +52,9 @@ export function wouldSubtractExpireTimer(
   minutesToSubtract: number,
   durationMinutes: number,
 ): boolean {
-  if (isTimerExpired(calculateRemainingSeconds(calculateTotalSeconds(durationMinutes, currentBonusMinutes), elapsedSeconds))) {
+  if (isTimerExpired(
+    calculateRemainingSeconds(calculateTotalSeconds(durationMinutes, currentBonusMinutes), elapsedSeconds)
+  )) {
     return false
   }
   const newBonus = clampSubtractedBonus(currentBonusMinutes, minutesToSubtract, durationMinutes)

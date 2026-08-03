@@ -128,7 +128,9 @@ async function onConfirmRefreshCatalog() {
         <template #start>
           <UButton
             :icon="ICONS.refresh"
-            :label="isRefreshingCatalog || isSyncingCatalog ? t('commander.refreshingCatalog') : t('commander.refreshCatalog')"
+            :label="isRefreshingCatalog || isSyncingCatalog
+              ? t('commander.refreshingCatalog')
+              : t('commander.refreshCatalog')"
             variant="outline"
             color="warning"
             :loading="isRefreshingCatalog || isSyncingCatalog"

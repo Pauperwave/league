@@ -23,7 +23,11 @@ const emit = defineEmits<{
       <UIcon :name="ICONS.tableView" class="size-4 text-primary" />
       <h3 class="font-semibold whitespace-nowrap">{{ t('tournament.pairing.tableHeading', { n: tableIndex + 1 }) }}</h3>
     </div>
-    <UTooltip :key="`punteggi-${pairing.pairing_id}`" :content="{ side: 'top' }" :text="t('tournament.pairing.viewScoresTooltip')">
+    <UTooltip
+      :key="`punteggi-${pairing.pairing_id}`"
+      :content="{ side: 'top' }"
+      :text="t('tournament.pairing.viewScoresTooltip')"
+    >
       <UButton
         size="xs"
         variant="outline"
@@ -36,7 +40,11 @@ const emit = defineEmits<{
 
     <div class="flex-1" />
 
-    <UTooltip :key="`reset-${pairing.pairing_id}`" :content="{ side: 'top' }" :text="t('tournament.pairing.resetTableTooltip')">
+    <UTooltip
+      :key="`reset-${pairing.pairing_id}`"
+      :content="{ side: 'top' }"
+      :text="t('tournament.pairing.resetTableTooltip')"
+    >
       <UButton
         size="xs"
         variant="outline"

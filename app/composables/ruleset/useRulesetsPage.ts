@@ -1,5 +1,6 @@
 // app\composables\ruleset\useRulesetsPage.ts
-// fallow-ignore-file code-duplication -- intentional CRUD handler boilerplate (create/update share the try/mutate/toast shape), successor of the store-era pragma
+// fallow-ignore-file code-duplication -- intentional CRUD handler boilerplate
+// (create/update share the try/mutate/toast shape), successor of the store-era pragma
 // Orchestrates the rulesets page: Colada query state + modal UI state +
 // CRUD handlers with toasts. Successor of the store-based useRulesets
 // (ADR-015). The "which leagues use this ruleset" info derives from the

@@ -379,7 +379,9 @@ function aggregateTableScore(
     rotateTable3: -rotateTable3 * weights.rotateTable3,
     tableSizeWeight,
     total,
-    players: table.map(playerId => perPlayer.get(playerId)).filter((entry): entry is PairingPlayerScore => entry !== undefined),
+    players: table
+      .map(playerId => perPlayer.get(playerId))
+      .filter((entry): entry is PairingPlayerScore => entry !== undefined),
   }
 }
 
@@ -632,7 +634,9 @@ function improveBySwap(
             return best
           }
 
-          const attempt = trySwapCandidate(working, t1, t2, i, j, playersById, rematchMap, forbiddenSet, currentRound, weights)
+          const attempt = trySwapCandidate(
+            working, t1, t2, i, j, playersById, rematchMap, forbiddenSet, currentRound, weights
+          )
           if (attempt && attempt.scored.totalScore > best.totalScore) {
             best = attempt.scored
             working = cloneTables(attempt.candidate)

@@ -65,7 +65,7 @@ export function createI18nTestPlugin<T extends TestLocaleMessages>(messages: T =
  * Base mock for the Supabase client.
  * Each test can extend it with custom vi.fn().
  */
-// fallow-ignore-next-line unused-export -- scaffolding for the composables Supabase tests tracked in docs/PROGRESS.md ("Prossimi passi" #6); not called yet
+// fallow-ignore-next-line unused-export -- composables Supabase test scaffolding, PROGRESS.md #6; not called yet
 export function createSupabaseMock() {
   return {
     from: vi.fn().mockReturnThis(),

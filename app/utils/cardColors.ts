@@ -10,7 +10,8 @@ export const COLOR_MAP: Record<string, string> = {
   C: 'gray-300',
 }
 
-/** Canonical WUBRG order — mono-color sorting/grouping across the app (deck browse color sort, commander mana-cost sort) reads this, not a local copy. */
+/** Canonical WUBRG order — mono-color sorting/grouping across the app (deck
+ * browse color sort, commander mana-cost sort) reads this, not a local copy. */
 export const WUBRG_ORDER = ['W', 'U', 'B', 'R', 'G']
 
 /**

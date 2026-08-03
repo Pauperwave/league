@@ -114,7 +114,8 @@ const display = computed(() => formatDuration(remaining.value))
 /** Phase label shown to the right of the timer icon (one per phase, including the terminal "ended" state). */
 const phaseLabel = computed(() => t(`tournament.roundTimer.phases.${phase.value}`))
 
-/** Phase label color — matches the phase's urgency (yellow for get-ready/turns, green for active play, red for game over). */
+/** Phase label color — matches the phase's urgency (yellow for get-ready/turns,
+ * green for active play, red for game over). */
 const phaseLabelColorClass = computed(() => {
   if (phase.value === 'round') return 'text-success'
   if (phase.value === 'ended') return 'text-error'
@@ -424,7 +425,10 @@ onMounted(() => {
     ref="timerRef"
     class="flex items-center flex-wrap"
     :class="isFullscreen
-      ? ['relative flex-col justify-center h-screen w-screen gap-12 @container-size', phase === 'ended' ? 'bg-error/10' : isPaused ? 'bg-warning/10' : 'bg-default']
+      ? [
+          'relative flex-col justify-center h-screen w-screen gap-12 @container-size',
+          phase === 'ended' ? 'bg-error/10' : isPaused ? 'bg-warning/10' : 'bg-default'
+        ]
       : phase === 'ended'
         ? 'gap-3 border border-error bg-error/10 rounded-lg px-4 py-2'
         : isPaused

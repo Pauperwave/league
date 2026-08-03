@@ -83,7 +83,8 @@ const columns: TableColumn<CommanderRow>[] = [
   {
     accessorKey: 'cmc',
     header: sortableHeader(t('deck.sortOptions.manaCost'), UButton),
-    // Conventional MTG collection sort: color group first (W, U, B, R, G, multicolor, colorless), then mana value within each group.
+    // Conventional MTG collection sort: color group first (W, U, B, R, G,
+    // multicolor, colorless), then mana value within each group.
     sortingFn: (a, b) => {
       const colorDiff = colorGroupRank(a.original.colorIdentity) - colorGroupRank(b.original.colorIdentity)
       return colorDiff !== 0 ? colorDiff : (a.original.cmc ?? -1) - (b.original.cmc ?? -1)

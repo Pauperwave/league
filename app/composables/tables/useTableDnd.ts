@@ -141,7 +141,9 @@ export function useTableDnd(initialTables: PairingTable[], params?: {
     ...(params?.initialWeights ?? {}),
   })
 
-  const forbiddenPairs = ref<PairingForbiddenPair[]>(normalizePairingForbiddenPairs(params?.initialForbiddenPairs ?? []))
+  const forbiddenPairs = ref<PairingForbiddenPair[]>(
+    normalizePairingForbiddenPairs(params?.initialForbiddenPairs ?? [])
+  )
 
   const fallbackPlayersForScoring = computed<PairingPlayer[]>(() => {
     const ids = sourcePlayerIds.value

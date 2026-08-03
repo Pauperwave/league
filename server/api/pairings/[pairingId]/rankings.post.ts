@@ -1,5 +1,5 @@
 // server\api\pairings\[pairingId]\rankings.post.ts
-// fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
+// fallow-ignore-file code-duplication -- intent-based sibling endpoints, scaffolding already in server/utils (ADR-013)
 // BFF slice (ADR-013): save a table's confirmed rankings (positions) into
 // round_results. Rejects players not seated at the pairing.
 import * as v from 'valibot'

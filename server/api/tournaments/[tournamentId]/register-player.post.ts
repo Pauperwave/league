@@ -1,5 +1,5 @@
 // server\api\tournaments\[tournamentId]\register-player.post.ts
-// fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
+// fallow-ignore-file code-duplication -- intent-based sibling endpoints, scaffolding already in server/utils (ADR-013)
 // BFF slice 1 (ADR-013): intent-based endpoint for registering players into an
 // event's waiting list. Enforces the site-password gate server-side and owns
 // the domain rules (registration must be open, no duplicates), returning the
@@ -13,7 +13,8 @@ export default defineEventHandler(async (event) => {
 
   console.log('[api/register-player] request', { tournamentId, playerIds })
 
-  // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this endpoint is the authorization boundary now, not a DB policy.
+  // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this
+  // endpoint is the authorization boundary now, not a DB policy.
   const supabase = serverSupabaseServiceRole<Database>(event)
 
   // Domain guard: the event must exist and registration must be open.

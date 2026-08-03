@@ -36,6 +36,21 @@ export default withNuxt(
         ObjectPattern: { minProperties: 4, multiline: true, consistent: true }
       }],
 
+      // 120 chars — wide enough for TS generics/descriptive names without a
+      // hard 80/100 cap that would fight the codebase's existing style.
+      // ignoreUrls/Strings/TemplateLiterals: a long i18n key or Tailwind
+      // class string shouldn't force an awkward wrap just to hit a number.
+      // Long `class="..."` template attributes are NOT exempted — they wrap
+      // like any other line (ignoreStrings only reaches JS string literals,
+      // not Vue template attribute values anyway).
+      '@stylistic/max-len': ['error', {
+        code: 120,
+        ignoreUrls: true,
+        ignoreStrings: true,
+        ignoreTemplateLiterals: true,
+        ignoreRegExpLiterals: true
+      }],
+
       // Optional props are typed with `?` and default via destructuring
       // (Vue 3.5 reactive props destructure); this rule predates that
       // pattern and misfires even when a default is present.

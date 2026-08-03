@@ -1,5 +1,5 @@
 // server\api\decks\[deckId]\update.post.ts
-// fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
+// fallow-ignore-file code-duplication -- intent-based sibling endpoints, scaffolding already in server/utils (ADR-013)
 // BFF wave 4 (ADR-013): update a commander deck. The body is a partial —
 // only the provided fields are written.
 import * as v from 'valibot'
@@ -12,7 +12,8 @@ export default defineEventHandler(async (event) => {
 
   console.log('[api/decks/update] request', { deckId, fields: Object.keys(body) })
 
-  // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this endpoint is the authorization boundary now, not a DB policy.
+  // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this
+  // endpoint is the authorization boundary now, not a DB policy.
   const supabase = serverSupabaseServiceRole<Database>(event)
 
   const { data, error } = await supabase

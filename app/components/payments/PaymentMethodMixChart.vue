@@ -1,6 +1,7 @@
 <!-- app\components\payments\PaymentMethodMixChart.vue -->
 <script setup lang="ts">
-/** How registrants paid — POS/Contanti/Omaggio headcount, mirrors the commander page's win-rate donut (BaseChart + useChartTheme). */
+/** How registrants paid — POS/Contanti/Omaggio headcount, mirrors the commander
+ * page's win-rate donut (BaseChart + useChartTheme). */
 import type { PaymentRow } from './types'
 
 const { rows } = defineProps<{ rows: PaymentRow[] }>()
@@ -34,9 +35,21 @@ const option = computed<ECOption>(() => {
       label: { show: false },
       labelLine: { show: false },
       data: [
-        { value: pos, name: t(PAYMENT_METHOD_DISPLAY.pos.labelKey), itemStyle: { color: colors.value.palette[0] } },
-        { value: cash, name: t(PAYMENT_METHOD_DISPLAY.cash.labelKey), itemStyle: { color: colors.value.palette[1] } },
-        { value: free, name: t(PAYMENT_METHOD_DISPLAY.free.labelKey), itemStyle: { color: colors.value.textSecondary } },
+        {
+          value: pos,
+          name: t(PAYMENT_METHOD_DISPLAY.pos.labelKey),
+          itemStyle: { color: colors.value.palette[0] }
+        },
+        {
+          value: cash,
+          name: t(PAYMENT_METHOD_DISPLAY.cash.labelKey),
+          itemStyle: { color: colors.value.palette[1] }
+        },
+        {
+          value: free,
+          name: t(PAYMENT_METHOD_DISPLAY.free.labelKey),
+          itemStyle: { color: colors.value.textSecondary }
+        },
       ],
     }],
   }

@@ -1,5 +1,5 @@
 // server\api\decks\[deckId]\delete.post.ts
-// fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
+// fallow-ignore-file code-duplication -- intent-based sibling endpoints, scaffolding already in server/utils (ADR-013)
 // BFF wave 4 (ADR-013): delete a commander deck. The "deck was played in an
 // event" guard lives here now (it used to be a client-side check — and a
 // broken one: head:true never returns rows, so it always saw the deck as
@@ -13,7 +13,8 @@ export default defineEventHandler(async (event) => {
 
   console.log('[api/decks/delete] request', { deckId })
 
-  // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this endpoint is the authorization boundary now, not a DB policy.
+  // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this
+  // endpoint is the authorization boundary now, not a DB policy.
   const supabase = serverSupabaseServiceRole<Database>(event)
 
   const { data: deck, error: deckError } = await supabase

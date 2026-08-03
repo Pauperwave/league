@@ -308,7 +308,12 @@ const meta = computed(() => ({
   <div class="flex flex-col gap-2">
     <div class="flex flex-wrap items-center justify-between gap-2">
       <div class="flex flex-wrap items-center gap-2">
-        <UInput v-model="searchQuery" :icon="ICONS.search" :placeholder="t('tournament.waitingListTable.searchPlaceholder')" class="max-w-sm" />
+        <UInput
+          v-model="searchQuery"
+          :icon="ICONS.search"
+          :placeholder="t('tournament.waitingListTable.searchPlaceholder')"
+          class="max-w-sm"
+        />
         <slot name="search-actions" />
       </div>
       <div v-if="hasSelection" class="flex flex-wrap items-center gap-2">
@@ -319,7 +324,9 @@ const meta = computed(() => ({
           size="xs" :color="allSelectedPaid ? 'neutral' : 'success'" variant="subtle" :icon="ICONS.paid"
           @click="handleToggleMarkPaid"
         >
-          {{ allSelectedPaid ? t('tournament.waitingListTable.unmarkPaid') : t('tournament.waitingListTable.markPaid') }}
+          {{ allSelectedPaid
+            ? t('tournament.waitingListTable.unmarkPaid')
+            : t('tournament.waitingListTable.markPaid') }}
         </UButton>
         <UButton
           size="xs" color="error" variant="subtle" :icon="ICONS.delete"

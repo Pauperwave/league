@@ -17,7 +17,8 @@ export default defineEventHandler(async (event) => {
 
   console.log('[api/turn-back-round] request', { tournamentId, currentRound })
 
-  // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this endpoint is the authorization boundary now, not a DB policy.
+  // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this
+  // endpoint is the authorization boundary now, not a DB policy.
   const supabase = serverSupabaseServiceRole<Database>(event)
 
   // Domain guard: the round the client wants to roll back must be the round

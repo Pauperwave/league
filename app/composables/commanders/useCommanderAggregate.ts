@@ -58,7 +58,8 @@ export function getAllCommanderNames(pairs: CommanderAggregate[]): string[] {
   return [...names].sort((a, b) => a.localeCompare(b))
 }
 
-/** Single-commander aggregate stats, computed client-side from the already-cached `commander_stats` table (Colada, ADR-015 — see `useAllCommanderStats`). */
+/** Single-commander aggregate stats, computed client-side from the already-cached
+ * `commander_stats` table (Colada, ADR-015 — see `useAllCommanderStats`). */
 export function useSingleCommanderStats(name: MaybeRefOrGetter<string | null | undefined>) {
   const { data: allStats, pending, error } = useAllCommanderStats()
 

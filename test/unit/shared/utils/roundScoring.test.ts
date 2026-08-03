@@ -225,7 +225,12 @@ describe('calculatePlayerTableScore', () => {
 
 describe('isDrawTable', () => {
   it('is true when everyone is tied for 1st with zero kills', () => {
-    const results = [1, 2, 3, 4].map(playerId => makeResult({ pairing_id: 1, player_id: playerId, position: 1, number_of_kills: 0 }))
+    const results = [1, 2, 3, 4].map(playerId => makeResult({
+      pairing_id: 1,
+      player_id: playerId,
+      position: 1,
+      number_of_kills: 0
+    }))
     expect(isDrawTable(results)).toBe(true)
   })
 
@@ -266,8 +271,12 @@ describe('aggregatePointBreakdowns', () => {
     const breakdowns = aggregatePointBreakdowns(pairings, [0, 4, 3, 2, 1], ruleset)
 
     // Player 2's row votes brew+play for player 1, so player 1 earns those points, not player 2.
-    expect(breakdowns.get(1)).toMatchObject({ kills: 3, placementPoints: 4, killPoints: 6, brewPoints: 1, playPoints: 1 })
-    expect(breakdowns.get(2)).toMatchObject({ kills: 0, placementPoints: 3, killPoints: 0, brewPoints: 0, playPoints: 0 })
+    expect(breakdowns.get(1)).toMatchObject({
+      kills: 3, placementPoints: 4, killPoints: 6, brewPoints: 1, playPoints: 1
+    })
+    expect(breakdowns.get(2)).toMatchObject({
+      kills: 0, placementPoints: 3, killPoints: 0, brewPoints: 0, playPoints: 0
+    })
   })
 
   it('accumulates across multiple pairings for the same player', () => {
@@ -430,7 +439,12 @@ describe('calculateRoundScores', () => {
     // nobody was) — so, unlike the tie tests above, victories stay at 0.
     const ruleset = makeRuleset()
     const pairing = makePairing()
-    const results = [1, 2, 3, 4].map(playerId => makeResult({ pairing_id: 1, player_id: playerId, position: 1, number_of_kills: 0 }))
+    const results = [1, 2, 3, 4].map(playerId => makeResult({
+      pairing_id: 1,
+      player_id: playerId,
+      position: 1,
+      number_of_kills: 0
+    }))
     const standingsMap = makeStandingsMap([1, 2, 3, 4])
 
     calculateRoundScores([pairing], results, standingsMap, [0, 4, 3, 2, 1], ruleset)

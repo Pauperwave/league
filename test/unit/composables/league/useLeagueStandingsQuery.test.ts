@@ -66,7 +66,16 @@ describe('aggregateLeagueStandings', () => {
 
   it('merges in the recomputed point breakdown for each player (regression: kills/placementPoints used to be silently dropped)', () => {
     const rows = [makeRow({ player_id: 1, standing_player_score: 10 })]
-    const breakdowns = new Map([[1, makeBreakdown({ kills: 4, placementPoints: 7, killPoints: 4, brewPoints: 2, playPoints: 1 })]])
+    const breakdowns = new Map([[
+      1,
+      makeBreakdown({
+        kills: 4,
+        placementPoints: 7,
+        killPoints: 4,
+        brewPoints: 2,
+        playPoints: 1
+      }
+    )]])
 
     const [result] = aggregateLeagueStandings(rows, breakdowns)
 

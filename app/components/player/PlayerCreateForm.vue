@@ -49,7 +49,12 @@ const defaultForm = (): { firstName: string, lastName: string, isActive: boolean
 
 const form = shallowReactive(
   props.player
-    ? { firstName: props.player.player_name, lastName: props.player.player_surname, isActive: props.player.is_active, formatsPlayed: props.player.formats_played ?? [] }
+    ? {
+        firstName: props.player.player_name,
+        lastName: props.player.player_surname,
+        isActive: props.player.is_active,
+        formatsPlayed: props.player.formats_played ?? []
+      }
     : defaultForm()
 )
 
@@ -209,7 +214,9 @@ function handleSearchExisting(name: string) {
         </ul>
 
         <p class="text-xs text-muted">
-          {{ t(context === 'tournament' ? 'player.form.similarHelpTextTournament' : 'player.form.similarHelpTextPlayers') }}
+          {{ t(context === 'tournament'
+            ? 'player.form.similarHelpTextTournament'
+            : 'player.form.similarHelpTextPlayers') }}
         </p>
       </div>
     </UCard>

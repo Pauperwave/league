@@ -56,8 +56,20 @@ function setupRoundStatus(pairings: PairingWithResults[], players: PairingPlayer
 
 describe('useRoundStatus', () => {
   const pairings = [
-    makePairing({ pairing_id: 10, pairing_player1_id: 1, pairing_player2_id: 2, pairing_player3_id: null, pairing_player4_id: null }),
-    makePairing({ pairing_id: 20, pairing_player1_id: 3, pairing_player2_id: 4, pairing_player3_id: null, pairing_player4_id: null }),
+    makePairing({
+      pairing_id: 10,
+      pairing_player1_id: 1,
+      pairing_player2_id: 2,
+      pairing_player3_id: null,
+      pairing_player4_id: null
+    }),
+    makePairing({
+      pairing_id: 20,
+      pairing_player1_id: 3,
+      pairing_player2_id: 4,
+      pairing_player3_id: null,
+      pairing_player4_id: null
+    }),
   ]
   const players = [
     makePlayer(1, 'Alessandro', 'Berti'),
@@ -104,8 +116,21 @@ describe('useRoundStatus', () => {
   it('killItems.done reflects round_results.number_of_kills, not killsStore', () => {
     const withConfirmedKills = [
       makePairing({
-        pairing_id: 10, pairing_player3_id: null, pairing_player4_id: null,
-        round_results: [{ id: 1, pairing_id: 10, player_id: 1, position: 1, number_of_kills: 0, brew_vote: null, play_vote_1: null, play_vote_2: null, commander_1: null, commander_2: null }],
+        pairing_id: 10,
+        pairing_player3_id: null,
+        pairing_player4_id: null,
+        round_results: [{
+          id: 1,
+          pairing_id: 10,
+          player_id: 1,
+          position: 1,
+          number_of_kills: 0,
+          brew_vote: null,
+          play_vote_1: null,
+          play_vote_2: null,
+          commander_1: null,
+          commander_2: null
+        }],
       }),
       makePairing({ pairing_id: 20, pairing_player3_id: null, pairing_player4_id: null }),
     ]

@@ -72,7 +72,8 @@ defineExpose({ focus: () => rootEl.value?.focus() })
 <template>
   <div
     ref="rootEl"
-    class="cursor-pointer transition-all rounded-[calc(var(--ui-radius)*2)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary"
+    class="cursor-pointer transition-all rounded-lg
+      focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary"
     :class="commanderName
       ? (selected ? 'ring-4 ring-primary' : 'hover:ring-2 hover:ring-default')
       : 'hover:ring-2 hover:ring-warning'"

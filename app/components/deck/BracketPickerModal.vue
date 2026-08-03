@@ -48,7 +48,9 @@ function onConfirm() {
           :key="definition.level"
           type="button"
           class="w-full flex items-start gap-3 rounded-lg border-2 p-3 text-left transition-colors"
-          :class="selected === definition.level ? 'border-primary bg-primary/5' : 'border-default hover:border-muted bg-elevated'"
+          :class="selected === definition.level
+            ? 'border-primary bg-primary/5'
+            : 'border-default hover:border-muted bg-elevated'"
           @click="selected = definition.level"
         >
           <UBadge

@@ -1,5 +1,5 @@
 // server\api\pairings\[pairingId]\reset.post.ts
-// fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
+// fallow-ignore-file code-duplication -- intent-based sibling endpoints, scaffolding already in server/utils (ADR-013)
 // BFF slice (ADR-013): "Resetta tavolo" — clears every persisted value for a
 // pairing (kills, ranking/position, commander, votes), unlike `undraw` which
 // deliberately leaves commander/votes untouched (a "Patta" never sets them).

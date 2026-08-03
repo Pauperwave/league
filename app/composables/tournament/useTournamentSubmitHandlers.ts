@@ -36,7 +36,10 @@ export function useTournamentSubmitHandlers(deps: SubmitHandlerDeps) {
   function saveRanking(pairingId: number, rankingWithRanks: RankingEntry[]) {
     rankingsStore.setRankingWithRanks(pairingId, rankingWithRanks)
     toast.add({ title: t('tournament.rankingsSavedTitle'), color: 'success' })
-    tournamentStore.savePairingRankings(pairingId, rankingWithRanks.map(r => ({ playerId: r.playerId, position: r.rank })))
+    tournamentStore.savePairingRankings(
+      pairingId,
+      rankingWithRanks.map(r => ({ playerId: r.playerId, position: r.rank }))
+    )
       .then((result) => {
         if (!result.success) {
           toast.add({ title: t('deck.toast.errorTitle'), description: result.error, color: 'error' })
@@ -99,7 +102,9 @@ export function useTournamentSubmitHandlers(deps: SubmitHandlerDeps) {
   function handleVotesSubmit(deckVotePlayerId: number | null, playVotePlayerId: number | null) {
     if (selectedVotesPlayerId.value !== null && selectedVotesPairingId.value !== null) {
       votesStore.setVotes(selectedVotesPlayerId.value, deckVotePlayerId, playVotePlayerId)
-      tournamentStore.saveVote(selectedVotesPairingId.value, selectedVotesPlayerId.value, deckVotePlayerId, playVotePlayerId)
+      tournamentStore.saveVote(
+        selectedVotesPairingId.value, selectedVotesPlayerId.value, deckVotePlayerId, playVotePlayerId
+      )
         .then((result) => {
           toast.add({ title: result.success ? t('tournament.voteSavedTitle') : t('deck.toast.errorTitle'), description: result.success ? undefined : result.error, color: result.success ? 'success' : 'error' })
           // Same reason as saveRanking: "Punteggi Tavolo" reads round_results

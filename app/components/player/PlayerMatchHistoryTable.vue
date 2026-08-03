@@ -21,7 +21,8 @@ function formatMatchDate(pairingDatetime: string): string {
 const rows = computed(() =>
   matchHistory.map((match, index) => ({
     match,
-    isNewDateGroup: index === 0 || formatMatchDate(match.pairing_datetime) !== formatMatchDate(matchHistory[index - 1]!.pairing_datetime),
+    isNewDateGroup: index === 0
+      || formatMatchDate(match.pairing_datetime) !== formatMatchDate(matchHistory[index - 1]!.pairing_datetime),
   }))
 )
 </script>

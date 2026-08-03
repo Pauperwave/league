@@ -1,6 +1,7 @@
 <!-- app\components\ruleset\RulesetFormModal.vue -->
 <script setup lang="ts">
-// fallow-ignore-file code-duplication -- FormModal invocation boilerplate + props/emit shape coincidence, see app/components/ui/CLAUDE.md
+// fallow-ignore-file code-duplication -- FormModal invocation boilerplate +
+// props/emit shape coincidence, see app/components/ui/CLAUDE.md
 import type { Ruleset } from '#shared/utils/types'
 import * as v from 'valibot'
 

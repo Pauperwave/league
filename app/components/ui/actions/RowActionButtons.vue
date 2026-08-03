@@ -17,7 +17,8 @@ const {
   variant?: 'solid' | 'outline' | 'ghost' | 'link' | 'soft' | 'subtle'
   disabled?: boolean
   loading?: boolean
-  /** Row's display name (e.g. league/tournament/player name), so the action log shows which entity was affected instead of just "edit was clicked somewhere". */
+  /** Row's display name (e.g. league/tournament/player name), so the action log
+   * shows which entity was affected instead of just "edit was clicked somewhere". */
   entityLabel?: string
 }>()
 

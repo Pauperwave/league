@@ -130,7 +130,9 @@ interface ExistingCatalog {
 // `mtg_commanders` has unique constraints on BOTH scryfall_id and card_name —
 // a new printing of an already-catalogued card (same name, different id,
 // e.g. a reprint) must be skipped by name too, or the insert fails.
-async function fetchExistingCatalog(supabase: ReturnType<typeof serverSupabaseServiceRole<Database>>): Promise<ExistingCatalog> {
+async function fetchExistingCatalog(
+  supabase: ReturnType<typeof serverSupabaseServiceRole<Database>>
+): Promise<ExistingCatalog> {
   const scryfallIds = new Set<string>()
   const names = new Set<string>()
   const rowsNeedingReleasedAt: { scryfallId: string, cardName: string }[] = []
@@ -168,7 +170,8 @@ async function fetchExistingCatalog(supabase: ReturnType<typeof serverSupabaseSe
   return { scryfallIds, names, maxReleasedAt, rowsNeedingReleasedAt }
 }
 
-/** One-time (per row) fill of released_at for rows synced before the column existed — matched by scryfall_id against the full fetch already in hand, no extra Scryfall requests. */
+/** One-time (per row) fill of released_at for rows synced before the column
+ * existed — matched by scryfall_id against the full fetch already in hand, no extra Scryfall requests. */
 async function backfillReleasedDates(
   supabase: ReturnType<typeof serverSupabaseServiceRole<Database>>,
   rowsNeedingReleasedAt: ExistingCatalog['rowsNeedingReleasedAt'],
@@ -183,7 +186,11 @@ async function backfillReleasedDates(
   // representative. The row's own scryfall_id is left untouched either way.
   const releasedAtByName = new Map(allFetchedCards.map(card => [card.name, card.released_at]))
   const rowsToUpdate = rowsNeedingReleasedAt
-    .map(row => ({ scryfall_id: row.scryfallId, card_name: row.cardName, released_at: releasedAtByName.get(row.cardName) }))
+    .map(row => ({
+      scryfall_id: row.scryfallId,
+      card_name: row.cardName,
+      released_at: releasedAtByName.get(row.cardName)
+    }))
     .filter((row): row is { scryfall_id: string, card_name: string, released_at: string } => !!row.released_at)
 
   const chunkSize = 500

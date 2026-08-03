@@ -1,5 +1,5 @@
 // server\api\pairings\[pairingId]\votes.post.ts
-// fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
+// fallow-ignore-file code-duplication -- intent-based sibling endpoints, scaffolding already in server/utils (ADR-013)
 // BFF slice (ADR-013): save a player's brew/play votes into round_results.
 import * as v from 'valibot'
 

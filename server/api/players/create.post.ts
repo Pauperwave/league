@@ -1,5 +1,5 @@
 // server\api\players\create.post.ts
-// fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
+// fallow-ignore-file code-duplication -- intent-based sibling endpoints, scaffolding already in server/utils (ADR-013)
 // BFF wave 4 (ADR-013): create a player. Returns the raw row — the client
 // keeps applying sanitizePlayer on receipt, same as it does on reads.
 import { serverSupabaseServiceRole } from '#supabase/server'
@@ -10,7 +10,8 @@ export default defineEventHandler(async (event) => {
 
   console.log('[api/players/create] request', body)
 
-  // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this endpoint is the authorization boundary now, not a DB policy.
+  // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this
+  // endpoint is the authorization boundary now, not a DB policy.
   const supabase = serverSupabaseServiceRole<Database>(event)
 
   const { data, error } = await supabase

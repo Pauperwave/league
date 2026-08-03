@@ -7,7 +7,10 @@ interface LifecycleDeps {
   tournamentId: number
   nextRound: (playerOrder?: number[]) => Promise<boolean>
   turnBackRound: () => Promise<boolean>
-  startTournament: (playerOrder: number[], payments?: { playerId: number; paymentMethod: PaymentMethod }[]) => Promise<boolean>
+  startTournament: (
+    playerOrder: number[],
+    payments?: { playerId: number; paymentMethod: PaymentMethod }[]
+  ) => Promise<boolean>
   updateTournament: (payload: TournamentUpdatePayload) => Promise<boolean>
 
   // State refs
@@ -43,7 +46,8 @@ interface LifecycleDeps {
 export function useTournamentLifecycle(deps: LifecycleDeps) {
   const {
     tournamentId, nextRound, turnBackRound, startTournament, updateTournament,
-    showNextRoundModal, showEndTournamentConfirm, showStartPreviewModal, showCancelRoundConfirm, showTournamentEditModal,
+    showNextRoundModal, showEndTournamentConfirm, showStartPreviewModal,
+    showCancelRoundConfirm, showTournamentEditModal,
     isLastRound, currentRound, tournamentStatus,
     syncUrl, clearViewedRound,
     killsStore, rankingsStore, commandersStore, votesStore,

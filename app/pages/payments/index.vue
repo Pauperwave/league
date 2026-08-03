@@ -10,7 +10,8 @@ import type { PaymentRow } from '~/components/payments/types'
 /** Flat registration fee per paid seat (POS/Contanti) — 'free' seats cost nothing. */
 const REGISTRATION_FEE_EUR = 5
 const ALL_VALUE = '__all__'
-/** Query-param keys this page owns — stripped from the URL before re-adding current values, so unrelated params survive untouched. */
+/** Query-param keys this page owns — stripped from the URL before re-adding
+ * current values, so unrelated params survive untouched. */
 const OWNED_QUERY_KEYS = ['league', 'tournament', 'format', 'method', 'sort', 'dir', 'page', 'q']
 
 const { t, n } = useI18n()
@@ -22,7 +23,9 @@ const { data: tournamentsData, isLoading: tournamentsLoading } = useAllEventsQue
 const { data: registrationsData, isLoading: registrationsLoading } = useAllTournamentRegistrationsQuery()
 const { data: playersData, isLoading: playersLoading } = usePlayersQuery()
 
-const loading = computed(() => leaguesLoading.value || tournamentsLoading.value || registrationsLoading.value || playersLoading.value)
+const loading = computed(() =>
+  leaguesLoading.value || tournamentsLoading.value || registrationsLoading.value || playersLoading.value
+)
 
 const leaguesById = computed(() => new Map((leaguesData.value ?? []).map(league => [league.id, league.name])))
 const playersById = computed(() => new Map((playersData.value ?? []).map(player => [player.player_id, player])))
@@ -88,7 +91,8 @@ function initialPageIndex(): number {
   return Number.isInteger(page) && page > 1 ? page - 1 : 0
 }
 
-// — Filters — drive UTable's own columnFilters state (getFilteredRowModel, wired in by the component itself) instead of a hand-rolled computed.
+// — Filters — drive UTable's own columnFilters state (getFilteredRowModel,
+// wired in by the component itself) instead of a hand-rolled computed.
 const columnFilters = ref<ColumnFiltersState>(initialColumnFilters())
 
 function columnFilterValue(id: string): string {
@@ -96,7 +100,8 @@ function columnFilterValue(id: string): string {
   return found ? String(found.value) : ALL_VALUE
 }
 
-/** `value` is `undefined` when USelectMenu's built-in clear ("x") button fires — treated the same as picking "Tutti/e". */
+/** `value` is `undefined` when USelectMenu's built-in clear ("x") button
+ * fires — treated the same as picking "Tutti/e". */
 function setColumnFilter(id: string, value: string | undefined, castNumber = false) {
   const rest = columnFilters.value.filter(f => f.id !== id)
   const isCleared = !value || value === ALL_VALUE
@@ -274,7 +279,11 @@ const totals = computed<PaymentTotals>(() => {
  * cross-filtering UX: picking a league narrows which tournaments/formats
  * show up, and vice versa.
  */
-function facetedOptions(columnId: string, allLabelKey: string, labelFor: (value: unknown) => string): { label: string; value: string }[] {
+function facetedOptions(
+  columnId: string,
+  allLabelKey: string,
+  labelFor: (value: unknown) => string
+): { label: string; value: string }[] {
   const values = [...(paymentsTable.value?.tableApi.getColumn(columnId)?.getFacetedUniqueValues().keys() ?? [])]
   return [
     { label: t(allLabelKey), value: ALL_VALUE },
@@ -282,7 +291,9 @@ function facetedOptions(columnId: string, allLabelKey: string, labelFor: (value:
   ]
 }
 
-const idToLeagueName = computed(() => new Map(allRows.value.filter(r => r.leagueId !== null).map(r => [r.leagueId, r.leagueName])))
+const idToLeagueName = computed(() => new Map(
+  allRows.value.filter(r => r.leagueId !== null).map(r => [r.leagueId, r.leagueName])
+))
 const idToTournamentName = computed(() => new Map(allRows.value.map(r => [r.tournamentId, r.tournamentName])))
 
 const leagueOptions = computed(() => facetedOptions('leagueId', 'payments.overview.allLeagues', v => idToLeagueName.value.get(v as number) ?? ''))
@@ -387,7 +398,9 @@ const breadcrumbItems = useBreadcrumb(() => [
         <span v-if="totals.free" class="flex items-center gap-1">
           <UIcon :name="PAYMENT_METHOD_DISPLAY.free.icon" class="size-4" />{{ totals.free }}
         </span>
-        <span class="ml-auto font-bold text-primary">{{ t('payments.overview.totalAmount', { amount: n(totals.amount, 'currency') }) }}</span>
+        <span class="ml-auto font-bold text-primary">
+          {{ t('payments.overview.totalAmount', { amount: n(totals.amount, 'currency') }) }}
+        </span>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">

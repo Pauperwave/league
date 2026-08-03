@@ -1,6 +1,7 @@
 <!-- app\components\tournament\TournamentRanking.vue -->
 <script setup lang="ts">
-// fallow-ignore-file code-duplication -- coincidental generic <table> markup, unrelated to PlayerMatchHistoryTable's feature
+// fallow-ignore-file code-duplication -- coincidental generic <table> markup,
+// unrelated to PlayerMatchHistoryTable's feature
 import { compareStandings } from '#shared/utils/standingsSort'
 import type { StandingSortable } from '#shared/utils/standingsSort'
 import type { Player } from '#shared/utils/types'

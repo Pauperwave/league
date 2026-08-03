@@ -69,7 +69,10 @@ export async function resolveTournamentRuleset(supabase: SupabaseClient<Database
  * an increment.
  */
 export async function fetchRoundData(supabase: SupabaseClient<Database>, tournamentId: number, currentRound: number) {
-  const [{ data: pairingsData, error: pairingsError }, { data: currentStandings, error: currentStandingsError }] = await Promise.all([
+  const [
+    { data: pairingsData, error: pairingsError },
+    { data: currentStandings, error: currentStandingsError }
+  ] = await Promise.all([
     supabase.from('pairings').select('*').eq('tournament_id', tournamentId).lte('pairing_round', currentRound),
     supabase.from('standings').select('player_id').eq('tournament_id', tournamentId),
   ])
@@ -282,7 +285,11 @@ export function calculateRoundScores(
 }
 
 /** Batch-update standings scores, then update ranks */
-export async function updateStandingsAndRanks(supabase: SupabaseClient<Database>, tournamentId: number, standingsMap: Map<number, StandingAccumulator>) {
+export async function updateStandingsAndRanks(
+  supabase: SupabaseClient<Database>,
+  tournamentId: number,
+  standingsMap: Map<number, StandingAccumulator>
+) {
   // .select() makes the update return the affected rows: an update silently
   // filtered out by RLS (no UPDATE policy for the anon role) reports NO error
   // and 0 rows — without this check, scores vanish and standings stay 0.

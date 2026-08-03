@@ -1,5 +1,5 @@
 // server\api\tournaments\[tournamentId]\advance-round.post.ts
-// fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
+// fallow-ignore-file code-duplication -- intent-based sibling endpoints, scaffolding already in server/utils (ADR-013)
 // BFF slice (ADR-013): atomic round transition. Owns the whole sequence that
 // the client used to orchestrate — score the closing round, accumulate
 // standings, advance (or end) the tournament, insert the next round's pairings —
@@ -32,7 +32,8 @@ export default defineEventHandler(async (event) => {
 
   console.log('[api/advance-round] request', { tournamentId, currentRound, playerOrderLength: playerOrder?.length ?? 0 })
 
-  // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this endpoint is the authorization boundary now, not a DB policy.
+  // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this
+  // endpoint is the authorization boundary now, not a DB policy.
   const supabase = serverSupabaseServiceRole<Database>(event)
 
   // Domain guards: playing phase, and the round the client thinks it is

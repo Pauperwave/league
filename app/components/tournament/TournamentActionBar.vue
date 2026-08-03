@@ -94,7 +94,14 @@ function handleAdvanceOrEnd() {
       </UButton>
     </UTooltip>
 
-    <UTooltip :content="{ side: 'top' }" :text="isLastRound ? t('tournament.controlPanel.endEventTooltip') : (props.canAdvance ? t('tournament.controlPanel.advanceTooltip') : t('tournament.controlPanel.incompleteDataTooltip'))">
+    <UTooltip
+      :content="{ side: 'top' }"
+      :text="isLastRound
+        ? t('tournament.controlPanel.endEventTooltip')
+        : (props.canAdvance
+          ? t('tournament.controlPanel.advanceTooltip')
+          : t('tournament.controlPanel.incompleteDataTooltip'))"
+    >
       <UButton
         :trailing-icon="isLastRound ? ICONS.flag : ICONS.forward"
         :color="props.canAdvance ? 'success' : 'neutral'"

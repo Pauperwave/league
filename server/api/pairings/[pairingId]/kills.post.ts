@@ -1,5 +1,5 @@
 // server\api\pairings\[pairingId]\kills.post.ts
-// fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
+// fallow-ignore-file code-duplication -- intent-based sibling endpoints, scaffolding already in server/utils (ADR-013)
 // BFF slice (ADR-013): replace a table's kill events (round_kills) and keep
 // round_results.number_of_kills in sync as a derived per-player count.
 import * as v from 'valibot'

@@ -27,7 +27,12 @@ const emit = defineEmits<{
   <div class="flex gap-2">
     <!-- Rankings button — locked while the table is marked as a draw, since
          editing it would silently un-draw the table with no other signal. -->
-    <UTooltip :content="{ side: 'top' }" :text="isDraw ? t('tournament.pairing.drawnTooltip') : (hasRanking ? t('tournament.pairing.rankingSetTooltip') : t('tournament.pairing.rankingNotSetTooltip'))">
+    <UTooltip
+      :content="{ side: 'top' }"
+      :text="isDraw
+        ? t('tournament.pairing.drawnTooltip')
+        : (hasRanking ? t('tournament.pairing.rankingSetTooltip') : t('tournament.pairing.rankingNotSetTooltip'))"
+    >
       <UButton
         :color="hasRanking ? 'success' : 'neutral'"
         class="flex-1"
@@ -41,7 +46,12 @@ const emit = defineEmits<{
     </UTooltip>
 
     <!-- Kills entry button — same lock as above. -->
-    <UTooltip :content="{ side: 'top' }" :text="isDraw ? t('tournament.pairing.drawnTooltip') : (hasKills ? t('tournament.pairing.killsSetTooltip') : t('tournament.pairing.killsNotSetTooltip'))">
+    <UTooltip
+      :content="{ side: 'top' }"
+      :text="isDraw
+        ? t('tournament.pairing.drawnTooltip')
+        : (hasKills ? t('tournament.pairing.killsSetTooltip') : t('tournament.pairing.killsNotSetTooltip'))"
+    >
       <UButton
         :color="hasKills ? 'success' : 'neutral'"
         class="flex-1"
@@ -59,7 +69,12 @@ const emit = defineEmits<{
          once ranking/kills already hold real data (would silently discard
          it) unless the table is already a draw, in which case pressing it
          again toggles the draw back off. -->
-    <UTooltip :content="{ side: 'top' }" :text="isDraw ? t('tournament.pairing.drawUndoTooltip') : (canToggleDraw ? t('tournament.killModal.drawHint') : t('tournament.pairing.drawDisabledTooltip'))">
+    <UTooltip
+      :content="{ side: 'top' }"
+      :text="isDraw
+        ? t('tournament.pairing.drawUndoTooltip')
+        : (canToggleDraw ? t('tournament.killModal.drawHint') : t('tournament.pairing.drawDisabledTooltip'))"
+    >
       <UButton
         :color="isDraw ? 'success' : 'neutral'"
         class="flex-1"

@@ -44,8 +44,22 @@ describe('compareStandings', () => {
   })
 
   it('breaks a score+victories+kills+brew tie by play_received', () => {
-    const a = makeStanding({ player_id: 1, standing_player_score: 10, victories: 1, kills: 1, brew_received: 1, play_received: 1 })
-    const b = makeStanding({ player_id: 2, standing_player_score: 10, victories: 1, kills: 1, brew_received: 1, play_received: 3 })
+    const a = makeStanding({
+      player_id: 1,
+      standing_player_score: 10,
+      victories: 1,
+      kills: 1,
+      brew_received: 1,
+      play_received: 1
+    })
+    const b = makeStanding({
+      player_id: 2,
+      standing_player_score: 10,
+      victories: 1,
+      kills: 1,
+      brew_received: 1,
+      play_received: 3
+    })
 
     expect([a, b].sort(compareStandings).map(s => s.player_id)).toEqual([2, 1])
   })

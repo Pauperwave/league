@@ -33,7 +33,10 @@ function toggleDirection() {
 // those sort modes is selected (Colada caches by the name set, ADR-015).
 const uniqueCommanderNames = computed(() => [...new Set(allDecks.value.map((d: CommanderDeck) => d.commander_1_name))])
 const needsCommanderData = computed(() => selectedSort.value === 'color' || selectedSort.value === 'mana-cost')
-const { data: commanderCacheData, isLoading: commanderLoading } = useCommandersByNamesQuery(uniqueCommanderNames, needsCommanderData)
+const {
+  data: commanderCacheData,
+  isLoading: commanderLoading
+} = useCommandersByNamesQuery(uniqueCommanderNames, needsCommanderData)
 const commanderCache = computed(() => commanderCacheData.value ?? new Map<string, CommanderCard>())
 
 function getDeckKey(deck: CommanderDeck): string {

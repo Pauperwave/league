@@ -16,7 +16,8 @@ interface PlayerNodeData {
 }
 
 const props = defineProps<{
-  // Required by Vue Flow's node component contract, always passed even though this component keys off data.player.id instead.
+  // Required by Vue Flow's node component contract, always passed even though
+  // this component keys off data.player.id instead.
   id: string
   data: PlayerNodeData
   selected: boolean
@@ -47,7 +48,11 @@ const hasStats = computed(() => killCount.value > 0 || deathCount.value > 0 || h
     :offset="8"
   >
     <div class="flex items-center gap-1 rounded-lg border border-default bg-elevated px-2 py-1 shadow-sm">
-      <UTooltip v-if="killCount > 0" :content="{ side: 'top' }" :text="t('tournament.killFlow.killCountTooltip', { count: killCount })">
+      <UTooltip
+        v-if="killCount > 0"
+        :content="{ side: 'top' }"
+        :text="t('tournament.killFlow.killCountTooltip', { count: killCount })"
+      >
         <UBadge
           :icon="ICONS.kills"
           :label="String(killCount)"
@@ -67,7 +72,11 @@ const hasStats = computed(() => killCount.value > 0 || deathCount.value > 0 || h
            `solid`, not `soft` — Nuxt UI's neutral+soft combo maps to
            `text-default` (the app's near-black body text), which read as a
            near-invisible icon; `solid` maps to `text-inverted` instead. -->
-      <UTooltip v-if="deathCount > 0" :content="{ side: 'top' }" :text="t('tournament.killFlow.deathCountTooltip', { count: deathCount })">
+      <UTooltip
+        v-if="deathCount > 0"
+        :content="{ side: 'top' }"
+        :text="t('tournament.killFlow.deathCountTooltip', { count: deathCount })"
+      >
         <UBadge
           :icon="ICONS.deaths"
           :label="String(deathCount)"

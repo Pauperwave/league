@@ -88,7 +88,8 @@ const openScoreModalLogging = useButtonLogging(t('logging.pairing.openScoreModal
   tableIndex: () => currentTableIndex.value
 })
 
-/** Tracks the last pairing/player passed to the open-{scores,kill,commander,votes}-modal handlers, for logging context. */
+/** Tracks the last pairing/player passed to the open-{scores,kill,commander,votes}-
+ * modal handlers, for logging context. */
 const lastScoresModalPairingId = ref<number | null>(null)
 const lastKillModalPairingId = ref<number | null>(null)
 const lastCommanderModalPairingId = ref<number | null>(null)
@@ -445,7 +446,9 @@ async function fillTable(pairingId: number) {
         :title="t('tournament.pairing.resetConfirm.title')"
         :description="t('tournament.pairing.resetConfirm.description')"
         :question="t('tournament.pairing.resetConfirm.question')"
-        :subject="t('tournament.pairing.tableHeading', { n: pairings.findIndex(p => p.pairing_id === tableToReset) + 1 })"
+        :subject="t('tournament.pairing.tableHeading', {
+          n: pairings.findIndex(p => p.pairing_id === tableToReset) + 1
+        })"
         :confirm-label="t('tournament.pairing.resetConfirm.confirmLabel')"
         :confirm-icon="ICONS.reset"
         @confirm="handleConfirm"
@@ -457,7 +460,9 @@ async function fillTable(pairingId: number) {
         :title="t('tournament.pairing.fillConfirm.title')"
         :description="t('tournament.pairing.fillConfirm.description')"
         :question="t('tournament.pairing.fillConfirm.question')"
-        :subject="t('tournament.pairing.tableHeading', { n: pairings.findIndex(p => p.pairing_id === tableToFill) + 1 })"
+        :subject="t('tournament.pairing.tableHeading', {
+          n: pairings.findIndex(p => p.pairing_id === tableToFill) + 1
+        })"
         :warning="t('tournament.pairing.fillConfirm.warning')"
         :confirm-label="t('tournament.pairing.fillConfirm.confirmLabel')"
         :confirm-icon="ICONS.quickAction"
@@ -482,7 +487,9 @@ async function fillTable(pairingId: number) {
         :title="t('tournament.pairing.drawConfirm.title')"
         :description="t('tournament.pairing.drawConfirm.description')"
         :question="t('tournament.pairing.drawConfirm.question')"
-        :subject="t('tournament.pairing.tableHeading', { n: pairings.findIndex(p => p.pairing_id === tableToDraw) + 1 })"
+        :subject="t('tournament.pairing.tableHeading', {
+          n: pairings.findIndex(p => p.pairing_id === tableToDraw) + 1
+        })"
         :warning="t('tournament.pairing.drawConfirm.warning')"
         :confirm-label="t('tournament.pairing.drawConfirm.confirmLabel')"
         :confirm-icon="ICONS.draw"
@@ -495,7 +502,9 @@ async function fillTable(pairingId: number) {
         :title="t('tournament.pairing.undrawConfirm.title')"
         :description="t('tournament.pairing.undrawConfirm.description')"
         :question="t('tournament.pairing.undrawConfirm.question')"
-        :subject="t('tournament.pairing.tableHeading', { n: pairings.findIndex(p => p.pairing_id === tableToUndraw) + 1 })"
+        :subject="t('tournament.pairing.tableHeading', {
+          n: pairings.findIndex(p => p.pairing_id === tableToUndraw) + 1
+        })"
         :confirm-label="t('tournament.pairing.undrawConfirm.confirmLabel')"
         :confirm-icon="ICONS.undo"
         @confirm="handleConfirm"

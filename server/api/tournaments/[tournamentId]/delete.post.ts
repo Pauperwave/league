@@ -1,5 +1,5 @@
 // server\api\tournaments\[tournamentId]\delete.post.ts
-// fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
+// fallow-ignore-file code-duplication -- intent-based sibling endpoints, scaffolding already in server/utils (ADR-013)
 // BFF wave 4 (ADR-013): delete a tournament. The "tournament still has pairings/
 // standings/waitroom entries" guard lives here (409) — the underlying FKs
 // are ON DELETE RESTRICT (2026-07-19 migration), so this is a friendlier
@@ -12,7 +12,8 @@ export default defineEventHandler(async (event) => {
 
   console.log('[api/tournaments/delete] request', { tournamentId })
 
-  // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this endpoint is the authorization boundary now, not a DB policy.
+  // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this
+  // endpoint is the authorization boundary now, not a DB policy.
   const supabase = serverSupabaseServiceRole<Database>(event)
 
   // Domain guard: refuse to delete an event that still has pairings,

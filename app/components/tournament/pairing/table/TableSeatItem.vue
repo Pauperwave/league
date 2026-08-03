@@ -39,7 +39,8 @@ function handleCommanderClick() {
     >
       <button
         type="button"
-        class="drag-handle text-muted hover:text-default transition cursor-grab hover:cursor-grab active:cursor-grabbing"
+        class="drag-handle text-muted hover:text-default transition cursor-grab
+          hover:cursor-grab active:cursor-grabbing"
         :aria-label="t('tournament.pairing.dragPlayerAriaLabel')"
       >
         <UIcon :name="ICONS.dragHandle" class="size-4 cursor-grab hover:cursor-grab active:cursor-grabbing" />

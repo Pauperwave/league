@@ -1,5 +1,5 @@
 // server\api\pairings\[pairingId]\undraw.post.ts
-// fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
+// fallow-ignore-file code-duplication -- intent-based sibling endpoints, scaffolding already in server/utils (ADR-013)
 // BFF slice (ADR-013): undo a "Patta" declaration — restores number_of_kills
 // and position back to unset (null) for every seated player, matching the
 // state before the draw. "Patta" can only be declared on a table with no

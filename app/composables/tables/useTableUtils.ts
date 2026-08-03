@@ -80,7 +80,8 @@ export function createActionsColumn<T>(
     onEdit: (item: T) => void
     onDelete: (item: T) => void
   },
-  /** Row's display name for the action log (e.g. league/tournament name) — see RowActionButtons.vue's entityLabel prop. */
+  /** Row's display name for the action log (e.g. league/tournament name) — see
+   * RowActionButtons.vue's entityLabel prop. */
   getEntityLabel?: (item: T) => string
 ): TableColumn<T> {
   return {

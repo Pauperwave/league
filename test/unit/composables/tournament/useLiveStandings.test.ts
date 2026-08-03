@@ -121,7 +121,17 @@ describe('updateStanding', () => {
     const [standing] = cloneStandings([makeStanding(1)])
     const result = standing ? [standing] : []
 
-    updateStanding(result, 1, { totalScore: 10, position: 1, numberOfKills: 2, killScore: 4, brewVote: 1, brewScore: 3, totalPlayCount: 1, playScore: 4, scoreRank: 6 })
+    updateStanding(result, 1, {
+      totalScore: 10,
+      position: 1,
+      numberOfKills: 2,
+      killScore: 4,
+      brewVote: 1,
+      brewScore: 3,
+      totalPlayCount: 1,
+      playScore: 4,
+      scoreRank: 6
+    })
 
     expect(result[0]).toMatchObject({
       standing_player_score: 10,
@@ -137,14 +147,34 @@ describe('updateStanding', () => {
     const [standing] = cloneStandings([makeStanding(1)])
     const result = standing ? [standing] : []
 
-    updateStanding(result, 1, { totalScore: 5, position: 2, numberOfKills: 0, killScore: 0, brewVote: 0, brewScore: 0, totalPlayCount: 0, playScore: 0, scoreRank: 3 })
+    updateStanding(result, 1, {
+      totalScore: 5,
+      position: 2,
+      numberOfKills: 0,
+      killScore: 0,
+      brewVote: 0,
+      brewScore: 0,
+      totalPlayCount: 0,
+      playScore: 0,
+      scoreRank: 3
+    })
 
     expect(result[0]?.victories).toBe(0)
   })
 
   it('is a no-op when the player has no matching standing', () => {
     const result = cloneStandings([makeStanding(1)])
-    updateStanding(result, 999, { totalScore: 10, position: 1, numberOfKills: 0, killScore: 0, brewVote: 0, brewScore: 0, totalPlayCount: 0, playScore: 0, scoreRank: 4 })
+    updateStanding(result, 999, {
+      totalScore: 10,
+      position: 1,
+      numberOfKills: 0,
+      killScore: 0,
+      brewVote: 0,
+      brewScore: 0,
+      totalPlayCount: 0,
+      playScore: 0,
+      scoreRank: 4
+    })
     expect(result[0]?.standing_player_score).toBe(0)
   })
 
@@ -152,7 +182,17 @@ describe('updateStanding', () => {
     const [standing] = cloneStandings([makeStanding(1)])
     const result = standing ? [standing] : []
 
-    updateStanding(result, 1, { totalScore: 5, position: 2, numberOfKills: 1, killScore: 5, brewVote: 1, brewScore: 3, totalPlayCount: 1, playScore: 2, scoreRank: 2 })
+    updateStanding(result, 1, {
+      totalScore: 5,
+      position: 2,
+      numberOfKills: 1,
+      killScore: 5,
+      brewVote: 1,
+      brewScore: 3,
+      totalPlayCount: 1,
+      playScore: 2,
+      scoreRank: 2
+    })
 
     expect(result[0]?.killPoints).toBe(5)
     expect(result[0]?.brewPoints).toBe(3)

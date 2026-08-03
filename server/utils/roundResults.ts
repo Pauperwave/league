@@ -69,7 +69,8 @@ export async function upsertRoundResult(
 export async function requirePairingContext(event: H3Event) {
   const pairingId = requireIdParam(event, 'pairingId')
 
-  // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this endpoint is the authorization boundary now, not a DB policy.
+  // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this
+  // endpoint is the authorization boundary now, not a DB policy.
   const supabase = serverSupabaseServiceRole<Database>(event)
 
   const playerIds = await fetchPairingPlayerIds(supabase, pairingId)

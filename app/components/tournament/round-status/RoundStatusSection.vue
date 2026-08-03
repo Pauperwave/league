@@ -40,7 +40,11 @@ const percent = computed(() => totalCount === 0 ? 0 : Math.round((doneCount / to
         <UIcon :name="icon" class="size-4 text-primary" />
         <h4 class="text-sm font-bold flex-1 text-left">{{ title }}</h4>
         <span class="text-xs text-muted">{{ doneCount }}/{{ totalCount }}</span>
-        <UIcon :name="ICONS.chevronDown" class="size-3.5 text-muted transition-transform" :class="isOpen ? '' : '-rotate-90'" />
+        <UIcon
+          :name="ICONS.chevronDown"
+          class="size-3.5 text-muted transition-transform"
+          :class="isOpen ? '' : '-rotate-90'"
+        />
       </button>
 
       <UProgress :model-value="percent" size="sm" class="mb-1.5" />

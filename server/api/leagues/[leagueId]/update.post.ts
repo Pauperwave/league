@@ -1,5 +1,5 @@
 // server\api\leagues\[leagueId]\update.post.ts
-// fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
+// fallow-ignore-file code-duplication -- intent-based sibling endpoints, scaffolding already in server/utils (ADR-013)
 // BFF wave 4 (ADR-013): update a league's form fields. Null values clear the
 // corresponding columns (same semantics the client-side update always had).
 import { serverSupabaseServiceRole } from '#supabase/server'
@@ -18,7 +18,8 @@ export default defineEventHandler(async (event) => {
 
   console.log('[api/leagues/update] request', { leagueId, name, startsAt, endsAt, rulesetId, validTournaments, status })
 
-  // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this endpoint is the authorization boundary now, not a DB policy.
+  // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this
+  // endpoint is the authorization boundary now, not a DB policy.
   const supabase = serverSupabaseServiceRole<Database>(event)
 
   const { data, error } = await supabase

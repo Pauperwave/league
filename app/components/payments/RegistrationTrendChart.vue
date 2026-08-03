@@ -1,6 +1,7 @@
 <!-- app\components\payments\RegistrationTrendChart.vue -->
 <script setup lang="ts">
-/** Registration count per tournament, oldest → newest — a per-tappa attendance trend only makes sense chronologically within one league. */
+/** Registration count per tournament, oldest → newest — a per-tappa attendance
+ * trend only makes sense chronologically within one league. */
 import type { PaymentRow } from './types'
 
 const { rows } = defineProps<{ rows: PaymentRow[] }>()

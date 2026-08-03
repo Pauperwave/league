@@ -48,7 +48,9 @@ const open = computed({
   <UModal
     v-model:open="open"
     :title="t('tournament.scoreModal.title')"
-    :description="selectedTableIndex !== null ? t('tournament.scoreModal.tableDescription', { n: selectedTableIndex + 1 }) : ''"
+    :description="selectedTableIndex !== null
+      ? t('tournament.scoreModal.tableDescription', { n: selectedTableIndex + 1 })
+      : ''"
     :ui="{ content: 'sm:max-w-3xl' }"
   >
     <template #body>

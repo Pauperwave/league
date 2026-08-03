@@ -83,7 +83,9 @@ const { t } = useI18n()
         <div>
           <p class="text-xl font-bold leading-none">{{ ownedDeckCount }}</p>
           <p class="text-xs text-muted">{{ t('player.stats.decks') }}</p>
-          <p v-if="borrowedDeckCount > 0" class="text-xs text-warning">+{{ borrowedDeckCount }} {{ t('player.stats.borrowedSuffix') }}</p>
+          <p v-if="borrowedDeckCount > 0" class="text-xs text-warning">
+            +{{ borrowedDeckCount }} {{ t('player.stats.borrowedSuffix') }}
+          </p>
         </div>
       </div>
     </div>

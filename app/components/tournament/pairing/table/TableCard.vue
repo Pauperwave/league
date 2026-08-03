@@ -44,7 +44,9 @@ const seatsModel = computed({
       <div class="flex items-center justify-between gap-2">
         <div class="flex items-center gap-2">
           <UIcon :name="ICONS.tableView" class="size-4 text-primary" />
-          <span class="font-semibold text-base whitespace-nowrap">{{ t('tournament.pairing.tableHeading', { n: table.tableNumber }) }}</span>
+          <span class="font-semibold text-base whitespace-nowrap">
+            {{ t('tournament.pairing.tableHeading', { n: table.tableNumber }) }}
+          </span>
         </div>
         <div class="flex items-center gap-1.5">
           <UButton
@@ -56,7 +58,12 @@ const seatsModel = computed({
           >
             {{ t('tournament.pairing.scoreLabel', { score: tableScore.toFixed(2) }) }}
           </UButton>
-          <UBadge :color="tableStatus.color" variant="soft" size="sm" class="text-base font-semibold leading-none whitespace-nowrap">
+          <UBadge
+            :color="tableStatus.color"
+            variant="soft"
+            size="sm"
+            class="text-base font-semibold leading-none whitespace-nowrap"
+          >
             {{ tableStatus.label }}
           </UBadge>
         </div>

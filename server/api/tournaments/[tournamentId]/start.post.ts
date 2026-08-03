@@ -1,5 +1,5 @@
 // server\api\tournaments\[tournamentId]\start.post.ts
-// fallow-ignore-file code-duplication -- intent-based sibling endpoints stay independent (ADR-013); shared scaffolding already extracted to server/utils
+// fallow-ignore-file code-duplication -- intent-based sibling endpoints, scaffolding already in server/utils (ADR-013)
 // BFF slice (ADR-013): atomic tournament start. Owns the whole transition —
 // validate the waitroom, create zeroed standings, flip the tournament to playing,
 // clear the waitroom, insert round-1 pairings from the confirmed playerOrder.
@@ -22,7 +22,8 @@ export default defineEventHandler(async (event) => {
 
   console.log('[api/start] request', { tournamentId, playerOrderLength: playerOrder?.length ?? 0 })
 
-  // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this endpoint is the authorization boundary now, not a DB policy.
+  // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this
+  // endpoint is the authorization boundary now, not a DB policy.
   const supabase = serverSupabaseServiceRole<Database>(event)
 
   // Domain guards: the tournament must exist and not be running already.

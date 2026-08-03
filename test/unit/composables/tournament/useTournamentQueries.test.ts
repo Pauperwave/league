@@ -39,7 +39,13 @@ describe('mergeEventStandings', () => {
 
   it('merges the recomputed point breakdown onto the matching row', () => {
     const rows = [makeRow({ player_id: 1, standing_player_score: 10 })]
-    const breakdowns = new Map([[1, makeBreakdown({ kills: 3, placementPoints: 8, killPoints: 3, brewPoints: 2, playPoints: 1 })]])
+    const breakdowns = new Map([[1, makeBreakdown({
+      kills: 3,
+      placementPoints: 8,
+      killPoints: 3,
+      brewPoints: 2,
+      playPoints: 1
+    })]])
 
     const [result] = mergeEventStandings(rows, breakdowns)
 
@@ -61,7 +67,14 @@ describe('mergeEventStandings', () => {
   })
 
   it('sanitizes the nested player payload when present', () => {
-    const rows = [makeRow({ player_id: 1, players: { player_id: 1, player_name: 'Ada', player_surname: 'Lovelace' } })]
+    const rows = [makeRow({
+      player_id: 1,
+      players: {
+        player_id: 1,
+        player_name: 'Ada',
+        player_surname: 'Lovelace'
+      }
+    })]
 
     const [result] = mergeEventStandings(rows, new Map())
 

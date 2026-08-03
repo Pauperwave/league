@@ -1,6 +1,7 @@
 <!-- app\components\tournament\pairing\table\preview\TablePreviewToolbar.vue -->
 <script setup lang="ts">
-// fallow-ignore-file code-duplication -- toolbar button markup coincidentally matches WaitingListTable's unrelated bulk-action toolbar
+// fallow-ignore-file code-duplication -- toolbar button markup coincidentally
+// matches WaitingListTable's unrelated bulk-action toolbar
 const {
   totalScore,
   loading = false,
@@ -40,7 +41,8 @@ function handleRandom() {
 <template>
   <div class="flex flex-wrap items-center justify-between gap-2">
     <div class="text-sm text-muted">
-      {{ t('tournament.tablePreviewToolbar.totalScoreLabel') }} <span class="font-semibold text-default">{{ totalScore.toFixed(2) }}</span>
+      {{ t('tournament.tablePreviewToolbar.totalScoreLabel') }}
+      <span class="font-semibold text-default">{{ totalScore.toFixed(2) }}</span>
     </div>
 
     <div class="flex flex-wrap items-center gap-2">
@@ -50,12 +52,26 @@ function handleRandom() {
         </UButton>
       </UTooltip>
       <UTooltip :content="{ side: 'top' }" :text="t('tournament.tablePreviewToolbar.optimizeTooltip')">
-        <UButton size="sm" color="neutral" variant="outline" :icon="ICONS.optimize" :disabled="loading" @click="handleOptimize">
+        <UButton
+          size="sm"
+          color="neutral"
+          variant="outline"
+          :icon="ICONS.optimize"
+          :disabled="loading"
+          @click="handleOptimize"
+        >
           {{ t('tournament.tablePreviewToolbar.optimize') }}
         </UButton>
       </UTooltip>
       <UTooltip :content="{ side: 'top' }" :text="t('tournament.tablePreviewToolbar.randomTooltip')">
-        <UButton size="sm" color="neutral" variant="outline" :icon="ICONS.shuffle" :disabled="loading" @click="handleRandom">
+        <UButton
+          size="sm"
+          color="neutral"
+          variant="outline"
+          :icon="ICONS.shuffle"
+          :disabled="loading"
+          @click="handleRandom"
+        >
           {{ t('tournament.tablePreviewToolbar.random') }}
         </UButton>
       </UTooltip>

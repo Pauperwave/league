@@ -63,7 +63,10 @@ export function useWinnerChecklist(tournamentId: number, round: MaybeRefOrGetter
   const checked = ref<Record<number, boolean>>({})
 
   function load() {
-    checked.value = getCached<Record<number, boolean>>(winnerChecklistKey(tournamentId, toValue(round)), CHECKLIST_TTL_MS) ?? {}
+    checked.value = getCached<Record<number, boolean>>(
+      winnerChecklistKey(tournamentId, toValue(round)),
+      CHECKLIST_TTL_MS
+    ) ?? {}
   }
 
   onMounted(load)

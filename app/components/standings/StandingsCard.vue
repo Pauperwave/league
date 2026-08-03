@@ -75,13 +75,20 @@ function handleToggleFullscreen() {
           @click="handleCopyStandings"
         />
       </UTooltip>
-      <UTooltip :content="{ side: 'top' }" :text="isFullscreen ? t('tournament.standingsCard.exitFullscreenTooltip') : t('tournament.standingsCard.fullscreenTooltip')">
+      <UTooltip
+        :content="{ side: 'top' }"
+        :text="isFullscreen
+          ? t('tournament.standingsCard.exitFullscreenTooltip')
+          : t('tournament.standingsCard.fullscreenTooltip')"
+      >
         <UButton
           :icon="isFullscreen ? ICONS.collapse : ICONS.expand"
           color="neutral"
           variant="ghost"
           size="xs"
-          :aria-label="isFullscreen ? t('tournament.standingsCard.exitFullscreenTooltip') : t('tournament.standingsCard.fullscreenTooltip')"
+          :aria-label="isFullscreen
+            ? t('tournament.standingsCard.exitFullscreenTooltip')
+            : t('tournament.standingsCard.fullscreenTooltip')"
           @click="handleToggleFullscreen"
         />
       </UTooltip>
@@ -90,7 +97,11 @@ function handleToggleFullscreen() {
       <button type="button" class="flex items-center justify-center gap-1.5 mb-2 w-full cursor-pointer">
         <UIcon :name="ICONS.standings" class="text-primary" :class="isFullscreen ? 'size-8' : 'size-4'" />
         <h4 class="font-bold text-primary" :class="isFullscreen ? 'text-3xl' : 'text-base'">{{ displayTitle }}</h4>
-        <UIcon :name="ICONS.chevronDown" class="size-3.5 text-primary transition-transform" :class="isOpen ? '' : '-rotate-90'" />
+        <UIcon
+          :name="ICONS.chevronDown"
+          class="size-3.5 text-primary transition-transform"
+          :class="isOpen ? '' : '-rotate-90'"
+        />
       </button>
 
       <template #content>
@@ -125,7 +136,11 @@ function handleToggleFullscreen() {
                         class="font-medium"
                         :class="isFullscreen ? 'text-2xl' : 'text-sm'"
                       />
-                      <UTooltip v-if="submittedByPlayerId[standing.player_id]" :content="{ side: 'top' }" :text="t('tournament.standingsCard.submittedBadge')">
+                      <UTooltip
+                        v-if="submittedByPlayerId[standing.player_id]"
+                        :content="{ side: 'top' }"
+                        :text="t('tournament.standingsCard.submittedBadge')"
+                      >
                         <UIcon :name="ICONS.confirm" class="size-3.5 text-success shrink-0" />
                       </UTooltip>
                     </div>
@@ -134,7 +149,10 @@ function handleToggleFullscreen() {
                         <UIcon :name="ICONS.victories" class="size-4 text-warning" />
                         <span>{{ standing.victories ?? 0 }}</span>
                       </div>
-                      <div class="flex items-center gap-1 text-md text-muted" :title="t('tournament.tableScoresModal.placementColumn')">
+                      <div
+                        class="flex items-center gap-1 text-md text-muted"
+                        :title="t('tournament.tableScoresModal.placementColumn')"
+                      >
                         <UIcon :name="ICONS.standings" class="size-4 text-primary" />
                         <span>{{ standing.placementPoints ?? 0 }}</span>
                       </div>
@@ -142,11 +160,17 @@ function handleToggleFullscreen() {
                         <UIcon :name="ICONS.kills" class="size-4 text-error" />
                         <span>{{ standing.killPoints ?? 0 }}</span>
                       </div>
-                      <div class="flex items-center gap-1 text-md text-muted" :title="t('tournament.standingsCard.brewVotesTooltip')">
+                      <div
+                        class="flex items-center gap-1 text-md text-muted"
+                        :title="t('tournament.standingsCard.brewVotesTooltip')"
+                      >
                         <UIcon :name="ICONS.brewVotes" class="size-4 text-info" />
                         <span>{{ standing.brewPoints ?? 0 }}</span>
                       </div>
-                      <div class="flex items-center gap-1 text-md text-muted" :title="t('tournament.standingsCard.playVotesTooltip')">
+                      <div
+                        class="flex items-center gap-1 text-md text-muted"
+                        :title="t('tournament.standingsCard.playVotesTooltip')"
+                      >
                         <UIcon :name="ICONS.playVotes" class="size-4 text-success" />
                         <span>{{ standing.playPoints ?? 0 }}</span>
                       </div>

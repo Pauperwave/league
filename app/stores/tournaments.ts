@@ -35,7 +35,8 @@ export const useTournamentStore = defineStore('tournaments', () => {
   /** Check if the current tournament has finished all rounds */
   const isTournamentEnded = computed(() => {
     if (!currentTournament.value) return false
-    return (currentTournament.value.tournament_current_round ?? 0) > (currentTournament.value.tournament_round_number ?? 0)
+    return (currentTournament.value.tournament_current_round ?? 0)
+      > (currentTournament.value.tournament_round_number ?? 0)
   })
 
   // ── Actions: Tournament lifecycle ─────────────────────────────────────────────
@@ -48,7 +49,11 @@ export const useTournamentStore = defineStore('tournaments', () => {
    * transition (validate waitroom + order → zeroed standings → flip to playing
    * → clear waitroom → round-1 pairings from the confirmed order).
    */
-  async function startTournament(tournamentId: number, playerOrder?: number[], payments?: { playerId: number; paymentMethod: PaymentMethod }[]) {
+  async function startTournament(
+    tournamentId: number,
+    playerOrder?: number[],
+    payments?: { playerId: number; paymentMethod: PaymentMethod }[]
+  ) {
     // Re-entrancy guard (BACKLOG #13): a double-click/retry while a previous
     // lifecycle action is still in flight is rejected here, not just
     // discouraged in the UI — `loading` already tracks any in-flight action.
@@ -158,7 +163,10 @@ export const useTournamentStore = defineStore('tournaments', () => {
   // ── Actions: Round result submission ─────────────────────────────────────────
 
   /** Save player rankings (positions) for a pairing via the BFF endpoint (ADR-013) */
-  async function savePairingRankings(pairingId: number, rankings: { playerId: number; position: number }[]): Promise<{ success: boolean; error?: string }> {
+  async function savePairingRankings(
+    pairingId: number,
+    rankings: { playerId: number; position: number }[]
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       await $fetch(`/api/pairings/${pairingId}/rankings`, { method: 'POST', body: { rankings } })
       console.log('[useTournamentStore] rankings saved', { pairingId, players: rankings.length })
@@ -213,7 +221,12 @@ export const useTournamentStore = defineStore('tournaments', () => {
   }
 
   /** Save a player's commanders via the BFF endpoint (ADR-013) */
-  async function saveCommander(pairingId: number, playerId: number, commander1: string | null, commander2: string | null = null): Promise<{ success: boolean; error?: string }> {
+  async function saveCommander(
+    pairingId: number,
+    playerId: number,
+    commander1: string | null,
+    commander2: string | null = null
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       await $fetch(`/api/pairings/${pairingId}/commander`, { method: 'POST', body: { playerId, commander1, commander2 } })
       console.log('[useTournamentStore] commander saved', { pairingId, playerId })
@@ -226,7 +239,12 @@ export const useTournamentStore = defineStore('tournaments', () => {
   }
 
   /** Save a player's brew and play votes via the BFF endpoint (ADR-013) */
-  async function saveVote(pairingId: number, playerId: number, brewVote: number | null, playVote: number | null): Promise<{ success: boolean; error?: string }> {
+  async function saveVote(
+    pairingId: number,
+    playerId: number,
+    brewVote: number | null,
+    playVote: number | null
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       await $fetch(`/api/pairings/${pairingId}/votes`, { method: 'POST', body: { playerId, brewVote, playVote } })
       console.log('[useTournamentStore] votes saved', { pairingId, playerId })

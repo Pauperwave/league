@@ -150,7 +150,10 @@ export function useTournamentPage() {
     ])
   }
 
-  async function startTournament(playerOrder?: number[], payments?: { playerId: number; paymentMethod: PaymentMethod }[]) {
+  async function startTournament(
+    playerOrder?: number[],
+    payments?: { playerId: number; paymentMethod: PaymentMethod }[]
+  ) {
     if (!canStartTournament.value) return false
 
     const result = await tournamentStore.startTournament(tournamentId, playerOrder, payments)
@@ -231,7 +234,10 @@ export function useTournamentPage() {
   // input) and the displayed round (past-round viewing). When the keys match
   // they share one cache entry; setting viewedRound refetches by key change.
   const { data: pairingsData } = usePairingsQuery(tournamentId, () => currentRound.value)
-  const { data: displayedPairingsData, refetch: refreshDisplayedPairings } = usePairingsQuery(tournamentId, () => viewedRound.value ?? currentRound.value)
+  const { data: displayedPairingsData, refetch: refreshDisplayedPairings } = usePairingsQuery(
+    tournamentId,
+    () => viewedRound.value ?? currentRound.value
+  )
 
   function viewRound(round: number) {
     // While playing, clicking the current round again means "leave the past-round
