@@ -34,7 +34,12 @@ const {
           :name="ICONS.loading"
           class="animate-spin size-4 text-muted"
         />
-        <UBadge v-if="companionName" variant="soft" color="error" class="text-xs">
+        <UBadge
+          v-if="companionName"
+          variant="soft"
+          color="error"
+          class="text-xs"
+        >
           <UIcon :name="ICONS.favorite" class="size-3 mr-1" />
           {{ companionName }}
         </UBadge>

@@ -18,7 +18,9 @@ export interface StandingAccumulator {
 }
 
 /** Resolve tournament → league → ruleset and build position-value array */
-export async function resolveTournamentRuleset(supabase: SupabaseClient<Database>, tournamentId: number) {
+export async function resolveTournamentRuleset(
+  supabase: SupabaseClient<Database>, tournamentId: number
+) {
   const { data: tournamentData, error: tournamentError } = await supabase
     .from('tournaments')
     .select('league_id, tournament_round_number')
@@ -68,7 +70,9 @@ export async function resolveTournamentRuleset(supabase: SupabaseClient<Database
  * since `updateStandingsAndRanks` writes the result as an absolute value, not
  * an increment.
  */
-export async function fetchRoundData(supabase: SupabaseClient<Database>, tournamentId: number, currentRound: number) {
+export async function fetchRoundData(
+  supabase: SupabaseClient<Database>, tournamentId: number, currentRound: number
+) {
   const [
     { data: pairingsData, error: pairingsError },
     { data: currentStandings, error: currentStandingsError }
@@ -158,7 +162,9 @@ export function calculatePlayerTableScore(
   // 1,1,2,3 score identically to its skip-rank equivalent 1,1,3,4 (and
   // 1,1,1,2 to 1,1,1,4, 1,2,2,3 to 1,2,2,4).
   const effectivePosition = position !== 0
-    ? 1 + tableResults.filter(r => r.position !== null && r.position !== 0 && r.position < position).length
+    ? 1 + tableResults.filter(r =>
+      r.position !== null && r.position !== 0 && r.position < position
+    ).length
     : 0
 
   let rankSum = 0
@@ -357,7 +363,9 @@ export function buildRoundOneTables(playerOrder: number[]): number[][] {
 }
 
 /** Map table player-id groups to pairing insert rows. */
-export function buildPairingRows(tournamentId: number, round: number, tables: number[][]): PairingInsert[] {
+export function buildPairingRows(
+  tournamentId: number, round: number, tables: number[][]
+): PairingInsert[] {
   return tables
     .filter(table => table.length >= 3)
     .map(table => ({

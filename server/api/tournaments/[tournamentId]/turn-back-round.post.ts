@@ -80,7 +80,10 @@ export default defineEventHandler(async (event) => {
     }
 
     // Reopen the previous round: decrement + delete the current round's pairings.
-    const [{ data: updatedTournament, error: updateError }, { error: pairingsError }] = await Promise.all([
+    const [
+      { data: updatedTournament, error: updateError },
+      { error: pairingsError }
+    ] = await Promise.all([
       supabase
         .from('tournaments')
         .update({ tournament_current_round: currentRound - 1, tournament_playing: true })
@@ -173,7 +176,11 @@ export default defineEventHandler(async (event) => {
   ] = await Promise.all([
     supabase
       .from('tournaments')
-      .update({ tournament_current_round: 0, tournament_playing: false, tournament_registration_open: true })
+      .update({
+        tournament_current_round: 0,
+        tournament_playing: false,
+        tournament_registration_open: true
+      })
       .eq('tournament_id', tournamentId)
       .select()
       .single(),

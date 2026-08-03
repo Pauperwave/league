@@ -14,7 +14,9 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
-const editLogging = useButtonLogging(t('logging.tournament.edit'), { tournamentName: () => props.tournamentName })
+const editLogging = useButtonLogging(t('logging.tournament.edit'), {
+  tournamentName: () => props.tournamentName
+})
 
 function handleEdit() {
   editLogging.logClick()
@@ -42,7 +44,10 @@ const statusBadge = computed(() => {
           :aria-label="t('tournament.editAriaLabel')"
           @click="handleEdit"
         />
-        <UBadge :color="statusBadge.color" :icon="tournamentStatus === 'ended' ? ICONS.flag : undefined">
+        <UBadge
+          :color="statusBadge.color"
+          :icon="tournamentStatus === 'ended' ? ICONS.flag : undefined"
+        >
           {{ statusBadge.label }}
         </UBadge>
       </div>

@@ -22,7 +22,12 @@ const { t } = useI18n()
 </script>
 
 <template>
-  <UButton :to="to" variant="soft" color="primary" size="sm">
+  <UButton
+    :to="to"
+    variant="soft"
+    color="primary"
+    size="sm"
+  >
     <PlayerNameTag
       v-if="playerName && playerSurname"
       :name="playerName"

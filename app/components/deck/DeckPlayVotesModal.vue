@@ -55,7 +55,12 @@ defineExpose({ submit: handleConfirm })
     <div>
       <div class="flex items-center gap-2 mb-3">
         <label class="text-md font-medium">{{ t('deck.votes.preferredDeck') }}</label>
-        <UBadge v-if="ruleset?.rule_set_brew != null" color="info" variant="subtle" size="md">
+        <UBadge
+          v-if="ruleset?.rule_set_brew != null"
+          color="info"
+          variant="subtle"
+          size="md"
+        >
           {{ t('deck.votes.weightBadge', { weight: ruleset.rule_set_brew }) }}
         </UBadge>
       </div>
@@ -81,7 +86,12 @@ defineExpose({ submit: handleConfirm })
     <div>
       <div class="flex items-center gap-2 mb-3">
         <label class="text-md font-medium">{{ t('deck.votes.bestPlay') }}</label>
-        <UBadge v-if="ruleset?.rule_set_play != null" color="info" variant="subtle" size="md">
+        <UBadge
+          v-if="ruleset?.rule_set_play != null"
+          color="info"
+          variant="subtle"
+          size="md"
+        >
           {{ t('deck.votes.weightBadge', { weight: ruleset.rule_set_play }) }}
         </UBadge>
       </div>

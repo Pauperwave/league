@@ -8,6 +8,16 @@
 import type { Ruleset } from '#shared/utils/types'
 import type { RulesetFormPayload } from '~/composables/ruleset/useRulesetMutations'
 
+interface LeagueRef {
+  id: number
+  name: string
+}
+
+interface RulesetUpdatePayload {
+  id: number
+  data: RulesetFormPayload
+}
+
 export function useRulesetsPage() {
   const toast = useToast()
   const { t } = useI18n()
@@ -31,7 +41,7 @@ export function useRulesetsPage() {
   const rulesetToDelete = ref<Ruleset | null>(null)
 
   const leaguesMap = computed(() => {
-    const map = new Map<number, { id: number, name: string }[]>()
+    const map = new Map<number, LeagueRef[]>()
     for (const league of leaguesData.value ?? []) {
       if (league.ruleset_id !== null) {
         if (!map.has(league.ruleset_id)) map.set(league.ruleset_id, [])
@@ -45,7 +55,7 @@ export function useRulesetsPage() {
     return leaguesMap.value.has(rulesetId)
   }
 
-  function getLeaguesByRuleset(rulesetId: number): { id: number, name: string }[] {
+  function getLeaguesByRuleset(rulesetId: number): LeagueRef[] {
     return leaguesMap.value.get(rulesetId) ?? []
   }
 
@@ -75,7 +85,7 @@ export function useRulesetsPage() {
     showFormModal.value = true
   }
 
-  async function handleUpdateRuleset({ id, data: payload }: { id: number, data: RulesetFormPayload }) {
+  async function handleUpdateRuleset({ id, data: payload }: RulesetUpdatePayload) {
     try {
       await updateRuleset.mutateAsync({ id, data: payload })
     } catch (err) {

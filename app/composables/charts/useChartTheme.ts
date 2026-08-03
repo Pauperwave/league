@@ -27,23 +27,23 @@ export function useChartTheme() {
 
   const colors = computed<ChartThemeColors>(() => isDark.value
     ? {
-        text: '#e5e7eb',
-        textSecondary: '#9ca3af',
-        axisLine: '#374151',
-        splitLine: '#1f2937',
-        tooltipBackground: '#1f2937',
-        tooltipBorder: '#374151',
-        palette: DARK_PALETTE,
-      }
+      text: '#e5e7eb',
+      textSecondary: '#9ca3af',
+      axisLine: '#374151',
+      splitLine: '#1f2937',
+      tooltipBackground: '#1f2937',
+      tooltipBorder: '#374151',
+      palette: DARK_PALETTE,
+    }
     : {
-        text: '#374151',
-        textSecondary: '#6b7280',
-        axisLine: '#d1d5db',
-        splitLine: '#e5e7eb',
-        tooltipBackground: '#ffffff',
-        tooltipBorder: '#e5e7eb',
-        palette: LIGHT_PALETTE,
-      })
+      text: '#374151',
+      textSecondary: '#6b7280',
+      axisLine: '#d1d5db',
+      splitLine: '#e5e7eb',
+      tooltipBackground: '#ffffff',
+      tooltipBorder: '#e5e7eb',
+      palette: LIGHT_PALETTE,
+    })
 
   const tooltipTheme = computed(() => ({
     backgroundColor: colors.value.tooltipBackground,

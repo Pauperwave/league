@@ -101,8 +101,11 @@ export function useCommanderSearch(options: UseCommanderSearchOptions = {}) {
       // ADR-027: "già giocati" ignores relevance/popularity entirely — most
       // recently played day first, ties on the same day broken by play count.
       const byRecency = (a: CommanderCatalogRow, b: CommanderCatalogRow) => {
-        const dayDiff = (usage.get(b.name)?.lastPlayedDay ?? '').localeCompare(usage.get(a.name)?.lastPlayedDay ?? '')
-        return dayDiff !== 0 ? dayDiff : (usage.get(b.name)?.count ?? 0) - (usage.get(a.name)?.count ?? 0)
+        const dayDiff = (usage.get(b.name)?.lastPlayedDay ?? '')
+          .localeCompare(usage.get(a.name)?.lastPlayedDay ?? '')
+        return dayDiff !== 0
+          ? dayDiff
+          : (usage.get(b.name)?.count ?? 0) - (usage.get(a.name)?.count ?? 0)
       }
       const toItem = (row: CommanderCatalogRow): CommanderSuggestionItem => ({
         label: row.name,
@@ -117,7 +120,11 @@ export function useCommanderSearch(options: UseCommanderSearchOptions = {}) {
       // slice-by-edhrecRank first, so an obscure played commander could
       // never surface here regardless of usage).
       const used = result.filter(row => usage.has(row.name)).sort(byRecency).map(toItem)
-      const rest = result.filter(row => !usage.has(row.name)).sort(byRelevance).slice(0, 50).map(toItem)
+      const rest = result
+        .filter(row => !usage.has(row.name))
+        .sort(byRelevance)
+        .slice(0, 50)
+        .map(toItem)
 
       const groups: CommanderSuggestionItem[][] = []
       if (used.length > 0) {

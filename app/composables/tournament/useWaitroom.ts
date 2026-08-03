@@ -8,6 +8,11 @@
 /** Query-key prefix for per-tournament waitroom lists — invalidated by useWaitroomMutations. */
 export const WAITROOM_KEY = ['waitroom']
 
+interface RegisterPlayersResponse {
+  registered: { player_id: number, inserted_at: string | null }[]
+  alreadyRegistered: number[]
+}
+
 export function useWaitroom(tournamentId: number) {
   const supabase = useSupabaseClient()
 
@@ -47,7 +52,7 @@ export function useWaitroomMutations(tournamentId: number) {
   // Template-literal URLs are cast to string — see usePlayerMutations for why.
   const registerPlayers = useMutation({
     mutation: (playerIds: number[]) =>
-      $fetch<{ registered: { player_id: number, inserted_at: string | null }[], alreadyRegistered: number[] }>(
+      $fetch<RegisterPlayersResponse>(
         `/api/tournaments/${tournamentId}/register-player` as string,
         { method: 'POST', body: { playerIds } },
       ),

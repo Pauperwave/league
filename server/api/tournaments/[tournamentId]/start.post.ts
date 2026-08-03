@@ -53,7 +53,9 @@ export default defineEventHandler(async (event) => {
   }
 
   const waitroomIds = (waitingPlayers ?? []).map(player => player.player_id)
-  const insertedAtByPlayerId = new Map((waitingPlayers ?? []).map(player => [player.player_id, player.inserted_at]))
+  const insertedAtByPlayerId = new Map(
+    (waitingPlayers ?? []).map(player => [player.player_id, player.inserted_at])
+  )
   const count = waitroomIds.length
   if (count < 3 || count === 5) {
     throw createError({
@@ -112,7 +114,9 @@ export default defineEventHandler(async (event) => {
   // a player outside selectedOrder is silently dropped rather than rejecting
   // the whole start.
   const paymentByPlayerId = new Map(
-    (payments ?? []).filter(p => selectedOrder.includes(p.playerId)).map(p => [p.playerId, p.paymentMethod])
+    (payments ?? [])
+      .filter(p => selectedOrder.includes(p.playerId))
+      .map(p => [p.playerId, p.paymentMethod])
   )
   const { error: registrationsError } = await supabase.from('tournament_registrations').insert(
     selectedOrder.map(playerId => ({
@@ -141,7 +145,11 @@ export default defineEventHandler(async (event) => {
 
   const { data: updatedTournament, error: updateError } = await supabase
     .from('tournaments')
-    .update({ tournament_playing: true, tournament_current_round: 1, tournament_registration_open: false })
+    .update({
+      tournament_playing: true,
+      tournament_current_round: 1,
+      tournament_registration_open: false
+    })
     .eq('tournament_id', tournamentId)
     .select()
     .single()

@@ -14,9 +14,13 @@ const redirectPath = computed(() => {
   return redirect || '/'
 })
 
-const submitLogging = useButtonLogging(t('logging.auth.loginSubmit'), { redirectPath: () => redirectPath.value })
+const submitLogging = useButtonLogging(t('logging.auth.loginSubmit'), {
+  redirectPath: () => redirectPath.value
+})
 const clearPasswordLogging = useButtonLogging(t('logging.auth.clearPassword'))
-const togglePasswordLogging = useButtonLogging(t('logging.auth.togglePassword'), { showPassword: () => !showPassword.value })
+const togglePasswordLogging = useButtonLogging(t('logging.auth.togglePassword'), {
+  showPassword: () => !showPassword.value
+})
 
 async function handleSubmit() {
   submitLogging.logClick()
@@ -79,7 +83,9 @@ function handleTogglePassword() {
                   variant="link"
                   size="xs"
                   :icon="showPassword ? ICONS.hide : ICONS.show"
-                  :aria-label="showPassword ? t('login.hidePasswordAriaLabel') : t('login.showPasswordAriaLabel')"
+                  :aria-label="showPassword
+                    ? t('login.hidePasswordAriaLabel')
+                    : t('login.showPasswordAriaLabel')"
                   @click="handleTogglePassword"
                 />
               </span>

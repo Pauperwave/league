@@ -20,7 +20,10 @@ const emit = defineEmits<{
 
 const open = defineModel<boolean>('open', { default: false })
 
-const submitLogging = useButtonLogging(t('logging.ruleset.submitForm'), { isEditing: () => isEditing.value, name: () => form.name })
+const submitLogging = useButtonLogging(t('logging.ruleset.submitForm'), {
+  isEditing: () => isEditing.value,
+  name: () => form.name
+})
 
 const RulesetCreateSchema = v.object({
   name: v.pipe(v.string(), v.trim(), v.minLength(1)),
@@ -78,8 +81,10 @@ const form = reactive(defaultForm())
 const isValid = computed(() => {
   if (!form.name.trim()) return false
   if (!isEditing.value) {
-    return [form.partecipation, form.kill, form.brew, form.play, form.rank1, form.rank2, form.rank3, form.rank4]
-      .every(v => v !== undefined && v !== null)
+    return [
+      form.partecipation, form.kill, form.brew, form.play,
+      form.rank1, form.rank2, form.rank3, form.rank4
+    ].every(v => v !== undefined && v !== null)
   }
   return true
 })
@@ -168,32 +173,32 @@ function handleSubmit() {
   >
     <form id="ruleset-form" class="space-y-4" @submit.prevent="handleSubmit">
 
-        <!-- Name -->
-        <UFormField :label="t('ruleset.form.nameLabel')" required>
-          <UInput
-            id="field-name"
-            v-model="form.name"
-            :placeholder="t('ruleset.form.namePlaceholder')"
-            class="w-full"
-          />
-        </UFormField>
-
-        <RulesetFieldGrid
-          :heading-icon="ICONS.battle"
-          :heading-text="t('ruleset.form.gameActionsHeading')"
-          :items="gameActionFields"
-          :form="form"
-          @update-field="handleFieldUpdate"
+      <!-- Name -->
+      <UFormField :label="t('ruleset.form.nameLabel')" required>
+        <UInput
+          id="field-name"
+          v-model="form.name"
+          :placeholder="t('ruleset.form.namePlaceholder')"
+          class="w-full"
         />
+      </UFormField>
 
-        <RulesetFieldGrid
-          :heading-icon="ICONS.standings"
-          :heading-text="t('ruleset.form.positionsHeading')"
-          :items="rankFields"
-          :form="form"
-          @update-field="handleFieldUpdate"
-        />
+      <RulesetFieldGrid
+        :heading-icon="ICONS.battle"
+        :heading-text="t('ruleset.form.gameActionsHeading')"
+        :items="gameActionFields"
+        :form="form"
+        @update-field="handleFieldUpdate"
+      />
 
-      </form>
+      <RulesetFieldGrid
+        :heading-icon="ICONS.standings"
+        :heading-text="t('ruleset.form.positionsHeading')"
+        :items="rankFields"
+        :form="form"
+        @update-field="handleFieldUpdate"
+      />
+
+    </form>
   </FormModal>
 </template>

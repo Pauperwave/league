@@ -113,7 +113,8 @@ defineExpose({ submit, canSubmit })
         />
       </div>
 
-      <!-- Commander 2 (partner/background/doctor's companion/friends forever) — slides/fades in at 50% -->
+      <!-- Commander 2 (partner/background/doctor's companion/friends forever) —
+      slides/fades in at 50% -->
       <AnimatePresence>
         <Motion
           v-if="canHaveCommander2"

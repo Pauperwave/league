@@ -139,7 +139,10 @@ const tableData = computed(() => {
       @update="handleUpdate"
       @edit="emit('edit', $event)"
       @remove="(playerId: number) => { forgetFlags([playerId]); emit('remove', playerId) }"
-      @batch-remove="(playerIds: number[]) => { forgetFlags(playerIds); emit('batchRemove', playerIds) }"
+      @batch-remove="(playerIds: number[]) => {
+        forgetFlags(playerIds)
+        emit('batchRemove', playerIds)
+      }"
       @batch-mark-paid="emit('batchMarkPaid', $event)"
     >
       <template #search-actions>

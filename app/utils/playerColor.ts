@@ -9,5 +9,7 @@ export type PlayerColor = SemanticColor
 const PLAYER_COLORS: PlayerColor[] = ['primary', 'secondary', 'success', 'info', 'warning', 'error']
 
 export function getPlayerColorMap(players: { id: number }[]): Map<string, PlayerColor> {
-  return new Map(players.map((player, index) => [String(player.id), PLAYER_COLORS[index % PLAYER_COLORS.length]!]))
+  return new Map(players.map((player, index) =>
+    [String(player.id), PLAYER_COLORS[index % PLAYER_COLORS.length]!]
+  ))
 }

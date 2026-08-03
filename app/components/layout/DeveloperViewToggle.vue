@@ -45,7 +45,11 @@ function confirmPassword() {
 
 <template>
   <ClientOnly>
-    <UTooltip v-if="isDeveloperView" :content="{ side: 'bottom' }" :text="t('common.disableDeveloperView')">
+    <UTooltip
+      v-if="isDeveloperView"
+      :content="{ side: 'bottom' }"
+      :text="t('common.disableDeveloperView')"
+    >
       <UButton
         :icon="ICONS.terminal"
         color="warning"
@@ -75,7 +79,9 @@ function confirmPassword() {
             @keyup.enter="confirmPassword"
           />
           <p v-if="passwordError" class="text-error text-xs">{{ t('common.developerViewPasswordError') }}</p>
-          <UButton block @click="confirmPassword">{{ t('common.developerViewPasswordConfirm') }}</UButton>
+          <UButton block @click="confirmPassword">
+            {{ t('common.developerViewPasswordConfirm') }}
+          </UButton>
         </div>
       </template>
     </UPopover>

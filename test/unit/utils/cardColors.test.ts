@@ -22,27 +22,52 @@ describe('extractColorsFromManaCost', () => {
 
 describe('resolveCardColors', () => {
   it('resolves colors from the front mana cost', () => {
-    const colors = resolveCardColors({ manaCost: '{1}{R}{G}', isDoubleFaced: false, backManaCost: null, colorIdentity: [] })
+    const colors = resolveCardColors({
+      manaCost: '{1}{R}{G}',
+      isDoubleFaced: false,
+      backManaCost: null,
+      colorIdentity: []
+    })
     expect(colors.sort()).toEqual(['G', 'R'])
   })
 
   it('adds back-face colors for double-faced cards', () => {
-    const colors = resolveCardColors({ manaCost: '{W}', isDoubleFaced: true, backManaCost: '{B}', colorIdentity: [] })
+    const colors = resolveCardColors({
+      manaCost: '{W}',
+      isDoubleFaced: true,
+      backManaCost: '{B}',
+      colorIdentity: []
+    })
     expect(colors.sort()).toEqual(['B', 'W'])
   })
 
   it('ignores back-face mana cost when not double-faced', () => {
-    const colors = resolveCardColors({ manaCost: '{W}', isDoubleFaced: false, backManaCost: '{B}', colorIdentity: [] })
+    const colors = resolveCardColors({
+      manaCost: '{W}',
+      isDoubleFaced: false,
+      backManaCost: '{B}',
+      colorIdentity: []
+    })
     expect(colors).toEqual(['W'])
   })
 
   it('falls back to color identity when mana costs yield nothing', () => {
-    const colors = resolveCardColors({ manaCost: null, isDoubleFaced: false, backManaCost: null, colorIdentity: ['U', 'B'] })
+    const colors = resolveCardColors({
+      manaCost: null,
+      isDoubleFaced: false,
+      backManaCost: null,
+      colorIdentity: ['U', 'B']
+    })
     expect(colors.sort()).toEqual(['B', 'U'])
   })
 
   it('falls back to colorless when there is no mana cost or color identity', () => {
-    const colors = resolveCardColors({ manaCost: null, isDoubleFaced: false, backManaCost: null, colorIdentity: [] })
+    const colors = resolveCardColors({
+      manaCost: null,
+      isDoubleFaced: false,
+      backManaCost: null,
+      colorIdentity: []
+    })
     expect(colors).toEqual(['C'])
   })
 })

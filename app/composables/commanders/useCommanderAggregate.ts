@@ -25,7 +25,10 @@ export interface SingleCommanderAggregate {
  * `commander_stats` view — left as a known limitation (see BACKLOG #10)
  * rather than adding that query for a first version.
  */
-export function aggregateSingleCommander(pairs: CommanderAggregate[], name: string): SingleCommanderAggregate | null {
+export function aggregateSingleCommander(
+  pairs: CommanderAggregate[],
+  name: string
+): SingleCommanderAggregate | null {
   const matching = pairs.filter(p => p.commander_1 === name || p.commander_2 === name)
   if (matching.length === 0) return null
 

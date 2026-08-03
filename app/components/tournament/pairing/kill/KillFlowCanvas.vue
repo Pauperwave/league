@@ -126,7 +126,10 @@ const nodes = computed<Node[]>(() =>
 function mapKillsToEdges(): Edge[] {
   const validPlayerIds = new Set(props.players.map((p) => String(p.id)))
   const edges = killsStore.kills
-    .filter((kill) => validPlayerIds.has(String(kill.killerId)) && validPlayerIds.has(String(kill.victimId)))
+    .filter((kill) => {
+      return validPlayerIds.has(String(kill.killerId))
+          && validPlayerIds.has(String(kill.victimId))
+    })
     .map((kill) => {
       const isSuicide = kill.killerId === kill.victimId
       const color = `var(--ui-color-${playerColors.value.get(String(kill.killerId))}-500)`
@@ -253,7 +256,12 @@ function logToObject() {
            render raw <svg> icons with no title tooltip and can't be
            restyled to match (see the style block below), so every control
            here is a custom ControlButton instead of the defaults. -->
-      <Controls position="top-left" :show-zoom="false" :show-fit-view="false" :show-interactive="false">
+      <Controls
+        position="top-left"
+        :show-zoom="false"
+        :show-fit-view="false"
+        :show-interactive="false"
+      >
         <ControlButton :title="t('tournament.killFlow.zoomIn')" @click="zoomIn()">
           <UIcon :name="ICONS.add" class="size-5" />
         </ControlButton>

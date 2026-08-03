@@ -25,7 +25,13 @@ const emit = defineEmits<{
   search: [query: string]
 }>()
 
-const submitLogging = useButtonLogging(t('logging.player.submitForm'), { isEditing: () => isEditing.value, data: () => ({ firstName: form.firstName, lastName: form.lastName }) })
+const submitLogging = useButtonLogging(t('logging.player.submitForm'), {
+  isEditing: () => isEditing.value,
+  data: () => ({
+    firstName: form.firstName,
+    lastName: form.lastName
+  })
+})
 const selectExistingLogging = useButtonLogging(t('logging.player.selectExisting'))
 
 const PlayerFormSchema = v.object({
@@ -40,7 +46,14 @@ const isEditing = computed(() => !!props.player)
 // — Form —
 const formatItems = Constants.public.Enums.mtg_formats
 
-const defaultForm = (): { firstName: string, lastName: string, isActive: boolean, formatsPlayed: MtgFormat[] } => ({
+interface PlayerFormState {
+  firstName: string
+  lastName: string
+  isActive: boolean
+  formatsPlayed: MtgFormat[]
+}
+
+const defaultForm = (): PlayerFormState => ({
   firstName: '',
   lastName: '',
   isActive: true,
@@ -50,11 +63,11 @@ const defaultForm = (): { firstName: string, lastName: string, isActive: boolean
 const form = shallowReactive(
   props.player
     ? {
-        firstName: props.player.player_name,
-        lastName: props.player.player_surname,
-        isActive: props.player.is_active,
-        formatsPlayed: props.player.formats_played ?? []
-      }
+      firstName: props.player.player_name,
+      lastName: props.player.player_surname,
+      isActive: props.player.is_active,
+      formatsPlayed: props.player.formats_played ?? []
+    }
     : defaultForm()
 )
 
@@ -206,7 +219,9 @@ function handleSearchExisting(name: string) {
               color="primary"
               variant="soft"
               :icon="ICONS.search"
-              @click="handleSearchExisting(`${similarPlayer.player_name} ${similarPlayer.player_surname}`)"
+              @click="handleSearchExisting(
+                `${similarPlayer.player_name} ${similarPlayer.player_surname}`
+              )"
             >
               {{ t('player.form.search') }}
             </UButton>

@@ -24,7 +24,10 @@ export default defineEventHandler(async (event) => {
   console.log('[api/pairings/votes] request', { pairingId, playerId, brewVote, playVote })
 
   try {
-    await upsertRoundResult(supabase, pairingId, playerId, { brew_vote: brewVote, play_vote_1: playVote })
+    await upsertRoundResult(supabase, pairingId, playerId, {
+      brew_vote: brewVote,
+      play_vote_1: playVote
+    })
   } catch (err) {
     console.error('[api/pairings/votes] upsert failed', { pairingId, playerId, err })
     throw createError({

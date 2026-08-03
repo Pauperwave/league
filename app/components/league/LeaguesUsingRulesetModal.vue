@@ -23,7 +23,10 @@ const open = defineModel<boolean>('open', { default: false })
 const leagues = computed(() => props.getLeaguesByRuleset(props.rulesetId))
 
 const currentLeagueId = ref<number | null>(null)
-const navigateLogging = useButtonLogging(t('logging.navigation.toLeague'), { leagueId: () => currentLeagueId.value, rulesetId: () => props.rulesetId })
+const navigateLogging = useButtonLogging(t('logging.navigation.toLeague'), {
+  leagueId: () => currentLeagueId.value,
+  rulesetId: () => props.rulesetId
+})
 
 function handleNavigate(leagueId: number) {
   currentLeagueId.value = leagueId
@@ -40,7 +43,9 @@ function handleClose() {
 <template>
   <UModal
     v-model:open="open"
-    :description="t('league.usingRulesetModal.foundCount', leagues.length, { named: { count: leagues.length } })"
+    :description="t(
+      'league.usingRulesetModal.foundCount', leagues.length, { named: { count: leagues.length } }
+    )"
     :ui="{ footer: 'justify-end' }"
   >
     <template #title>

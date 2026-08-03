@@ -24,7 +24,10 @@ export default defineEventHandler(async (event) => {
   console.log('[api/pairings/commander] request', { pairingId, playerId, commander1, commander2 })
 
   try {
-    await upsertRoundResult(supabase, pairingId, playerId, { commander_1: commander1, commander_2: commander2 })
+    await upsertRoundResult(supabase, pairingId, playerId, {
+      commander_1: commander1,
+      commander_2: commander2
+    })
   } catch (err) {
     console.error('[api/pairings/commander] upsert failed', { pairingId, playerId, err })
     throw createError({

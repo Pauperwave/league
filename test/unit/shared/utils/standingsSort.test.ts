@@ -3,7 +3,9 @@ import { describe, expect, it } from 'vitest'
 import { compareStandings } from '#shared/utils/standingsSort'
 import type { StandingSortable } from '#shared/utils/standingsSort'
 
-function makeStanding(overrides: Partial<StandingSortable> & { player_id: number }): StandingSortable {
+function makeStanding(
+  overrides: Partial<StandingSortable> & { player_id: number }
+): StandingSortable {
   return {
     standing_player_score: null,
     victories: null,
@@ -37,8 +39,12 @@ describe('compareStandings', () => {
   })
 
   it('breaks a score+victories+kills tie by brew_received (regression: this is the tie-break the ended-tournament view was skipping)', () => {
-    const a = makeStanding({ player_id: 1, standing_player_score: 25, victories: 1, kills: 2, brew_received: 2 })
-    const b = makeStanding({ player_id: 2, standing_player_score: 25, victories: 1, kills: 2, brew_received: 5 })
+    const a = makeStanding({
+      player_id: 1, standing_player_score: 25, victories: 1, kills: 2, brew_received: 2
+    })
+    const b = makeStanding({
+      player_id: 2, standing_player_score: 25, victories: 1, kills: 2, brew_received: 5
+    })
 
     expect([a, b].sort(compareStandings).map(s => s.player_id)).toEqual([2, 1])
   })

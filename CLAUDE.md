@@ -54,6 +54,7 @@ Read the relevant one before working in that directory — each covers what isn'
 
 ## Conventions worth knowing
 
+- **Line length is capped at 100 chars** (`@stylistic/max-len` in `eslint.config.mjs`, tightened from 120 on 2026-08-03). Comments, string literals, and Tailwind `class="..."` attributes are exempt (`ignoreComments`/`ignoreStrings`/`ignorePattern`) — wrapping those doesn't improve readability. Vue template tags with more than 3 bound attrs/directives wrap one-per-line (`vue/max-attributes-per-line`). **Inline object-literal return types** that push a function signature past 100 chars (e.g. `const fn = (): { a: string, b: number } => (...)`) should be extracted to a named `interface`/`type`, not line-wrapped — an inline type is exactly what shouldn't survive a max-len violation.
 - **Props — two-branch rule, keyed on whether the component needs default values** (decided 2026-07-14; `withDefaults` is banned in both branches):
   - **Defaults needed → reactive destructuring** (Vue 3.5+ compiler transform), typically with an inline type:
     ```ts

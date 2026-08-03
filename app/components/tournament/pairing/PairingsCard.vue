@@ -40,7 +40,8 @@ useCommanderUsageQuery(roundPlayerIds)
 // player would see if they opened the search themselves.
 const { data: commanderCatalog } = useCommanderCatalogQuery()
 const firstCommanderName = computed(() => {
-  const sorted = [...(commanderCatalog.value ?? [])].sort((a, b) => (a.edhrecRank ?? 999999) - (b.edhrecRank ?? 999999))
+  const sorted = [...(commanderCatalog.value ?? [])]
+    .sort((a, b) => (a.edhrecRank ?? 999999) - (b.edhrecRank ?? 999999))
   return sorted[0]?.name ?? 'Test Commander'
 })
 

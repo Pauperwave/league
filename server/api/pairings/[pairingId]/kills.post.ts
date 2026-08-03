@@ -35,7 +35,9 @@ export default defineEventHandler(async (event) => {
     if (kills.length > 0) {
       const { error: insertError } = await supabase
         .from('round_kills')
-        .insert(kills.map(k => ({ pairing_id: pairingId, killer_id: k.killerId, victim_id: k.victimId })))
+        .insert(kills.map(k => ({
+          pairing_id: pairingId, killer_id: k.killerId, victim_id: k.victimId
+        })))
       if (insertError) throw insertError
     }
 

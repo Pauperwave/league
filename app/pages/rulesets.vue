@@ -70,109 +70,111 @@ const ACTION_ROWS = [
     :loading="shouldShowLoading"
     @add="handleEditClick(null)"
   >
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-        <UCard
-          v-for="ruleset in rulesets"
-          :key="ruleset.ruleset_id"
-          class="overflow-hidden"
-          :ui="{ body: 'p-3' }"
-        >
-          <template #header>
-            <div class="flex items-center gap-2">
-              <UIcon :name="ICONS.rules" class="text-primary" />
-              <h2 class="text-lg font-semibold flex-1">
-                {{ ruleset.name }}
-              </h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+      <UCard
+        v-for="ruleset in rulesets"
+        :key="ruleset.ruleset_id"
+        class="overflow-hidden"
+        :ui="{ body: 'p-3' }"
+      >
+        <template #header>
+          <div class="flex items-center gap-2">
+            <UIcon :name="ICONS.rules" class="text-primary" />
+            <h2 class="text-lg font-semibold flex-1">
+              {{ ruleset.name }}
+            </h2>
 
+            <UButton
+              color="neutral"
+              variant="ghost"
+              :icon="ICONS.edit"
+              size="sm"
+              :aria-label="t('ruleset.editAriaLabel')"
+              @click="handleEditClick(ruleset)"
+            />
+
+            <UTooltip
+              :text="isRulesetInUse(ruleset.ruleset_id)
+                ? t('ruleset.viewLeaguesInUseTooltip')
+                : t('ruleset.viewLeaguesNotInUseTooltip')"
+            >
               <UButton
-                color="neutral"
+                color="primary"
                 variant="ghost"
-                :icon="ICONS.edit"
+                :icon="ICONS.standings"
                 size="sm"
-                :aria-label="t('ruleset.editAriaLabel')"
-                @click="handleEditClick(ruleset)"
+                :aria-label="t('ruleset.viewLeaguesAriaLabel')"
+                @click="openLeaguesModal(ruleset)"
+              >
+                {{ getLeaguesByRuleset(ruleset.ruleset_id).length }}
+              </UButton>
+            </UTooltip>
+
+            <UTooltip
+              :text="isRulesetInUse(ruleset.ruleset_id)
+                ? t('ruleset.deleteInUseTooltip')
+                : t('ruleset.deleteTooltip')"
+            >
+              <UButton
+                color="error"
+                variant="ghost"
+                :icon="ICONS.delete"
+                size="sm"
+                :aria-label="t('ruleset.deleteAriaLabel')"
+                :disabled="isRulesetInUse(ruleset.ruleset_id)"
+                @click="handleDeleteClick(ruleset)"
               />
+            </UTooltip>
+          </div>
+        </template>
 
-              <UTooltip
-                :text="isRulesetInUse(ruleset.ruleset_id)
-                  ? t('ruleset.viewLeaguesInUseTooltip')
-                  : t('ruleset.viewLeaguesNotInUseTooltip')"
-              >
-                <UButton
-                  color="primary"
-                  variant="ghost"
-                  :icon="ICONS.standings"
-                  size="sm"
-                  :aria-label="t('ruleset.viewLeaguesAriaLabel')"
-                  @click="openLeaguesModal(ruleset)"
-                >
-                  {{ getLeaguesByRuleset(ruleset.ruleset_id).length }}
-                </UButton>
-              </UTooltip>
-
-              <UTooltip
-                :text="isRulesetInUse(ruleset.ruleset_id)
-                  ? t('ruleset.deleteInUseTooltip')
-                  : t('ruleset.deleteTooltip')"
-              >
-                <UButton
-                  color="error"
-                  variant="ghost"
-                  :icon="ICONS.delete"
-                  size="sm"
-                  :aria-label="t('ruleset.deleteAriaLabel')"
-                  :disabled="isRulesetInUse(ruleset.ruleset_id)"
-                  @click="handleDeleteClick(ruleset)"
-                />
-              </UTooltip>
+        <div class="flex gap-4">
+          <!-- Positions -->
+          <div class="w-20 shrink-0">
+            <div class="text-sm font-semibold mb-1 text-center text-default">
+              {{ t('ruleset.positions') }}
             </div>
-          </template>
-
-          <div class="flex gap-4">
-            <!-- Positions -->
-            <div class="w-20 shrink-0">
-              <div class="text-sm font-semibold mb-1 text-center text-default">
-                {{ t('ruleset.positions') }}
-              </div>
-              <div class="space-y-1">
-                <div
-                  v-for="(style, i) in RANK_STYLES"
-                  :key="i"
-                  :class="[style, 'rounded p-1.5 text-center']"
-                >
-                  <UIcon :name="ICONS.victories" class="size-3 text-primary mx-auto mb-0.5" />
-                  <div class="text-sm font-semibold">
-                    {{ formatScore(ruleset[`rule_set_rank${i + 1}` as keyof typeof ruleset] as number | null) }}
-                    <span class="text-xs">{{ t('ruleset.pointsUnit') }}</span>
-                  </div>
+            <div class="space-y-1">
+              <div
+                v-for="(style, i) in RANK_STYLES"
+                :key="i"
+                :class="[style, 'rounded p-1.5 text-center']"
+              >
+                <UIcon :name="ICONS.victories" class="size-3 text-primary mx-auto mb-0.5" />
+                <div class="text-sm font-semibold">
+                  {{ formatScore(
+                    ruleset[`rule_set_rank${i + 1}` as keyof typeof ruleset] as number | null
+                  ) }}
+                  <span class="text-xs">{{ t('ruleset.pointsUnit') }}</span>
                 </div>
               </div>
             </div>
-
-            <!-- Action Points -->
-            <div class="flex-1 flex flex-col">
-              <div class="text-sm font-semibold mb-2 text-center text-default">
-                {{ t('ruleset.actionsHeading') }}
-              </div>
-              <table class="w-full text-sm">
-                <tbody class="divide-y divide-default/30">
-                  <tr v-for="row in ACTION_ROWS" :key="row.key">
-                    <td class="py-2 flex items-center gap-2">
-                      <UIcon :name="row.icon" class="size-4 text-default" />
-                      <UTooltip :text="row.tooltip">
-                        <span class="cursor-help text-default">{{ row.label }}</span>
-                      </UTooltip>
-                    </td>
-                    <td class="py-2 text-right font-semibold pl-4">
-                      {{ formatScore(ruleset[row.key] as number | null) }}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
           </div>
-        </UCard>
-      </div>
+
+          <!-- Action Points -->
+          <div class="flex-1 flex flex-col">
+            <div class="text-sm font-semibold mb-2 text-center text-default">
+              {{ t('ruleset.actionsHeading') }}
+            </div>
+            <table class="w-full text-sm">
+              <tbody class="divide-y divide-default/30">
+                <tr v-for="row in ACTION_ROWS" :key="row.key">
+                  <td class="py-2 flex items-center gap-2">
+                    <UIcon :name="row.icon" class="size-4 text-default" />
+                    <UTooltip :text="row.tooltip">
+                      <span class="cursor-help text-default">{{ row.label }}</span>
+                    </UTooltip>
+                  </td>
+                  <td class="py-2 text-right font-semibold pl-4">
+                    {{ formatScore(ruleset[row.key] as number | null) }}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </UCard>
+    </div>
 
     <template #extra>
       <RulesetFormModal

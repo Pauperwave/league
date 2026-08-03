@@ -9,7 +9,9 @@ interface Props {
 const props = defineProps<Props>()
 
 const { t } = useI18n()
-const { logClick } = useButtonLogging(t('logging.navigation.backHomeError'), { statusCode: () => props.error.statusCode })
+const { logClick } = useButtonLogging(t('logging.navigation.backHomeError'), {
+  statusCode: () => props.error.statusCode
+})
 
 const is404 = computed(() => props.error.statusCode === 404)
 const title = computed(() => t(is404.value ? 'error.title404' : 'error.titleGeneric'))

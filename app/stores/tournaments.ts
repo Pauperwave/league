@@ -179,7 +179,9 @@ export const useTournamentStore = defineStore('tournaments', () => {
   }
 
   /** Save a pairing's kill events (killer->victim pairs) via the BFF endpoint (ADR-013) */
-  async function savePairingKills(pairingId: number, kills: Kill[]): Promise<{ success: boolean; error?: string }> {
+  async function savePairingKills(
+    pairingId: number, kills: Kill[]
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       await $fetch(`/api/pairings/${pairingId}/kills`, { method: 'POST', body: { kills } })
       console.log('[useTournamentStore] kills saved', { pairingId, kills: kills.length })

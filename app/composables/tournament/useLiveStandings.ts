@@ -40,7 +40,13 @@ interface PlayerTableScore {
 }
 
 export function buildPosValues(r: RulesetValues): number[] {
-  return [0, r.rule_set_rank1 ?? 0, r.rule_set_rank2 ?? 0, r.rule_set_rank3 ?? 0, r.rule_set_rank4 ?? 0]
+  return [
+    0,
+    r.rule_set_rank1 ?? 0,
+    r.rule_set_rank2 ?? 0,
+    r.rule_set_rank3 ?? 0,
+    r.rule_set_rank4 ?? 0
+  ]
 }
 
 export function cloneStandings(base: StandingWithPlayer[]): StandingWithDefaults[] {
@@ -91,7 +97,17 @@ export function calculatePlayerTableScore(
   const playScore = totalPlayCount * (r.rule_set_play ?? 0)
   const totalScore = scoreRank + killScore + brewScore + playScore
 
-  return { totalScore, position, numberOfKills, killScore, brewVote, brewScore, totalPlayCount, playScore, scoreRank }
+  return {
+    totalScore,
+    position,
+    numberOfKills,
+    killScore,
+    brewVote,
+    brewScore,
+    totalPlayCount,
+    playScore,
+    scoreRank
+  }
 }
 
 export function updateStanding(

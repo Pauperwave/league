@@ -30,8 +30,15 @@ export function useTournamentPage() {
   } = useWaitroom(tournamentId)
   const { registerPlayers, unregisterPlayers } = useWaitroomMutations(tournamentId)
   const { updateTournament: updateTournamentMutation } = useTournamentMutations()
-  const { data: eventsData, isLoading: eventsLoading, refetch: refreshEventsQuery } = useEventsQuery(leagueId)
-  const { data: standingsData, refetch: refreshStandingsQuery } = useEventStandingsQuery(tournamentId)
+  const {
+    data: eventsData,
+    isLoading: eventsLoading,
+    refetch: refreshEventsQuery
+  } = useEventsQuery(leagueId)
+  const {
+    data: standingsData,
+    refetch: refreshStandingsQuery
+  } = useEventStandingsQuery(tournamentId)
   const { data: pairingHistoryData } = usePairingHistoryQuery(tournamentId)
   const { data: registrationsData } = useTournamentRegistrationsQuery(tournamentId)
   const { data: leagueTable3CountsData } = useLeagueTable3CountsQuery(leagueId, tournamentId)
@@ -70,7 +77,9 @@ export function useTournamentPage() {
   // Sync URL with current phase and round
   watch([currentPhase, currentRound], ([newPhase, newRound]) => {
     // Don't sync if URL already has correct parameters (prevents overwriting on page reload)
-    if (phaseFromQuery.value && phaseFromQuery.value === newPhase && roundFromQuery.value === newRound) {
+    if (
+      phaseFromQuery.value && phaseFromQuery.value === newPhase && roundFromQuery.value === newRound
+    ) {
       return
     }
     syncUrl(newPhase, newRound)
@@ -222,19 +231,28 @@ export function useTournamentPage() {
   // is meant, without changing currentRound's own DB-accurate meaning.
   const lastPlayableRound = computed(() => tournamentStatus.value === 'ended' ? totalRounds.value : currentRound.value)
 
-  const isViewingPastRound = computed(() => viewedRound.value !== null && viewedRound.value < lastPlayableRound.value)
+  const isViewingPastRound = computed(() =>
+    viewedRound.value !== null &&
+    viewedRound.value < lastPlayableRound.value
+  )
 
   // Once a tournament has ended, its last round is no longer "current" in the
   // playing sense — viewing it is how an admin corrects a score/kill entry
   // mistake in place, without the destructive turn-back-round delete+regenerate
   // flow. Distinct from isViewingPastRound (always readonly).
-  const isCorrectingLastRound = computed(() => tournamentStatus.value === 'ended' && viewedRound.value === lastPlayableRound.value)
+  const isCorrectingLastRound = computed(() =>
+    tournamentStatus.value === 'ended' &&
+    viewedRound.value === lastPlayableRound.value
+  )
 
   // Two instances of the pairings query: the current round (live-standings
   // input) and the displayed round (past-round viewing). When the keys match
   // they share one cache entry; setting viewedRound refetches by key change.
   const { data: pairingsData } = usePairingsQuery(tournamentId, () => currentRound.value)
-  const { data: displayedPairingsData, refetch: refreshDisplayedPairings } = usePairingsQuery(
+  const {
+    data: displayedPairingsData,
+    refetch: refreshDisplayedPairings
+  } = usePairingsQuery(
     tournamentId,
     () => viewedRound.value ?? currentRound.value
   )
@@ -261,7 +279,9 @@ export function useTournamentPage() {
   const pairings = computed(() => pairingsData.value ?? [])
   const effectivePairings = computed(() => displayedPairingsData.value ?? [])
 
-  const loading = computed(() => tournamentStore.loading || waitroomLoading.value || eventsLoading.value)
+  const loading = computed(() =>
+    tournamentStore.loading || waitroomLoading.value || eventsLoading.value
+  )
 
   return {
     leagueId,

@@ -26,13 +26,19 @@ const UBadge = resolveComponent('UBadge') as Component
 const UButton = resolveComponent('UButton') as Component
 const RowActionButtons = resolveComponent('RowActionButtons') as Component
 
-const statusConfig: Record<string, { color: StatusColor, icon: string, labelKey: string }> = {
+interface StatusConfigEntry {
+  color: StatusColor
+  icon: string
+  labelKey: string | null
+}
+
+const statusConfig: Record<string, StatusConfigEntry> = {
   scheduled: { color: 'info', icon: ICONS.clock, labelKey: 'league.status.scheduled' },
   active: { color: 'success', icon: ICONS.success, labelKey: 'league.status.active' },
   ended: { color: 'neutral', icon: ICONS.clear, labelKey: 'league.status.ended' }
 }
 
-function getStatusConfig(status: string): { color: StatusColor, icon: string, labelKey: string | null } {
+function getStatusConfig(status: string): StatusConfigEntry {
   return statusConfig[status] ?? { color: 'neutral', icon: ICONS.help, labelKey: null }
 }
 

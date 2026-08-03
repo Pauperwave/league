@@ -46,12 +46,24 @@ function handleRandom() {
     </div>
 
     <div class="flex flex-wrap items-center gap-2">
-      <UTooltip :content="{ side: 'top' }" :text="t('tournament.tablePreviewToolbar.weightsAndConstraintsTooltip')">
-        <UButton size="sm" color="neutral" variant="soft" :icon="ICONS.settings" @click="handleOpenSettings">
+      <UTooltip
+        :content="{ side: 'top' }"
+        :text="t('tournament.tablePreviewToolbar.weightsAndConstraintsTooltip')"
+      >
+        <UButton
+          size="sm"
+          color="neutral"
+          variant="soft"
+          :icon="ICONS.settings"
+          @click="handleOpenSettings"
+        >
           {{ t('tournament.tablePreviewToolbar.weightsAndConstraints') }}
         </UButton>
       </UTooltip>
-      <UTooltip :content="{ side: 'top' }" :text="t('tournament.tablePreviewToolbar.optimizeTooltip')">
+      <UTooltip
+        :content="{ side: 'top' }"
+        :text="t('tournament.tablePreviewToolbar.optimizeTooltip')"
+      >
         <UButton
           size="sm"
           color="neutral"
@@ -63,7 +75,10 @@ function handleRandom() {
           {{ t('tournament.tablePreviewToolbar.optimize') }}
         </UButton>
       </UTooltip>
-      <UTooltip :content="{ side: 'top' }" :text="t('tournament.tablePreviewToolbar.randomTooltip')">
+      <UTooltip
+        :content="{ side: 'top' }"
+        :text="t('tournament.tablePreviewToolbar.randomTooltip')"
+      >
         <UButton
           size="sm"
           color="neutral"

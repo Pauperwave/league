@@ -44,7 +44,12 @@ const emit = defineEmits<{
       </PageHeaderRow>
     </div>
 
-    <UAlert v-if="error" color="error" :title="errorMessage" class="mx-6 mb-4" />
+    <UAlert
+      v-if="error"
+      color="error"
+      :title="errorMessage"
+      class="mx-6 mb-4"
+    />
 
     <div v-if="loading" class="flex items-center justify-center py-12">
       <UIcon :name="ICONS.loading" class="animate-spin text-4xl text-primary" />

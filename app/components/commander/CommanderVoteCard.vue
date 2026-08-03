@@ -72,8 +72,7 @@ defineExpose({ focus: () => rootEl.value?.focus() })
 <template>
   <div
     ref="rootEl"
-    class="cursor-pointer transition-all rounded-lg
-      focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary"
+    class="cursor-pointer transition-all rounded-lg focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary"
     :class="commanderName
       ? (selected ? 'ring-4 ring-primary' : 'hover:ring-2 hover:ring-default')
       : 'hover:ring-2 hover:ring-warning'"
@@ -97,7 +96,11 @@ defineExpose({ focus: () => rootEl.value?.focus() })
           size="sm"
         />
         <div v-else class="h-full w-full flex flex-col items-center justify-center gap-1.5 p-2 text-warning">
-          <UAvatar size="lg" :src="avatarUrl || generatePlayerAvatar(playerId ?? `${name} ${surname}`)" :alt="name" />
+          <UAvatar
+            size="lg"
+            :src="avatarUrl || generatePlayerAvatar(playerId ?? `${name} ${surname}`)"
+            :alt="name"
+          />
           <span class="flex items-center gap-1 text-xs font-medium">
             <UIcon :name="ICONS.commander" class="size-4" />
             {{ t('commander.voteCard.assignCommander') }}

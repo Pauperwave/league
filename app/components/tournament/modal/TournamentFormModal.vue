@@ -62,7 +62,10 @@ const emit = defineEmits<{
 
 const open = defineModel<boolean>('open', { default: false })
 
-const submitLogging = useButtonLogging(t('logging.tournament.submitForm'), { isEditing: () => isEditing.value, tournamentName: () => form.tournamentName })
+const submitLogging = useButtonLogging(t('logging.tournament.submitForm'), {
+  isEditing: () => isEditing.value,
+  tournamentName: () => form.tournamentName
+})
 
 // — Derived modal state —
 const isEditing = computed(() => !!props.tournament)
@@ -99,12 +102,12 @@ watch(open, (isOpen) => {
   const e = props.tournament
   Object.assign(form, e
     ? {
-        tournamentName: e.tournament_name,
-        tournamentDate: parseDateString(e.tournament_datetime),
-        numRound: e.tournament_round_number ?? 2,
-        roundDuration: e.tournament_round_duration ?? DEFAULT_ROUND_DURATION,
-        tournamentFormat: e.tournament_format,
-      }
+      tournamentName: e.tournament_name,
+      tournamentDate: parseDateString(e.tournament_datetime),
+      numRound: e.tournament_round_number ?? 2,
+      roundDuration: e.tournament_round_duration ?? DEFAULT_ROUND_DURATION,
+      tournamentFormat: e.tournament_format,
+    }
     : defaultForm()
   )
 })
@@ -169,47 +172,47 @@ function handleSubmit() {
     @cancel="handleCancel"
   >
     <form id="tournament-form" class="space-y-4" @submit.prevent="handleSubmit">
-        <div class="grid grid-cols-2 gap-4">
-          <UFormField :label="t('tournament.form.nameLabel')" required>
-            <UInput
-              id="field-name"
-              v-model="form.tournamentName"
-              :placeholder="t('tournament.form.namePlaceholder')"
-              class="w-full"
-            />
-          </UFormField>
-          <DatePicker v-model="form.tournamentDate" :label="t('tournament.form.dateLabel')" />
-        </div>
-
-        <div class="grid grid-cols-2 gap-4">
-          <UFormField :label="t('tournament.form.numRoundLabel')">
-            <UInputNumber
-              v-model="form.numRound"
-              :min="1"
-              :max="10"
-              :default-value="2"
-              class="w-full"
-            />
-          </UFormField>
-          <UFormField :label="t('tournament.form.roundDurationLabel')">
-            <UInputNumber
-              v-model="form.roundDuration"
-              :min="10"
-              :max="120"
-              :step="5"
-              :default-value="75"
-              class="w-full"
-            />
-          </UFormField>
-        </div>
-
-        <UFormField :label="t('tournament.form.formatLabel')">
-          <USelectMenu
-            v-model="form.tournamentFormat"
-            :items="formatItems"
+      <div class="grid grid-cols-2 gap-4">
+        <UFormField :label="t('tournament.form.nameLabel')" required>
+          <UInput
+            id="field-name"
+            v-model="form.tournamentName"
+            :placeholder="t('tournament.form.namePlaceholder')"
             class="w-full"
           />
         </UFormField>
-      </form>
+        <DatePicker v-model="form.tournamentDate" :label="t('tournament.form.dateLabel')" />
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <UFormField :label="t('tournament.form.numRoundLabel')">
+          <UInputNumber
+            v-model="form.numRound"
+            :min="1"
+            :max="10"
+            :default-value="2"
+            class="w-full"
+          />
+        </UFormField>
+        <UFormField :label="t('tournament.form.roundDurationLabel')">
+          <UInputNumber
+            v-model="form.roundDuration"
+            :min="10"
+            :max="120"
+            :step="5"
+            :default-value="75"
+            class="w-full"
+          />
+        </UFormField>
+      </div>
+
+      <UFormField :label="t('tournament.form.formatLabel')">
+        <USelectMenu
+          v-model="form.tournamentFormat"
+          :items="formatItems"
+          class="w-full"
+        />
+      </UFormField>
+    </form>
   </FormModal>
 </template>

@@ -21,7 +21,12 @@ const emit = defineEmits<{
 
 <template>
   <div class="flex items-center gap-2 p-1.5 bg-elevated rounded">
-    <PlayerNameTag :name="name" :surname="surname" :player-id="playerId" class="flex-1" />
+    <PlayerNameTag
+      :name="name"
+      :surname="surname"
+      :player-id="playerId"
+      class="flex-1"
+    />
 
     <template v-if="!readonly">
       <!-- Commander button -->
@@ -46,7 +51,9 @@ const emit = defineEmits<{
       <UTooltip
         :key="`vote-${playerId}-${hasVotes ? 1 : 0}`"
         :content="{ side: 'right' }"
-        :text="hasVotes ? t('tournament.pairing.voteSetTooltip') : t('tournament.pairing.voteNotSetTooltip')"
+        :text="hasVotes
+          ? t('tournament.pairing.voteSetTooltip')
+          : t('tournament.pairing.voteNotSetTooltip')"
       >
         <UButton
           size="sm"

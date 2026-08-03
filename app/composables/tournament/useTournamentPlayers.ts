@@ -51,19 +51,33 @@ export function useTournamentPlayers(deps: EventPlayersDeps) {
     try {
       ({ player: created } = await createPlayer.mutateAsync(player))
     } catch (err) {
-      toast.add({ title: t('store.player.createError'), description: toErrorMessage(err, t('store.player.createError')), color: 'error' })
+      toast.add({
+        title: t('store.player.createError'),
+        description: toErrorMessage(err, t('store.player.createError')),
+        color: 'error'
+      })
       return
     }
     await addToWaitingList([created.player_id])
     const display = sanitizePlayer(created)
-    toast.add({ title: t('tournament.playerCreatedTitle'), description: t('tournament.playerCreatedDescription', { name: `${display.player_name} ${display.player_surname}` }), color: 'success' })
+    toast.add({
+      title: t('tournament.playerCreatedTitle'),
+      description: t('tournament.playerCreatedDescription', {
+        name: `${display.player_name} ${display.player_surname}`
+      }),
+      color: 'success'
+    })
   }
 
   async function handlePlayerUpdate(payload: PlayerUpdatePayload) {
     try {
       await updatePlayer.mutateAsync(payload)
     } catch (err) {
-      toast.add({ title: t('store.player.updateError'), description: toErrorMessage(err, t('store.player.updateError')), color: 'error' })
+      toast.add({
+        title: t('store.player.updateError'),
+        description: toErrorMessage(err, t('store.player.updateError')),
+        color: 'error'
+      })
       return
     }
     showCreatePlayerModal.value = false
@@ -72,10 +86,16 @@ export function useTournamentPlayers(deps: EventPlayersDeps) {
 
   async function handlePlayerSelectFromModal(playerId: number) {
     await addToWaitingList([playerId])
-    toast.add({ title: t('tournament.playerAddedTitle'), description: t('tournament.playerAddedDescription'), color: 'success' })
+    toast.add({
+      title: t('tournament.playerAddedTitle'),
+      description: t('tournament.playerAddedDescription'),
+      color: 'success'
+    })
   }
 
-  function handlePlayerStatusUpdate(payload: { playerId: number, paymentMethod: PaymentMethod | null }) {
+  function handlePlayerStatusUpdate(
+    payload: { playerId: number, paymentMethod: PaymentMethod | null }
+  ) {
     logDebug('useTournamentPlayers', 'Player status updated:', payload)
   }
 

@@ -1,7 +1,13 @@
 // app\composables\tables\useTableCalculator.ts
 // Centralized table sizing and preview helpers used by event flow and pairing logic.
+interface TableSplit {
+  canPlay: boolean
+  tables4: number
+  tables3: number
+}
+
 export function useTableCalculator() {
-  function calculateTables(playerCount: number): { canPlay: boolean; tables4: number; tables3: number } {
+  function calculateTables(playerCount: number): TableSplit {
     if (playerCount < 3 || playerCount === 5) {
       return { canPlay: false, tables4: 0, tables3: 0 }
     }

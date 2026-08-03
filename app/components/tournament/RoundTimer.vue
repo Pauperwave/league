@@ -97,7 +97,9 @@ const phaseDurationMinutes = computed(() => {
 const phaseBonusMinutes = computed(() => phase.value === 'round' ? timeBonus.value : 0)
 
 /** Total duration in seconds for the current phase (base + any added time). */
-const totalSeconds = computed(() => calculateTotalSeconds(phaseDurationMinutes.value, phaseBonusMinutes.value))
+const totalSeconds = computed(() =>
+  calculateTotalSeconds(phaseDurationMinutes.value, phaseBonusMinutes.value)
+)
 
 /** Seconds remaining, clamped to [0, totalSeconds]. */
 const remaining = computed(() => calculateRemainingSeconds(totalSeconds.value, elapsed.value))
@@ -325,7 +327,9 @@ function confirmReset() {
   showResetConfirm.value = false
 }
 
-const forceEndTurnsLogging = useButtonLogging(t('logging.timer.forceEndTurns'), { round: () => props.round })
+const forceEndTurnsLogging = useButtonLogging(t('logging.timer.forceEndTurns'), {
+  round: () => props.round
+})
 
 /**
  * Lets the organizer force TURNI to end right now instead of waiting out
@@ -355,8 +359,14 @@ function confirmForceEndTurns() {
 /** Tracks the minutes argument of the last addMinutes/subtractMinutes call, for logging context. */
 const lastMinutesDelta = ref(0)
 
-const addMinutesLogging = useButtonLogging(t('logging.timer.addMinutes'), { round: () => props.round, minutes: () => lastMinutesDelta.value })
-const subtractMinutesLogging = useButtonLogging(t('logging.timer.subtractMinutes'), { round: () => props.round, minutes: () => lastMinutesDelta.value })
+const addMinutesLogging = useButtonLogging(t('logging.timer.addMinutes'), {
+  round: () => props.round,
+  minutes: () => lastMinutesDelta.value
+})
+const subtractMinutesLogging = useButtonLogging(t('logging.timer.subtractMinutes'), {
+  round: () => props.round,
+  minutes: () => lastMinutesDelta.value
+})
 
 /** Add extra minutes to the "round" phase. If it had expired, restarts it from the added time. */
 function addMinutes(minutes: number) {
@@ -426,9 +436,9 @@ onMounted(() => {
     class="flex items-center flex-wrap"
     :class="isFullscreen
       ? [
-          'relative flex-col justify-center h-screen w-screen gap-12 @container-size',
-          phase === 'ended' ? 'bg-error/10' : isPaused ? 'bg-warning/10' : 'bg-default'
-        ]
+        'relative flex-col justify-center h-screen w-screen gap-12 @container-size',
+        phase === 'ended' ? 'bg-error/10' : isPaused ? 'bg-warning/10' : 'bg-default'
+      ]
       : phase === 'ended'
         ? 'gap-3 border border-error bg-error/10 rounded-lg px-4 py-2'
         : isPaused
@@ -441,7 +451,11 @@ onMounted(() => {
       class="absolute top-[4cqmin] left-[4cqmin] text-muted"
     />
 
-    <UTooltip v-if="isFullscreen" :content="{ side: 'top' }" :text="t('tournament.roundTimer.exitFullscreenTooltip')">
+    <UTooltip
+      v-if="isFullscreen"
+      :content="{ side: 'top' }"
+      :text="t('tournament.roundTimer.exitFullscreenTooltip')"
+    >
       <UButton
         :icon="ICONS.collapse"
         color="neutral"
@@ -502,7 +516,9 @@ onMounted(() => {
             variant="soft"
             :disabled="isExpired"
             :fullscreen="isFullscreen"
-            :tooltip="isExpired ? t('tournament.roundTimer.expiredTooltip') : t('tournament.roundTimer.startTooltip')"
+            :tooltip="isExpired
+              ? t('tournament.roundTimer.expiredTooltip')
+              : t('tournament.roundTimer.startTooltip')"
             @click="start"
           />
           <TimerControlButton
@@ -556,7 +572,11 @@ onMounted(() => {
         />
       </div>
 
-      <div v-if="phase === 'round'" class="flex items-center" :class="isFullscreen ? 'flex-row gap-8' : 'gap-1'">
+      <div
+        v-if="phase === 'round'"
+        class="flex items-center"
+        :class="isFullscreen ? 'flex-row gap-8' : 'gap-1'"
+      >
         <TimerControlButton
           :icon="ICONS.subtract"
           color="error"

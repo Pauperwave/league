@@ -36,20 +36,42 @@ export default withNuxt(
         ObjectPattern: { minProperties: 4, multiline: true, consistent: true }
       }],
 
-      // 120 chars — wide enough for TS generics/descriptive names without a
-      // hard 80/100 cap that would fight the codebase's existing style.
-      // ignoreUrls/Strings/TemplateLiterals: a long i18n key or Tailwind
-      // class string shouldn't force an awkward wrap just to hit a number.
-      // Long `class="..."` template attributes are NOT exempted — they wrap
-      // like any other line (ignoreStrings only reaches JS string literals,
-      // not Vue template attribute values anyway).
+      // 100 chars — tighter than the previous 120 cap, tuned after review of
+      // what was actually running long. ignoreUrls/Strings/TemplateLiterals:
+      // a long i18n key shouldn't force an awkward wrap just to hit a number.
+      // ignoreComments: JSDoc/comment lines aren't code and don't benefit
+      // from mid-sentence wraps. ignorePattern for `class="..."`: Tailwind
+      // strings are left as-is rather than broken — line-wrapping a class
+      // list doesn't improve readability the way wrapping code does. Inline
+      // object-literal return types (`(): { a: string, b: number } => ...`)
+      // are NOT exempted — the intended fix there is extracting a named
+      // type, not wrapping the line (see CLAUDE.md).
       '@stylistic/max-len': ['error', {
-        code: 120,
+        code: 100,
         ignoreUrls: true,
         ignoreStrings: true,
         ignoreTemplateLiterals: true,
-        ignoreRegExpLiterals: true
+        ignoreRegExpLiterals: true,
+        ignoreComments: true,
+        ignorePattern: 'class\\s*=\\s*"'
       }],
+
+      // Vue template lines with more than 3 bound attrs/directives wrap one
+      // per line — keeps wide component tags scannable instead of one long
+      // attribute soup.
+      'vue/max-attributes-per-line': ['error', {
+        singleline: { max: 3 },
+        multiline: { max: 1 }
+      }],
+
+      // 2-space indent, enforced — added after a manual max-len wrap fix
+      // shipped with broken indentation that nothing caught (see PROGRESS.md
+      // 2026-08-03). @stylistic/indent covers <script> content in both .ts
+      // and .vue files; vue/html-indent covers the <template> block, which
+      // @stylistic/indent doesn't parse. SwitchCase: 1 matches this
+      // codebase's existing one-level-deeper `case` convention.
+      '@stylistic/indent': ['error', 2, { SwitchCase: 1 }],
+      'vue/html-indent': ['error', 2],
 
       // Optional props are typed with `?` and default via destructuring
       // (Vue 3.5 reactive props destructure); this rule predates that
@@ -64,6 +86,9 @@ export default withNuxt(
     }
   },
   {
-    ignores: ['node_modules/**']
+    // shared/utils/types/database.ts is generated (`npx supabase gen types
+    // ...`), not hand-maintained — don't lint formatting that will just be
+    // regenerated away.
+    ignores: ['node_modules/**', 'shared/utils/types/database.ts']
   }
 )

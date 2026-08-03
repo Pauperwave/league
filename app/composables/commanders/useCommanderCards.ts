@@ -200,8 +200,16 @@ export function useCommanderCards(
   commander1Name: MaybeRefOrGetter<string | null | undefined>,
   commander2Name: MaybeRefOrGetter<string | null | undefined>
 ) {
-  const { data: commander1Data, isLoading: loading1, error: error1 } = useCommanderCardQuery(commander1Name)
-  const { data: commander2Data, isLoading: loading2, error: error2 } = useCommanderCardQuery(commander2Name)
+  const {
+    data: commander1Data,
+    isLoading: loading1,
+    error: error1
+  } = useCommanderCardQuery(commander1Name)
+  const {
+    data: commander2Data,
+    isLoading: loading2,
+    error: error2
+  } = useCommanderCardQuery(commander2Name)
 
   const loading = computed(() => loading1.value || loading2.value)
   const error = computed(() => error1.value ?? error2.value ?? null)

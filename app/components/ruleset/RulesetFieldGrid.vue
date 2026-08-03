@@ -46,7 +46,8 @@ function getValue(key: string): number | undefined {
           :min="0"
           placeholder="0"
           class="w-full"
-          @update:model-value="(value) => emit('updateField', item.key, value as number | undefined)"
+          @update:model-value="(value) =>
+            emit('updateField', item.key, value as number | undefined)"
         />
       </UFormField>
     </div>

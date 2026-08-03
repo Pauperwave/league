@@ -107,7 +107,9 @@ async function fetchCommanderCardsPaginated(
     cards.push(...page.data)
 
     if (earlyStop) {
-      const pageHasNew = page.data.some(card => !existing.scryfallIds.has(card.id) && !existing.names.has(card.name))
+      const pageHasNew = page.data.some(card =>
+        !existing.scryfallIds.has(card.id) && !existing.names.has(card.name)
+      )
       consecutiveKnownPages = pageHasNew ? 0 : consecutiveKnownPages + 1
       if (consecutiveKnownPages >= CONSECUTIVE_KNOWN_PAGES_TO_STOP) break
     }
@@ -191,7 +193,9 @@ async function backfillReleasedDates(
       card_name: row.cardName,
       released_at: releasedAtByName.get(row.cardName)
     }))
-    .filter((row): row is { scryfall_id: string, card_name: string, released_at: string } => !!row.released_at)
+    .filter((row): row is { scryfall_id: string, card_name: string, released_at: string } =>
+      !!row.released_at
+    )
 
   const chunkSize = 500
   for (let i = 0; i < rowsToUpdate.length; i += chunkSize) {
@@ -296,7 +300,8 @@ export default defineEventHandler(async (event) => {
   console.log('[api/sync-commanders] fetching existing catalog')
   const existing = await fetchExistingCatalog(supabase)
 
-  const needsFullFetch = existing.maxReleasedAt === null || existing.rowsNeedingReleasedAt.length > BACKFILL_THRESHOLD
+  const needsFullFetch = existing.maxReleasedAt === null
+    || existing.rowsNeedingReleasedAt.length > BACKFILL_THRESHOLD
   const startUrl = needsFullFetch ? buildSearchUrl() : buildSearchUrl(existing.maxReleasedAt)
 
   console.log('[api/sync-commanders] fetching commander-eligible cards from Scryfall', {
@@ -304,11 +309,18 @@ export default defineEventHandler(async (event) => {
     since: needsFullFetch ? null : existing.maxReleasedAt,
     rowsNeedingReleasedAt: existing.rowsNeedingReleasedAt.length
   })
-  const { cards: fetchedCards, scanned } = await fetchCommanderCardsPaginated(startUrl, existing, !needsFullFetch)
+  const { cards: fetchedCards, scanned } = await fetchCommanderCardsPaginated(
+    startUrl, existing, !needsFullFetch
+  )
 
   if (needsFullFetch) {
-    const backfilled = await backfillReleasedDates(supabase, existing.rowsNeedingReleasedAt, fetchedCards)
-    console.log('[api/sync-commanders] backfilled released_at', { updated: backfilled, total: existing.rowsNeedingReleasedAt.length })
+    const backfilled = await backfillReleasedDates(
+      supabase, existing.rowsNeedingReleasedAt, fetchedCards
+    )
+    console.log('[api/sync-commanders] backfilled released_at', {
+      updated: backfilled,
+      total: existing.rowsNeedingReleasedAt.length
+    })
   }
 
   // mtg_commanders is unique on card_name too — dedupe same-name printings

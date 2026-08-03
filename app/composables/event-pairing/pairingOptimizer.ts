@@ -38,6 +38,11 @@ export interface PairingHistoryEntry {
   players: number[]
 }
 
+interface RematchEntry {
+  count: number
+  lastRound: number
+}
+
 export interface PairingTableScore {
   strengthBalance: number
   novelty: number
@@ -96,8 +101,8 @@ function buildForbiddenSet(pairs: PairingForbiddenPair[]): Set<string> {
   return set
 }
 
-function buildRematchMap(history: PairingHistoryEntry[]): Map<string, { count: number, lastRound: number }> {
-  const map = new Map<string, { count: number, lastRound: number }>()
+function buildRematchMap(history: PairingHistoryEntry[]): Map<string, RematchEntry> {
+  const map = new Map<string, RematchEntry>()
 
   for (const entry of history) {
     forEachPair(entry.players, (left, right) => {
@@ -187,7 +192,8 @@ function distributeStrengthBalance(
 ): void {
   if (table.length === 0) return
 
-  const avgRank = table.reduce((acc, playerId) => acc + (rankByPlayer.get(playerId) ?? 9999), 0) / table.length
+  const avgRank = table.reduce((acc, playerId) => acc + (rankByPlayer.get(playerId) ?? 9999), 0)
+    / table.length
   const deviations = table.map(playerId => ({
     playerId,
     deviation: Math.abs((rankByPlayer.get(playerId) ?? avgRank) - avgRank),
@@ -429,7 +435,9 @@ function scoreTable(
   const rotateTable3 = calculateTable3Penalty(table, playersById)
   distributeTable3Penalty(table, perPlayer, playersById, weights)
 
-  const { novelty, rematchPenalty } = calculatePairwiseScore(table, perPlayer, rematchMap, currentRound, weights)
+  const { novelty, rematchPenalty } = calculatePairwiseScore(
+    table, perPlayer, rematchMap, currentRound, weights
+  )
 
   return aggregateTableScore(table, perPlayer, weights, {
     strengthTotal,
@@ -550,7 +558,9 @@ function buildGreedyTables(
         const nextTable = [...table, candidate.id]
         if (hasForbiddenConflict(nextTable, forbiddenSet)) continue
 
-        const partialScore = scoreTable(nextTable, playersById, rematchMap, currentRound, weights).total
+        const partialScore = scoreTable(
+          nextTable, playersById, rematchMap, currentRound, weights
+        ).total
         if (partialScore > bestScore) {
           bestScore = partialScore
           bestIndex = i
@@ -604,7 +614,9 @@ function trySwapCandidate(
   c1[i] = right
   c2[j] = left
 
-  const scored = scoreSolution(candidate, playersById, rematchMap, forbiddenSet, currentRound, weights)
+  const scored = scoreSolution(
+    candidate, playersById, rematchMap, forbiddenSet, currentRound, weights
+  )
   return { candidate, scored }
 }
 
@@ -619,7 +631,9 @@ function improveBySwap(
 ): PairingOptimizerResult {
   const now = typeof performance !== 'undefined' ? () => performance.now() : () => Date.now()
   const started = now()
-  let best = scoreSolution(initialTables, playersById, rematchMap, forbiddenSet, currentRound, weights)
+  let best = scoreSolution(
+    initialTables, playersById, rematchMap, forbiddenSet, currentRound, weights
+  )
   let working = cloneTables(initialTables)
 
   for (let t1 = 0; t1 < working.length; t1++) {
@@ -693,7 +707,8 @@ export function optimizePairings(params: {
   const tableSizes = getTableSizes(players.length)
 
   const orderByRank = [...players].sort((a, b) => a.rank - b.rank)
-  const orderByTable3Need = [...players].sort((a, b) => a.table3Count - b.table3Count || a.rank - b.rank)
+  const orderByTable3Need = [...players]
+    .sort((a, b) => a.table3Count - b.table3Count || a.rank - b.rank)
   const orderByScore = [...players].sort((a, b) => b.score - a.score)
   const attempts = [orderByRank, orderByTable3Need, orderByScore]
 
@@ -739,7 +754,9 @@ export function getForbiddenPairKey(playerA: number, playerB: number): string {
 }
 
 /** Drops self-pairs and duplicate (order-insensitive) entries, keeping first occurrence order. */
-export function normalizePairingForbiddenPairs(pairs: PairingForbiddenPair[]): PairingForbiddenPair[] {
+export function normalizePairingForbiddenPairs(
+  pairs: PairingForbiddenPair[]
+): PairingForbiddenPair[] {
   const seen = new Set<string>()
   const result: PairingForbiddenPair[] = []
 

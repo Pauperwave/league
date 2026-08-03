@@ -126,7 +126,9 @@ describe('calculatePlayerTableScore', () => {
     const ruleset = makeRuleset({ rule_set_kill: 2, rule_set_brew: 5, rule_set_play: 3 })
     const results = [
       makeResult({ pairing_id: 1, player_id: 1, position: 1, number_of_kills: 3 }),
-      makeResult({ pairing_id: 1, player_id: 2, position: 2, brew_vote: 1, play_vote_1: 1, play_vote_2: 1 }),
+      makeResult({
+        pairing_id: 1, player_id: 2, position: 2, brew_vote: 1, play_vote_1: 1, play_vote_2: 1
+      }),
     ]
 
     const scored = calculatePlayerTableScore(1, results, [0, 4, 3, 2, 1], ruleset)
@@ -146,8 +148,12 @@ describe('calculatePlayerTableScore', () => {
   })
 
   it('uses the ruleset\'s actual rank values, matching a real 8/6/4/2 configuration', () => {
-    const ruleset = makeRuleset({ rule_set_rank1: 8, rule_set_rank2: 6, rule_set_rank3: 4, rule_set_rank4: 2 })
-    const results = [1, 2, 3, 4].map(playerId => makeResult({ pairing_id: 1, player_id: playerId, position: playerId }))
+    const ruleset = makeRuleset({
+      rule_set_rank1: 8, rule_set_rank2: 6, rule_set_rank3: 4, rule_set_rank4: 2
+    })
+    const results = [1, 2, 3, 4].map(playerId =>
+      makeResult({ pairing_id: 1, player_id: playerId, position: playerId })
+    )
     const posValues = [0, 8, 6, 4, 2]
 
     expect(calculatePlayerTableScore(1, results, posValues, ruleset)?.scoreRank).toBe(8)
@@ -177,7 +183,9 @@ describe('calculatePlayerTableScore', () => {
   })
 
   it('treats a null number_of_kills as 0 kills, not NaN', () => {
-    const results = [makeResult({ pairing_id: 1, player_id: 1, position: 1, number_of_kills: null })]
+    const results = [
+      makeResult({ pairing_id: 1, player_id: 1, position: 1, number_of_kills: null })
+    ]
     const scored = calculatePlayerTableScore(1, results, [0, 4, 3, 2, 1], makeRuleset())
     expect(scored?.numberOfKills).toBe(0)
     expect(scored?.killScore).toBe(0)
@@ -202,7 +210,9 @@ describe('calculatePlayerTableScore', () => {
     // + i walks past the array's last real index (4) for i=3 — Math.min(...,
     // 4) must clamp instead of reading undefined/NaN off the end.
     const ruleset = makeRuleset()
-    const results = [1, 2, 3, 4].map(playerId => makeResult({ pairing_id: 1, player_id: playerId, position: 1 }))
+    const results = [1, 2, 3, 4].map(playerId =>
+      makeResult({ pairing_id: 1, player_id: playerId, position: 1 })
+    )
     const posValues = [0, 4, 3, 2, 1]
 
     // floor((4+3+2+1)/4) = 2, identical for all four tied players.
@@ -282,7 +292,12 @@ describe('aggregatePointBreakdowns', () => {
   it('accumulates across multiple pairings for the same player', () => {
     const ruleset = makeRuleset({ rule_set_kill: 2 })
     const pairings = [
-      { pairing_id: 1, round_results: [makeResult({ pairing_id: 1, player_id: 1, position: 1, number_of_kills: 1 })] },
+      {
+        pairing_id: 1,
+        round_results: [
+          makeResult({ pairing_id: 1, player_id: 1, position: 1, number_of_kills: 1 })
+        ]
+      },
       {
         pairing_id: 2,
         round_results: [
@@ -300,7 +315,9 @@ describe('aggregatePointBreakdowns', () => {
   })
 
   it('treats a pairing with no round_results as contributing nothing', () => {
-    const breakdowns = aggregatePointBreakdowns([{ pairing_id: 1, round_results: [] }], [0, 4, 3, 2, 1], makeRuleset())
+    const breakdowns = aggregatePointBreakdowns(
+      [{ pairing_id: 1, round_results: [] }], [0, 4, 3, 2, 1], makeRuleset()
+    )
     expect(breakdowns.size).toBe(0)
   })
 
@@ -313,7 +330,9 @@ describe('calculateRoundScores', () => {
   it('awards the ranked position value to each player with no ties', () => {
     const ruleset = makeRuleset()
     const pairing = makePairing()
-    const results = [1, 2, 3, 4].map(playerId => makeResult({ pairing_id: 1, player_id: playerId, position: playerId }))
+    const results = [1, 2, 3, 4].map(playerId =>
+      makeResult({ pairing_id: 1, player_id: playerId, position: playerId })
+    )
     const standingsMap = makeStandingsMap([1, 2, 3, 4])
 
     calculateRoundScores([pairing], results, standingsMap, [0, 4, 3, 2, 1], ruleset)
@@ -350,7 +369,9 @@ describe('calculateRoundScores', () => {
     const results = [
       makeResult({ pairing_id: 1, player_id: 1, position: 1, number_of_kills: 3 }),
       // Player 2 votes brew + both plays for player 1.
-      makeResult({ pairing_id: 1, player_id: 2, position: 2, brew_vote: 1, play_vote_1: 1, play_vote_2: 1 }),
+      makeResult({
+        pairing_id: 1, player_id: 2, position: 2, brew_vote: 1, play_vote_1: 1, play_vote_2: 1
+      }),
     ]
     const standingsMap = makeStandingsMap([1, 2])
 

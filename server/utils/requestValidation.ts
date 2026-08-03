@@ -72,7 +72,9 @@ export const playerFormBodySchema = v.object({
   player_name: v.pipe(v.string(), v.trim(), v.minLength(1)),
   player_surname: v.pipe(v.string(), v.trim(), v.minLength(1)),
   is_active: v.optional(v.boolean(), true),
-  formats_played: v.optional(v.nullable(v.array(v.picklist(Constants.public.Enums.mtg_formats))), null),
+  formats_played: v.optional(
+    v.nullable(v.array(v.picklist(Constants.public.Enums.mtg_formats))), null
+  ),
 })
 
 /**

@@ -101,7 +101,9 @@ const breadcrumbItems = useBreadcrumb(() => [
         :image1-alt="t('deck.artAlt', { name: firstDeck.commander_1_name })"
         :has-partner="!!firstDeck.commander_2_name"
         :image2="art2"
-        :image2-alt="firstDeck.commander_2_name ? t('deck.artAlt', { name: firstDeck.commander_2_name }) : ''"
+        :image2-alt="firstDeck.commander_2_name
+          ? t('deck.artAlt', { name: firstDeck.commander_2_name })
+          : ''"
         :loading="scryfallLoading"
       />
 

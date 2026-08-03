@@ -116,78 +116,80 @@ function handleToggleFullscreen() {
               class="flex items-center justify-between bg-elevated rounded-lg"
               :class="isFullscreen ? 'p-3' : 'p-1.5'"
             >
-                <div class="flex items-center gap-2 min-w-0">
-                  <span
-                    class="flex items-center justify-center rounded-full font-bold shrink-0"
-                    :class="[
-                      isTopPlayer(index) ? 'bg-warning/20 text-warning' : 'bg-primary/20 text-primary',
-                      isFullscreen ? 'w-10 h-10 text-xl' : 'w-5 h-5 text-xs',
-                    ]"
-                  >
-                    {{ index + 1 }}
-                  </span>
-                  <div class="min-w-0" :class="isFullscreen ? 'text-2xl' : ''">
-                    <div class="flex items-center gap-1.5">
-                      <PlayerNameTag
-                        :name="standing.players?.player_name ?? ''"
-                        :surname="standing.players?.player_surname ?? ''"
-                        :player-id="standing.player_id"
-                        :avatar-size="isFullscreen ? 'lg' : 'md'"
-                        class="font-medium"
-                        :class="isFullscreen ? 'text-2xl' : 'text-sm'"
+              <div class="flex items-center gap-2 min-w-0">
+                <span
+                  class="flex items-center justify-center rounded-full font-bold shrink-0"
+                  :class="[
+                    isTopPlayer(index)
+                      ? 'bg-warning/20 text-warning'
+                      : 'bg-primary/20 text-primary',
+                    isFullscreen ? 'w-10 h-10 text-xl' : 'w-5 h-5 text-xs',
+                  ]"
+                >
+                  {{ index + 1 }}
+                </span>
+                <div class="min-w-0" :class="isFullscreen ? 'text-2xl' : ''">
+                  <div class="flex items-center gap-1.5">
+                    <PlayerNameTag
+                      :name="standing.players?.player_name ?? ''"
+                      :surname="standing.players?.player_surname ?? ''"
+                      :player-id="standing.player_id"
+                      :avatar-size="isFullscreen ? 'lg' : 'md'"
+                      class="font-medium"
+                      :class="isFullscreen ? 'text-2xl' : 'text-sm'"
+                    />
+                    <UTooltip
+                      v-if="submittedByPlayerId[standing.player_id]"
+                      :content="{ side: 'top' }"
+                      :text="t('tournament.standingsCard.submittedBadge')"
+                    >
+                      <UIcon :name="ICONS.confirm" class="size-3.5 text-success shrink-0" />
+                    </UTooltip>
+                  </div>
+                  <div v-if="isDeveloperView" class="flex items-center gap-1.5">
+                    <div class="flex items-center gap-1 text-md text-muted" :title="t('player.stats.wins')">
+                      <UIcon :name="ICONS.victories" class="size-4 text-warning" />
+                      <span>{{ standing.victories ?? 0 }}</span>
+                    </div>
+                    <div
+                      class="flex items-center gap-1 text-md text-muted"
+                      :title="t('tournament.tableScoresModal.placementColumn')"
+                    >
+                      <UIcon :name="ICONS.standings" class="size-4 text-primary" />
+                      <span>{{ standing.placementPoints ?? 0 }}</span>
+                    </div>
+                    <div class="flex items-center gap-1 text-md text-muted" :title="t('player.stats.kills')">
+                      <UIcon :name="ICONS.kills" class="size-4 text-error" />
+                      <span>{{ standing.killPoints ?? 0 }}</span>
+                    </div>
+                    <div
+                      class="flex items-center gap-1 text-md text-muted"
+                      :title="t('tournament.standingsCard.brewVotesTooltip')"
+                    >
+                      <UIcon :name="ICONS.brewVotes" class="size-4 text-info" />
+                      <span>{{ standing.brewPoints ?? 0 }}</span>
+                    </div>
+                    <div
+                      class="flex items-center gap-1 text-md text-muted"
+                      :title="t('tournament.standingsCard.playVotesTooltip')"
+                    >
+                      <UIcon :name="ICONS.playVotes" class="size-4 text-success" />
+                      <span>{{ standing.playPoints ?? 0 }}</span>
+                    </div>
+                    <UTooltip
+                      v-if="standing.paymentMethod"
+                      :content="{ side: 'top' }"
+                      :text="t(PAYMENT_METHOD_DISPLAY[standing.paymentMethod].labelKey)"
+                    >
+                      <UIcon
+                        :name="PAYMENT_METHOD_DISPLAY[standing.paymentMethod].icon"
+                        class="size-4"
+                        :class="PAYMENT_METHOD_DISPLAY[standing.paymentMethod].textClass"
                       />
-                      <UTooltip
-                        v-if="submittedByPlayerId[standing.player_id]"
-                        :content="{ side: 'top' }"
-                        :text="t('tournament.standingsCard.submittedBadge')"
-                      >
-                        <UIcon :name="ICONS.confirm" class="size-3.5 text-success shrink-0" />
-                      </UTooltip>
-                    </div>
-                    <div v-if="isDeveloperView" class="flex items-center gap-1.5">
-                      <div class="flex items-center gap-1 text-md text-muted" :title="t('player.stats.wins')">
-                        <UIcon :name="ICONS.victories" class="size-4 text-warning" />
-                        <span>{{ standing.victories ?? 0 }}</span>
-                      </div>
-                      <div
-                        class="flex items-center gap-1 text-md text-muted"
-                        :title="t('tournament.tableScoresModal.placementColumn')"
-                      >
-                        <UIcon :name="ICONS.standings" class="size-4 text-primary" />
-                        <span>{{ standing.placementPoints ?? 0 }}</span>
-                      </div>
-                      <div class="flex items-center gap-1 text-md text-muted" :title="t('player.stats.kills')">
-                        <UIcon :name="ICONS.kills" class="size-4 text-error" />
-                        <span>{{ standing.killPoints ?? 0 }}</span>
-                      </div>
-                      <div
-                        class="flex items-center gap-1 text-md text-muted"
-                        :title="t('tournament.standingsCard.brewVotesTooltip')"
-                      >
-                        <UIcon :name="ICONS.brewVotes" class="size-4 text-info" />
-                        <span>{{ standing.brewPoints ?? 0 }}</span>
-                      </div>
-                      <div
-                        class="flex items-center gap-1 text-md text-muted"
-                        :title="t('tournament.standingsCard.playVotesTooltip')"
-                      >
-                        <UIcon :name="ICONS.playVotes" class="size-4 text-success" />
-                        <span>{{ standing.playPoints ?? 0 }}</span>
-                      </div>
-                      <UTooltip
-                        v-if="standing.paymentMethod"
-                        :content="{ side: 'top' }"
-                        :text="t(PAYMENT_METHOD_DISPLAY[standing.paymentMethod].labelKey)"
-                      >
-                        <UIcon
-                          :name="PAYMENT_METHOD_DISPLAY[standing.paymentMethod].icon"
-                          class="size-4"
-                          :class="PAYMENT_METHOD_DISPLAY[standing.paymentMethod].textClass"
-                        />
-                      </UTooltip>
-                    </div>
+                    </UTooltip>
                   </div>
                 </div>
+              </div>
               <span
                 class="font-bold shrink-0"
                 :class="[isTopPlayer(index) ? 'text-warning' : 'text-primary', isFullscreen ? 'text-3xl' : 'text-base']"

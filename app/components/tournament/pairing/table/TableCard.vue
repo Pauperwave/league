@@ -71,6 +71,7 @@ const seatsModel = computed({
     </template>
 
     <div class="@container">
+      <!-- :force-fallback="true" :fallback-on-body="true" absolutely not the correct option -->
       <VueDraggable
         v-model="seatsModel"
         tag="div"
@@ -78,8 +79,6 @@ const seatsModel = computed({
         :group="{ name: 'seats', pull: true, put: true }"
         handle=".drag-handle"
         :animation="180"
-        :force-fallback="true"
-        :fallback-on-body="true"
         ghost-class="!opacity-0"
         chosen-class="scale-95"
         @start="emit('dragStart')"

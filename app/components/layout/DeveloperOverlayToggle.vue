@@ -25,13 +25,17 @@ function toggle() {
     <UTooltip
       v-if="isDeveloperView"
       :content="{ side: 'bottom' }"
-      :text="isOverlayEnabled ? t('common.disableDeveloperOverlay') : t('common.enableDeveloperOverlay')"
+      :text="isOverlayEnabled
+        ? t('common.disableDeveloperOverlay')
+        : t('common.enableDeveloperOverlay')"
     >
       <UButton
         :icon="isOverlayEnabled ? ICONS.hide : ICONS.show"
         color="neutral"
         variant="ghost"
-        :aria-label="isOverlayEnabled ? t('common.disableDeveloperOverlay') : t('common.enableDeveloperOverlay')"
+        :aria-label="isOverlayEnabled
+          ? t('common.disableDeveloperOverlay')
+          : t('common.enableDeveloperOverlay')"
         @click="toggle"
       />
     </UTooltip>

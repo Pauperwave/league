@@ -107,7 +107,9 @@ export async function fetchPlayerMatchHistory(
   }
 
   // Sort by pairing datetime descending (newest first)
-  results.sort((a, b) => new Date(b.pairing_datetime).getTime() - new Date(a.pairing_datetime).getTime())
+  results.sort((a, b) =>
+    new Date(b.pairing_datetime).getTime() - new Date(a.pairing_datetime).getTime()
+  )
 
   return results
 }

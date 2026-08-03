@@ -14,11 +14,17 @@ function makeBreakdown(overrides: Partial<PlayerPointBreakdown> = {}): PlayerPoi
 describe('sumPointBreakdowns', () => {
   it('sums each field across multiple tournaments for the same player', () => {
     const summed = sumPointBreakdowns([
-      new Map([[1, makeBreakdown({ kills: 2, placementPoints: 4, killPoints: 4, brewPoints: 1, playPoints: 1 })]]),
-      new Map([[1, makeBreakdown({ kills: 1, placementPoints: 3, killPoints: 0, brewPoints: 2, playPoints: 0 })]]),
+      new Map([[1, makeBreakdown({
+        kills: 2, placementPoints: 4, killPoints: 4, brewPoints: 1, playPoints: 1
+      })]]),
+      new Map([[1, makeBreakdown({
+        kills: 1, placementPoints: 3, killPoints: 0, brewPoints: 2, playPoints: 0
+      })]]),
     ])
 
-    expect(summed.get(1)).toEqual({ kills: 3, placementPoints: 7, killPoints: 4, brewPoints: 3, playPoints: 1 })
+    expect(summed.get(1)).toEqual({
+      kills: 3, placementPoints: 7, killPoints: 4, brewPoints: 3, playPoints: 1
+    })
   })
 
   it('keeps players independent across tournaments', () => {
@@ -50,8 +56,12 @@ function makeRow(overrides: Partial<LeagueStandingRow> & { player_id: number }):
 describe('aggregateLeagueStandings', () => {
   it('sums score/victories/brew/play across a player\'s standings rows from multiple tournaments', () => {
     const rows = [
-      makeRow({ player_id: 1, standing_player_score: 10, victories: 1, brew_received: 1, play_received: 0 }),
-      makeRow({ player_id: 1, standing_player_score: 5, victories: 0, brew_received: 2, play_received: 1 }),
+      makeRow({
+        player_id: 1, standing_player_score: 10, victories: 1, brew_received: 1, play_received: 0
+      }),
+      makeRow({
+        player_id: 1, standing_player_score: 5, victories: 0, brew_received: 2, play_received: 1
+      }),
     ]
 
     const [result] = aggregateLeagueStandings(rows, new Map())
@@ -75,11 +85,13 @@ describe('aggregateLeagueStandings', () => {
         brewPoints: 2,
         playPoints: 1
       }
-    )]])
+      )]])
 
     const [result] = aggregateLeagueStandings(rows, breakdowns)
 
-    expect(result).toMatchObject({ kills: 4, placementPoints: 7, killPoints: 4, brewPoints: 2, playPoints: 1 })
+    expect(result).toMatchObject({
+      kills: 4, placementPoints: 7, killPoints: 4, brewPoints: 2, playPoints: 1
+    })
   })
 
   it('defaults a player with no breakdown entry to 0 across every point field, not undefined', () => {
@@ -87,7 +99,9 @@ describe('aggregateLeagueStandings', () => {
 
     const [result] = aggregateLeagueStandings(rows, new Map())
 
-    expect(result).toMatchObject({ kills: 0, placementPoints: 0, killPoints: 0, brewPoints: 0, playPoints: 0 })
+    expect(result).toMatchObject({
+      kills: 0, placementPoints: 0, killPoints: 0, brewPoints: 0, playPoints: 0
+    })
   })
 
   it('does not accumulate the breakdown a second time when a player has multiple standings rows', () => {

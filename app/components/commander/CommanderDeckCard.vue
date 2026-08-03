@@ -1,5 +1,5 @@
 <!-- app\components\commander\CommanderDeckCard.vue -->
- <script setup lang="ts">
+<script setup lang="ts">
 import type { CommanderDeck, CommanderAggregate } from '#shared/utils/types'
 
 const { t } = useI18n()
@@ -61,7 +61,9 @@ const tournamentCountLabel = computed(() =>
 // Bracket level (BACKLOG, 2026-07-22): self-assigned per player's own copy of
 // a deck, so it's meaningless in aggregate mode (no single owning player).
 const showBracketModal = ref(false)
-const bracketChipLogging = useButtonLogging(t('logging.deck.openBracketPicker'), { deckId: () => props.deck.id })
+const bracketChipLogging = useButtonLogging(t('logging.deck.openBracketPicker'), {
+  deckId: () => props.deck.id
+})
 const toast = useToast()
 const { updateDeck } = useDeckMutations()
 
@@ -84,7 +86,11 @@ async function onBracketConfirm(level: number) {
   try {
     await updateDeck.mutateAsync({ id: props.deck.id, updates: { bracket_level: level } })
   } catch (err) {
-    toast.add({ title: t('deck.bracket.saveError'), description: toErrorMessage(err), color: 'error' })
+    toast.add({
+      title: t('deck.bracket.saveError'),
+      description: toErrorMessage(err),
+      color: 'error'
+    })
     return
   }
   toast.add({ title: t('deck.bracket.saveSuccess'), color: 'success' })
@@ -190,10 +196,23 @@ async function onBracketConfirm(level: number) {
 
     <template #footer>
       <div class="flex items-center justify-end gap-2">
-        <UButton size="xs" variant="soft" color="primary" :icon="ICONS.statsLink" :to="statsPageUrl">
+        <UButton
+          size="xs"
+          variant="soft"
+          color="primary"
+          :icon="ICONS.statsLink"
+          :to="statsPageUrl"
+        >
           {{ isAggregate ? t('deck.viewDetails') : t('deck.viewStats') }}
         </UButton>
-        <UButton size="xs" variant="ghost" :icon="ICONS.externalLink" :to="scryfallSearchUrl" target="_blank">
+        <UButton
+          v-if="!isAggregate"
+          size="xs"
+          variant="ghost"
+          :icon="ICONS.externalLink"
+          :to="scryfallSearchUrl"
+          target="_blank"
+        >
           Scryfall
         </UButton>
       </div>

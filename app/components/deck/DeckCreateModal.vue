@@ -98,61 +98,61 @@ function handleCancel() {
     @cancel="handleCancel"
   >
     <form id="deck-create-form" class="space-y-4" @submit.prevent="handleSubmit">
-        <!-- Commander 1 -->
-        <UFormField :label="t('deck.newModal.commanderLabel')" required>
-          <UInput
-            v-model="commander1"
-            :placeholder="t('deck.newModal.commanderPlaceholder')"
-            class="w-full"
-          />
-        </UFormField>
+      <!-- Commander 1 -->
+      <UFormField :label="t('deck.newModal.commanderLabel')" required>
+        <UInput
+          v-model="commander1"
+          :placeholder="t('deck.newModal.commanderPlaceholder')"
+          class="w-full"
+        />
+      </UFormField>
 
-        <!-- Commander 2 -->
-        <UFormField :label="t('deck.newModal.partnerLabel')">
-          <UInput
-            v-model="commander2"
-            :placeholder="t('deck.newModal.partnerPlaceholder')"
-            class="w-full"
-          />
-        </UFormField>
+      <!-- Commander 2 -->
+      <UFormField :label="t('deck.newModal.partnerLabel')">
+        <UInput
+          v-model="commander2"
+          :placeholder="t('deck.newModal.partnerPlaceholder')"
+          class="w-full"
+        />
+      </UFormField>
 
-        <!-- Companion -->
-        <UFormField :label="t('deck.newModal.companionLabel')">
-          <UInput
-            v-model="companion"
-            :placeholder="t('deck.newModal.companionPlaceholder')"
-            class="w-full"
-          />
-        </UFormField>
+      <!-- Companion -->
+      <UFormField :label="t('deck.newModal.companionLabel')">
+        <UInput
+          v-model="companion"
+          :placeholder="t('deck.newModal.companionPlaceholder')"
+          class="w-full"
+        />
+      </UFormField>
 
-        <!-- Borrowed -->
-        <UCard variant="outline">
-          <div class="flex items-center gap-3">
-            <USwitch v-model="isBorrowed" />
-            <div>
-              <p class="font-medium">{{ t('deck.ownership.borrowedTitle') }}</p>
-              <p class="text-sm text-muted">
-                {{ t('deck.ownership.borrowedDescription') }}
-              </p>
-            </div>
+      <!-- Borrowed -->
+      <UCard variant="outline">
+        <div class="flex items-center gap-3">
+          <USwitch v-model="isBorrowed" />
+          <div>
+            <p class="font-medium">{{ t('deck.ownership.borrowedTitle') }}</p>
+            <p class="text-sm text-muted">
+              {{ t('deck.ownership.borrowedDescription') }}
+            </p>
           </div>
-        </UCard>
+        </div>
+      </UCard>
 
-        <!-- Lender -->
-        <UFormField
-          v-if="isBorrowed"
-          :label="t('deck.ownership.lenderLabel')"
-          required
-        >
-          <USelectMenu
-            v-model="lenderId"
-            :items="lenderOptions"
-            value-key="value"
-            :placeholder="t('deck.ownership.lenderPlaceholder')"
-            :search-input="{ placeholder: t('deck.ownership.lenderSearchPlaceholder') }"
-            class="w-full"
-          />
-        </UFormField>
-      </form>
+      <!-- Lender -->
+      <UFormField
+        v-if="isBorrowed"
+        :label="t('deck.ownership.lenderLabel')"
+        required
+      >
+        <USelectMenu
+          v-model="lenderId"
+          :items="lenderOptions"
+          value-key="value"
+          :placeholder="t('deck.ownership.lenderPlaceholder')"
+          :search-input="{ placeholder: t('deck.ownership.lenderSearchPlaceholder') }"
+          class="w-full"
+        />
+      </UFormField>
+    </form>
   </FormModal>
 </template>

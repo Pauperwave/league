@@ -55,7 +55,10 @@ async function countRoundResults(pairingIds: number[]): Promise<number> {
  *  cleanup goes straight to Supabase, same class of test-only exception as
  *  cleanup.ts's player deletion. */
 async function deepCleanTournament(tournamentId: number) {
-  const pairingIds = [...await fetchPairingIds(tournamentId, 1), ...await fetchPairingIds(tournamentId, 2)]
+  const pairingIds = [
+    ...await fetchPairingIds(tournamentId, 1),
+    ...await fetchPairingIds(tournamentId, 2)
+  ]
   const headers = supabaseHeaders()
 
   if (pairingIds.length > 0) {

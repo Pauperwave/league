@@ -21,12 +21,16 @@ const { data: playersData } = usePlayersQuery()
 const commanderName = computed(() => {
   for (const deck of decksData.value ?? []) {
     if (slugify(deck.commander_1_name) === commanderSlug) return deck.commander_1_name
-    if (deck.commander_2_name && slugify(deck.commander_2_name) === commanderSlug) return deck.commander_2_name
+    if (deck.commander_2_name && slugify(deck.commander_2_name) === commanderSlug) {
+      return deck.commander_2_name
+    }
   }
   return null
 })
 
-const { commander1Data: commanderData, loading: scryfallLoading } = useCommanderCards(commanderName, undefined)
+const { commander1Data: commanderData, loading: scryfallLoading } = useCommanderCards(
+  commanderName, undefined
+)
 const art = computed(() => getArtCrop(commanderData.value))
 
 // Single-commander aggregate, summed across every pair this commander has
@@ -42,7 +46,9 @@ const decksFeaturing = computed(() => {
   if (!name) return []
 
   return (decksData.value ?? [])
-    .filter((deck: CommanderDeck) => deck.commander_1_name === name || deck.commander_2_name === name)
+    .filter((deck: CommanderDeck) =>
+      deck.commander_1_name === name || deck.commander_2_name === name
+    )
     .map((deck: CommanderDeck) => {
       const player = (playersData.value ?? []).find(p => p.player_id === deck.player_id)
       const isPartnerSlot = deck.commander_2_name === name

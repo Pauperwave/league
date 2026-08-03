@@ -21,7 +21,9 @@ const emit = defineEmits<{
 }>()
 
 const showStartButton = computed(() => props.tournamentStatus === 'registration')
-const isLastRound = computed(() => props.currentRound === props.totalRounds && props.currentRound > 0)
+const isLastRound = computed(() =>
+  props.currentRound === props.totalRounds && props.currentRound > 0
+)
 
 const cancelRoundLogging = useButtonLogging(t('logging.tournament.cancelRound'), {
   currentRound: () => props.currentRound,
@@ -83,7 +85,10 @@ function handleAdvanceOrEnd() {
   </div>
 
   <div v-else-if="tournamentStatus === 'playing'" class="flex gap-2 justify-start">
-    <UTooltip :content="{ side: 'top' }" :text="t('tournament.controlPanel.backToPreviousRoundTooltip')">
+    <UTooltip
+      :content="{ side: 'top' }"
+      :text="t('tournament.controlPanel.backToPreviousRoundTooltip')"
+    >
       <UButton
         :leading-icon="ICONS.back"
         color="error"
@@ -108,7 +113,9 @@ function handleAdvanceOrEnd() {
         :disabled="!props.canAdvance"
         @click="handleAdvanceOrEnd"
       >
-        {{ isLastRound ? t('tournament.endEvent.title') : t('tournament.controlPanel.advanceButton') }}
+        {{ isLastRound
+          ? t('tournament.endEvent.title')
+          : t('tournament.controlPanel.advanceButton') }}
       </UButton>
     </UTooltip>
   </div>

@@ -10,7 +10,12 @@ const envColor = computed(() => appEnv === 'production' ? 'success' : 'neutral')
 
 <template>
   <div class="fixed bottom-4 left-4 z-50">
-    <UBadge :color="envColor" variant="subtle" size="lg" class="gap-2 text-sm">
+    <UBadge
+      :color="envColor"
+      variant="subtle"
+      size="lg"
+      class="gap-2 text-sm"
+    >
       <span>{{ appEnv }}</span>
       <span v-if="appVersion" class="font-mono opacity-75">v{{ appVersion }}</span>
     </UBadge>

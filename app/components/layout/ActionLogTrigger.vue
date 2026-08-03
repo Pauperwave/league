@@ -15,7 +15,11 @@ const isOpen = ref(false)
 
 <template>
   <ClientOnly>
-    <UTooltip v-if="isDeveloperView" :content="{ side: 'bottom' }" :text="t('actionLogPanel.openAriaLabel')">
+    <UTooltip
+      v-if="isDeveloperView"
+      :content="{ side: 'bottom' }"
+      :text="t('actionLogPanel.openAriaLabel')"
+    >
       <UButton
         :icon="ICONS.actionLog"
         color="neutral"

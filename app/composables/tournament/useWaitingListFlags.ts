@@ -41,7 +41,9 @@ export function useWaitingListFlags(tournamentId: number) {
   const flags = ref<Record<number, WaitingListFlags>>({})
 
   onMounted(() => {
-    flags.value = getCached<Record<number, WaitingListFlags>>(waitingListFlagsKey(tournamentId), FLAGS_TTL_MS) ?? {}
+    flags.value = getCached<Record<number, WaitingListFlags>>(
+      waitingListFlagsKey(tournamentId), FLAGS_TTL_MS
+    ) ?? {}
   })
 
   watch(flags, (value) => {
@@ -64,5 +66,7 @@ export function clearWaitingListFlags(tournamentId: number) {
  */
 export function readWaitingListFlags(tournamentId: number): Record<number, WaitingListFlags> {
   if (typeof window === 'undefined') return {}
-  return getCached<Record<number, WaitingListFlags>>(waitingListFlagsKey(tournamentId), FLAGS_TTL_MS) ?? {}
+  return getCached<Record<number, WaitingListFlags>>(
+    waitingListFlagsKey(tournamentId), FLAGS_TTL_MS
+  ) ?? {}
 }

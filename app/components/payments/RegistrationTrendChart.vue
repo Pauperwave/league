@@ -9,12 +9,25 @@ const { rows } = defineProps<{ rows: PaymentRow[] }>()
 const { t } = useI18n()
 const { colors, tooltipTheme } = useChartTheme()
 
+interface TournamentTrendPoint {
+  name: string
+  date: string | null
+  count: number
+}
+
 const option = computed<ECOption>(() => {
-  const byTournament = new Map<number, { name: string; date: string | null; count: number }>()
+  const byTournament = new Map<number, TournamentTrendPoint>()
   for (const row of rows) {
     const existing = byTournament.get(row.tournamentId)
-    if (existing) existing.count++
-    else byTournament.set(row.tournamentId, { name: row.tournamentName, date: row.tournamentDate, count: 1 })
+    if (existing) {
+      existing.count++
+    } else {
+      byTournament.set(row.tournamentId, {
+        name: row.tournamentName,
+        date: row.tournamentDate,
+        count: 1
+      })
+    }
   }
   const sorted = [...byTournament.values()].sort((a, b) => (a.date ?? '').localeCompare(b.date ?? ''))
   const lineColor = colors.value.palette[0]

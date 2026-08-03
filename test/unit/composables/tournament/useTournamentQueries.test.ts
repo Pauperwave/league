@@ -49,17 +49,23 @@ describe('mergeEventStandings', () => {
 
     const [result] = mergeEventStandings(rows, breakdowns)
 
-    expect(result).toMatchObject({ kills: 3, placementPoints: 8, killPoints: 3, brewPoints: 2, playPoints: 1 })
+    expect(result).toMatchObject({
+      kills: 3, placementPoints: 8, killPoints: 3, brewPoints: 2, playPoints: 1
+    })
   })
 
   it('defaults a player with no breakdown entry to 0 across every point field', () => {
     const [result] = mergeEventStandings([makeRow({ player_id: 1 })], new Map())
 
-    expect(result).toMatchObject({ kills: 0, placementPoints: 0, killPoints: 0, brewPoints: 0, playPoints: 0 })
+    expect(result).toMatchObject({
+      kills: 0, placementPoints: 0, killPoints: 0, brewPoints: 0, playPoints: 0
+    })
   })
 
   it('preserves the real persisted standing_id/tournament_id/standing_player_rank (single-tournament rows, not synthesized like the league-wide aggregation)', () => {
-    const rows = [makeRow({ player_id: 1, standing_id: 42, tournament_id: 284, standing_player_rank: 7 })]
+    const rows = [makeRow({
+      player_id: 1, standing_id: 42, tournament_id: 284, standing_player_rank: 7
+    })]
 
     const [result] = mergeEventStandings(rows, new Map())
 

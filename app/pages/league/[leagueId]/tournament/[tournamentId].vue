@@ -108,7 +108,9 @@ const votesStore = useVotesStore()
 
 // Crash insurance: mirror in-progress round entry (rankings/kills/votes/
 // commanders) to localStorage and restore it after a refresh mid-round.
-useSessionStorePersistence({ tournamentId, currentRound, rankingsStore, killsStore, commandersStore, votesStore })
+useSessionStorePersistence({
+  tournamentId, currentRound, rankingsStore, killsStore, commandersStore, votesStore
+})
 
 const toast = useToast()
 const { liveStandings } = useLiveStandings(
@@ -129,7 +131,8 @@ if (phaseFromQuery.value !== 'previewTables' && phaseFromQuery.value !== tournam
 
 useTournamentUrlSync({
   syncPreview, syncScoreModal, syncKillModal, syncVotesModal, syncCommanderModal,
-  previewFromQuery, scoreModalFromQuery, killModalFromQuery, votesModalFromQuery, commanderModalFromQuery,
+  previewFromQuery, scoreModalFromQuery, killModalFromQuery,
+  votesModalFromQuery, commanderModalFromQuery,
   showStartPreviewModal,
   showScoreModal,
   selectedPairingId,
@@ -248,7 +251,9 @@ const tournamentPlayers = computed<TablePlayer[]>(() =>
 // "Who's won this table" checklist (BACKLOG #15) — winners derived live from
 // rankingsStore, booster hand-out check-off state persisted per event+round.
 const winners = useWinners(displayedPairings, tournamentPlayers, rankingsStore)
-const { checked: winnersChecked, toggle: toggleWinnerChecked } = useWinnerChecklist(tournamentId, currentRound)
+const {
+  checked: winnersChecked, toggle: toggleWinnerChecked
+} = useWinnerChecklist(tournamentId, currentRound)
 
 const pairingPlayersForScoring = computed<PairingPlayer[]>(() => {
   // Tonight's rotation (this tournament's own already-played rounds) plus the
@@ -284,7 +289,9 @@ const selectedKillPlayers = computed(() => {
 
 const tablePlayersForVotes = computed(() => {
   if (!selectedVotesPlayerId.value) return []
-  const pairing = pairings.value.find(p => getPairingPlayerIds(p).includes(selectedVotesPlayerId.value!))
+  const pairing = pairings.value.find(p =>
+    getPairingPlayerIds(p).includes(selectedVotesPlayerId.value!)
+  )
   if (!pairing) return []
   const playerIds = getPairingPlayerIds(pairing)
   return tournamentPlayers.value
@@ -306,24 +313,24 @@ const submittedByPlayerId = computed<Record<number, boolean>>(() => {
 
 // ── Computed: UI Text ──────────────────────────────────────────────────────
 
-  const standingsTitle = computed(() => {
-    if (tournamentStatus.value === 'ended') return t('tournament.standingsTitleFinal')
-    if (currentRound.value > 0) return t('tournament.standingsTitleRound', { round: currentRound.value })
-    return t('tournament.standingsTitleDefault')
-  })
+const standingsTitle = computed(() => {
+  if (tournamentStatus.value === 'ended') return t('tournament.standingsTitleFinal')
+  if (currentRound.value > 0) return t('tournament.standingsTitleRound', { round: currentRound.value })
+  return t('tournament.standingsTitleDefault')
+})
 
-  const roundDuration = computed(() => {
-    return currentTournament.value?.tournament_round_duration ?? 75
-  })
+const roundDuration = computed(() => {
+  return currentTournament.value?.tournament_round_duration ?? 75
+})
 
-  function handleTimerExpired() {
-    toast.add({
-      title: t('tournament.timerExpiredTitle'),
-      description: t('tournament.timerExpiredDescription', { round: currentRound.value }),
-      color: 'warning',
-      icon: ICONS.timerOff,
-    })
-  }
+function handleTimerExpired() {
+  toast.add({
+    title: t('tournament.timerExpiredTitle'),
+    description: t('tournament.timerExpiredDescription', { round: currentRound.value }),
+    color: 'warning',
+    icon: ICONS.timerOff,
+  })
+}
 
 const formattedDate = computed(() => {
   const dt = currentTournament.value?.tournament_datetime
@@ -427,7 +434,7 @@ async function handleResetTable(pairingId: number) {
   const pairing = pairings.value.find(p => p.pairing_id === pairingId)
   if (!pairing) return
 
-    const playerIds = getPairingPlayerIds(pairing)
+  const playerIds = getPairingPlayerIds(pairing)
 
   rankingsStore.removeRanking(pairingId)
 
@@ -435,7 +442,9 @@ async function handleResetTable(pairingId: number) {
     playerIds.includes(k.killerId) && playerIds.includes(k.victimId)
   )
   tableKills.forEach((kill) => {
-    const index = killsStore.kills.findIndex((k) => k.killerId === kill.killerId && k.victimId === kill.victimId)
+    const index = killsStore.kills.findIndex((k) =>
+      k.killerId === kill.killerId && k.victimId === kill.victimId
+    )
     if (index !== -1) killsStore.kills.splice(index, 1)
   })
 
@@ -469,7 +478,9 @@ async function handleUndrawTable(pairingId: number) {
     playerIds.includes(k.killerId) && playerIds.includes(k.victimId)
   )
   tableKills.forEach((kill) => {
-    const index = killsStore.kills.findIndex((k) => k.killerId === kill.killerId && k.victimId === kill.victimId)
+    const index = killsStore.kills.findIndex((k) =>
+      k.killerId === kill.killerId && k.victimId === kill.victimId
+    )
     if (index !== -1) killsStore.kills.splice(index, 1)
   })
 
@@ -569,7 +580,11 @@ async function handleUndrawTable(pairingId: number) {
           </div>
 
           <!-- Registration / Ended Phase -->
-          <div v-else-if="tournamentStatus !== 'playing' && !isViewingPastRound && !isCorrectingLastRound">
+          <div
+            v-else-if="
+              tournamentStatus !== 'playing' && !isViewingPastRound && !isCorrectingLastRound
+            "
+          >
             <div v-if="tournamentStatus === 'registration'" class="space-y-4">
               <WaitingList
                 :waiting-players="waitingPlayers"
@@ -628,7 +643,8 @@ async function handleUndrawTable(pairingId: number) {
                 @open-votes-modal="handleOpenVotesModal"
                 @open-kill-modal="handleOpenKillModal"
                 @reset-table="handleResetTable"
-                @draw="(pairingId, playerIds) => submitHandlers.handleDrawSubmit(pairingId, playerIds)"
+                @draw="(pairingId, playerIds) =>
+                  submitHandlers.handleDrawSubmit(pairingId, playerIds)"
                 @undraw="handleUndrawTable"
                 @refresh-pairings="refreshDisplayedPairings"
               />

@@ -44,7 +44,11 @@ async function onBracketConfirm(level: number) {
   try {
     await updateDeck.mutateAsync({ id: props.deck.id, updates: { bracket_level: level } })
   } catch (err) {
-    toast.add({ title: t('deck.bracket.saveError'), description: toErrorMessage(err), color: 'error' })
+    toast.add({
+      title: t('deck.bracket.saveError'),
+      description: toErrorMessage(err),
+      color: 'error'
+    })
     return
   }
   toast.add({ title: t('deck.bracket.saveSuccess'), color: 'success' })
@@ -104,49 +108,49 @@ function handleCancel() {
     @cancel="handleCancel"
   >
     <form id="deck-form" class="space-y-4" @submit.prevent="handleSubmit">
-        <UCard variant="outline">
-          <div class="flex items-center gap-3">
-            <USwitch v-model="isBorrowed" />
-            <div>
-              <p class="font-medium">{{ t('deck.ownership.borrowedTitle') }}</p>
-              <p class="text-sm text-muted">
-                {{ t('deck.ownership.borrowedDescription') }}
-              </p>
-            </div>
-          </div>
-        </UCard>
-
-        <!-- Lender -->
-        <UFormField
-          v-if="isBorrowed"
-          :label="t('deck.ownership.lenderLabel')"
-          required
-        >
-          <USelectMenu
-            v-model="lenderId"
-            :items="lenderOptions"
-            value-key="value"
-            :placeholder="t('deck.ownership.lenderPlaceholder')"
-            :search-input="{ placeholder: t('deck.ownership.lenderSearchPlaceholder') }"
-            class="w-full"
-          />
-        </UFormField>
-
-        <div v-if="isBorrowed && !lenderId" class="text-sm text-warning flex items-center gap-1.5">
-          <UIcon :name="ICONS.warning" class="size-4" />
-          <span>{{ t('deck.editModal.selectLenderWarning') }}</span>
-        </div>
-
-        <div class="flex items-center justify-between gap-3 rounded-lg border border-default p-3">
+      <UCard variant="outline">
+        <div class="flex items-center gap-3">
+          <USwitch v-model="isBorrowed" />
           <div>
-            <p class="font-medium text-sm">{{ t('deck.bracket.editFieldLabel') }}</p>
-            <p class="text-sm text-muted">{{ bracketFieldHint }}</p>
+            <p class="font-medium">{{ t('deck.ownership.borrowedTitle') }}</p>
+            <p class="text-sm text-muted">
+              {{ t('deck.ownership.borrowedDescription') }}
+            </p>
           </div>
-          <UButton size="sm" variant="outline" @click="() => { showBracketModal = true }">
-            {{ t('deck.bracket.editButton') }}
-          </UButton>
         </div>
-      </form>
+      </UCard>
+
+      <!-- Lender -->
+      <UFormField
+        v-if="isBorrowed"
+        :label="t('deck.ownership.lenderLabel')"
+        required
+      >
+        <USelectMenu
+          v-model="lenderId"
+          :items="lenderOptions"
+          value-key="value"
+          :placeholder="t('deck.ownership.lenderPlaceholder')"
+          :search-input="{ placeholder: t('deck.ownership.lenderSearchPlaceholder') }"
+          class="w-full"
+        />
+      </UFormField>
+
+      <div v-if="isBorrowed && !lenderId" class="text-sm text-warning flex items-center gap-1.5">
+        <UIcon :name="ICONS.warning" class="size-4" />
+        <span>{{ t('deck.editModal.selectLenderWarning') }}</span>
+      </div>
+
+      <div class="flex items-center justify-between gap-3 rounded-lg border border-default p-3">
+        <div>
+          <p class="font-medium text-sm">{{ t('deck.bracket.editFieldLabel') }}</p>
+          <p class="text-sm text-muted">{{ bracketFieldHint }}</p>
+        </div>
+        <UButton size="sm" variant="outline" @click="() => { showBracketModal = true }">
+          {{ t('deck.bracket.editButton') }}
+        </UButton>
+      </div>
+    </form>
   </FormModal>
 
   <BracketPickerModal

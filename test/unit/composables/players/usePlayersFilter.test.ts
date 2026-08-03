@@ -62,7 +62,9 @@ describe('usePlayersFilter', () => {
         makePlayer(1, 'Bruno', 'Rossi', true),
         makePlayer(2, 'Anna', 'Verdi', false),
       ])
-      const { showOnlyWithDecks, showOnlyActive, filteredPlayers } = setupPlayersFilter(mixedActivity)
+      const {
+        showOnlyWithDecks, showOnlyActive, filteredPlayers
+      } = setupPlayersFilter(mixedActivity)
       showOnlyWithDecks.value = false
       showOnlyActive.value = true
 
@@ -93,7 +95,9 @@ describe('usePlayersFilter', () => {
 
     it('is no-active-filter when the active filter excludes everyone but players exist', () => {
       const onlyInactivePlayers = ref<Player[]>([makePlayer(2, 'Anna', 'Verdi', false)])
-      const { showOnlyWithDecks, showOnlyActive, emptyState } = setupPlayersFilter(onlyInactivePlayers)
+      const {
+        showOnlyWithDecks, showOnlyActive, emptyState
+      } = setupPlayersFilter(onlyInactivePlayers)
       showOnlyWithDecks.value = false
       showOnlyActive.value = true
       expect(emptyState.value).toBe('no-active-filter')

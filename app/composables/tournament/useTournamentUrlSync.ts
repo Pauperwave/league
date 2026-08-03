@@ -37,7 +37,8 @@ interface EventUrlSyncDeps {
 export function useTournamentUrlSync(deps: EventUrlSyncDeps) {
   const {
     syncPreview, syncScoreModal, syncKillModal, syncVotesModal, syncCommanderModal,
-    previewFromQuery, scoreModalFromQuery, killModalFromQuery, votesModalFromQuery, commanderModalFromQuery,
+    previewFromQuery, scoreModalFromQuery, killModalFromQuery,
+    votesModalFromQuery, commanderModalFromQuery,
     showStartPreviewModal, showScoreModal, selectedPairingId, selectedTableIndex, pairings,
     showVotesModal, selectedVotesPlayerId, selectedVotesPairingId,
     showCommanderModal, selectedPlayerId, selectedCommanderPairingId,

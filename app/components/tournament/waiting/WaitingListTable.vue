@@ -122,7 +122,10 @@ const allSelectedPaid = computed(() =>
   hasSelection.value && selectedPlayerIds.value.every(id => playerState[id]?.paymentMethod !== null)
 )
 
-function executeBatch(updateFn: ((id: number) => void) | null, batchEmitFn: (ids: number[]) => void) {
+function executeBatch(
+  updateFn: ((id: number) => void) | null,
+  batchEmitFn: (ids: number[]) => void
+) {
   if (!hasSelection.value) return
   const ids = selectedPlayerIds.value
   if (updateFn) {
@@ -250,7 +253,9 @@ const columns = computed<TableColumn<WaitingPlayer>[]>(() => [
       // fullName() joins as `${name} ${surname}` — split the combined match
       // indices back onto each part (-1 for the joining space).
       const nameIndices = match.indices.filter(i => i < name.length)
-      const surnameIndices = match.indices.filter(i => i > name.length).map(i => i - name.length - 1)
+      const surnameIndices = match.indices
+        .filter(i => i > name.length)
+        .map(i => i - name.length - 1)
       return h(PlayerNameTag, { name, surname, playerId: row.original.playerId, avatarSize: 'md' }, {
         name: () => highlightFuzzyChars(name, nameIndices),
         surname: () => highlightFuzzyChars(surname, surnameIndices),
@@ -321,7 +326,10 @@ const meta = computed(() => ({
           {{ t('tournament.waitingListTable.selectedCount', { count: selectedPlayerIds.length }) }}
         </span>
         <UButton
-          size="xs" :color="allSelectedPaid ? 'neutral' : 'success'" variant="subtle" :icon="ICONS.paid"
+          size="xs"
+          :color="allSelectedPaid ? 'neutral' : 'success'"
+          variant="subtle"
+          :icon="ICONS.paid"
           @click="handleToggleMarkPaid"
         >
           {{ allSelectedPaid
@@ -329,7 +337,10 @@ const meta = computed(() => ({
             : t('tournament.waitingListTable.markPaid') }}
         </UButton>
         <UButton
-          size="xs" color="error" variant="subtle" :icon="ICONS.delete"
+          size="xs"
+          color="error"
+          variant="subtle"
+          :icon="ICONS.delete"
           @click="handleBatchRemoveClick"
         >
           {{ t('tournament.waitingListTable.removeSelected') }}
@@ -391,7 +402,9 @@ const meta = computed(() => ({
       v-model:open="showBatchRemoveConfirm"
       :title="t('tournament.waitingListTable.batchRemoveConfirm.title')"
       :description="t('tournament.waitingListTable.batchRemoveConfirm.description')"
-      :question="t('tournament.waitingListTable.batchRemoveConfirm.question', { count: selectedPlayerIds.length })"
+      :question="t('tournament.waitingListTable.batchRemoveConfirm.question', {
+        count: selectedPlayerIds.length
+      })"
       @confirm="handleConfirmBatchRemove"
     />
   </div>

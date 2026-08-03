@@ -74,7 +74,9 @@ describe('useTableCompletion', () => {
     rankingsStore.setRankingWithRanks(1, [{ playerId: 1, rank: 1 }, { playerId: 2, rank: 2 }])
     expect(hasRanking(pairing)).toBe(false)
 
-    rankingsStore.setRankingWithRanks(1, [1, 2, 3, 4].map(playerId => ({ playerId, rank: playerId })))
+    rankingsStore.setRankingWithRanks(
+      1, [1, 2, 3, 4].map(playerId => ({ playerId, rank: playerId }))
+    )
     expect(hasRanking(pairing)).toBe(true)
   })
 
@@ -84,14 +86,18 @@ describe('useTableCompletion', () => {
     const notYetConfirmed = makePairing({ round_results: [makeResult({ number_of_kills: null })] })
     expect(hasKills(notYetConfirmed)).toBe(false)
 
-    const confirmedWithZeroKills = makePairing({ round_results: [makeResult({ number_of_kills: 0 })] })
+    const confirmedWithZeroKills = makePairing({
+      round_results: [makeResult({ number_of_kills: 0 })]
+    })
     expect(hasKills(confirmedWithZeroKills)).toBe(true)
   })
 
   it('isDraw is true when every seated player has zero kills and ties for rank 1', () => {
     const { isDraw, rankingsStore } = setupCompletion()
     const pairing = makePairing({
-      round_results: [1, 2, 3, 4].map(playerId => makeResult({ player_id: playerId, number_of_kills: 0 })),
+      round_results: [1, 2, 3, 4].map(playerId =>
+        makeResult({ player_id: playerId, number_of_kills: 0 })
+      ),
     })
 
     expect(isDraw(pairing)).toBe(false)
@@ -133,7 +139,9 @@ describe('useTableCompletion', () => {
       votesStore
     } = setupCompletion()
     const playerIds = [1, 2, 3, 4]
-    const pairing: PairingWithResults = makePairing({ round_results: [makeResult({ number_of_kills: 0 })] })
+    const pairing: PairingWithResults = makePairing({
+      round_results: [makeResult({ number_of_kills: 0 })]
+    })
 
     rankingsStore.setRankingWithRanks(1, playerIds.map(playerId => ({ playerId, rank: playerId })))
     for (const playerId of playerIds) votesStore.setVotes(playerId, playerId, playerId)

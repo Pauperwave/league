@@ -22,12 +22,12 @@ function cloneTables(tables: PairingTable[]): PairingTable[] {
       id: seat.id,
       player: seat.player
         ? {
-            id: seat.player.id,
-            name: seat.player.name,
-            surname: seat.player.surname,
-            seed: seat.player.seed,
-            avatarUrl: seat.player.avatarUrl,
-          }
+          id: seat.player.id,
+          name: seat.player.name,
+          surname: seat.player.surname,
+          seed: seat.player.seed,
+          avatarUrl: seat.player.avatarUrl,
+        }
         : null,
     })) as [Seat, Seat, Seat, Seat],
   }))
@@ -174,7 +174,9 @@ export function useTableDnd(initialTables: PairingTable[], params?: {
     })
   )
 
-  const noDuplicates = computed(() => new Set(localPlayerIds.value).size === localPlayerIds.value.length)
+  const noDuplicates = computed(() =>
+    new Set(localPlayerIds.value).size === localPlayerIds.value.length
+  )
 
   const noMissingPlayers = computed(() => {
     if (sourcePlayerIds.value.length !== localPlayerIds.value.length) return false
@@ -185,7 +187,9 @@ export function useTableDnd(initialTables: PairingTable[], params?: {
 
   const currentTablesAsIds = computed<number[][]>(() =>
     localTables.value
-      .map(table => table.seats.map(seat => seat.player?.id).filter((id): id is number => id !== undefined))
+      .map(table =>
+        table.seats.map(seat => seat.player?.id).filter((id): id is number => id !== undefined)
+      )
       .filter(table => table.length > 0)
   )
 
@@ -324,7 +328,9 @@ export function useTableDnd(initialTables: PairingTable[], params?: {
 
   function addForbiddenPair(playerA: number, playerB: number) {
     if (playerA === playerB) return
-    const normalized = normalizePairingForbiddenPairs([...forbiddenPairs.value, { playerA, playerB }])
+    const normalized = normalizePairingForbiddenPairs([
+      ...forbiddenPairs.value, { playerA, playerB }
+    ])
     forbiddenPairs.value = normalized
   }
 

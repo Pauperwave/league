@@ -108,7 +108,8 @@ export function aggregateLeagueStandings(
   for (const s of rows) {
     const existing = playerMap.get(s.player_id)
     if (existing) {
-      existing.standing_player_score = (existing.standing_player_score ?? 0) + (s.standing_player_score ?? 0)
+      existing.standing_player_score =
+        (existing.standing_player_score ?? 0) + (s.standing_player_score ?? 0)
       existing.victories = (existing.victories ?? 0) + (s.victories ?? 0)
       existing.brew_received = (existing.brew_received ?? 0) + (s.brew_received ?? 0)
       existing.play_received = (existing.play_received ?? 0) + (s.play_received ?? 0)

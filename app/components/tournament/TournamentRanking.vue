@@ -66,7 +66,8 @@ const standingsTotals = computed(() => {
       }
       totalsMap.set(standing.player_id, {
         player_id: standing.player_id,
-        standing_player_score: (current.standing_player_score ?? 0) + (standing.standing_player_score ?? 0),
+        standing_player_score:
+          (current.standing_player_score ?? 0) + (standing.standing_player_score ?? 0),
         victories: (current.victories ?? 0) + (standing.victories ?? 0),
         kills: (current.kills ?? 0) + (standing.kills ?? 0),
         brew_received: (current.brew_received ?? 0) + (standing.brew_received ?? 0),

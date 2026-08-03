@@ -31,7 +31,9 @@ const emit = defineEmits<{
       :content="{ side: 'top' }"
       :text="isDraw
         ? t('tournament.pairing.drawnTooltip')
-        : (hasRanking ? t('tournament.pairing.rankingSetTooltip') : t('tournament.pairing.rankingNotSetTooltip'))"
+        : (hasRanking
+          ? t('tournament.pairing.rankingSetTooltip')
+          : t('tournament.pairing.rankingNotSetTooltip'))"
     >
       <UButton
         :color="hasRanking ? 'success' : 'neutral'"
@@ -50,7 +52,9 @@ const emit = defineEmits<{
       :content="{ side: 'top' }"
       :text="isDraw
         ? t('tournament.pairing.drawnTooltip')
-        : (hasKills ? t('tournament.pairing.killsSetTooltip') : t('tournament.pairing.killsNotSetTooltip'))"
+        : (hasKills
+          ? t('tournament.pairing.killsSetTooltip')
+          : t('tournament.pairing.killsNotSetTooltip'))"
     >
       <UButton
         :color="hasKills ? 'success' : 'neutral'"
@@ -73,7 +77,9 @@ const emit = defineEmits<{
       :content="{ side: 'top' }"
       :text="isDraw
         ? t('tournament.pairing.drawUndoTooltip')
-        : (canToggleDraw ? t('tournament.killModal.drawHint') : t('tournament.pairing.drawDisabledTooltip'))"
+        : (canToggleDraw
+          ? t('tournament.killModal.drawHint')
+          : t('tournament.pairing.drawDisabledTooltip'))"
     >
       <UButton
         :color="isDraw ? 'success' : 'neutral'"

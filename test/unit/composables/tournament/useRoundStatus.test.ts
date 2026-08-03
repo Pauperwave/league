@@ -44,7 +44,9 @@ function setupRoundStatus(pairings: PairingWithResults[], players: PairingPlayer
       rankingsStore = useRankingsStore()
       commandersStore = useCommandersStore()
       votesStore = useVotesStore()
-      roundStatus = useRoundStatus(pairingsRef, playersRef, rankingsStore, commandersStore, votesStore)
+      roundStatus = useRoundStatus(
+        pairingsRef, playersRef, rankingsStore, commandersStore, votesStore
+      )
       return () => h('div')
     },
   }), {
@@ -81,7 +83,9 @@ describe('useRoundStatus', () => {
   it('numbers rankingItems/killItems as 1-based table indices, in pairing order', () => {
     const { rankingItems, killItems } = setupRoundStatus(pairings, players)
 
-    expect(rankingItems.value.map(i => ({ pairingId: i.pairingId, tableNumber: i.tableNumber }))).toEqual([
+    expect(
+      rankingItems.value.map(i => ({ pairingId: i.pairingId, tableNumber: i.tableNumber }))
+    ).toEqual([
       { pairingId: 10, tableNumber: 1 },
       { pairingId: 20, tableNumber: 2 },
     ])

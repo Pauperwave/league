@@ -1,5 +1,10 @@
 // app\composables\supabase\useStatsQueryBuilder.ts
 
+interface EqIsFilterable<T> {
+  eq(col: string, val: unknown): T
+  is(col: string, val: null): T
+}
+
 /**
  * Apply commander_2 filter to a Supabase query.
  * Handles the NULL vs value distinction correctly for Postgres.
@@ -10,7 +15,7 @@
  *     commander2Name
  *   )
  */
-export function applyCommander2Filter<T extends { eq(col: string, val: unknown): T; is(col: string, val: null): T }>(
+export function applyCommander2Filter<T extends EqIsFilterable<T>>(
   query: T,
   commander2Name: string | null | undefined
 ): T {

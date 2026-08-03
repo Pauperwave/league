@@ -19,6 +19,8 @@ const displayLabel = computed(() => label ?? t('common.dateLabel'))
 const open = ref(false)
 const df = new DateFormatter('it-IT', { dateStyle: 'long' })
 
+// TODO here a computed for line 48
+
 function getToday(): CalendarDate {
   const now = new Date()
   return new CalendarDate(now.getFullYear(), now.getMonth() + 1, now.getDate())
@@ -36,9 +38,16 @@ const selectedDate = computed({
       {{ displayLabel }} <span v-if="required" class="text-error">*</span>
     </label>
     <UPopover v-model:open="open">
-      <UButton color="neutral" variant="subtle" :icon="ICONS.calendar" class="w-full justify-between">
+      <UButton
+        color="neutral"
+        variant="subtle"
+        :icon="ICONS.calendar"
+        class="w-full justify-between"
+      >
         <span class="truncate">
-          {{ modelValue ? df.format(modelValue.toDate(getLocalTimeZone())) : t('common.selectDate') }}
+          {{ modelValue
+            ? df.format(modelValue.toDate(getLocalTimeZone()))
+            : t('common.selectDate') }}
         </span>
         <template #trailing>
           <span
@@ -52,9 +61,18 @@ const selectedDate = computed({
       </UButton>
       <template #content>
         <div class="p-2 space-y-2">
-          <UCalendar v-model="selectedDate" prevent-deselect class="p-2" @update:model-value="open = false" />
+          <UCalendar
+            v-model="selectedDate"
+            prevent-deselect
+            class="p-2"
+            @update:model-value="open = false"
+          />
           <div class="flex justify-center">
-            <UButton color="neutral" size="sm" @click="() => { selectedDate = getToday(); open = false }">
+            <UButton
+              color="neutral"
+              size="sm"
+              @click="() => { selectedDate = getToday(); open = false }"
+            >
               {{ t('common.today') }}
             </UButton>
           </div>

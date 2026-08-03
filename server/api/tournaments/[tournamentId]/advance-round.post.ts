@@ -67,13 +67,22 @@ export default defineEventHandler(async (event) => {
   // add-onto-persisted-value approach, BACKLOG #11/#12).
   try {
     const { ruleset, posValues } = await resolveTournamentRuleset(supabase, tournamentId)
-    const { pairings, results, standingsMap } = await fetchRoundData(supabase, tournamentId, currentRound)
-    console.log('[api/advance-round] scoring rounds 1..N', { tournamentId, currentRound, pairings: pairings.length, results: results.length, players: standingsMap.size })
+    const { pairings, results, standingsMap } = await fetchRoundData(
+      supabase, tournamentId, currentRound
+    )
+    console.log('[api/advance-round] scoring rounds 1..N', {
+      tournamentId,
+      currentRound,
+      pairings: pairings.length,
+      results: results.length,
+      players: standingsMap.size
+    })
     calculateRoundScores(pairings, results, standingsMap, posValues, ruleset)
     await updateStandingsAndRanks(supabase, tournamentId, standingsMap)
     console.log('[api/advance-round] standings updated', {
       tournamentId,
-      scores: Array.from(standingsMap.values()).map(s => ({ player: s.player_id, score: s.standing_player_score })),
+      scores: Array.from(standingsMap.values())
+        .map(s => ({ player: s.player_id, score: s.standing_player_score })),
     })
   } catch (err) {
     console.error('[api/advance-round] scoring failed', { tournamentId, currentRound, err })
@@ -86,7 +95,10 @@ export default defineEventHandler(async (event) => {
   // Advance (or end) the tournament in a single update.
   const { data: updatedTournament, error: updateError } = await supabase
     .from('tournaments')
-    .update({ tournament_current_round: newRound, ...(hasEnded ? { tournament_playing: false } : {}) })
+    .update({
+      tournament_current_round: newRound,
+      ...(hasEnded ? { tournament_playing: false } : {})
+    })
     .eq('tournament_id', tournamentId)
     .select()
     .single()

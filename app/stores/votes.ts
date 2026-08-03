@@ -33,7 +33,9 @@ export const useVotesStore = defineStore('votes', () => {
   })
 
   /** Set both deck and play votes for a player */
-  function setVotes(playerId: number, deckVotePlayerId: number | null, playVotePlayerId: number | null) {
+  function setVotes(
+    playerId: number, deckVotePlayerId: number | null, playVotePlayerId: number | null
+  ) {
     votes.value.set(playerId, { playerId, deckVotePlayerId, playVotePlayerId })
   }
 

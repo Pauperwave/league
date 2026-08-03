@@ -1,6 +1,11 @@
 <!-- app\components\tournament\pairing\kill\KillLoopbackEdge.vue -->
 <script setup lang="ts">
-import { BaseEdge, Position, getSmoothStepPath, type EdgeProps } from '@vue-flow/core'
+import {
+  BaseEdge,
+  Position,
+  getSmoothStepPath,
+  type EdgeProps
+} from '@vue-flow/core'
 
 const props = defineProps<EdgeProps>()
 
@@ -10,7 +15,8 @@ const props = defineProps<EdgeProps>()
 // Routing the path's center out to one side (mirrors @vue-flow's own
 // loopback example) makes it read as a visible loop instead.
 const path = computed(() => {
-  const isVerticalLoop = (props.sourcePosition === Position.Bottom && props.targetPosition === Position.Top)
+  const isVerticalLoop =
+    (props.sourcePosition === Position.Bottom && props.targetPosition === Position.Top)
     || (props.sourcePosition === Position.Top && props.targetPosition === Position.Bottom)
 
   if (!isVerticalLoop) {
@@ -27,5 +33,10 @@ const path = computed(() => {
 </script>
 
 <template>
-  <BaseEdge :id="id" :path="path[0]" :marker-end="markerEnd" :style="style" />
+  <BaseEdge
+    :id="id"
+    :path="path[0]"
+    :marker-end="markerEnd"
+    :style="style"
+  />
 </template>

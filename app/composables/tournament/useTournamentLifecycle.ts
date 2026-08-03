@@ -86,8 +86,14 @@ export function useTournamentLifecycle(deps: LifecycleDeps) {
       // server-side and clearWaitingListFlags wipes localStorage below.
       const flags = readWaitingListFlags(tournamentId)
       const payments = Object.entries(flags)
-        .filter((entry): entry is [string, { paymentMethod: PaymentMethod }] => entry[1].paymentMethod !== null)
-        .map(([playerId, flag]) => ({ playerId: Number(playerId), paymentMethod: flag.paymentMethod }))
+        .filter(
+          (entry): entry is [string, { paymentMethod: PaymentMethod }] =>
+            entry[1].paymentMethod !== null
+        )
+        .map(([playerId, flag]) => ({
+          playerId: Number(playerId),
+          paymentMethod: flag.paymentMethod
+        }))
 
       const ok = await startTournament(playerOrder, payments)
       if (ok) {

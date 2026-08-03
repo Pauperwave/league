@@ -16,7 +16,9 @@ export function isTimerExpired(remainingSeconds: number): boolean {
 }
 
 /** True once the timer has been started at least once and is currently paused (not fresh, not expired). */
-export function isTimerPaused(isRunning: boolean, hasStarted: boolean, isExpired: boolean): boolean {
+export function isTimerPaused(
+  isRunning: boolean, hasStarted: boolean, isExpired: boolean
+): boolean {
   return !isRunning && hasStarted && !isExpired
 }
 
@@ -53,7 +55,9 @@ export function wouldSubtractExpireTimer(
   durationMinutes: number,
 ): boolean {
   if (isTimerExpired(
-    calculateRemainingSeconds(calculateTotalSeconds(durationMinutes, currentBonusMinutes), elapsedSeconds)
+    calculateRemainingSeconds(
+      calculateTotalSeconds(durationMinutes, currentBonusMinutes), elapsedSeconds
+    )
   )) {
     return false
   }

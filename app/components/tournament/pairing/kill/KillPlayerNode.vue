@@ -60,7 +60,11 @@ const hasStats = computed(() => killCount.value > 0 || deathCount.value > 0 || h
           variant="solid"
         />
       </UTooltip>
-      <UTooltip v-if="hasSuicided" :content="{ side: 'top' }" :text="t('tournament.killFlow.suicideTooltip')">
+      <UTooltip
+        v-if="hasSuicided"
+        :content="{ side: 'top' }"
+        :text="t('tournament.killFlow.suicideTooltip')"
+      >
         <UBadge
           :icon="ICONS.refresh"
           color="warning"

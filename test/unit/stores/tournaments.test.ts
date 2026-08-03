@@ -83,7 +83,9 @@ describe('useTournamentStore — re-entrancy guard (BACKLOG #13)', () => {
   })
 
   it('allows a fresh call once the previous one has completed', async () => {
-    const fetchMock = vi.fn().mockResolvedValue({ event: { tournament_current_round: 2 }, hasEnded: false })
+    const fetchMock = vi.fn().mockResolvedValue({
+      event: { tournament_current_round: 2 }, hasEnded: false
+    })
     vi.stubGlobal('$fetch', fetchMock)
 
     const store = setupTournamentStore()

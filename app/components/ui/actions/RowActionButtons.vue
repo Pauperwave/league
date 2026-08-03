@@ -30,9 +30,15 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
-const editLogging = useButtonLogging(t('logging.rowActions.edit'), { entityLabel: () => entityLabel })
-const viewLogging = useButtonLogging(t('logging.rowActions.view'), { entityLabel: () => entityLabel })
-const removeLogging = useButtonLogging(t('logging.rowActions.remove'), { entityLabel: () => entityLabel })
+const editLogging = useButtonLogging(t('logging.rowActions.edit'), {
+  entityLabel: () => entityLabel
+})
+const viewLogging = useButtonLogging(t('logging.rowActions.view'), {
+  entityLabel: () => entityLabel
+})
+const removeLogging = useButtonLogging(t('logging.rowActions.remove'), {
+  entityLabel: () => entityLabel
+})
 
 function handleEdit() {
   editLogging.logClick()

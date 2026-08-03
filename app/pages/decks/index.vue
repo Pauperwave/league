@@ -31,7 +31,9 @@ function toggleDirection() {
 
 // Commander data for color / mana-cost sorting, fetched only once one of
 // those sort modes is selected (Colada caches by the name set, ADR-015).
-const uniqueCommanderNames = computed(() => [...new Set(allDecks.value.map((d: CommanderDeck) => d.commander_1_name))])
+const uniqueCommanderNames = computed(() =>
+  [...new Set(allDecks.value.map((d: CommanderDeck) => d.commander_1_name))]
+)
 const needsCommanderData = computed(() => selectedSort.value === 'color' || selectedSort.value === 'mana-cost')
 const {
   data: commanderCacheData,

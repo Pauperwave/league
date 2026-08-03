@@ -120,8 +120,12 @@ test('dragging a player from one full table to another leaves the drop as-is and
 
   await page.mouse.move(handleBox.x + handleBox.width / 2, handleBox.y + handleBox.height / 2)
   await page.mouse.down()
-  await page.mouse.move(handleBox.x + handleBox.width / 2 + 20, handleBox.y + handleBox.height / 2, { steps: 5 })
-  await page.mouse.move(targetBox.x + targetBox.width / 2, targetBox.y + targetBox.height / 2, { steps: 20 })
+  await page.mouse.move(
+    handleBox.x + handleBox.width / 2 + 20, handleBox.y + handleBox.height / 2, { steps: 5 }
+  )
+  await page.mouse.move(
+    targetBox.x + targetBox.width / 2, targetBox.y + targetBox.height / 2, { steps: 20 }
+  )
   await page.mouse.up()
 
   // The drop landed as-is: table 2 now holds the moved player alongside its

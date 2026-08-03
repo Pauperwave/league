@@ -111,8 +111,12 @@ async function confirmDeleteDeck() {
   }
 }
 
-const ownedDeckCount = computed(() => commanderDecks.value?.filter((d: CommanderDeck) => !d.is_borrowed).length ?? 0)
-const borrowedDeckCount = computed(() => commanderDecks.value?.filter((d: CommanderDeck) => d.is_borrowed).length ?? 0)
+const ownedDeckCount = computed(() =>
+  commanderDecks.value?.filter((d: CommanderDeck) => !d.is_borrowed).length ?? 0
+)
+const borrowedDeckCount = computed(() =>
+  commanderDecks.value?.filter((d: CommanderDeck) => d.is_borrowed).length ?? 0
+)
 
 // Match history
 const { data: matchHistory } = usePlayerMatchHistory(playerId)

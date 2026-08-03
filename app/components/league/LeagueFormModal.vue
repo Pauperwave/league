@@ -30,7 +30,15 @@ const emit = defineEmits<{
 
 const open = defineModel<boolean>('open', { default: false })
 
-const submitLogging = useButtonLogging(t('logging.league.submitForm'), { isEditing: () => isEditing.value, data: () => ({ name: form.name, startsAt: form.startsAt?.toString(), endsAt: form.endsAt?.toString(), rulesetId: form.rulesetId }) })
+const submitLogging = useButtonLogging(t('logging.league.submitForm'), {
+  isEditing: () => isEditing.value,
+  data: () => ({
+    name: form.name,
+    startsAt: form.startsAt?.toString(),
+    endsAt: form.endsAt?.toString(),
+    rulesetId: form.rulesetId
+  })
+})
 
 const isEditing = computed(() => !!props.league)
 const {

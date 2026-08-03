@@ -20,15 +20,24 @@ const router = useRouter()
 
 const { data: leaguesData, isLoading: leaguesLoading } = useLeaguesQuery()
 const { data: tournamentsData, isLoading: tournamentsLoading } = useAllEventsQuery()
-const { data: registrationsData, isLoading: registrationsLoading } = useAllTournamentRegistrationsQuery()
+const {
+  data: registrationsData, isLoading: registrationsLoading
+} = useAllTournamentRegistrationsQuery()
 const { data: playersData, isLoading: playersLoading } = usePlayersQuery()
 
 const loading = computed(() =>
-  leaguesLoading.value || tournamentsLoading.value || registrationsLoading.value || playersLoading.value
+  leaguesLoading.value
+  || tournamentsLoading.value
+  || registrationsLoading.value
+  || playersLoading.value
 )
 
-const leaguesById = computed(() => new Map((leaguesData.value ?? []).map(league => [league.id, league.name])))
-const playersById = computed(() => new Map((playersData.value ?? []).map(player => [player.player_id, player])))
+const leaguesById = computed(() =>
+  new Map((leaguesData.value ?? []).map(league => [league.id, league.name]))
+)
+const playersById = computed(() =>
+  new Map((playersData.value ?? []).map(player => [player.player_id, player]))
+)
 
 /** One row per registration, across every tournament that has at least one. */
 const allRows = computed<PaymentRow[]>(() => {
@@ -105,7 +114,9 @@ function columnFilterValue(id: string): string {
 function setColumnFilter(id: string, value: string | undefined, castNumber = false) {
   const rest = columnFilters.value.filter(f => f.id !== id)
   const isCleared = !value || value === ALL_VALUE
-  columnFilters.value = isCleared ? rest : [...rest, { id, value: castNumber ? Number(value) : value }]
+  columnFilters.value = isCleared
+    ? rest
+    : [...rest, { id, value: castNumber ? Number(value) : value }]
 }
 
 const leagueFilter = computed({ get: () => columnFilterValue('leagueId'), set: v => setColumnFilter('leagueId', v, true) })
@@ -284,7 +295,9 @@ function facetedOptions(
   allLabelKey: string,
   labelFor: (value: unknown) => string
 ): { label: string; value: string }[] {
-  const values = [...(paymentsTable.value?.tableApi.getColumn(columnId)?.getFacetedUniqueValues().keys() ?? [])]
+  const values = [
+    ...(paymentsTable.value?.tableApi.getColumn(columnId)?.getFacetedUniqueValues().keys() ?? [])
+  ]
   return [
     { label: t(allLabelKey), value: ALL_VALUE },
     ...values.map(value => ({ label: labelFor(value), value: String(value) })),
@@ -294,7 +307,9 @@ function facetedOptions(
 const idToLeagueName = computed(() => new Map(
   allRows.value.filter(r => r.leagueId !== null).map(r => [r.leagueId, r.leagueName])
 ))
-const idToTournamentName = computed(() => new Map(allRows.value.map(r => [r.tournamentId, r.tournamentName])))
+const idToTournamentName = computed(() =>
+  new Map(allRows.value.map(r => [r.tournamentId, r.tournamentName]))
+)
 
 const leagueOptions = computed(() => facetedOptions('leagueId', 'payments.overview.allLeagues', v => idToLeagueName.value.get(v as number) ?? ''))
 const tournamentOptions = computed(() => facetedOptions('tournamentId', 'payments.overview.allTournaments', v => idToTournamentName.value.get(v as number) ?? ''))

@@ -20,7 +20,10 @@ export default defineEventHandler(async (event) => {
     if (killsDeleteError) throw killsDeleteError
 
     for (const playerId of playerIds) {
-      await upsertRoundResult(supabase, pairingId, playerId, { number_of_kills: null, position: null })
+      await upsertRoundResult(supabase, pairingId, playerId, {
+        number_of_kills: null,
+        position: null
+      })
     }
   } catch (err) {
     console.error('[api/pairings/undraw] clear failed', { pairingId, err })

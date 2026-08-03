@@ -27,7 +27,10 @@ const { name, to } = defineProps<{
 }>()
 
 const isOpen = ref(false)
-const { commander1Data: card } = useCommanderCards(computed(() => isOpen.value ? name : null), undefined)
+const { commander1Data: card } = useCommanderCards(
+  computed(() => isOpen.value ? name : null),
+  undefined
+)
 
 const linkTo = computed(() => to ?? `/commander/${slugify(name)}`)
 </script>

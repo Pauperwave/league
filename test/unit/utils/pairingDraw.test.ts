@@ -36,7 +36,9 @@ function makeResult(overrides: Partial<RoundResult>): RoundResult {
 
 describe('isPairingDraw', () => {
   it('is true when every seated player has zero kills and all tie for rank 1', () => {
-    const pairing = makePairing([1, 2, 3, 4].map(playerId => makeResult({ player_id: playerId, number_of_kills: 0 })))
+    const pairing = makePairing(
+      [1, 2, 3, 4].map(playerId => makeResult({ player_id: playerId, number_of_kills: 0 }))
+    )
     const ranking = [1, 2, 3, 4].map(playerId => ({ playerId, rank: 1 }))
 
     expect(isPairingDraw(pairing, ranking)).toBe(true)

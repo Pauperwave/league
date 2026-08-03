@@ -19,15 +19,18 @@ export interface BracketLevelDefinition {
 // i18n/locales/it.json, so they're generated rather than hand-typed —
 // removes the risk of a copy-paste mismatch between a level number and its
 // own keys (level3 hand-typed with level4's keys, etc).
-export const BRACKET_LEVELS: readonly BracketLevelDefinition[] = Array.from({ length: 5 }, (_, i) => {
-  const level = (i + 1) as BracketLevelDefinition['level']
-  return {
-    level,
-    nameKey: `bracket.level${level}.name`,
-    experienceKey: `bracket.level${level}.experience`,
-    deckBuildingKey: `bracket.level${level}.deckBuilding`,
+export const BRACKET_LEVELS: readonly BracketLevelDefinition[] = Array.from(
+  { length: 5 },
+  (_, i) => {
+    const level = (i + 1) as BracketLevelDefinition['level']
+    return {
+      level,
+      nameKey: `bracket.level${level}.name`,
+      experienceKey: `bracket.level${level}.experience`,
+      deckBuildingKey: `bracket.level${level}.deckBuilding`,
+    }
   }
-})
+)
 
 /** Semantic color per bracket (success→info→primary→warning→error), a
  * casual→competitive intensity ramp using app.config.ts's existing tokens — not a new palette. */
