@@ -7,9 +7,7 @@
 import type { Tournament, StandingWithPlayer, Pairing, PairingWithResults, Kill, Player, PaymentMethod, TournamentRegistration } from '#shared/utils/types'
 import type { Database } from '#shared/utils/types/database'
 import type { PairingHistoryEntry } from '~/composables/event-pairing/pairingOptimizer'
-import { aggregatePointBreakdowns, resolveTournamentRuleset } from '#shared/utils/roundScoring'
 import type { PlayerPointBreakdown } from '#shared/utils/roundScoring'
-import { compareStandings } from '#shared/utils/standingsSort'
 
 type PairingRoundIds = Pick<Pairing, 'pairing_round' | 'pairing_player1_id' | 'pairing_player2_id' | 'pairing_player3_id' | 'pairing_player4_id'>
 

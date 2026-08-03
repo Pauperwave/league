@@ -1,7 +1,6 @@
 // app\utils\tableScoreRows.ts
 // The "Punteggi Tavolo" (TableScoresModal.vue) row-building logic — pulled
 // out so it's unit-testable without mounting Vue/UTable.
-import { calculatePlayerTableScore } from '#shared/utils/roundScoring'
 import type { PairingWithResults, Ruleset, TablePlayer } from '#shared/utils/types'
 
 export interface TableScoreRow {

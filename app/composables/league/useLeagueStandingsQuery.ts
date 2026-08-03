@@ -4,8 +4,6 @@
 // multi-tournament standings used by TournamentRanking. Moved out of the tournament store —
 // they used to share its standings ref with the per-tournament standings, an
 // implicit coupling between two different pages.
-import { compareStandings } from '#shared/utils/standingsSort'
-import { aggregatePointBreakdowns, resolveTournamentRuleset } from '#shared/utils/roundScoring'
 import type { PlayerPointBreakdown } from '#shared/utils/roundScoring'
 import type { StandingWithPlayer, Player } from '#shared/utils/types'
 import type { Database } from '#shared/utils/types/database'

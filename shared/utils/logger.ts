@@ -1,4 +1,4 @@
-// app\utils\logger.ts
+// shared\utils\logger.ts
 /**
  * Logging utility for debugging
  */

@@ -26,7 +26,16 @@ export default defineConfig({
         // module auto-imports (the ones this codebase uses).
         { '@pinia/colada': ['useQuery', 'useMutation', 'useQueryCache'] },
       ],
-      dirs: ['./app/composables/**', './app/utils', './app/stores'],
+      // ./shared/utils mirrors Nuxt's real #shared auto-import for the
+      // top-level shared/utils/*.ts files (roundScoring.ts, standingsSort.ts,
+      // playerSimilarity.ts, logger.ts) — NOT shared/utils/types/, which Nuxt
+      // itself doesn't auto-import either (still explicit, see CLAUDE.md).
+      dirs: [
+        './app/composables/**',
+        './app/utils',
+        './app/stores',
+        './shared/utils'
+      ],
       // Values referenced only in <template> (e.g. ICONS) compile to _ctx
       // lookups — vueTemplate covers those too, like Nuxt does.
       vueTemplate: true,

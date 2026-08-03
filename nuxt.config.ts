@@ -28,6 +28,10 @@ export default defineNuxtConfig({
     // KEEP IN SYNC with vitest.config.ts's AutoImport plugin (it mirrors these
     // dirs + the vue/vue-i18n/pinia/@vueuse presets so plain-mount tests get
     // the same auto-imports as the app) — there's a matching comment there.
+    // Doesn't need shared/utils listed here — that's Nuxt's own built-in
+    // shared-folder auto-import (top-level shared/utils/*.ts only, not the
+    // types/ subfolder), separate from this `imports` module option; the
+    // vitest mirror lists it explicitly since it has no equivalent built-in.
     dirs: ['~/composables/**']
   },
 

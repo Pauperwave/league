@@ -2,7 +2,6 @@
 <script setup lang="ts">
 import type { Player, NewPlayer, MtgFormat } from '#shared/utils/types'
 import type { PlayerUpdatePayload } from '~/composables/players/usePlayerMutations'
-import { findSimilarPlayers } from '#shared/utils/playerSimilarity'
 import { Constants } from '#shared/utils/types/database'
 import * as v from 'valibot'
 

@@ -1,6 +1,5 @@
 // app\composables\tournament\useLiveStandings.ts
 import type { Ref } from 'vue'
-import { compareStandings } from '#shared/utils/standingsSort'
 import { getPairingPlayerIds } from '#shared/utils/types'
 import type { StandingWithPlayer, PairingWithResults, TournamentStatus } from '#shared/utils/types'
 import type { RankingEntry } from '~/stores/rankings'
@@ -64,7 +63,7 @@ export function cloneStandings(base: StandingWithPlayer[]): StandingWithDefaults
   }))
 }
 
-export function calculatePlayerTableScore(
+export function calculateLiveTableScore(
   playerId: number,
   playerIds: number[],
   posValues: number[],
@@ -181,7 +180,7 @@ export function useLiveStandings(
       )
 
       for (const playerId of playerIds) {
-        const score = calculatePlayerTableScore(
+        const score = calculateLiveTableScore(
           playerId,
           playerIds,
           posValues,

@@ -1,6 +1,6 @@
 // test\unit\composables\tournament\useLiveStandings.test.ts
 import { describe, expect, it } from 'vitest'
-import { buildPosValues, cloneStandings, calculatePlayerTableScore, updateStanding } from '~/composables/tournament/useLiveStandings'
+import { buildPosValues, cloneStandings, calculateLiveTableScore, updateStanding } from '~/composables/tournament/useLiveStandings'
 import type { StandingWithPlayer } from '#shared/utils/types'
 
 const ruleset = {
@@ -61,14 +61,14 @@ describe('cloneStandings', () => {
   })
 })
 
-describe('calculatePlayerTableScore', () => {
+describe('calculateLiveTableScore', () => {
   const noVotes = () => null
 
   it('scores rank position using the posValues lookup', () => {
     const posValues = buildPosValues(ruleset)
     const ranking = [{ playerId: 1, rank: 1 }, { playerId: 2, rank: 2 }]
 
-    const score = calculatePlayerTableScore(
+    const score = calculateLiveTableScore(
       1, [1, 2], posValues, ranking, [], ruleset, noVotes, noVotes
     )
 
@@ -81,7 +81,7 @@ describe('calculatePlayerTableScore', () => {
     // Two players tied for rank 1: (10 + 7) / 2 = 8 each (floored)
     const ranking = [{ playerId: 1, rank: 1 }, { playerId: 2, rank: 1 }]
 
-    const score = calculatePlayerTableScore(
+    const score = calculateLiveTableScore(
       1, [1, 2], posValues, ranking, [], ruleset, noVotes, noVotes
     )
 
@@ -92,7 +92,7 @@ describe('calculatePlayerTableScore', () => {
     const posValues = buildPosValues(ruleset)
     const tableKills = [{ killerId: 1, victimId: 2 }, { killerId: 1, victimId: 3 }]
 
-    const score = calculatePlayerTableScore(
+    const score = calculateLiveTableScore(
       1, [1, 2, 3], posValues, null, tableKills, ruleset, noVotes, noVotes
     )
 
@@ -106,7 +106,7 @@ describe('calculatePlayerTableScore', () => {
     const getDeckVote = (id: number) => (id === 2 ? 1 : null)
     const getPlayVote = (id: number) => (id === 3 ? 1 : null)
 
-    const score = calculatePlayerTableScore(
+    const score = calculateLiveTableScore(
       1, [1, 2, 3], posValues, null, [], ruleset, getDeckVote, getPlayVote
     )
 
@@ -119,7 +119,7 @@ describe('calculatePlayerTableScore', () => {
 
   it('scores zero when there is no ranking, kills, or votes', () => {
     const posValues = buildPosValues(ruleset)
-    const score = calculatePlayerTableScore(
+    const score = calculateLiveTableScore(
       1, [1, 2], posValues, null, [], ruleset, noVotes, noVotes
     )
     expect(score.totalScore).toBe(0)
