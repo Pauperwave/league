@@ -248,6 +248,22 @@ const tournamentPlayers = computed<TablePlayer[]>(() =>
   }))
 )
 
+// ── Computed: Viewed-Round Banner ───────────────────────────────────────────
+
+const viewedRoundBannerLabel = computed(() => {
+  if (viewingRegistration.value) return t('tournament.viewingRegistration')
+  if (isCorrectingLastRound.value) {
+    return t('tournament.correctingLastRound', { round: viewedRound.value })
+  }
+  return t('tournament.viewingPastRound', { round: viewedRound.value })
+})
+
+const viewedRoundBackLabel = computed(() => {
+  if (isCorrectingLastRound.value) return t('tournament.backToEndedTournament')
+  if (viewingRegistration.value) return t('tournament.backToTournament')
+  return t('tournament.backToCurrentRound')
+})
+
 // "Who's won this table" checklist (BACKLOG #15) — winners derived live from
 // rankingsStore, booster hand-out check-off state persisted per event+round.
 const winners = useWinners(displayedPairings, tournamentPlayers, rankingsStore)
@@ -425,17 +441,10 @@ function handleOpenKillModal(pairingId: number) {
 
 // ── Reset / Utility ──────────────────────────────────────────────────────
 
-/** Resets a table's local session state AND persists the clear server-side
- *  (`tournamentStore.resetPairing`, kills+ranking+commander+votes) — without the
- *  server call, `round_results` kept the previously-submitted values, so
- *  e.g. "Uccisioni" kept showing as reviewed after a reset even though the
- *  local stores were cleared. */
-async function handleResetTable(pairingId: number) {
-  const pairing = pairings.value.find(p => p.pairing_id === pairingId)
-  if (!pairing) return
-
-  const playerIds = getPairingPlayerIds(pairing)
-
+/** Shared by handleResetTable and handleUndrawTable — clears this table's
+ *  local ranking + kill-store entries. Doesn't touch commanders/votes, since
+ *  only a full reset (not an undraw) clears those. */
+function clearLocalRankingAndKills(pairingId: number, playerIds: number[]) {
   rankingsStore.removeRanking(pairingId)
 
   const tableKills = killsStore.kills.filter((k) =>
@@ -447,18 +456,55 @@ async function handleResetTable(pairingId: number) {
     )
     if (index !== -1) killsStore.kills.splice(index, 1)
   })
+}
 
-  playerIds.forEach((playerId) => {
-    commandersStore.removeCommanders(playerId)
-    votesStore.removeVotes(playerId)
-  })
+/** Shared by handleResetTable and handleUndrawTable — resolves the pairing,
+ *  clears local ranking/kills, calls the given store action, and refreshes
+ *  on success. `clearCommandersAndVotes` and `successTitle` are the only two
+ *  ways the two callers actually differ. */
+async function handleClearTable(pairingId: number, options: {
+  clearCommandersAndVotes: boolean
+  action: (pairingId: number) => Promise<{ success: boolean, error?: string }>
+  successTitle?: string
+}) {
+  const pairing = pairings.value.find(p => p.pairing_id === pairingId)
+  if (!pairing) return
 
-  const result = await tournamentStore.resetPairing(pairingId)
+  const playerIds = getPairingPlayerIds(pairing)
+  clearLocalRankingAndKills(pairingId, playerIds)
+
+  if (options.clearCommandersAndVotes) {
+    playerIds.forEach((playerId) => {
+      commandersStore.removeCommanders(playerId)
+      votesStore.removeVotes(playerId)
+    })
+  }
+
+  const result = await options.action(pairingId)
   if (!result.success) {
-    toast.add({ title: t('deck.toast.errorTitle'), description: result.error, color: 'error' })
+    toast.add({
+      title: t('deck.toast.errorTitle'),
+      description: result.error,
+      color: 'error'
+    })
     return
   }
+  if (options.successTitle) {
+    toast.add({ title: options.successTitle, color: 'success' })
+  }
   await refreshDisplayedPairings()
+}
+
+/** Resets a table's local session state AND persists the clear server-side
+ *  (`tournamentStore.resetPairing`, kills+ranking+commander+votes) — without the
+ *  server call, `round_results` kept the previously-submitted values, so
+ *  e.g. "Uccisioni" kept showing as reviewed after a reset even though the
+ *  local stores were cleared. */
+function handleResetTable(pairingId: number) {
+  return handleClearTable(pairingId, {
+    clearCommandersAndVotes: true,
+    action: tournamentStore.resetPairing,
+  })
 }
 
 /** Undoes a "Patta" declaration: clears the ranking/kills it set, both
@@ -466,31 +512,12 @@ async function handleResetTable(pairingId: number) {
  *  table to the empty state it was in before the draw — Patta can only be
  *  declared on an empty table, so that's always the correct prior state.
  *  Leaves commanders/votes untouched (draw never touched those either). */
-async function handleUndrawTable(pairingId: number) {
-  const pairing = pairings.value.find(p => p.pairing_id === pairingId)
-  if (!pairing) return
-
-  const playerIds = getPairingPlayerIds(pairing)
-
-  rankingsStore.removeRanking(pairingId)
-
-  const tableKills = killsStore.kills.filter((k) =>
-    playerIds.includes(k.killerId) && playerIds.includes(k.victimId)
-  )
-  tableKills.forEach((kill) => {
-    const index = killsStore.kills.findIndex((k) =>
-      k.killerId === kill.killerId && k.victimId === kill.victimId
-    )
-    if (index !== -1) killsStore.kills.splice(index, 1)
+function handleUndrawTable(pairingId: number) {
+  return handleClearTable(pairingId, {
+    clearCommandersAndVotes: false,
+    action: tournamentStore.undrawPairing,
+    successTitle: t('tournament.undrawnTitle'),
   })
-
-  const result = await tournamentStore.undrawPairing(pairingId)
-  if (!result.success) {
-    toast.add({ title: t('deck.toast.errorTitle'), description: result.error, color: 'error' })
-    return
-  }
-  toast.add({ title: t('tournament.undrawnTitle'), color: 'success' })
-  await refreshDisplayedPairings()
 }
 </script>
 
@@ -550,11 +577,7 @@ async function handleUndrawTable(pairingId: number) {
             class="mb-4 p-4 rounded-lg border bg-elevated border-muted flex items-center justify-between"
           >
             <span class="text-sm font-medium">
-              {{ viewingRegistration
-                ? t('tournament.viewingRegistration')
-                : isCorrectingLastRound
-                  ? t('tournament.correctingLastRound', { round: viewedRound })
-                  : t('tournament.viewingPastRound', { round: viewedRound }) }}
+              {{ viewedRoundBannerLabel }}
             </span>
             <UButton
               size="sm"
@@ -563,11 +586,7 @@ async function handleUndrawTable(pairingId: number) {
               :icon="ICONS.reset"
               @click="clearViewedRound"
             >
-              {{ isCorrectingLastRound
-                ? t('tournament.backToEndedTournament')
-                : viewingRegistration
-                  ? t('tournament.backToTournament')
-                  : t('tournament.backToCurrentRound') }}
+              {{ viewedRoundBackLabel }}
             </UButton>
           </div>
 

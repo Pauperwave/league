@@ -515,6 +515,17 @@ Gli store di sessione hanno **persistenza ottimistica**: update immediato UI + s
 - **UI invariata nella posizione** (decisione esplicita dell'utente): la gestione resta dentro il modal di pairing del torneo (`PairingSettingsModal.vue` → `ForbiddenPairsSection.vue`), non è stata creata una pagina/sezione globale dedicata — solo il prop `tournamentId` è stato rimosso da entrambi i componenti (non più necessario, la lista è la stessa ovunque). `TablePreviewModal.vue`: `addForbiddenPairFromSelectors`/il nuovo `removeForbiddenPairFromModal` ora chiamano le mutation (`mutateAsync`) invece di mutare uno stato locale; un `watch(avoidPairsData, ...)` tiene `useTableDnd`'s `forbiddenPairs` sincronizzato col refetch post-invalidazione.
 - **Verifica:** `pnpm typecheck`, `pnpm lint` e `pnpm test` (227/227) verdi.
 
+### ADR-053 — Niente ternari annidati nelle interpolazioni di template (2026-08-04)
+
+- **Contesto:** trovate in `[tournamentId].vue` due interpolazioni `{{ ... }}` con ternari annidati su 2 livelli (`viewingRegistration ? ... : isCorrectingLastRound ? ... : ...`) per calcolare l'etichetta del banner "sto vedendo un round passato" e quella del bottone di ritorno — difficili da leggere a colpo d'occhio rispetto a un if/else esplicito.
+- **Decisione:** un ternario annidato va estratto in una `computed()`/funzione con `if`/`return` espliciti — vale sia dentro `{{ }}`/attributi di template sia dentro un `computed()` che già lo conteneva annidato al suo interno. Un singolo ternario piatto (senza annidamento) resta accettabile inline, anche in template — non è la stessa categoria di problema.
+- **Sweep** (`app/` intero, tutti i file `.vue`): trovate e sistemate 4 istanze oltre a quella iniziale:
+  - `[tournamentId].vue`: `viewedRoundBannerLabel`/`viewedRoundBackLabel` (nuove `computed()`) sostituiscono i 2 ternari annidati nel template.
+  - `TournamentStepper.vue`: ternario a **4 livelli** dentro il `computed<StepperItem[]>` che costruisce gli step del round — estratto in `roundStepDescription(i, isCorrecting, isViewed)`.
+  - `TournamentActionBar.vue`: ternario annidato dentro `:text=` (tooltip) e `{{ }}` (label) del bottone avanza/termina — estratti in `advanceTooltip`/`advanceLabel` (`computed()`).
+  - `PairingTableActions.vue`: `rankingTooltip`/`killsTooltip`/`drawTooltip` erano già `computed()` nominate ma contenevano comunque un ternario annidato tra parentesi al loro interno — appiattite a `if (isDraw) return ...; return cond ? a : b` per coerenza con gli altri fix di questo ADR.
+- **Verifica:** `pnpm lint` e `pnpm typecheck` verdi su tutti i file toccati.
+
 ---
 
 ## Funzionalità per area

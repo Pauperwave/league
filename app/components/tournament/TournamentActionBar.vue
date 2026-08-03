@@ -1,5 +1,11 @@
 <!-- app\components\tournament\TournamentActionBar.vue -->
 <script setup lang="ts">
+// fallow-ignore-file code-duplication -- the cancel-round and
+// correct-last-round buttons in the template share the UTooltip+UButton
+// outline shape but are two different actions (different icon/color/
+// tooltip/handler); fallow's line-scoped ignore comment doesn't work inside
+// <template> (only // comments in <script>, tested 2026-08-03), so this is
+// file-scoped instead.
 import type { TournamentStatus } from '#shared/utils/types'
 
 const { t } = useI18n()
@@ -24,6 +30,17 @@ const showStartButton = computed(() => props.tournamentStatus === 'registration'
 const isLastRound = computed(() =>
   props.currentRound === props.totalRounds && props.currentRound > 0
 )
+
+const advanceTooltip = computed(() => {
+  if (isLastRound.value) return t('tournament.controlPanel.endEventTooltip')
+  return props.canAdvance
+    ? t('tournament.controlPanel.advanceTooltip')
+    : t('tournament.controlPanel.incompleteDataTooltip')
+})
+
+const advanceLabel = computed(() => isLastRound.value
+  ? t('tournament.endEvent.title')
+  : t('tournament.controlPanel.advanceButton'))
 
 const cancelRoundLogging = useButtonLogging(t('logging.tournament.cancelRound'), {
   currentRound: () => props.currentRound,
@@ -84,6 +101,13 @@ function handleAdvanceOrEnd() {
     />
   </div>
 
+  <!-- This block's cancel-round button and the correct-last-round button
+       below (v-else-if="tournamentStatus === 'ended'") share the
+       UTooltip+UButton outline shape — fallow flags them as a clone group,
+       but they're two different actions (different icon/color/tooltip/
+       handler) that only happen to render the same two Nuxt UI components.
+       Left as-is; a shared wrapper would just rename the duplication rather
+       than remove any real logic. -->
   <div v-else-if="tournamentStatus === 'playing'" class="flex gap-2 justify-start">
     <UTooltip
       :content="{ side: 'top' }"
@@ -101,11 +125,7 @@ function handleAdvanceOrEnd() {
 
     <UTooltip
       :content="{ side: 'top' }"
-      :text="isLastRound
-        ? t('tournament.controlPanel.endEventTooltip')
-        : (props.canAdvance
-          ? t('tournament.controlPanel.advanceTooltip')
-          : t('tournament.controlPanel.incompleteDataTooltip'))"
+      :text="advanceTooltip"
     >
       <UButton
         :trailing-icon="isLastRound ? ICONS.flag : ICONS.forward"
@@ -113,9 +133,7 @@ function handleAdvanceOrEnd() {
         :disabled="!props.canAdvance"
         @click="handleAdvanceOrEnd"
       >
-        {{ isLastRound
-          ? t('tournament.endEvent.title')
-          : t('tournament.controlPanel.advanceButton') }}
+        {{ advanceLabel }}
       </UButton>
     </UTooltip>
   </div>

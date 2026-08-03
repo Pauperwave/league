@@ -42,6 +42,14 @@ defineSlots<{
 // last round" check below must go through this instead of currentRound.
 const lastPlayableRound = computed(() => tournamentStatus === 'ended' ? totalRounds : currentRound)
 
+function roundStepDescription(i: number, isCorrecting: boolean, isViewed: boolean): string {
+  if (isCorrecting) return t('tournament.stepper.roundCorrecting')
+  if (isViewed) return t('tournament.stepper.roundViewing')
+  if (i < currentRound) return t('tournament.stepper.roundCompleted')
+  if (i === currentRound) return t('tournament.stepper.roundInProgress')
+  return t('tournament.stepper.roundPending')
+}
+
 const items = computed<StepperItem[]>(() => {
   const steps: StepperItem[] = [
     {
@@ -60,15 +68,7 @@ const items = computed<StepperItem[]>(() => {
     const isCorrecting = isViewed && tournamentStatus === 'ended' && i === lastPlayableRound.value
     steps.push({
       title: t('tournament.stepper.roundTitle', { n: i }),
-      description: isCorrecting
-        ? t('tournament.stepper.roundCorrecting')
-        : isViewed
-          ? t('tournament.stepper.roundViewing')
-          : i < currentRound
-            ? t('tournament.stepper.roundCompleted')
-            : i === currentRound
-              ? t('tournament.stepper.roundInProgress')
-              : t('tournament.stepper.roundPending'),
+      description: roundStepDescription(i, isCorrecting, isViewed),
       icon: isViewed ? ICONS.show : ICONS.battle,
       value: `round-${i}`,
       // Distinct trigger color so a viewed past round reads as "previewing",
