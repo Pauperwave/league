@@ -15,7 +15,7 @@ export default defineEventHandler(async (event) => {
   const tournamentId = requireIdParam(event, 'tournamentId')
   const { currentRound } = await requireValidBody(event, bodySchema)
 
-  console.log('[api/turn-back-round] request', { tournamentId, currentRound })
+  logInfo('api/turn-back-round', 'request', { tournamentId, currentRound })
 
   // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this
   // endpoint is the authorization boundary now, not a DB policy.
@@ -64,14 +64,14 @@ export default defineEventHandler(async (event) => {
       ])
 
       if (resultsDeleteError) {
-        console.error('[api/turn-back-round] round_results delete failed', { tournamentId, currentRound, resultsDeleteError })
+        logError('api/turn-back-round', 'round_results delete failed', { tournamentId, currentRound, resultsDeleteError })
         throw createError({
           statusCode: 500,
           statusMessage: resultsDeleteError.message
         })
       }
       if (killsDeleteError) {
-        console.error('[api/turn-back-round] round_kills delete failed', { tournamentId, currentRound, killsDeleteError })
+        logError('api/turn-back-round', 'round_kills delete failed', { tournamentId, currentRound, killsDeleteError })
         throw createError({
           statusCode: 500,
           statusMessage: killsDeleteError.message
@@ -98,21 +98,21 @@ export default defineEventHandler(async (event) => {
     ])
 
     if (updateError || !updatedTournament) {
-      console.error('[api/turn-back-round] tournament update failed', { tournamentId, updateError })
+      logError('api/turn-back-round', 'tournament update failed', { tournamentId, updateError })
       throw createError({
         statusCode: 500,
         statusMessage: updateError?.message ?? 'Tournament update failed'
       })
     }
     if (pairingsError) {
-      console.error('[api/turn-back-round] pairings delete failed', { tournamentId, currentRound, pairingsError })
+      logError('api/turn-back-round', 'pairings delete failed', { tournamentId, currentRound, pairingsError })
       throw createError({
         statusCode: 500,
         statusMessage: pairingsError.message
       })
     }
 
-    console.log('[api/turn-back-round] reopened previous round', { tournamentId, newRound: currentRound - 1 })
+    logInfo('api/turn-back-round', 'reopened previous round', { tournamentId, newRound: currentRound - 1 })
     return { event: updatedTournament }
   }
 
@@ -153,14 +153,14 @@ export default defineEventHandler(async (event) => {
     ])
 
     if (resultsDeleteError) {
-      console.error('[api/turn-back-round] round_results delete failed', { tournamentId, resultsDeleteError })
+      logError('api/turn-back-round', 'round_results delete failed', { tournamentId, resultsDeleteError })
       throw createError({
         statusCode: 500,
         statusMessage: resultsDeleteError.message
       })
     }
     if (killsDeleteError) {
-      console.error('[api/turn-back-round] round_kills delete failed', { tournamentId, killsDeleteError })
+      logError('api/turn-back-round', 'round_kills delete failed', { tournamentId, killsDeleteError })
       throw createError({
         statusCode: 500,
         statusMessage: killsDeleteError.message
@@ -190,34 +190,34 @@ export default defineEventHandler(async (event) => {
   ])
 
   if (updateError || !updatedTournament) {
-    console.error('[api/turn-back-round] tournament reset failed', { tournamentId, updateError })
+    logError('api/turn-back-round', 'tournament reset failed', { tournamentId, updateError })
     throw createError({
       statusCode: 500,
       statusMessage: updateError?.message ?? 'Tournament reset failed'
     })
   }
   if (wipeStandingsError) {
-    console.error('[api/turn-back-round] standings wipe failed', { tournamentId, wipeStandingsError })
+    logError('api/turn-back-round', 'standings wipe failed', { tournamentId, wipeStandingsError })
     throw createError({
       statusCode: 500,
       statusMessage: wipeStandingsError.message
     })
   }
   if (wipePairingsError) {
-    console.error('[api/turn-back-round] pairings wipe failed', { tournamentId, wipePairingsError })
+    logError('api/turn-back-round', 'pairings wipe failed', { tournamentId, wipePairingsError })
     throw createError({
       statusCode: 500,
       statusMessage: wipePairingsError.message
     })
   }
   if (waitroomError) {
-    console.error('[api/turn-back-round] waitroom restore failed', { tournamentId, playerIds, waitroomError })
+    logError('api/turn-back-round', 'waitroom restore failed', { tournamentId, playerIds, waitroomError })
     throw createError({
       statusCode: 500,
       statusMessage: waitroomError.message
     })
   }
 
-  console.log('[api/turn-back-round] back to registration', { tournamentId, restoredPlayers: playerIds.length })
+  logInfo('api/turn-back-round', 'back to registration', { tournamentId, restoredPlayers: playerIds.length })
   return { event: updatedTournament }
 })

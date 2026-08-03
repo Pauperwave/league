@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
   const playerId = requireIdParam(event, 'playerId')
   const body = await requireValidBody(event, playerFormBodySchema)
 
-  console.log('[api/players/update] request', { playerId, ...body })
+  logInfo('api/players/update', 'request', { playerId, ...body })
 
   // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this
   // endpoint is the authorization boundary now, not a DB policy.
@@ -29,13 +29,13 @@ export default defineEventHandler(async (event) => {
         statusMessage: 'Player not found'
       })
     }
-    console.error('[api/players/update] update failed', { playerId, error })
+    logError('api/players/update', 'update failed', { playerId, error })
     throw createError({
       statusCode: 500,
       statusMessage: error?.message ?? 'Player update failed'
     })
   }
 
-  console.log('[api/players/update] updated', { playerId })
+  logInfo('api/players/update', 'updated', { playerId })
   return { player: data }
 })

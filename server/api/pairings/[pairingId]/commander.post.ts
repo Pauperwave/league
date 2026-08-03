@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  console.log('[api/pairings/commander] request', { pairingId, playerId, commander1, commander2 })
+  logInfo('api/pairings/commander', 'request', { pairingId, playerId, commander1, commander2 })
 
   try {
     await upsertRoundResult(supabase, pairingId, playerId, {
@@ -29,13 +29,13 @@ export default defineEventHandler(async (event) => {
       commander_2: commander2
     })
   } catch (err) {
-    console.error('[api/pairings/commander] upsert failed', { pairingId, playerId, err })
+    logError('api/pairings/commander', 'upsert failed', { pairingId, playerId, err })
     throw createError({
       statusCode: 500,
       statusMessage: err instanceof Error ? err.message : 'Commander save failed'
     })
   }
 
-  console.log('[api/pairings/commander] done', { pairingId, playerId })
+  logInfo('api/pairings/commander', 'done', { pairingId, playerId })
   return { saved: true }
 })

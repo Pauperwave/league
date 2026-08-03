@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
   const deckId = requireIdParam(event, 'deckId')
   const body = await requireValidBody(event, v.partial(deckFormBodySchema))
 
-  console.log('[api/decks/update] request', { deckId, fields: Object.keys(body) })
+  logInfo('api/decks/update', 'request', { deckId, fields: Object.keys(body) })
 
   // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this
   // endpoint is the authorization boundary now, not a DB policy.
@@ -31,13 +31,13 @@ export default defineEventHandler(async (event) => {
         statusMessage: 'Deck not found'
       })
     }
-    console.error('[api/decks/update] update failed', { deckId, error })
+    logError('api/decks/update', 'update failed', { deckId, error })
     throw createError({
       statusCode: 500,
       statusMessage: error?.message ?? 'Deck update failed'
     })
   }
 
-  console.log('[api/decks/update] updated', { deckId })
+  logInfo('api/decks/update', 'updated', { deckId })
   return { deck: data }
 })

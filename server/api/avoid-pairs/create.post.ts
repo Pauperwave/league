@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
 
   const [playerAId, playerBId] = playerA < playerB ? [playerA, playerB] : [playerB, playerA]
 
-  console.log('[api/avoid-pairs/create] request', { playerAId, playerBId })
+  logInfo('api/avoid-pairs/create', 'request', { playerAId, playerBId })
 
   const supabase = serverSupabaseServiceRole<Database>(event)
 
@@ -22,13 +22,13 @@ export default defineEventHandler(async (event) => {
     .single()
 
   if (error || !data) {
-    console.error('[api/avoid-pairs/create] insert failed', { playerAId, playerBId, error })
+    logError('api/avoid-pairs/create', 'insert failed', { playerAId, playerBId, error })
     throw createError({
       statusCode: 500,
       statusMessage: error?.message ?? 'Avoid pair insert failed'
     })
   }
 
-  console.log('[api/avoid-pairs/create] created', { playerAId, playerBId })
+  logInfo('api/avoid-pairs/create', 'created', { playerAId, playerBId })
   return { avoidPair: data }
 })

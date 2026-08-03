@@ -8,7 +8,7 @@ import type { Database } from '#shared/utils/types/database'
 export default defineEventHandler(async (event) => {
   const body = await requireValidBody(event, rulesetFormBodySchema)
 
-  console.log('[api/rulesets/create] request', { name: body.name })
+  logInfo('api/rulesets/create', 'request', { name: body.name })
 
   // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this
   // endpoint is the authorization boundary now, not a DB policy.
@@ -21,13 +21,13 @@ export default defineEventHandler(async (event) => {
     .single()
 
   if (error || !data) {
-    console.error('[api/rulesets/create] insert failed', { name: body.name, error })
+    logError('api/rulesets/create', 'insert failed', { name: body.name, error })
     throw createError({
       statusCode: 500,
       statusMessage: error?.message ?? 'Ruleset insert failed'
     })
   }
 
-  console.log('[api/rulesets/create] created', { rulesetId: data.ruleset_id })
+  logInfo('api/rulesets/create', 'created', { rulesetId: data.ruleset_id })
   return { ruleset: data }
 })

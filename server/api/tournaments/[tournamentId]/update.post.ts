@@ -11,7 +11,7 @@ export default defineEventHandler(async (event) => {
   const tournamentId = requireIdParam(event, 'tournamentId')
   const body = await requireValidBody(event, v.partial(tournamentFormBodySchema))
 
-  console.log('[api/tournaments/update] request', { tournamentId, fields: Object.keys(body) })
+  logInfo('api/tournaments/update', 'request', { tournamentId, fields: Object.keys(body) })
 
   // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this
   // endpoint is the authorization boundary now, not a DB policy.
@@ -32,13 +32,13 @@ export default defineEventHandler(async (event) => {
         statusMessage: 'Tournament not found'
       })
     }
-    console.error('[api/tournaments/update] update failed', { tournamentId, error })
+    logError('api/tournaments/update', 'update failed', { tournamentId, error })
     throw createError({
       statusCode: 500,
       statusMessage: error?.message ?? 'Tournament update failed'
     })
   }
 
-  console.log('[api/tournaments/update] updated', { tournamentId })
+  logInfo('api/tournaments/update', 'updated', { tournamentId })
   return { event: data }
 })

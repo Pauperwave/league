@@ -26,20 +26,20 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  console.log('[api/pairings/rankings] request', { pairingId, rankings })
+  logInfo('api/pairings/rankings', 'request', { pairingId, rankings })
 
   try {
     for (const { playerId, position } of rankings) {
       await upsertRoundResult(supabase, pairingId, playerId, { position })
     }
   } catch (err) {
-    console.error('[api/pairings/rankings] upsert failed', { pairingId, err })
+    logError('api/pairings/rankings', 'upsert failed', { pairingId, err })
     throw createError({
       statusCode: 500,
       statusMessage: err instanceof Error ? err.message : 'Rankings save failed'
     })
   }
 
-  console.log('[api/pairings/rankings] done', { pairingId, updated: rankings.length })
+  logInfo('api/pairings/rankings', 'done', { pairingId, updated: rankings.length })
   return { updated: rankings.length }
 })

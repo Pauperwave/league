@@ -8,7 +8,7 @@ import type { Database } from '#shared/utils/types/database'
 export default defineEventHandler(async (event) => {
   const body = await requireValidBody(event, tournamentFormBodySchema)
 
-  console.log('[api/tournaments/create] request', { name: body.tournament_name, leagueId: body.league_id })
+  logInfo('api/tournaments/create', 'request', { name: body.tournament_name, leagueId: body.league_id })
 
   // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this
   // endpoint is the authorization boundary now, not a DB policy.
@@ -21,13 +21,13 @@ export default defineEventHandler(async (event) => {
     .single()
 
   if (error || !data) {
-    console.error('[api/tournaments/create] insert failed', { body, error })
+    logError('api/tournaments/create', 'insert failed', { body, error })
     throw createError({
       statusCode: 500,
       statusMessage: error?.message ?? 'Tournament insert failed'
     })
   }
 
-  console.log('[api/tournaments/create] created', { tournamentId: data.tournament_id })
+  logInfo('api/tournaments/create', 'created', { tournamentId: data.tournament_id })
   return { event: data }
 })

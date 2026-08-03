@@ -16,7 +16,7 @@ export default defineEventHandler(async (event) => {
     status
   } = await requireValidBody(event, leagueFormBodySchema)
 
-  console.log('[api/leagues/update] request', { leagueId, name, startsAt, endsAt, rulesetId, validTournaments, status })
+  logInfo('api/leagues/update', 'request', { leagueId, name, startsAt, endsAt, rulesetId, validTournaments, status })
 
   // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this
   // endpoint is the authorization boundary now, not a DB policy.
@@ -44,13 +44,13 @@ export default defineEventHandler(async (event) => {
         statusMessage: 'League not found'
       })
     }
-    console.error('[api/leagues/update] update failed', { leagueId, error })
+    logError('api/leagues/update', 'update failed', { leagueId, error })
     throw createError({
       statusCode: 500,
       statusMessage: error?.message ?? 'League update failed'
     })
   }
 
-  console.log('[api/leagues/update] updated', { leagueId })
+  logInfo('api/leagues/update', 'updated', { leagueId })
   return { league: data }
 })

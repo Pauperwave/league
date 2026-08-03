@@ -21,7 +21,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  console.log('[api/pairings/votes] request', { pairingId, playerId, brewVote, playVote })
+  logInfo('api/pairings/votes', 'request', { pairingId, playerId, brewVote, playVote })
 
   try {
     await upsertRoundResult(supabase, pairingId, playerId, {
@@ -29,13 +29,13 @@ export default defineEventHandler(async (event) => {
       play_vote_1: playVote
     })
   } catch (err) {
-    console.error('[api/pairings/votes] upsert failed', { pairingId, playerId, err })
+    logError('api/pairings/votes', 'upsert failed', { pairingId, playerId, err })
     throw createError({
       statusCode: 500,
       statusMessage: err instanceof Error ? err.message : 'Votes save failed'
     })
   }
 
-  console.log('[api/pairings/votes] done', { pairingId, playerId })
+  logInfo('api/pairings/votes', 'done', { pairingId, playerId })
   return { saved: true }
 })

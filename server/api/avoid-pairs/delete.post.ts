@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
 
   const [playerAId, playerBId] = playerA < playerB ? [playerA, playerB] : [playerB, playerA]
 
-  console.log('[api/avoid-pairs/delete] request', { playerAId, playerBId })
+  logInfo('api/avoid-pairs/delete', 'request', { playerAId, playerBId })
 
   const supabase = serverSupabaseServiceRole<Database>(event)
 
@@ -21,13 +21,13 @@ export default defineEventHandler(async (event) => {
     .eq('player_b_id', playerBId)
 
   if (error) {
-    console.error('[api/avoid-pairs/delete] delete failed', { playerAId, playerBId, error })
+    logError('api/avoid-pairs/delete', 'delete failed', { playerAId, playerBId, error })
     throw createError({
       statusCode: 500,
       statusMessage: error.message
     })
   }
 
-  console.log('[api/avoid-pairs/delete] deleted', { playerAId, playerBId })
+  logInfo('api/avoid-pairs/delete', 'deleted', { playerAId, playerBId })
   return { deleted: true }
 })

@@ -202,7 +202,7 @@ async function backfillReleasedDates(
     const chunk = rowsToUpdate.slice(i, i + chunkSize)
     const { error } = await supabase.from('mtg_commanders').upsert(chunk, { onConflict: 'scryfall_id' })
     if (error) {
-      console.error('[api/sync-commanders] released_at backfill failed', error)
+      logError('api/sync-commanders', 'released_at backfill failed', error)
       throw createError({
         statusCode: 500,
         statusMessage: error.message
@@ -297,14 +297,14 @@ function mapCard(card: ScryfallCard): MappedRow {
 export default defineEventHandler(async (event) => {
   const supabase = serverSupabaseServiceRole<Database>(event)
 
-  console.log('[api/sync-commanders] fetching existing catalog')
+  logInfo('api/sync-commanders', 'fetching existing catalog')
   const existing = await fetchExistingCatalog(supabase)
 
   const needsFullFetch = existing.maxReleasedAt === null
     || existing.rowsNeedingReleasedAt.length > BACKFILL_THRESHOLD
   const startUrl = needsFullFetch ? buildSearchUrl() : buildSearchUrl(existing.maxReleasedAt)
 
-  console.log('[api/sync-commanders] fetching commander-eligible cards from Scryfall', {
+  logInfo('api/sync-commanders', 'fetching commander-eligible cards from Scryfall', {
     mode: needsFullFetch ? 'full (backfilling released_at)' : 'date-scoped',
     since: needsFullFetch ? null : existing.maxReleasedAt,
     rowsNeedingReleasedAt: existing.rowsNeedingReleasedAt.length
@@ -317,7 +317,7 @@ export default defineEventHandler(async (event) => {
     const backfilled = await backfillReleasedDates(
       supabase, existing.rowsNeedingReleasedAt, fetchedCards
     )
-    console.log('[api/sync-commanders] backfilled released_at', {
+    logInfo('api/sync-commanders', 'backfilled released_at', {
       updated: backfilled,
       total: existing.rowsNeedingReleasedAt.length
     })
@@ -333,7 +333,7 @@ export default defineEventHandler(async (event) => {
     return true
   })
 
-  console.log('[api/sync-commanders] diff computed', {
+  logInfo('api/sync-commanders', 'diff computed', {
     scanned,
     existingIds: existing.scryfallIds.size,
     new: newCards.length
@@ -365,14 +365,14 @@ export default defineEventHandler(async (event) => {
     .select('card_name')
 
   if (insertError) {
-    console.error('[api/sync-commanders] insert failed', insertError)
+    logError('api/sync-commanders', 'insert failed', insertError)
     throw createError({
       statusCode: 500,
       statusMessage: insertError.message
     })
   }
 
-  console.log('[api/sync-commanders] added new commanders', { count: inserted?.length ?? 0 })
+  logInfo('api/sync-commanders', 'added new commanders', { count: inserted?.length ?? 0 })
 
   return {
     added: inserted?.length ?? 0,

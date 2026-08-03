@@ -8,7 +8,7 @@ import type { Database } from '#shared/utils/types/database'
 export default defineEventHandler(async (event) => {
   const body = await requireValidBody(event, deckFormBodySchema)
 
-  console.log('[api/decks/create] request', { playerId: body.player_id, commander1: body.commander_1_name })
+  logInfo('api/decks/create', 'request', { playerId: body.player_id, commander1: body.commander_1_name })
 
   // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this
   // endpoint is the authorization boundary now, not a DB policy.
@@ -21,13 +21,13 @@ export default defineEventHandler(async (event) => {
     .single()
 
   if (error || !data) {
-    console.error('[api/decks/create] insert failed', { body, error })
+    logError('api/decks/create', 'insert failed', { body, error })
     throw createError({
       statusCode: 500,
       statusMessage: error?.message ?? 'Deck insert failed'
     })
   }
 
-  console.log('[api/decks/create] created', { deckId: data.id })
+  logInfo('api/decks/create', 'created', { deckId: data.id })
   return { deck: data }
 })

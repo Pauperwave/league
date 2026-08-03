@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   const tournamentId = requireIdParam(event, 'tournamentId')
   const { playerIds } = await requireValidBody(event, playerIdsBodySchema)
 
-  console.log('[api/unregister-player] request', { tournamentId, playerIds })
+  logInfo('api/unregister-player', 'request', { tournamentId, playerIds })
 
   // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this
   // endpoint is the authorization boundary now, not a DB policy.
@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
     .select('player_id')
 
   if (deleteError) {
-    console.error('[api/unregister-player] delete failed', { tournamentId, playerIds, deleteError })
+    logError('api/unregister-player', 'delete failed', { tournamentId, playerIds, deleteError })
     throw createError({
       statusCode: 500,
       statusMessage: deleteError.message
@@ -31,6 +31,6 @@ export default defineEventHandler(async (event) => {
   }
 
   const removedIds = (removed ?? []).map(row => row.player_id)
-  console.log('[api/unregister-player] done', { tournamentId, removed: removedIds })
+  logInfo('api/unregister-player', 'done', { tournamentId, removed: removedIds })
   return { removed: removedIds }
 })

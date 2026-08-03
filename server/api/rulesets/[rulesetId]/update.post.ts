@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
   const rulesetId = requireIdParam(event, 'rulesetId')
   const body = await requireValidBody(event, rulesetFormBodySchema)
 
-  console.log('[api/rulesets/update] request', { rulesetId, name: body.name })
+  logInfo('api/rulesets/update', 'request', { rulesetId, name: body.name })
 
   // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this
   // endpoint is the authorization boundary now, not a DB policy.
@@ -29,13 +29,13 @@ export default defineEventHandler(async (event) => {
         statusMessage: 'Ruleset not found'
       })
     }
-    console.error('[api/rulesets/update] update failed', { rulesetId, error })
+    logError('api/rulesets/update', 'update failed', { rulesetId, error })
     throw createError({
       statusCode: 500,
       statusMessage: error?.message ?? 'Ruleset update failed'
     })
   }
 
-  console.log('[api/rulesets/update] updated', { rulesetId })
+  logInfo('api/rulesets/update', 'updated', { rulesetId })
   return { ruleset: data }
 })

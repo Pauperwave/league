@@ -6,7 +6,6 @@
 import * as v from 'valibot'
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
-import { buildRoundOneTables, buildPairingRows } from '#shared/utils/roundScoring'
 
 const bodySchema = v.object({
   playerOrder: v.optional(v.array(v.pipe(v.number(), v.integer(), v.minValue(1)))),
@@ -20,7 +19,7 @@ export default defineEventHandler(async (event) => {
   const tournamentId = requireIdParam(event, 'tournamentId')
   const { playerOrder, payments } = await requireValidBody(event, bodySchema)
 
-  console.log('[api/start] request', { tournamentId, playerOrderLength: playerOrder?.length ?? 0 })
+  logInfo('api/start', 'request', { tournamentId, playerOrderLength: playerOrder?.length ?? 0 })
 
   // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this
   // endpoint is the authorization boundary now, not a DB policy.
@@ -98,13 +97,13 @@ export default defineEventHandler(async (event) => {
         statusMessage: 'Tournament has already started'
       })
     }
-    console.error('[api/start] standings insert failed', { tournamentId, standingsError })
+    logError('api/start', 'standings insert failed', { tournamentId, standingsError })
     throw createError({
       statusCode: 500,
       statusMessage: standingsError.message
     })
   }
-  console.log('[api/start] standings created', { tournamentId, players: standingsData.length })
+  logInfo('api/start', 'standings created', { tournamentId, players: standingsData.length })
 
   // Registration snapshot (registered_at + payment method) for every seated
   // player — the only surviving source of this data once the waitroom row
@@ -135,13 +134,13 @@ export default defineEventHandler(async (event) => {
         statusMessage: 'Tournament has already started'
       })
     }
-    console.error('[api/start] tournament_registrations insert failed', { tournamentId, registrationsError })
+    logError('api/start', 'tournament_registrations insert failed', { tournamentId, registrationsError })
     throw createError({
       statusCode: 500,
       statusMessage: registrationsError.message
     })
   }
-  console.log('[api/start] tournament_registrations recorded', { tournamentId, count: selectedOrder.length })
+  logInfo('api/start', 'tournament_registrations recorded', { tournamentId, count: selectedOrder.length })
 
   const { data: updatedTournament, error: updateError } = await supabase
     .from('tournaments')
@@ -155,7 +154,7 @@ export default defineEventHandler(async (event) => {
     .single()
 
   if (updateError || !updatedTournament) {
-    console.error('[api/start] tournament update failed', { tournamentId, updateError })
+    logError('api/start', 'tournament update failed', { tournamentId, updateError })
     throw createError({
       statusCode: 500,
       statusMessage: updateError?.message ?? 'Tournament update failed'
@@ -176,20 +175,20 @@ export default defineEventHandler(async (event) => {
     supabase.from('pairings').insert(rows),
   ])
   if (waitroomError) {
-    console.error('[api/start] waitroom clear failed', { tournamentId, waitroomError })
+    logError('api/start', 'waitroom clear failed', { tournamentId, waitroomError })
     throw createError({
       statusCode: 500,
       statusMessage: waitroomError.message
     })
   }
   if (pairingsError) {
-    console.error('[api/start] pairings insert failed', { tournamentId, pairingsError })
+    logError('api/start', 'pairings insert failed', { tournamentId, pairingsError })
     throw createError({
       statusCode: 500,
       statusMessage: pairingsError.message
     })
   }
 
-  console.log('[api/start] tournament started', { tournamentId, tables: rows.length })
+  logInfo('api/start', 'tournament started', { tournamentId, tables: rows.length })
   return { event: updatedTournament }
 })

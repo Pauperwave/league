@@ -11,7 +11,7 @@ import type { Database } from '#shared/utils/types/database'
 export default defineEventHandler(async (event) => {
   const deckId = requireIdParam(event, 'deckId')
 
-  console.log('[api/decks/delete] request', { deckId })
+  logInfo('api/decks/delete', 'request', { deckId })
 
   // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this
   // endpoint is the authorization boundary now, not a DB policy.
@@ -66,13 +66,13 @@ export default defineEventHandler(async (event) => {
     .eq('id', deckId)
 
   if (error) {
-    console.error('[api/decks/delete] delete failed', { deckId, error })
+    logError('api/decks/delete', 'delete failed', { deckId, error })
     throw createError({
       statusCode: 500,
       statusMessage: error.message
     })
   }
 
-  console.log('[api/decks/delete] deleted', { deckId })
+  logInfo('api/decks/delete', 'deleted', { deckId })
   return { deleted: true }
 })

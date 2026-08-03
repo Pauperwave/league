@@ -9,7 +9,7 @@
 export default defineEventHandler(async (event) => {
   const { pairingId, supabase, playerIds } = await requirePairingContext(event)
 
-  console.log('[api/pairings/reset] request', { pairingId })
+  logInfo('api/pairings/reset', 'request', { pairingId })
 
   try {
     const { error: killsDeleteError } = await supabase
@@ -31,13 +31,13 @@ export default defineEventHandler(async (event) => {
       })
     }
   } catch (err) {
-    console.error('[api/pairings/reset] clear failed', { pairingId, err })
+    logError('api/pairings/reset', 'clear failed', { pairingId, err })
     throw createError({
       statusCode: 500,
       statusMessage: err instanceof Error ? err.message : 'Reset failed'
     })
   }
 
-  console.log('[api/pairings/reset] done', { pairingId, players: playerIds.length })
+  logInfo('api/pairings/reset', 'done', { pairingId, players: playerIds.length })
   return { cleared: playerIds.length }
 })

@@ -23,7 +23,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  console.log('[api/pairings/kills] request', { pairingId, kills })
+  logInfo('api/pairings/kills', 'request', { pairingId, kills })
 
   try {
     const { error: deleteError } = await supabase
@@ -46,13 +46,13 @@ export default defineEventHandler(async (event) => {
       await upsertRoundResult(supabase, pairingId, playerId, { number_of_kills: count })
     }
   } catch (err) {
-    console.error('[api/pairings/kills] save failed', { pairingId, err })
+    logError('api/pairings/kills', 'save failed', { pairingId, err })
     throw createError({
       statusCode: 500,
       statusMessage: err instanceof Error ? err.message : 'Kills save failed'
     })
   }
 
-  console.log('[api/pairings/kills] done', { pairingId, kills: kills.length })
+  logInfo('api/pairings/kills', 'done', { pairingId, kills: kills.length })
   return { kills: kills.length }
 })

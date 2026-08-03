@@ -12,14 +12,6 @@
 import * as v from 'valibot'
 import { serverSupabaseServiceRole } from '#supabase/server'
 import type { Database } from '#shared/utils/types/database'
-import {
-  resolveTournamentRuleset,
-  fetchRoundData,
-  calculateRoundScores,
-  updateStandingsAndRanks,
-  buildRoundOneTables,
-  buildPairingRows,
-} from '#shared/utils/roundScoring'
 
 const bodySchema = v.object({
   currentRound: v.pipe(v.number(), v.integer(), v.minValue(1)),
@@ -30,7 +22,7 @@ export default defineEventHandler(async (event) => {
   const tournamentId = requireIdParam(event, 'tournamentId')
   const { currentRound, playerOrder } = await requireValidBody(event, bodySchema)
 
-  console.log('[api/advance-round] request', { tournamentId, currentRound, playerOrderLength: playerOrder?.length ?? 0 })
+  logInfo('api/advance-round', 'request', { tournamentId, currentRound, playerOrderLength: playerOrder?.length ?? 0 })
 
   // Service-role key (BACKLOG #7 flip complete): bypasses RLS entirely — this
   // endpoint is the authorization boundary now, not a DB policy.
@@ -70,7 +62,7 @@ export default defineEventHandler(async (event) => {
     const { pairings, results, standingsMap } = await fetchRoundData(
       supabase, tournamentId, currentRound
     )
-    console.log('[api/advance-round] scoring rounds 1..N', {
+    logInfo('api/advance-round', 'scoring rounds 1..N', {
       tournamentId,
       currentRound,
       pairings: pairings.length,
@@ -79,13 +71,13 @@ export default defineEventHandler(async (event) => {
     })
     calculateRoundScores(pairings, results, standingsMap, posValues, ruleset)
     await updateStandingsAndRanks(supabase, tournamentId, standingsMap)
-    console.log('[api/advance-round] standings updated', {
+    logInfo('api/advance-round', 'standings updated', {
       tournamentId,
       scores: Array.from(standingsMap.values())
         .map(s => ({ player: s.player_id, score: s.standing_player_score })),
     })
   } catch (err) {
-    console.error('[api/advance-round] scoring failed', { tournamentId, currentRound, err })
+    logError('api/advance-round', 'scoring failed', { tournamentId, currentRound, err })
     throw createError({
       statusCode: 500,
       statusMessage: err instanceof Error ? err.message : 'Round scoring failed'
@@ -104,13 +96,13 @@ export default defineEventHandler(async (event) => {
     .single()
 
   if (updateError || !updatedTournament) {
-    console.error('[api/advance-round] tournament update failed', { tournamentId, newRound, updateError })
+    logError('api/advance-round', 'tournament update failed', { tournamentId, newRound, updateError })
     throw createError({
       statusCode: 500,
       statusMessage: updateError?.message ?? 'Tournament update failed'
     })
   }
-  console.log('[api/advance-round] tournament advanced', { tournamentId, newRound, hasEnded })
+  logInfo('api/advance-round', 'tournament advanced', { tournamentId, newRound, hasEnded })
 
   // Insert the next round's pairings from the confirmed order.
   if (!hasEnded && playerOrder) {
@@ -123,13 +115,13 @@ export default defineEventHandler(async (event) => {
     }
     const { error: pairingsError } = await supabase.from('pairings').insert(rows)
     if (pairingsError) {
-      console.error('[api/advance-round] pairings insert failed', { tournamentId, newRound, pairingsError })
+      logError('api/advance-round', 'pairings insert failed', { tournamentId, newRound, pairingsError })
       throw createError({
         statusCode: 500,
         statusMessage: pairingsError.message
       })
     }
-    console.log('[api/advance-round] pairings created', { tournamentId, newRound, tables: rows.length })
+    logInfo('api/advance-round', 'pairings created', { tournamentId, newRound, tables: rows.length })
   }
 
   return { event: updatedTournament, hasEnded }

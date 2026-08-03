@@ -9,7 +9,7 @@
 export default defineEventHandler(async (event) => {
   const { pairingId, supabase, playerIds } = await requirePairingContext(event)
 
-  console.log('[api/pairings/undraw] request', { pairingId })
+  logInfo('api/pairings/undraw', 'request', { pairingId })
 
   try {
     const { error: killsDeleteError } = await supabase
@@ -26,13 +26,13 @@ export default defineEventHandler(async (event) => {
       })
     }
   } catch (err) {
-    console.error('[api/pairings/undraw] clear failed', { pairingId, err })
+    logError('api/pairings/undraw', 'clear failed', { pairingId, err })
     throw createError({
       statusCode: 500,
       statusMessage: err instanceof Error ? err.message : 'Undraw failed'
     })
   }
 
-  console.log('[api/pairings/undraw] done', { pairingId, players: playerIds.length })
+  logInfo('api/pairings/undraw', 'done', { pairingId, players: playerIds.length })
   return { cleared: playerIds.length }
 })
