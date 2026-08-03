@@ -1,4 +1,5 @@
 // server\api\avoid-pairs\create.post.ts
+// fallow-ignore-file code-duplication -- intent-based sibling endpoints, scaffolding already in server/utils (ADR-013)
 // BFF (ADR-013): add a globally-fixed avoid-pair. Normalizes the two player
 // ids into (min, max) order before insert — the DB CHECK constraint
 // (player_a_id < player_b_id) enforces exactly one canonical row per

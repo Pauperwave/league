@@ -118,23 +118,11 @@ const breadcrumbItems = useBreadcrumb(() => [
     <UBreadcrumb :items="breadcrumbItems" />
 
     <PageHeaderRow :title="t('commander.index.breadcrumb')">
-      <UInput
+      <SearchInput
         v-model="searchQuery"
-        :icon="ICONS.search"
         :placeholder="t('commander.index.searchPlaceholder')"
         class="w-64"
-      >
-        <template v-if="searchQuery" #trailing>
-          <UButton
-            color="neutral"
-            variant="link"
-            size="xs"
-            :icon="ICONS.clear"
-            :padded="false"
-            @click="searchQuery = ''"
-          />
-        </template>
-      </UInput>
+      />
     </PageHeaderRow>
 
     <!-- Loading -->

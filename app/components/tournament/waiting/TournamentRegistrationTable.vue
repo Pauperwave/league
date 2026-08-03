@@ -14,10 +14,8 @@ const { registrations, players } = defineProps<{
 
 const playersById = computed(() => new Map(players.map(p => [p.player_id, p])))
 
-function formatRegisteredAt(iso: string | null): string {
-  if (!iso) return t('tournament.registrationTable.unknownTime')
-  return new Date(iso).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-}
+const unknownTimeLabel = t('tournament.registrationTable.unknownTime')
+const paymentUnknownLabel = t('tournament.registrationTable.paymentUnknown')
 
 interface RegistrationRow {
   index: number
@@ -36,7 +34,7 @@ const tableData = computed<RegistrationRow[]>(() =>
       playerId: registration.playerId,
       name: player?.player_name ?? t('league.ranking.playerFallback', { id: registration.playerId }),
       surname: player?.player_surname ?? '',
-      registeredAt: formatRegisteredAt(registration.registeredAt),
+      registeredAt: formatRegisteredAt(registration.registeredAt, unknownTimeLabel),
       paymentMethod: registration.paymentMethod,
     }
   })
@@ -52,12 +50,7 @@ const columns = computed<TableColumn<RegistrationRow>[]>(() => [
     accessorKey: 'name',
     header: t('tournament.registrationTable.playerColumn'),
     meta: { class: { td: 'font-medium' } },
-    cell: ({ row }) => h(PlayerNameTag, {
-      name: row.original.name,
-      surname: row.original.surname,
-      playerId: row.original.playerId,
-      avatarSize: 'md',
-    }),
+    cell: ({ row }) => playerNameCell(PlayerNameTag, row.original),
   },
   {
     accessorKey: 'registeredAt',
@@ -68,19 +61,8 @@ const columns = computed<TableColumn<RegistrationRow>[]>(() => [
     id: 'paymentMethod',
     header: t('tournament.registrationTable.paymentColumn'),
     meta: { class: { th: 'text-center', td: 'text-center' } },
-    cell: ({ row }) => {
-      const method = row.original.paymentMethod
-      if (!method) {
-        return h('span', { class: 'text-muted text-sm' }, t('tournament.registrationTable.paymentUnknown'))
-      }
-      const display = PAYMENT_METHOD_DISPLAY[method]
-      return h(UBadge, {
-        label: t(display.labelKey),
-        icon: display.icon,
-        color: display.color,
-        variant: 'subtle',
-      })
-    },
+    cell: ({ row }) =>
+      paymentMethodCell(UBadge, row.original.paymentMethod, paymentUnknownLabel, t),
   },
 ])
 </script>

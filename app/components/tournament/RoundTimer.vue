@@ -1,5 +1,11 @@
 <!-- app\components\tournament\RoundTimer.vue -->
 <script setup lang="ts">
+// fallow-ignore-file code-duplication -- the TimerControlButton instances in
+// the template share a prop shape (icon/color/variant/:fullscreen/:tooltip/
+// @click) but each is gated by a different phase condition and calls a
+// different handler; fallow's line-scoped ignore comment doesn't work inside
+// <template> (only // comments in <script>, tested 2026-08-03), so this is
+// file-scoped instead.
 /**
  * RoundTimer
  *
@@ -507,6 +513,14 @@ onMounted(() => {
       class="flex"
       :class="isFullscreen ? 'flex-row gap-8' : 'flex-wrap gap-2'"
     >
+      <!-- The TimerControlButton instances below share a prop shape (icon,
+           color, variant, :fullscreen, :tooltip, @click) but each is gated by
+           a different phase condition, uses a different color/icon, and
+           calls a different handler — fallow's duplicate detector flags them
+           as a clone group, but that's the common shape of a small
+           declarative component, not copy-pasted logic. A config-driven
+           v-for would hide the phase-by-phase control flow this panel exists
+           to make readable; left as-is on purpose. -->
       <div class="flex items-center" :class="isFullscreen ? 'flex-row gap-8' : 'gap-1'">
         <template v-if="phase !== 'ended'">
           <TimerControlButton

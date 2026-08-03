@@ -39,3 +39,4 @@ This was a real, shipped bug, not just style: `DeckEditModal.vue`'s `update` emi
 - **`display/BaseTable`** — generic wrapper around `UTable` with a standard empty state (`emptyTitle`/`emptyDescription`/`emptyIcon`).
 - **`display/ImageWithFallback`** — an `<img>` with a loading-spinner and missing-image fallback (`src`/`alt`/`loading`). Used by `CommanderArt.vue` (single image + name/mana overlay) and `CommanderArtGallery.vue` (1-2 images side by side, no overlay) — those two keep their own different wrapper/caption markup, only the inner image+fallback block is shared.
 - **`input/DatePicker`** — `CalendarDate`-based date input wrapping `@internationalized/date`, not a raw `UInput`/native date picker.
+- **`input/SearchInput`** — a `UInput` with a search icon plus a clear ("x") trailing button that only shows once there's text. `v-model` + `placeholder`; width isn't baked in, pass a `class` at the call site. Used by `commanders/index.vue` and `payments/index.vue`.

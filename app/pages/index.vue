@@ -2,6 +2,14 @@
 <script setup lang="ts">
 
 const { t } = useI18n()
+
+const secondaryLinks = [
+  { to: '/players', icon: ICONS.players, labelKey: 'home.allPlayers' },
+  { to: '/decks', icon: ICONS.battle, labelKey: 'home.allDecks' },
+  { to: '/commanders', icon: ICONS.commander, labelKey: 'home.allCommanders' },
+  { to: '/rulesets', icon: ICONS.rules, labelKey: 'home.viewRulesets' },
+  { to: '/payments', icon: ICONS.registration, labelKey: 'home.viewPayments' },
+]
 </script>
 
 <template>
@@ -24,44 +32,14 @@ const { t } = useI18n()
 
       <div class="mt-4 flex flex-col sm:flex-row gap-2 justify-center">
         <UButton
-          to="/players"
+          v-for="link in secondaryLinks"
+          :key="link.to"
+          :to="link.to"
           color="neutral"
           size="md"
-          :icon="ICONS.players"
+          :icon="link.icon"
         >
-          {{ t('home.allPlayers') }}
-        </UButton>
-        <UButton
-          to="/decks"
-          color="neutral"
-          size="md"
-          :icon="ICONS.battle"
-        >
-          {{ t('home.allDecks') }}
-        </UButton>
-        <UButton
-          to="/commanders"
-          color="neutral"
-          size="md"
-          :icon="ICONS.commander"
-        >
-          {{ t('home.allCommanders') }}
-        </UButton>
-        <UButton
-          to="/rulesets"
-          color="neutral"
-          size="md"
-          :icon="ICONS.rules"
-        >
-          {{ t('home.viewRulesets') }}
-        </UButton>
-        <UButton
-          to="/payments"
-          color="neutral"
-          size="md"
-          :icon="ICONS.registration"
-        >
-          {{ t('home.viewPayments') }}
+          {{ t(link.labelKey) }}
         </UButton>
       </div>
     </div>

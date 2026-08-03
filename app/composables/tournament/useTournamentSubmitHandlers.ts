@@ -31,6 +31,16 @@ export function useTournamentSubmitHandlers(deps: SubmitHandlerDeps) {
   const { t } = useI18n()
   const queryCache = useQueryCache()
 
+  /** Shared by handleKillsSubmit and handleVotesSubmit — same success/error
+   * toast shape, just a different success title. */
+  function toastResult(successTitle: string, result: { success: boolean, error?: string }) {
+    toast.add({
+      title: result.success ? successTitle : t('deck.toast.errorTitle'),
+      description: result.success ? undefined : result.error,
+      color: result.success ? 'success' : 'error'
+    })
+  }
+
   /** Shared by handleScoreSubmit and handleDrawSubmit — sets the local
    * ranking state and persists it, with the same toast/error handling. */
   function saveRanking(pairingId: number, rankingWithRanks: RankingEntry[]) {
@@ -67,11 +77,7 @@ export function useTournamentSubmitHandlers(deps: SubmitHandlerDeps) {
   function handleKillsSubmit(pairingId: number, kills: Kill[]) {
     tournamentStore.savePairingKills(pairingId, kills)
       .then(result => {
-        toast.add({
-          title: result.success ? t('tournament.killsSavedTitle') : t('deck.toast.errorTitle'),
-          description: result.success ? undefined : result.error,
-          color: result.success ? 'success' : 'error'
-        })
+        toastResult(t('tournament.killsSavedTitle'), result)
         // Refetch so the "Uccisioni" button's reviewed indicator (derived
         // from round_results.number_of_kills, see PairingsCard) updates
         // immediately instead of waiting for the next lifecycle transition.
@@ -129,11 +135,7 @@ export function useTournamentSubmitHandlers(deps: SubmitHandlerDeps) {
         playVotePlayerId
       )
         .then((result) => {
-          toast.add({
-            title: result.success ? t('tournament.voteSavedTitle') : t('deck.toast.errorTitle'),
-            description: result.success ? undefined : result.error,
-            color: result.success ? 'success' : 'error'
-          })
+          toastResult(t('tournament.voteSavedTitle'), result)
           // Same reason as saveRanking: "Punteggi Tavolo" reads round_results
           // directly (deck/play point columns), so it needs a refetch to
           // pick up the vote just saved.

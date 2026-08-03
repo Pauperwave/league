@@ -3,8 +3,57 @@ import type { TableColumn } from '@nuxt/ui'
 import type { CalendarDate } from '@internationalized/date'
 import { parseDate, today, getLocalTimeZone } from '@internationalized/date'
 import type { Component } from 'vue'
+import type { PaymentMethod } from '#shared/utils/types'
 
 export type StatusColor = 'success' | 'warning' | 'error' | 'neutral' | 'info' | 'primary' | 'secondary'
+
+/** Shared by TournamentRegistrationTable and the payments overview page —
+ * `unknownLabel` is passed in rather than resolved here since this is a
+ * plain module function, not a component `setup()` (can't call useI18n()). */
+export function formatRegisteredAt(iso: string | null, unknownLabel: string): string {
+  if (!iso) return unknownLabel
+  return new Date(iso).toLocaleString('it-IT', {
+    day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+  })
+}
+
+/** The player-name-tag cell renderer shared by TournamentRegistrationTable
+ * and the payments overview page's "name" column. */
+export function playerNameCell(
+  PlayerNameTag: Component,
+  row: { name: string, surname: string, playerId: number }
+) {
+  return h(PlayerNameTag, {
+    name: row.name,
+    surname: row.surname,
+    playerId: row.playerId,
+    avatarSize: 'md',
+  })
+}
+
+/** The payment-method badge (or "unknown" fallback) cell renderer shared by
+ * TournamentRegistrationTable and the payments overview page's "paymentMethod"
+ * column. `onClick` is only passed by the payments page, whose badges
+ * double as quick filters. */
+export function paymentMethodCell(
+  UBadge: Component,
+  method: PaymentMethod | null,
+  unknownLabel: string,
+  t: (key: string) => string,
+  onClick?: () => void
+) {
+  if (!method) {
+    return h('span', { class: 'text-muted text-sm' }, unknownLabel)
+  }
+  const display = PAYMENT_METHOD_DISPLAY[method]
+  return h(UBadge, {
+    label: t(display.labelKey),
+    icon: display.icon,
+    color: display.color,
+    variant: 'subtle',
+    ...(onClick ? { class: 'cursor-pointer hover:brightness-110', onClick } : {}),
+  })
+}
 
 export function formatDate(date: string | null): string {
   if (!date) return 'N/A'

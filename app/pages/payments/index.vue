@@ -162,10 +162,8 @@ function syncQuery() {
 
 watch([columnFilters, sorting, pagination, globalFilter], syncQuery, { deep: true })
 
-function formatRegisteredAt(iso: string | null): string {
-  if (!iso) return t('tournament.registrationTable.unknownTime')
-  return new Date(iso).toLocaleString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
-}
+const unknownTimeLabel = t('tournament.registrationTable.unknownTime')
+const paymentUnknownLabel = t('tournament.registrationTable.paymentUnknown')
 
 // — Columns —
 const columns = computed<TableColumn<PaymentRow>[]>(() => [
@@ -174,12 +172,7 @@ const columns = computed<TableColumn<PaymentRow>[]>(() => [
     accessorFn: row => `${row.name} ${row.surname}`.trim(),
     header: sortableHeader(t('tournament.registrationTable.playerColumn'), UButton),
     meta: { class: { td: 'font-medium' } },
-    cell: ({ row }) => h(PlayerNameTag, {
-      name: row.original.name,
-      surname: row.original.surname,
-      playerId: row.original.playerId,
-      avatarSize: 'md',
-    }),
+    cell: ({ row }) => playerNameCell(PlayerNameTag, row.original),
   },
   {
     id: 'tournamentId',
@@ -221,7 +214,7 @@ const columns = computed<TableColumn<PaymentRow>[]>(() => [
     header: sortableHeader(t('tournament.registrationTable.registeredAtColumn'), UButton),
     enableGlobalFilter: false,
     meta: { class: { th: 'text-center', td: 'text-center' } },
-    cell: ({ row }) => formatRegisteredAt(row.original.registeredAt),
+    cell: ({ row }) => formatRegisteredAt(row.original.registeredAt, unknownTimeLabel),
   },
   {
     accessorKey: 'paymentMethod',
@@ -231,18 +224,10 @@ const columns = computed<TableColumn<PaymentRow>[]>(() => [
     meta: { class: { th: 'text-center', td: 'text-center' } },
     cell: ({ row }) => {
       const method = row.original.paymentMethod
-      if (!method) {
-        return h('span', { class: 'text-muted text-sm' }, t('tournament.registrationTable.paymentUnknown'))
-      }
-      const display = PAYMENT_METHOD_DISPLAY[method]
-      return h(UBadge, {
-        label: t(display.labelKey),
-        icon: display.icon,
-        color: display.color,
-        variant: 'subtle',
-        class: 'cursor-pointer hover:brightness-110',
-        onClick: () => { paymentMethodFilter.value = method },
-      })
+      return paymentMethodCell(
+        UBadge, method, paymentUnknownLabel, t,
+        method ? () => { paymentMethodFilter.value = method } : undefined
+      )
     },
   },
   {
@@ -351,23 +336,11 @@ const breadcrumbItems = useBreadcrumb(() => [
 
     <div v-else class="space-y-4">
       <div class="flex flex-wrap items-center gap-2">
-        <UInput
+        <SearchInput
           v-model="globalFilter"
-          :icon="ICONS.search"
           :placeholder="t('payments.overview.searchPlaceholder')"
           class="w-56"
-        >
-          <template v-if="globalFilter" #trailing>
-            <UButton
-              color="neutral"
-              variant="link"
-              size="xs"
-              :icon="ICONS.clear"
-              :padded="false"
-              @click="globalFilter = ''"
-            />
-          </template>
-        </UInput>
+        />
         <USelectMenu
           v-model="leagueFilter"
           :items="leagueOptions"

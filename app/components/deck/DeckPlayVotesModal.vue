@@ -38,18 +38,8 @@ function handleConfirm() {
   emit('submit', localDeckVotePlayerId.value, localPlayVotePlayerId.value)
 }
 
-// Arrow-key roving tabindex — see useRovingTabindex.ts. One instance per
-// grid, since each is its own independent radiogroup-like widget.
-const deckRoving = useRovingTabindex(() => props.otherPlayers.length)
-const playRoving = useRovingTabindex(() => props.otherPlayers.length)
-
-function selectDeckVote(player: TablePlayer, index: number) {
-  localDeckVotePlayerId.value = player.id
-  deckRoving.focusIndex(index)
-}
-function selectPlayVote(player: TablePlayer, index: number) {
-  localPlayVotePlayerId.value = player.id
-  playRoving.focusIndex(index)
+function onAssignCommander(playerId: number) {
+  emit('assignCommander', playerId)
 }
 
 // Footer lives in the parent (TournamentVotesModal's #footer slot, see
@@ -61,74 +51,25 @@ defineExpose({ submit: handleConfirm })
 
 <template>
   <div class="space-y-6">
-    <div>
-      <div class="flex items-center gap-2 mb-3">
-        <label class="text-md font-medium">{{ t('deck.votes.preferredDeck') }}</label>
-        <UBadge
-          v-if="ruleset?.rule_set_brew != null"
-          color="info"
-          variant="subtle"
-          size="md"
-        >
-          {{ t('deck.votes.weightBadge', { weight: ruleset.rule_set_brew }) }}
-        </UBadge>
-      </div>
-      <div
-        class="grid grid-cols-2 sm:grid-cols-3 gap-3"
-        role="group"
-        :aria-label="t('deck.votes.preferredDeck')"
-      >
-        <CommanderVoteCard
-          v-for="(player, index) in otherPlayers"
-          :key="`deck-${player.id}`"
-          :ref="(el) => deckRoving.setItemRef(index, el as { focus: () => void } | null)"
-          :commander-name="player.commander1 ?? null"
-          :name="player.name"
-          :surname="player.surname"
-          :avatar-url="player.avatarUrl"
-          :player-id="player.id"
-          :selected="localDeckVotePlayerId === player.id"
-          :tabindex="deckRoving.tabindexFor(index)"
-          @click="() => selectDeckVote(player, index)"
-          @assign="emit('assignCommander', player.id)"
-          @navigate="(direction) => deckRoving.onNavigate(index, direction)"
-        />
-      </div>
-    </div>
-
-    <div>
-      <div class="flex items-center gap-2 mb-3">
-        <label class="text-md font-medium">{{ t('deck.votes.bestPlay') }}</label>
-        <UBadge
-          v-if="ruleset?.rule_set_play != null"
-          color="info"
-          variant="subtle"
-          size="md"
-        >
-          {{ t('deck.votes.weightBadge', { weight: ruleset.rule_set_play }) }}
-        </UBadge>
-      </div>
-      <div
-        class="grid grid-cols-2 sm:grid-cols-3 gap-3"
-        role="group"
-        :aria-label="t('deck.votes.bestPlay')"
-      >
-        <CommanderVoteCard
-          v-for="(player, index) in otherPlayers"
-          :key="`play-${player.id}`"
-          :ref="(el) => playRoving.setItemRef(index, el as { focus: () => void } | null)"
-          :commander-name="player.commander1 ?? null"
-          :name="player.name"
-          :surname="player.surname"
-          :avatar-url="player.avatarUrl"
-          :player-id="player.id"
-          :selected="localPlayVotePlayerId === player.id"
-          :tabindex="playRoving.tabindexFor(index)"
-          @click="() => selectPlayVote(player, index)"
-          @assign="emit('assignCommander', player.id)"
-          @navigate="(direction) => playRoving.onNavigate(index, direction)"
-        />
-      </div>
-    </div>
+    <VoteGrid
+      :label="t('deck.votes.preferredDeck')"
+      :weight="ruleset?.rule_set_brew ?? null"
+      :group-aria-label="t('deck.votes.preferredDeck')"
+      key-prefix="deck"
+      :other-players="otherPlayers"
+      :selected-id="localDeckVotePlayerId"
+      @select="(player) => localDeckVotePlayerId = player.id"
+      @assign="onAssignCommander"
+    />
+    <VoteGrid
+      :label="t('deck.votes.bestPlay')"
+      :weight="ruleset?.rule_set_play ?? null"
+      :group-aria-label="t('deck.votes.bestPlay')"
+      key-prefix="play"
+      :other-players="otherPlayers"
+      :selected-id="localPlayVotePlayerId"
+      @select="(player) => localPlayVotePlayerId = player.id"
+      @assign="onAssignCommander"
+    />
   </div>
 </template>

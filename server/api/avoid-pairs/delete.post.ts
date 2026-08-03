@@ -1,4 +1,5 @@
 // server\api\avoid-pairs\delete.post.ts
+// fallow-ignore-file code-duplication -- intent-based sibling endpoints, scaffolding already in server/utils (ADR-013)
 // BFF (ADR-013): remove a globally-fixed avoid-pair. Normalizes the two
 // player ids the same way create.post.ts does, since the DB row is always
 // stored with player_a_id < player_b_id.
