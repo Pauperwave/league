@@ -355,7 +355,7 @@ const meta = computed(() => ({
         :columns="columns"
         :meta="meta"
         sticky
-        class="max-h-150"
+        class="max-h-200"
         :ui="{
           root: 'border border-default',
           // Nuxt UI's default `base` is `min-w-full`, forcing the table to

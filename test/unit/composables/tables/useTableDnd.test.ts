@@ -1,8 +1,9 @@
 // test\unit\composables\tables\useTableDnd.test.ts
 import { describe, expect, it } from 'vitest'
-import { defineComponent, h } from 'vue'
+import { defineComponent, h, ref, nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
 import { useTableDnd } from '~/composables/tables/useTableDnd'
+import { getForbiddenPairKey } from '~/composables/event-pairing/pairingOptimizer'
 import { createI18nTestPlugin } from '#test/helpers/mocks'
 import type { PairingTable, PairingPlayer } from '#shared/utils/types'
 
@@ -72,6 +73,38 @@ describe('useTableDnd', () => {
       })
 
       expect(conflictingTables.value.size).toBe(0)
+    })
+  })
+
+  describe('reactive scoring inputs', () => {
+    // Regression: the scoring inputs are all fed by async Colada queries, and
+    // TablePreviewModal builds this options object once in setup(). Passing
+    // plain values froze whatever had resolved at that instant — on a
+    // client-side navigation that is nothing at all, so the optimizer scored
+    // with no league history forever. Verified live in the browser
+    // 2026-08-04: setup saw size 0, the prop later became 45, and useTableDnd
+    // never re-read it. Getters + toValue fix it.
+    it('picks up leagueRematchCounts that resolves after setup', async () => {
+      const counts = ref(new Map<string, number>())
+
+      const { scoreDetails } = setupTableDnd([table('t1', 1, [1, 2, 3, 4])], {
+        playersForScoring: [
+          { id: 1, rank: 1, score: 0, table3Count: 0 },
+          { id: 2, rank: 2, score: 0, table3Count: 0 },
+          { id: 3, rank: 3, score: 0, table3Count: 0 },
+          { id: 4, rank: 4, score: 0, table3Count: 0 },
+        ],
+        history: [],
+        leagueRematchCounts: () => counts.value,
+        currentRound: 1,
+      })
+
+      expect(scoreDetails.value.tableScores[0]?.rematchPenalty).toBeCloseTo(0, 10)
+
+      counts.value = new Map([[getForbiddenPairKey(1, 2), 3]])
+      await nextTick()
+
+      expect(scoreDetails.value.tableScores[0]?.rematchPenalty).toBeLessThan(0)
     })
   })
 

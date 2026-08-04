@@ -2,6 +2,7 @@
 <script setup lang="ts">
 import type { Player } from '#shared/utils/types'
 import type { WaitingListFlags, PaymentMethod } from '~/composables/tournament/useWaitingListFlags'
+import type { LastEndedTournamentParticipants } from '~/composables/tournament/useTournamentQueries'
 
 const { t } = useI18n()
 
@@ -11,6 +12,7 @@ const props = defineProps<{
   tournamentId: number
   waitroomEntries?: Map<number, string>
   tableEstimate?: string
+  lastTournamentParticipants?: LastEndedTournamentParticipants | null
 }>()
 
 const playersById = computed(() => new Map(props.players.map(p => [p.player_id, p])))
@@ -51,6 +53,28 @@ const availablePlayers = computed(() =>
   props.players.filter(p => !props.waitingPlayers.includes(p.player_id))
 )
 const addPlayersItems = usePlayerOptions(availablePlayers)
+
+// "Aggiungi dall'ultima tappa" — participants of the league's last ended
+// tournament. Stays populated even once a player is already in this
+// tournament's waiting list — LastTournamentParticipantsTable swaps that
+// row's button state instead of the row disappearing.
+const lastTournamentPlayers = computed(() => {
+  const participants = props.lastTournamentParticipants
+  if (!participants) return []
+
+  return participants.playerIds
+    .map(id => playersById.value.get(id))
+    .filter((player): player is Player => player !== undefined)
+    .sort((a, b) => a.player_surname.localeCompare(b.player_surname, 'it'))
+})
+
+const addFromLastTournamentLogging = useButtonLogging(
+  t('logging.waitingList.addFromLastTournament')
+)
+function handleAddFromLastTournament(playerId: number) {
+  addFromLastTournamentLogging.logClick()
+  emit('select', [playerId])
+}
 const allPlayersInQueue = computed(() =>
   props.players.length > 0 && props.players.every(p => props.waitingPlayers.includes(p.player_id))
 )
@@ -96,67 +120,80 @@ const tableData = computed(() => {
 </script>
 
 <template>
-  <div class="bg-muted/30 rounded-lg p-4 space-y-4">
-    <div class="flex flex-wrap items-center gap-3">
-      <h2 class="font-semibold text-xl flex items-center gap-2">
-        <UIcon :name="ICONS.players" size="lg" class="text-muted" />
-        {{ t('tournament.waitingList.heading') }}
-      </h2>
-      <WaitingListStats
-        :player-count="waitingPlayers.length"
-        :table-estimate="tableEstimate"
-      />
-    </div>
+  <div
+    class="grid gap-4"
+    :class="lastTournamentPlayers.length > 0 ? 'lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]' : ''"
+  >
+    <LastTournamentParticipantsTable
+      v-if="lastTournamentPlayers.length > 0 && lastTournamentParticipants"
+      :tournament-name="lastTournamentParticipants.tournamentName"
+      :players="lastTournamentPlayers"
+      :waiting-players="waitingPlayers"
+      @add="handleAddFromLastTournament"
+    />
 
-    <div class="flex flex-wrap items-center gap-2">
-      <USelectMenu
-        v-model="selectedPlayerIds"
-        :items="addPlayersItems"
-        value-key="value"
-        multiple
-        :icon="ICONS.addPlayer"
-        :placeholder="t('player.searchModal.addPlayersPlaceholder')"
-        :search-input="{ placeholder: t('player.searchModal.searchInputPlaceholder') }"
-        class="w-full sm:w-120"
-      />
-      <UButton
-        color="primary"
-        :icon="ICONS.playerConfirmed"
-        :label="t('player.searchModal.addCount', { count: selectedPlayerIds.length })"
-        :disabled="!hasSelection"
-        @click="handleAddSelected"
-      />
-      <span v-if="players.length === 0" class="text-sm text-muted">
-        {{ t('player.searchModal.noPlayersRegistered') }}
-      </span>
-      <span v-else-if="allPlayersInQueue" class="text-sm text-muted">
-        {{ t('player.searchModal.allInQueue') }}
-      </span>
-    </div>
-
-    <WaitingListTable
-      :data="tableData"
-      @update="handleUpdate"
-      @edit="emit('edit', $event)"
-      @remove="(playerId: number) => {
-        forgetFlags([playerId])
-        emit('remove', playerId)
-      }"
-      @batch-remove="(playerIds: number[]) => {
-        forgetFlags(playerIds)
-        emit('batchRemove', playerIds)
-      }"
-      @batch-mark-paid="emit('batchMarkPaid', $event)"
-    >
-      <template #search-actions>
-        <UButton
-          color="neutral"
-          variant="soft"
-          :icon="ICONS.addPlayer"
-          :label="t('player.searchModal.createNew')"
-          @click="handleCreateNew"
+    <div class="bg-muted/30 rounded-lg p-4 space-y-4">
+      <div class="flex flex-wrap items-center gap-3">
+        <h2 class="font-semibold text-xl flex items-center gap-2">
+          <UIcon :name="ICONS.players" size="lg" class="text-muted" />
+          {{ t('tournament.waitingList.heading') }}
+        </h2>
+        <WaitingListStats
+          :player-count="waitingPlayers.length"
+          :table-estimate="tableEstimate"
         />
-      </template>
-    </WaitingListTable>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <USelectMenu
+          v-model="selectedPlayerIds"
+          :items="addPlayersItems"
+          value-key="value"
+          multiple
+          :icon="ICONS.addPlayer"
+          :placeholder="t('player.searchModal.addPlayersPlaceholder')"
+          :search-input="{ placeholder: t('player.searchModal.searchInputPlaceholder') }"
+          class="w-full sm:w-120"
+        />
+        <UButton
+          color="primary"
+          :icon="ICONS.playerConfirmed"
+          :label="t('player.searchModal.addCount', { count: selectedPlayerIds.length })"
+          :disabled="!hasSelection"
+          @click="handleAddSelected"
+        />
+        <span v-if="players.length === 0" class="text-sm text-muted">
+          {{ t('player.searchModal.noPlayersRegistered') }}
+        </span>
+        <span v-else-if="allPlayersInQueue" class="text-sm text-muted">
+          {{ t('player.searchModal.allInQueue') }}
+        </span>
+      </div>
+
+      <WaitingListTable
+        :data="tableData"
+        @update="handleUpdate"
+        @edit="emit('edit', $event)"
+        @remove="(playerId: number) => {
+          forgetFlags([playerId])
+          emit('remove', playerId)
+        }"
+        @batch-remove="(playerIds: number[]) => {
+          forgetFlags(playerIds)
+          emit('batchRemove', playerIds)
+        }"
+        @batch-mark-paid="emit('batchMarkPaid', $event)"
+      >
+        <template #search-actions>
+          <UButton
+            color="neutral"
+            variant="soft"
+            :icon="ICONS.addPlayer"
+            :label="t('player.searchModal.createNew')"
+            @click="handleCreateNew"
+          />
+        </template>
+      </WaitingListTable>
+    </div>
   </div>
 </template>

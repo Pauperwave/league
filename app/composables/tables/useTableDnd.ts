@@ -123,12 +123,22 @@ function buildTablesFromOrder(tables: PairingTable[], playerOrder: number[]): Pa
   })
 }
 
+/**
+ * Scoring inputs are `MaybeRefOrGetter` on purpose: every one of them is fed by
+ * an async Pinia Colada query, and this composable's caller builds its options
+ * object once in `setup()`. Passing plain values there captures whatever had
+ * resolved at that instant — on a full page load SSR has usually prefetched
+ * them, but on a client-side navigation into the tournament page they are all
+ * still empty, and a plain value would freeze that emptiness forever (the
+ * optimizer would then silently score with no history at all). Pass getters
+ * (`() => props.history`) so `toValue` re-reads them as the queries resolve.
+ */
 export function useTableDnd(initialTables: PairingTable[], params?: {
-  playersForScoring?: PairingPlayer[]
-  history?: PairingHistoryEntry[]
+  playersForScoring?: MaybeRefOrGetter<PairingPlayer[]>
+  history?: MaybeRefOrGetter<PairingHistoryEntry[]>
   /** Cross-tournament meeting count per pair key — flat rematch signal, see pairingOptimizer. */
-  leagueRematchCounts?: Map<string, number>
-  currentRound?: number
+  leagueRematchCounts?: MaybeRefOrGetter<Map<string, number>>
+  currentRound?: MaybeRefOrGetter<number>
   initialForbiddenPairs?: PairingForbiddenPair[]
   initialWeights?: Partial<PairingWeights>
 }) {
@@ -158,15 +168,15 @@ export function useTableDnd(initialTables: PairingTable[], params?: {
   })
 
   const playersForScoring = computed(() => {
-    const provided = params?.playersForScoring ?? []
+    const provided = toValue(params?.playersForScoring) ?? []
     if (provided.length > 0) return provided
     return fallbackPlayersForScoring.value
   })
-  const history = computed(() => params?.history ?? [])
+  const history = computed(() => toValue(params?.history) ?? [])
   const leagueRematchCounts = computed(
-    () => params?.leagueRematchCounts ?? new Map<string, number>()
+    () => toValue(params?.leagueRematchCounts) ?? new Map<string, number>()
   )
-  const currentRound = computed(() => params?.currentRound ?? 1)
+  const currentRound = computed(() => toValue(params?.currentRound) ?? 1)
 
   const sourcePlayerIds = computed(() => extractPlayerIds(sourceTables.value))
 

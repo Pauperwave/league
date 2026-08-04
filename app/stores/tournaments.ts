@@ -35,8 +35,7 @@ export const useTournamentStore = defineStore('tournaments', () => {
   /** Check if the current tournament has finished all rounds */
   const isTournamentEnded = computed(() => {
     if (!currentTournament.value) return false
-    return (currentTournament.value.tournament_current_round ?? 0)
-      > (currentTournament.value.tournament_round_number ?? 0)
+    return isTournamentRowEnded(currentTournament.value)
   })
 
   // ── Actions: Tournament lifecycle ─────────────────────────────────────────────

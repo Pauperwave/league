@@ -49,6 +49,9 @@ export function useTournamentPage() {
     data: leagueRematchCountsData,
     isLoading: leagueRematchCountsLoading,
   } = useLeagueRematchCountsQuery(leagueId, tournamentId)
+  const {
+    data: lastEndedTournamentData
+  } = useLastEndedTournamentParticipantsQuery(leagueId, tournamentId)
 
   // Colada resolves the league from the cached list (SSR-prefetched) — no
   // store, no manual fetch fallback (ADR-015).
@@ -322,6 +325,7 @@ export function useTournamentPage() {
     leagueTable3CountsLoading,
     leagueRematchCounts: computed(() => leagueRematchCountsData.value ?? new Map<string, number>()),
     leagueRematchCountsLoading,
+    lastEndedTournamentParticipants: computed(() => lastEndedTournamentData.value ?? null),
     standings: computed(() => standingsData.value ?? []),
     loading,
     players: computed(() => players.value ?? []),

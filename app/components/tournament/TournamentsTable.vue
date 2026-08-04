@@ -26,7 +26,7 @@ const UButton = resolveComponent('UButton') as Component
 const RowActionButtons = resolveComponent('RowActionButtons') as Component
 
 function getEventStatus(event: Tournament): { key: 'ended' | 'playing' | 'registration', label: string, color: StatusColor, icon: string } {
-  if ((event.tournament_current_round || 0) > (event.tournament_round_number || 0)) {
+  if (isTournamentRowEnded(event)) {
     return { key: 'ended', label: t('tournament.status.ended'), color: 'error', icon: ICONS.clear }
   }
   if (event.tournament_playing) {

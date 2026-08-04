@@ -116,7 +116,8 @@
       "addPlayers": "Giocatori aggiunti in lista d'attesa",
       "createNewPlayer": "Nuovo giocatore creato",
       "confirmRemove": "Rimozione da lista d'attesa confermata",
-      "confirmBatchRemove": "Rimozione massiva da lista d'attesa confermata"
+      "confirmBatchRemove": "Rimozione massiva da lista d'attesa confermata",
+      "addFromLastTournament": "Giocatore aggiunto dall'ultima tappa"
     }
   },
   "common": {
@@ -655,7 +656,12 @@
       }
     },
     "waitingList": {
-      "heading": "Lista d'Attesa"
+      "heading": "Lista d'Attesa",
+      "lastTournamentHeading": "Partecipanti a \"{name}\"",
+      "addFromLastTournament": "Aggiungi",
+      "alreadyAddedFromLastTournament": "Aggiunto",
+      "lastTournamentEmptyTitle": "Nessun altro giocatore da aggiungere",
+      "lastTournamentEmptyDescription": "Tutti i partecipanti dell'ultima tappa sono già in lista d'attesa."
     },
     "waitingListTable": {
       "selectAllAriaLabel": "Seleziona tutti",

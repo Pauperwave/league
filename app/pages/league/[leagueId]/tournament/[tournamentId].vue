@@ -50,6 +50,7 @@ const {
   leagueTable3CountsLoading,
   leagueRematchCounts,
   leagueRematchCountsLoading,
+  lastEndedTournamentParticipants,
   loading,
   previewTables,
   viewedRound,
@@ -624,6 +625,7 @@ function handleUndrawTable(pairingId: number) {
                 :tournament-id="tournamentId"
                 :waitroom-entries="waitroomEntries"
                 :table-estimate="tableEstimate"
+                :last-tournament-participants="lastEndedTournamentParticipants"
                 @update="playersHandlers.handlePlayerStatusUpdate"
                 @remove="(playerId: number) => removeFromWaitingList([playerId])"
                 @batch-remove="playersHandlers.handleBatchRemove"

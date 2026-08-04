@@ -443,3 +443,57 @@ export function useLeagueRematchCountsQuery(leagueId: number, excludeTournamentI
     },
   })
 }
+
+/** Query key for the last-ended-tournament participant list — the "aggiungi
+ *  dall'ultima tappa" waiting-list shortcut. */
+export const LAST_ENDED_TOURNAMENT_PARTICIPANTS_KEY = ['last-ended-tournament-participants']
+
+export interface LastEndedTournamentParticipants {
+  tournamentName: string
+  playerIds: number[]
+}
+
+/**
+ * Participant list of the most recent *ended* tournament in the league
+ * (excluding the current one) — feeds the "Aggiungi" shortcut in the
+ * registration-phase waiting list, letting the organizer quickly re-add
+ * players who played the previous tappa instead of searching each by name.
+ * "Ended" uses `isTournamentRowEnded` (app/utils/tournamentStatus.ts), not a
+ * status column. Returns `null` when the league has no ended tournament yet
+ * (its first-ever tournament).
+ */
+export function useLastEndedTournamentParticipantsQuery(
+  leagueId: number, excludeTournamentId: number
+) {
+  const supabase = useSupabaseClient()
+
+  return useQuery({
+    key: [...LAST_ENDED_TOURNAMENT_PARTICIPANTS_KEY, leagueId, excludeTournamentId],
+    query: async (): Promise<LastEndedTournamentParticipants | null> => {
+      const { data: tournaments, error } = await supabase
+        .from('tournaments')
+        .select('tournament_id, tournament_name, tournament_current_round, tournament_round_number')
+        .eq('league_id', leagueId)
+        .neq('tournament_id', excludeTournamentId)
+        .order('tournament_datetime', { ascending: false })
+
+      if (error) throw error
+
+      const lastEnded = (tournaments ?? []).find(isTournamentRowEnded)
+      if (!lastEnded) return null
+
+      const { data: registrations, error: registrationsError } = await supabase
+        .from('tournament_registrations')
+        .select('player_id')
+        .eq('tournament_id', lastEnded.tournament_id)
+        .order('registered_at', { ascending: true })
+
+      if (registrationsError) throw registrationsError
+
+      return {
+        tournamentName: lastEnded.tournament_name,
+        playerIds: (registrations ?? []).map(row => row.player_id),
+      }
+    },
+  })
+}

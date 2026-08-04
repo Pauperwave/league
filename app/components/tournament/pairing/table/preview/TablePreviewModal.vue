@@ -78,10 +78,12 @@ const {
   setForbiddenPairs,
   conflictingTables,
 } = useTableDnd(tables, {
-  playersForScoring: playersForScoring,
-  history: history,
-  leagueRematchCounts: leagueRematchCounts,
-  currentRound: currentRound,
+  // Getters, not values — these props are fed by async queries that are still
+  // empty at setup on a client-side navigation. See useTableDnd's doc comment.
+  playersForScoring: () => playersForScoring,
+  history: () => history,
+  leagueRematchCounts: () => leagueRematchCounts,
+  currentRound: () => currentRound,
   initialWeights: getPairingWeights(tournamentId),
   initialForbiddenPairs: avoidPairsData.value ?? [],
 })
