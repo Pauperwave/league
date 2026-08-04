@@ -47,6 +47,9 @@ const {
   updateTournament,
   pairingHistory,
   leagueTable3Counts,
+  leagueTable3CountsLoading,
+  leagueRematchCounts,
+  leagueRematchCountsLoading,
   loading,
   previewTables,
   viewedRound,
@@ -209,6 +212,16 @@ const canAdvance = computed(() => {
 
   return pairings.value.every(pairing => isTableComplete(pairing))
 })
+
+// The generic page `loading` doesn't track the league-wide history queries
+// (only tournamentStore/waitroom/events) — TablePreviewModal's auto-optimize
+// watcher gates on its own `loading` prop, so without this it could run the
+// optimizer while the cross-tournament 3-player-table rotation history or the
+// cross-tournament rematch counts are still `undefined`, silently optimizing
+// with table3Count: 0 / no past-tournament rematches for everyone.
+const previewLoading = computed(() =>
+  loading.value || leagueTable3CountsLoading.value || leagueRematchCountsLoading.value
+)
 
 // ── Computed: Tables & Players ─────────────────────────────────────────────
 
@@ -709,9 +722,10 @@ function handleUndrawTable(pairingId: number) {
       :tournament-id="tournamentId"
       :players-for-scoring="pairingPlayersForScoring"
       :history="pairingHistoryForScoring"
+      :league-rematch-counts="leagueRematchCounts"
       :current-round="Math.max(1, currentRound || 1)"
       :all-players="playersForPreview"
-      :loading="loading"
+      :loading="previewLoading"
       @confirm="lifecycle.handlePreviewConfirm"
     />
 

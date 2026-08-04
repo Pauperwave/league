@@ -17,6 +17,7 @@ Master index of all project documentation.
 | `architecture/database.md` | RLS policies, denormalized stats tables, trigger architecture, migration conventions | Database ops |
 | `architecture/event-flow.md` | Event lifecycle: creation → registration → playing → ended, DB mutations per phase | Event logic |
 | `architecture/modal-url-sync.md` | URL query parameter sync for event page modals | URL state |
+| `architecture/pairing-optimizer.md` | The 5 score components behind "Ottimizza"/"Dettaglio calcolo tavolo", when each is legitimately 0, and how league-wide vs. current-tournament history feed them | Domain logic |
 | `architecture/routes.md` | Complete route inventory, nested route gotchas, navigation patterns | Routing |
 | `architecture/sound-effects.md` | uisfx sound-effects singleton, cue mapping for RoundTimer.vue, how to extend to other components | UI feedback |
 | `architecture/state-flow.md` | DB → store → composable → component data flow, caching strategy | Architecture |
@@ -60,6 +61,7 @@ Master index of all project documentation.
 4. `architecture/client-caching.md` — localStorage caching mechanisms (Colada persister vs. session-store mirror)
 5. `architecture/modal-url-sync.md` — URL state persistence
 6. `architecture/commander-whitelists.md` — commander2 partner/background whitelisting logic
+7. `architecture/pairing-optimizer.md` — pairing/table-preview scoring logic and history scoping
 
 ### For Code Quality
 
@@ -89,6 +91,7 @@ docs/
 │   ├── database.md
 │   ├── event-flow.md
 │   ├── modal-url-sync.md
+│   ├── pairing-optimizer.md
 │   ├── routes.md
 │   ├── sound-effects.md
 │   ├── state-flow.md

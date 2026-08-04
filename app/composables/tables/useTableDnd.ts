@@ -126,6 +126,8 @@ function buildTablesFromOrder(tables: PairingTable[], playerOrder: number[]): Pa
 export function useTableDnd(initialTables: PairingTable[], params?: {
   playersForScoring?: PairingPlayer[]
   history?: PairingHistoryEntry[]
+  /** Cross-tournament meeting count per pair key — flat rematch signal, see pairingOptimizer. */
+  leagueRematchCounts?: Map<string, number>
   currentRound?: number
   initialForbiddenPairs?: PairingForbiddenPair[]
   initialWeights?: Partial<PairingWeights>
@@ -161,6 +163,9 @@ export function useTableDnd(initialTables: PairingTable[], params?: {
     return fallbackPlayersForScoring.value
   })
   const history = computed(() => params?.history ?? [])
+  const leagueRematchCounts = computed(
+    () => params?.leagueRematchCounts ?? new Map<string, number>()
+  )
   const currentRound = computed(() => params?.currentRound ?? 1)
 
   const sourcePlayerIds = computed(() => extractPlayerIds(sourceTables.value))
@@ -198,6 +203,7 @@ export function useTableDnd(initialTables: PairingTable[], params?: {
       tables: currentTablesAsIds.value,
       players: playersForScoring.value,
       history: history.value,
+      leagueRematchCounts: leagueRematchCounts.value,
       forbiddenPairs: forbiddenPairs.value,
       currentRound: currentRound.value,
       weights: weights.value,
@@ -358,6 +364,7 @@ export function useTableDnd(initialTables: PairingTable[], params?: {
     const result = optimizePairings({
       players: playersForScoring.value,
       history: history.value,
+      leagueRematchCounts: leagueRematchCounts.value,
       forbiddenPairs: forbiddenPairs.value,
       weights: weights.value,
       currentRound: currentRound.value,

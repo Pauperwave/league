@@ -6,6 +6,7 @@ import type { PairingPlayerScore, PairingTableScore } from '~/composables/event-
 interface PlayerRow {
   player: TablePlayer
   detail?: PairingPlayerScore
+  table3Count: number
 }
 
 defineProps<{
@@ -34,6 +35,7 @@ const { t } = useI18n()
             :key="row.player.id"
             :player="row.player"
             :detail="row.detail"
+            :table3-count="row.table3Count"
           />
         </div>
       </div>

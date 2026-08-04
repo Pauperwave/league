@@ -266,15 +266,23 @@ function distributeTable3Penalty(
 /**
  * Calculates novelty and rematch penalties for all pairs at a table.
  *
+ * Two history sources contribute, both folded into the same `weights.rematch`:
+ * - `rematchMap` — pairs met in the CURRENT tournament, with recency decay
+ * - `leagueRematchCounts` — raw count of times the pair met in any OTHER
+ *   tournament of this league, flat/undecayed (round numbers aren't comparable
+ *   across tournaments, so there's no meaningful recency to decay by)
+ *
  * For every unique pair (i, j) where i < j:
- * - If they have NEVER met: +1 novelty, split `weights.novelty / 2` per player
- * - If they HAVE met before: penalty = (matchCount + recencyFactor) * weights.rematch
- *   where recencyFactor = 1 / (currentRound - lastRound), decaying over time
- *   The penalty is split equally between both players.
+ * - If they have NEVER met, in this tournament or any other league tournament:
+ *   +1 novelty, split `weights.novelty / 2` per player
+ * - Otherwise: penalty = (inTournamentCount + recencyFactor + leagueCount) * weights.rematch
+ *   where recencyFactor = 1 / (currentRound - lastRound) and is 0 for a pair
+ *   with league-wide history only. The penalty is split equally between both players.
  *
  * @param table - Array of player IDs at this table
  * @param perPlayer - Mutable Map of playerId → PairingPlayerScore to update
  * @param rematchMap - Map of "minId-maxId" → { count, lastRound }
+ * @param leagueRematchCounts - Map of "minId-maxId" → cross-tournament meeting count
  * @param currentRound - Current round number (for recency decay)
  * @param weights - PairingWeights config
  * @returns Object containing:
@@ -285,6 +293,7 @@ function calculatePairwiseScore(
   table: number[],
   perPlayer: Map<number, PairingPlayerScore>,
   rematchMap: Map<string, { count: number, lastRound: number }>,
+  leagueRematchCounts: Map<string, number>,
   currentRound: number,
   weights: PairingWeights
 ): { novelty: number; rematchPenalty: number } {
@@ -294,8 +303,9 @@ function calculatePairwiseScore(
   forEachPair(table, (left, right) => {
     const key = pairKey(left, right)
     const rematch = rematchMap.get(key)
+    const leagueCount = leagueRematchCounts.get(key) ?? 0
 
-    if (!rematch) {
+    if (!rematch && leagueCount === 0) {
       novelty += 1
       const leftScore = perPlayer.get(left)
       const rightScore = perPlayer.get(right)
@@ -304,9 +314,10 @@ function calculatePairwiseScore(
       return
     }
 
-    const roundsAgo = Math.max(1, currentRound - rematch.lastRound)
-    const recencyFactor = 1 / roundsAgo
-    const pairPenalty = rematch.count + recencyFactor
+    const roundsAgo = rematch ? Math.max(1, currentRound - rematch.lastRound) : 0
+    const recencyFactor = rematch ? 1 / roundsAgo : 0
+    const inTournamentCount = rematch?.count ?? 0
+    const pairPenalty = inTournamentCount + recencyFactor + leagueCount
     rematchPenalty += pairPenalty
 
     const penaltyValue = -pairPenalty * weights.rematch / 2
@@ -405,6 +416,7 @@ function aggregateTableScore(
  * @param table - Array of player IDs seated at this table
  * @param playersById - Map of player ID → PairingPlayer (rank, table3Count)
  * @param rematchMap - Map of "minId-maxId" → { count, lastRound }
+ * @param leagueRematchCounts - Map of "minId-maxId" → cross-tournament meeting count
  * @param currentRound - Current round number (for recency decay)
  * @param weights - PairingWeights config
  * @returns PairingTableScore with total and per-player breakdown
@@ -413,6 +425,7 @@ function scoreTable(
   table: number[],
   playersById: Map<number, PairingPlayer>,
   rematchMap: Map<string, { count: number, lastRound: number }>,
+  leagueRematchCounts: Map<string, number>,
   currentRound: number,
   weights: PairingWeights
 ): PairingTableScore {
@@ -436,7 +449,7 @@ function scoreTable(
   distributeTable3Penalty(table, perPlayer, playersById, weights)
 
   const { novelty, rematchPenalty } = calculatePairwiseScore(
-    table, perPlayer, rematchMap, currentRound, weights
+    table, perPlayer, rematchMap, leagueRematchCounts, currentRound, weights
   )
 
   return aggregateTableScore(table, perPlayer, weights, {
@@ -451,6 +464,7 @@ function scoreSolution(
   tables: number[][],
   playersById: Map<number, PairingPlayer>,
   rematchMap: Map<string, { count: number, lastRound: number }>,
+  leagueRematchCounts: Map<string, number>,
   forbiddenSet: Set<string>,
   currentRound: number,
   weights: PairingWeights
@@ -467,7 +481,9 @@ function scoreSolution(
       }
     }
 
-    const score = scoreTable(table, playersById, rematchMap, currentRound, weights)
+    const score = scoreTable(
+      table, playersById, rematchMap, leagueRematchCounts, currentRound, weights
+    )
     tableScores.push(score)
     totalScore += score.total
   }
@@ -493,6 +509,7 @@ export function scorePairingTables(params: {
   forbiddenPairs: PairingForbiddenPair[]
   weights?: Partial<PairingWeights>
   currentRound: number
+  leagueRematchCounts?: Map<string, number>
 }): PairingScoreDetails {
   const weights: PairingWeights = {
     ...DEFAULT_PAIRING_WEIGHTS,
@@ -501,12 +518,14 @@ export function scorePairingTables(params: {
 
   const playersById = new Map(params.players.map(p => [p.id, p]))
   const rematchMap = buildRematchMap(params.history)
+  const leagueRematchCounts = params.leagueRematchCounts ?? new Map<string, number>()
   const forbiddenSet = buildForbiddenSet(params.forbiddenPairs)
 
   const result = scoreSolution(
     params.tables,
     playersById,
     rematchMap,
+    leagueRematchCounts,
     forbiddenSet,
     params.currentRound,
     weights
@@ -534,6 +553,7 @@ function buildGreedyTables(
   orderedPlayers: PairingPlayer[],
   playersById: Map<number, PairingPlayer>,
   rematchMap: Map<string, { count: number, lastRound: number }>,
+  leagueRematchCounts: Map<string, number>,
   forbiddenSet: Set<string>,
   currentRound: number,
   weights: PairingWeights,
@@ -559,7 +579,7 @@ function buildGreedyTables(
         if (hasForbiddenConflict(nextTable, forbiddenSet)) continue
 
         const partialScore = scoreTable(
-          nextTable, playersById, rematchMap, currentRound, weights
+          nextTable, playersById, rematchMap, leagueRematchCounts, currentRound, weights
         ).total
         if (partialScore > bestScore) {
           bestScore = partialScore
@@ -598,6 +618,7 @@ function trySwapCandidate(
   j: number,
   playersById: Map<number, PairingPlayer>,
   rematchMap: Map<string, { count: number, lastRound: number }>,
+  leagueRematchCounts: Map<string, number>,
   forbiddenSet: Set<string>,
   currentRound: number,
   weights: PairingWeights
@@ -615,7 +636,7 @@ function trySwapCandidate(
   c2[j] = left
 
   const scored = scoreSolution(
-    candidate, playersById, rematchMap, forbiddenSet, currentRound, weights
+    candidate, playersById, rematchMap, leagueRematchCounts, forbiddenSet, currentRound, weights
   )
   return { candidate, scored }
 }
@@ -624,6 +645,7 @@ function improveBySwap(
   initialTables: number[][],
   playersById: Map<number, PairingPlayer>,
   rematchMap: Map<string, { count: number, lastRound: number }>,
+  leagueRematchCounts: Map<string, number>,
   forbiddenSet: Set<string>,
   currentRound: number,
   weights: PairingWeights,
@@ -632,7 +654,7 @@ function improveBySwap(
   const now = typeof performance !== 'undefined' ? () => performance.now() : () => Date.now()
   const started = now()
   let best = scoreSolution(
-    initialTables, playersById, rematchMap, forbiddenSet, currentRound, weights
+    initialTables, playersById, rematchMap, leagueRematchCounts, forbiddenSet, currentRound, weights
   )
   let working = cloneTables(initialTables)
 
@@ -649,7 +671,8 @@ function improveBySwap(
           }
 
           const attempt = trySwapCandidate(
-            working, t1, t2, i, j, playersById, rematchMap, forbiddenSet, currentRound, weights
+            working, t1, t2, i, j,
+            playersById, rematchMap, leagueRematchCounts, forbiddenSet, currentRound, weights
           )
           if (attempt && attempt.scored.totalScore > best.totalScore) {
             best = attempt.scored
@@ -686,6 +709,7 @@ export function optimizePairings(params: {
   weights?: Partial<PairingWeights>
   currentRound: number
   swapTimeBudgetMs?: number
+  leagueRematchCounts?: Map<string, number>
 }): PairingOptimizerResult {
   const {
     players,
@@ -704,6 +728,7 @@ export function optimizePairings(params: {
   const playersById = new Map(players.map(p => [p.id, p]))
   const forbiddenSet = buildForbiddenSet(forbiddenPairs)
   const rematchMap = buildRematchMap(history)
+  const leagueRematchCounts = params.leagueRematchCounts ?? new Map<string, number>()
   const tableSizes = getTableSizes(players.length)
 
   // getTableSizes returns [] for an unplayable player count (< 3, or exactly
@@ -735,6 +760,7 @@ export function optimizePairings(params: {
       attempt,
       playersById,
       rematchMap,
+      leagueRematchCounts,
       forbiddenSet,
       currentRound,
       weights,
@@ -745,6 +771,7 @@ export function optimizePairings(params: {
       greedyTables,
       playersById,
       rematchMap,
+      leagueRematchCounts,
       forbiddenSet,
       currentRound,
       weights,

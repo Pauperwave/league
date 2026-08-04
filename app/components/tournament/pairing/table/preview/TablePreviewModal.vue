@@ -21,6 +21,7 @@ const {
   tournamentId,
   playersForScoring,
   history,
+  leagueRematchCounts,
   currentRound,
   allPlayers,
   loading = false,
@@ -30,6 +31,7 @@ const {
   tournamentId: number
   playersForScoring: PairingPlayer[]
   history: PairingHistoryEntry[]
+  leagueRematchCounts: Map<string, number>
   currentRound: number
   allPlayers: TablePlayer[]
   loading?: boolean
@@ -78,6 +80,7 @@ const {
 } = useTableDnd(tables, {
   playersForScoring: playersForScoring,
   history: history,
+  leagueRematchCounts: leagueRematchCounts,
   currentRound: currentRound,
   initialWeights: getPairingWeights(tournamentId),
   initialForbiddenPairs: avoidPairsData.value ?? [],
@@ -107,22 +110,27 @@ watch(avoidPairsData, (pairs) => {
   setForbiddenPairs(pairs ?? [])
 })
 
-// Round 1 has no pairing history yet, so the optimizer's table3Count-based
-// rotation signal is always 0 for everyone — it degrades to a plain rank
-// sort, which systematically seats lower-ranked players at the 3-player
-// tables (a rank-driven bias, not a random one). Randomizing instead removes
-// that bias; round 2+ keeps the optimizer, which has real rotation data to
-// work with by then.
+// Round 1 has no rank yet (standing_player_rank is null → falls back to a
+// uniform 9999 for everyone in useTournamentPage's playersForScoring), but
+// it does NOT lack rotation data: table3Count already carries this league's
+// cross-tournament history in from round 1 (see pairingPlayersForScoring's
+// comment), and calculateTable3Penalty/weights.rotateTable3 apply that
+// signal identically regardless of round — nothing about the scoring is
+// round-gated. Round 1 used to bypass the optimizer entirely and randomize
+// instead, on the theory that there was no real signal to optimize on yet;
+// that threw away the real table3Count history a recurring league already
+// has (the theory only holds for a brand-new league with zero prior
+// tournaments, an unavoidable cold start, not something worth optimizing
+// around). Running the real optimizer at every round — including 1 — lets
+// its 3 seed orders (rank/table3Count/score) and the swap-improvement phase
+// find the best-scoring arrangement instead of a uniform-rank seed's stable
+// sort silently degrading to registration order.
 watch(
   () => [open.value, loading, playersForScoring.length] as const,
   ([isOpen, isLoading, playersCount]) => {
     if (!isOpen || isLoading || hasAutoOptimized.value) return
     if (!playersCount && !localTables.value.length) return
-    if (currentRound === 1) {
-      randomizeTables()
-    } else {
-      runOptimizer(140)
-    }
+    runOptimizer(140)
     hasAutoOptimized.value = true
   }
 )
@@ -251,6 +259,15 @@ const selectedTablePlayers = computed(() => {
     .filter((player): player is TablePlayer => player !== null)
 })
 
+// Raw (unweighted) historical count, shown alongside the score breakdown as
+// context — separate from PairingPlayerScore.rotateTable3, which is the
+// weighted cost paid at THIS table only (0 for any 4-player table, by
+// design — see docs/architecture/pairing-optimizer.md). This is the
+// player's cumulative "sat at a 3-player table" count instead.
+const table3CountByPlayer = computed(() =>
+  new Map(playersForScoring.map(player => [player.id, player.table3Count]))
+)
+
 const selectedTablePlayerRows = computed(() => {
   const score = selectedTableScore.value
   if (!score) return []
@@ -259,6 +276,7 @@ const selectedTablePlayerRows = computed(() => {
   return selectedTablePlayers.value.map((player) => ({
     player,
     detail: scoreByPlayer.get(player.id),
+    table3Count: table3CountByPlayer.value.get(player.id) ?? 0,
   }))
 })
 

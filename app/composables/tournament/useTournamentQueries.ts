@@ -345,16 +345,18 @@ export function usePairingHistoryQuery(tournamentId: number) {
 /** Query key for a player's 3-player-table count across a league's other tournaments. */
 export const LEAGUE_TABLE3_COUNTS_KEY = ['league-table3-counts']
 
-type LeagueTable3CountsRow = PairingRoundIds & { tournaments: { league_id: number } | null }
+type LeaguePairingRow = PairingRoundIds & { tournaments: { league_id: number } | null }
 
 /**
  * Historical `table3Count` per player across every *other* tournament in the
  * league (`usePairingHistoryQuery` above stays scoped to the current
- * tournament only — it also feeds rematch-avoidance, which must not see
- * other tournaments' rounds). Piggybacks on the same pairings table and
- * query-key/caching setup as `usePairingHistoryQuery` instead of a bespoke
- * fetch, so [tournamentId].vue's round-1/round-2+ table3Count signal
- * (BACKLOG #20) reflects the whole league's history, not just tonight's.
+ * tournament only, because its round numbers drive the rematch recency
+ * decay — cross-tournament meetings come in flat via
+ * `useLeagueRematchCountsQuery` below instead). Piggybacks on the same
+ * pairings table and query-key/caching setup as `usePairingHistoryQuery`
+ * instead of a bespoke fetch, so [tournamentId].vue's round-1/round-2+
+ * table3Count signal (BACKLOG #20) reflects the whole league's history,
+ * not just tonight's.
  */
 export function useLeagueTable3CountsQuery(leagueId: number, excludeTournamentId: number) {
   const supabase = useSupabaseClient()
@@ -372,7 +374,7 @@ export function useLeagueTable3CountsQuery(leagueId: number, excludeTournamentId
       if (error) throw error
 
       const counts = new Map<number, number>()
-      for (const pairing of (data ?? []) as unknown as LeagueTable3CountsRow[]) {
+      for (const pairing of (data ?? []) as unknown as LeaguePairingRow[]) {
         const playerIds = [
           pairing.pairing_player1_id,
           pairing.pairing_player2_id,
@@ -382,6 +384,59 @@ export function useLeagueTable3CountsQuery(leagueId: number, excludeTournamentId
 
         for (const playerId of playerIds) {
           counts.set(playerId, (counts.get(playerId) ?? 0) + 1)
+        }
+      }
+      return counts
+    },
+  })
+}
+
+/** Query key for how often each pair of players met across a league's other tournaments. */
+export const LEAGUE_REMATCH_COUNTS_KEY = ['league-rematch-counts']
+
+/**
+ * How many times each unordered pair of players has already sat at the same
+ * table across every *other* tournament in the league, keyed by
+ * `getForbiddenPairKey` so it lines up exactly with the optimizer's internal
+ * `rematchMap` keys. Feeds `rematchPenalty`/`novelty` as a flat, undecayed
+ * addition to the in-tournament signal: round numbers aren't comparable
+ * across tournaments, so there's no recency to decay by — a pair that met in
+ * a past tournament still counts as "having met" and is no longer novel.
+ * Same shape/caching as `useLeagueTable3CountsQuery` above, minus its
+ * `pairing_is_full` filter — pairs from tables of any size count here.
+ */
+export function useLeagueRematchCountsQuery(leagueId: number, excludeTournamentId: number) {
+  const supabase = useSupabaseClient()
+
+  return useQuery({
+    key: [...LEAGUE_REMATCH_COUNTS_KEY, leagueId, excludeTournamentId],
+    query: async (): Promise<Map<string, number>> => {
+      const { data, error } = await supabase
+        .from('pairings')
+        .select('pairing_player1_id, pairing_player2_id, pairing_player3_id, pairing_player4_id, tournaments!inner(league_id)')
+        .eq('tournaments.league_id', leagueId)
+        .neq('tournament_id', excludeTournamentId)
+
+      if (error) throw error
+
+      const counts = new Map<string, number>()
+      for (const pairing of (data ?? []) as unknown as LeaguePairingRow[]) {
+        const playerIds = [
+          pairing.pairing_player1_id,
+          pairing.pairing_player2_id,
+          pairing.pairing_player3_id,
+          pairing.pairing_player4_id,
+        ].filter((id): id is number => id !== null)
+
+        for (let i = 0; i < playerIds.length; i++) {
+          for (let j = i + 1; j < playerIds.length; j++) {
+            const left = playerIds[i]
+            const right = playerIds[j]
+            if (left === undefined || right === undefined) continue
+
+            const key = getForbiddenPairKey(left, right)
+            counts.set(key, (counts.get(key) ?? 0) + 1)
+          }
         }
       }
       return counts

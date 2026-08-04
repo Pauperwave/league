@@ -6,6 +6,10 @@ import type { PairingPlayerScore } from '~/composables/event-pairing/pairingOpti
 defineProps<{
   player: TablePlayer
   detail?: PairingPlayerScore
+  /** Cumulative "sat at a 3-player table" count from league history — shown
+   *  as context, separate from `detail.rotateTable3` (the weighted cost
+   *  paid at THIS table only, 0 for any 4-player table by design). */
+  table3Count: number
 }>()
 
 const { t } = useI18n()
@@ -38,8 +42,26 @@ function formatScore(value: number): string {
         <span class="font-mono">{{ formatScore(detail.rematchPenalty) }}</span>
       </div>
       <div class="flex items-center justify-between gap-2">
-        <span class="text-muted">{{ t('tournament.tablePreview.scoreItems.rotateTable3') }}</span>
+        <UTooltip
+          :content="{ side: 'top' }"
+          :text="t('tournament.scoreBreakdown.rotateTable3Tooltip')"
+        >
+          <span class="text-muted underline decoration-dotted decoration-muted cursor-help">
+            {{ t('tournament.tablePreview.scoreItems.rotateTable3') }}
+          </span>
+        </UTooltip>
         <span class="font-mono">{{ formatScore(detail.rotateTable3) }}</span>
+      </div>
+      <div class="flex items-center justify-between gap-2 text-muted/70">
+        <UTooltip
+          :content="{ side: 'top' }"
+          :text="t('tournament.scoreBreakdown.table3CountHistoryTooltip')"
+        >
+          <span class="underline decoration-dotted decoration-muted/50 cursor-help">
+            {{ t('tournament.scoreBreakdown.table3CountHistory') }}
+          </span>
+        </UTooltip>
+        <span class="font-mono">{{ table3Count }}</span>
       </div>
       <div class="flex items-center justify-between gap-2 border-b border-dashed border-default/60 pb-1">
         <span class="text-muted">{{ t('tournament.scoreBreakdown.tableSizeWeight') }}</span>

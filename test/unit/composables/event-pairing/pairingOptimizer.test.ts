@@ -166,4 +166,72 @@ describe('pairingOptimizer', () => {
     const ids = table.players.map(player => player.playerId).sort((a, b) => a - b)
     expect(ids).toEqual([1, 2, 3, 4])
   })
+
+  // ── Cross-tournament rematch history (ADR-054) ──────────────────────────────
+  // leagueRematchCounts is a flat, undecayed per-pair count from the league's
+  // OTHER tournaments, folded into the same weights.rematch as the
+  // in-tournament signal. Round numbers aren't comparable across tournaments,
+  // so there's no recency factor for that half.
+
+  it('penalizes a pair with league-wide history only, and does not count it as novel', () => {
+    const scored = scorePairingTables({
+      tables: [[1, 2, 3, 4]],
+      players,
+      history: [], // nothing played yet THIS tournament
+      forbiddenPairs: [],
+      currentRound: 1,
+      weights: DEFAULT_PAIRING_WEIGHTS,
+      leagueRematchCounts: new Map([[getForbiddenPairKey(1, 2), 1]]),
+    })
+
+    const table = scored.tableScores[0]
+    expect(table).toBeDefined()
+    if (!table) return
+
+    // 6 pairs total, 5 of them genuinely never-met; (1,2) met once in another
+    // tournament → rematch branch with recencyFactor 0, penalty exactly 1.
+    expect(table.novelty).toBeCloseTo(5 * DEFAULT_PAIRING_WEIGHTS.novelty, 6)
+    expect(table.rematchPenalty).toBeCloseTo(-1 * DEFAULT_PAIRING_WEIGHTS.rematch, 6)
+    expect(Math.abs(scorePlayerTotals(table) - table.total)).toBeLessThan(0.0001)
+  })
+
+  it('sums in-tournament and league-wide history for a pair that has both', () => {
+    const scored = scorePairingTables({
+      tables: [[1, 2, 3, 4]],
+      players,
+      history: [{ round: 1, players: [1, 2, 3, 4] }],
+      forbiddenPairs: [],
+      currentRound: 3,
+      weights: DEFAULT_PAIRING_WEIGHTS,
+      leagueRematchCounts: new Map([[getForbiddenPairKey(1, 2), 2]]),
+    })
+
+    const table = scored.tableScores[0]
+    expect(table).toBeDefined()
+    if (!table) return
+
+    // Every pair met once in round 1 → count 1 + recencyFactor 1/(3-1) = 1.5.
+    // (1, 2) additionally met twice in other tournaments → 1.5 + 2 = 3.5.
+    const rawPenalty = 5 * 1.5 + 3.5
+    expect(table.novelty).toBe(0)
+    expect(table.rematchPenalty).toBeCloseTo(-rawPenalty * DEFAULT_PAIRING_WEIGHTS.rematch, 6)
+    expect(Math.abs(scorePlayerTotals(table) - table.total)).toBeLessThan(0.0001)
+  })
+
+  it('scores identically whether leagueRematchCounts is omitted or empty', () => {
+    const args = {
+      tables: [[1, 2, 3, 4], [5, 6, 7, 8]],
+      players,
+      history,
+      forbiddenPairs: [],
+      currentRound: 3,
+      weights: DEFAULT_PAIRING_WEIGHTS,
+    }
+
+    const withoutParam = scorePairingTables(args)
+    const withEmptyMap = scorePairingTables({ ...args, leagueRematchCounts: new Map() })
+
+    expect(withEmptyMap.totalScore).toBe(withoutParam.totalScore)
+    expect(withEmptyMap.tableScores).toEqual(withoutParam.tableScores)
+  })
 })
