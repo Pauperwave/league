@@ -136,11 +136,11 @@ function executeBatch(
   lastSelectedRowIndex = null
 }
 
-// Batch action has no per-player method choice — defaults to POS when
+// Batch action has no per-player method choice — defaults to Contanti when
 // marking (the more common case in practice); individual rows can still
-// override to Contanti afterward.
+// override to POS afterward.
 function handleToggleMarkPaid() {
-  const newValue: PaymentMethod | null = allSelectedPaid.value ? null : 'pos'
+  const newValue: PaymentMethod | null = allSelectedPaid.value ? null : 'cash'
   executeBatch(id => setPaymentMethod(id, newValue), ids => emit('batchMarkPaid', ids))
 }
 
@@ -384,6 +384,7 @@ const meta = computed(() => ({
             v-else
             :title="t('tournament.waitingListTable.emptyTitle')"
             :icon="ICONS.players"
+            class="px-4"
           />
         </template>
       </UTable>

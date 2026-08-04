@@ -365,7 +365,10 @@ function handleTimerExpired() {
 const formattedDate = computed(() => {
   const dt = currentTournament.value?.tournament_datetime
   if (!dt) return ''
-  return new Date(dt).toLocaleDateString('it-IT', { year: 'numeric', month: 'long', day: 'numeric' })
+  const date = new Date(dt)
+  const weekday = date.toLocaleDateString('it-IT', { weekday: 'long' })
+  const rest = date.toLocaleDateString('it-IT', { year: 'numeric', month: 'long', day: 'numeric' })
+  return `${weekday}, ${rest}`
 })
 
 const leagueName = computed(() => currentLeague.value?.name ?? t('league.fallbackName'))

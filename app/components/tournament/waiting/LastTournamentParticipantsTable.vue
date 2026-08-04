@@ -37,8 +37,8 @@ const columns = computed<TableColumn<Player>[]>(() => [
   },
   {
     id: 'actions',
-    header: '',
-    meta: { class: { td: 'text-right' } },
+    header: t('tournament.waitingListTable.actionsColumn'),
+    meta: { class: { th: 'text-center', td: 'text-center' } },
     cell: ({ row }) => {
       const alreadyAdded = waitingPlayers.includes(row.original.player_id)
       return h(UButton, {
