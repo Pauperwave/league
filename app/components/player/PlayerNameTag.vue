@@ -10,7 +10,8 @@ const {
   showAvatar = true,
   linkable = true,
   wrap = false,
-  avatarSize = 'xs'
+  avatarSize = 'xs',
+  muted = false
 } = defineProps<{
   name: string
   surname: string
@@ -22,6 +23,8 @@ const {
   /** Set to true to let long names wrap instead of the default single-line ellipsis-free nowrap. */
   wrap?: boolean
   avatarSize?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
+  /** Set to true to render the name with a disabled/already-added look (e.g. struck-through, dimmed). */
+  muted?: boolean
 }>()
 
 const playerLink = computed(() => `/player/${slugify(`${name} ${surname}`.trim())}`)
@@ -49,8 +52,14 @@ const displayAvatar = computed(() => avatarUrl || generatePlayerAvatar(playerId 
         linkable ? 'hover:underline hover:text-primary transition-colors' : ''
       ]"
     >
-      <span class="whitespace-nowrap"><slot name="name">{{ name }}</slot></span>
-      <span class="font-bold text-primary whitespace-nowrap"><slot name="surname">{{ surname }}</slot></span>
+      <span
+        class="whitespace-nowrap"
+        :class="{ 'opacity-75 cursor-not-allowed line-through': muted }"
+      ><slot name="name">{{ name }}</slot></span>
+      <span
+        class="font-bold text-primary whitespace-nowrap"
+        :class="{ 'opacity-75 cursor-not-allowed line-through': muted }"
+      ><slot name="surname">{{ surname }}</slot></span>
     </component>
   </div>
 </template>
