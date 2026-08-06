@@ -27,6 +27,8 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
+const isOpen = ref(true)
+
 const rankingsStore = useRankingsStore()
 const commandersStore = useCommandersStore()
 const votesStore = useVotesStore()
@@ -92,118 +94,129 @@ function selectVote(item: { pairingId: number; playerId: number }) {
 </script>
 
 <template>
-  <div v-if="pairings.length > 0" class="bg-elevated rounded-xl p-2.5 border border-default shadow-lg space-y-2.5">
-    <div class="flex items-center gap-1.5">
-      <UIcon :name="ICONS.roundStatus" class="size-4 text-primary" />
-      <h4 class="text-sm font-bold">{{ t('tournament.roundStatus.title') }}</h4>
-    </div>
-
-    <UFieldGroup class="w-full">
-      <UButton
-        :label="t('tournament.roundStatus.filterAll')"
-        size="xs"
-        class="flex-1 justify-center"
-        :color="filter === 'all' ? 'primary' : 'neutral'"
-        :variant="filter === 'all' ? 'solid' : 'outline'"
-        @click="filter = 'all'"
-      />
-      <UButton
-        :label="t('tournament.roundStatus.filterPending')"
-        size="xs"
-        class="flex-1 justify-center"
-        :color="filter === 'pending' ? 'primary' : 'neutral'"
-        :variant="filter === 'pending' ? 'solid' : 'outline'"
-        @click="filter = 'pending'"
-      />
-      <UButton
-        :label="t('tournament.roundStatus.filterDone')"
-        size="xs"
-        class="flex-1 justify-center"
-        :color="filter === 'done' ? 'primary' : 'neutral'"
-        :variant="filter === 'done' ? 'solid' : 'outline'"
-        @click="filter = 'done'"
-      />
-    </UFieldGroup>
-
-    <UInput
-      v-model="search"
-      type="search"
-      :icon="ICONS.search"
-      :placeholder="t('tournament.roundStatus.searchPlaceholder')"
-      size="sm"
-      class="w-full"
-    />
-
-    <div class="space-y-1">
-      <RoundStatusSection
-        :title="t('tournament.roundStatus.sections.rankings')"
-        :icon="ICONS.standings"
-        :done-count="rankingItems.filter(i => i.done).length"
-        :total-count="rankingItems.length"
-        :force-open="search !== '' && filteredRankingItems.length > 0"
-      >
-        <RoundStatusRow
-          v-for="item in filteredRankingItems"
-          :key="item.pairingId"
-          :done="item.done"
-          :table-number="item.tableNumber"
-          @select="selectRanking(item)"
+  <div v-if="pairings.length > 0" class="bg-elevated rounded-xl p-2.5 border border-default shadow-lg">
+    <UCollapsible v-model:open="isOpen">
+      <button type="button" class="flex items-center gap-1.5 w-full cursor-pointer">
+        <UIcon :name="ICONS.roundStatus" class="size-4 text-primary" />
+        <h4 class="text-sm font-bold">{{ t('tournament.roundStatus.title') }}</h4>
+        <UIcon
+          :name="ICONS.chevronDown"
+          class="size-3.5 text-muted transition-transform"
+          :class="isOpen ? '' : '-rotate-90'"
         />
-      </RoundStatusSection>
+      </button>
 
-      <RoundStatusSection
-        :title="t('tournament.roundStatus.sections.kills')"
-        :icon="ICONS.kills"
-        :done-count="killItems.filter(i => i.done).length"
-        :total-count="killItems.length"
-        :force-open="search !== '' && filteredKillItems.length > 0"
-      >
-        <RoundStatusRow
-          v-for="item in filteredKillItems"
-          :key="item.pairingId"
-          :done="item.done"
-          :table-number="item.tableNumber"
-          @select="selectKill(item)"
-        />
-      </RoundStatusSection>
+      <template #content>
+        <div class="space-y-2.5 pt-2.5">
+          <UFieldGroup class="w-full">
+            <UButton
+              :label="t('tournament.roundStatus.filterAll')"
+              size="xs"
+              class="flex-1 justify-center"
+              :color="filter === 'all' ? 'primary' : 'neutral'"
+              :variant="filter === 'all' ? 'solid' : 'outline'"
+              @click="filter = 'all'"
+            />
+            <UButton
+              :label="t('tournament.roundStatus.filterPending')"
+              size="xs"
+              class="flex-1 justify-center"
+              :color="filter === 'pending' ? 'primary' : 'neutral'"
+              :variant="filter === 'pending' ? 'solid' : 'outline'"
+              @click="filter = 'pending'"
+            />
+            <UButton
+              :label="t('tournament.roundStatus.filterDone')"
+              size="xs"
+              class="flex-1 justify-center"
+              :color="filter === 'done' ? 'primary' : 'neutral'"
+              :variant="filter === 'done' ? 'solid' : 'outline'"
+              @click="filter = 'done'"
+            />
+          </UFieldGroup>
 
-      <RoundStatusSection
-        :title="t('tournament.roundStatus.sections.commanders')"
-        :icon="ICONS.commander"
-        :done-count="commanderItems.filter(i => i.done).length"
-        :total-count="commanderItems.length"
-        :force-open="search !== '' && filteredCommanderItems.length > 0"
-      >
-        <RoundStatusRow
-          v-for="item in filteredCommanderItems"
-          :key="`${item.pairingId}-${item.playerId}`"
-          :done="item.done"
-          :player-id="item.playerId"
-          :player-name="item.name"
-          :player-surname="item.surname"
-          :player-avatar-url="item.avatarUrl"
-          @select="selectCommander(item)"
-        />
-      </RoundStatusSection>
+          <UInput
+            v-model="search"
+            type="search"
+            :icon="ICONS.search"
+            :placeholder="t('tournament.roundStatus.searchPlaceholder')"
+            size="sm"
+            class="w-full"
+          />
 
-      <RoundStatusSection
-        :title="t('tournament.roundStatus.sections.votes')"
-        :icon="ICONS.vote"
-        :done-count="voteItems.filter(i => i.done).length"
-        :total-count="voteItems.length"
-        :force-open="search !== '' && filteredVoteItems.length > 0"
-      >
-        <RoundStatusRow
-          v-for="item in filteredVoteItems"
-          :key="`${item.pairingId}-${item.playerId}`"
-          :done="item.done"
-          :player-id="item.playerId"
-          :player-name="item.name"
-          :player-surname="item.surname"
-          :player-avatar-url="item.avatarUrl"
-          @select="selectVote(item)"
-        />
-      </RoundStatusSection>
-    </div>
+          <div class="space-y-1">
+            <RoundStatusSection
+              :title="t('tournament.roundStatus.sections.rankings')"
+              :icon="ICONS.standings"
+              :done-count="rankingItems.filter(i => i.done).length"
+              :total-count="rankingItems.length"
+              :force-open="search !== '' && filteredRankingItems.length > 0"
+            >
+              <RoundStatusRow
+                v-for="item in filteredRankingItems"
+                :key="item.pairingId"
+                :done="item.done"
+                :table-number="item.tableNumber"
+                @select="selectRanking(item)"
+              />
+            </RoundStatusSection>
+
+            <RoundStatusSection
+              :title="t('tournament.roundStatus.sections.kills')"
+              :icon="ICONS.kills"
+              :done-count="killItems.filter(i => i.done).length"
+              :total-count="killItems.length"
+              :force-open="search !== '' && filteredKillItems.length > 0"
+            >
+              <RoundStatusRow
+                v-for="item in filteredKillItems"
+                :key="item.pairingId"
+                :done="item.done"
+                :table-number="item.tableNumber"
+                @select="selectKill(item)"
+              />
+            </RoundStatusSection>
+
+            <RoundStatusSection
+              :title="t('tournament.roundStatus.sections.commanders')"
+              :icon="ICONS.commander"
+              :done-count="commanderItems.filter(i => i.done).length"
+              :total-count="commanderItems.length"
+              :force-open="search !== '' && filteredCommanderItems.length > 0"
+            >
+              <RoundStatusRow
+                v-for="item in filteredCommanderItems"
+                :key="`${item.pairingId}-${item.playerId}`"
+                :done="item.done"
+                :player-id="item.playerId"
+                :player-name="item.name"
+                :player-surname="item.surname"
+                :player-avatar-url="item.avatarUrl"
+                @select="selectCommander(item)"
+              />
+            </RoundStatusSection>
+
+            <RoundStatusSection
+              :title="t('tournament.roundStatus.sections.votes')"
+              :icon="ICONS.vote"
+              :done-count="voteItems.filter(i => i.done).length"
+              :total-count="voteItems.length"
+              :force-open="search !== '' && filteredVoteItems.length > 0"
+            >
+              <RoundStatusRow
+                v-for="item in filteredVoteItems"
+                :key="`${item.pairingId}-${item.playerId}`"
+                :done="item.done"
+                :player-id="item.playerId"
+                :player-name="item.name"
+                :player-surname="item.surname"
+                :player-avatar-url="item.avatarUrl"
+                @select="selectVote(item)"
+              />
+            </RoundStatusSection>
+          </div>
+        </div>
+      </template>
+    </UCollapsible>
   </div>
 </template>
