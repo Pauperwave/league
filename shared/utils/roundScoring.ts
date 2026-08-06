@@ -364,7 +364,7 @@ export function buildRoundOneTables(playerOrder: number[]): number[][] {
 
 /** Map table player-id groups to pairing insert rows. */
 export function buildPairingRows(
-  tournamentId: number, round: number, tables: number[][]
+  tournamentId: number, round: number, tables: number[][], pairingDatetime: string | null = null
 ): PairingInsert[] {
   return tables
     .filter(table => table.length >= 3)
@@ -376,5 +376,6 @@ export function buildPairingRows(
       pairing_player2_id: table[1] ?? null,
       pairing_player3_id: table[2] ?? null,
       pairing_player4_id: table[3] ?? null,
+      pairing_datetime: pairingDatetime,
     }))
 }

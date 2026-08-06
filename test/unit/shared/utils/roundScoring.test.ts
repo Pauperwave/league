@@ -98,7 +98,13 @@ describe('buildPairingRows', () => {
       pairing_player2_id: 20,
       pairing_player3_id: 30,
       pairing_player4_id: 40,
+      pairing_datetime: null,
     }])
+  })
+
+  it('sets pairing_datetime from the given tournament datetime', () => {
+    const rows = buildPairingRows(1, 2, [[10, 20, 30, 40]], '2026-08-05')
+    expect(rows[0]?.pairing_datetime).toBe('2026-08-05')
   })
 
   it('maps a 3-player table with a null 4th seat and pairing_is_full false', () => {

@@ -162,7 +162,9 @@ export default defineEventHandler(async (event) => {
   }
 
   // Round 1 uses the confirmed player order — no optimizer re-run.
-  const rows = buildPairingRows(tournamentId, 1, buildRoundOneTables(selectedOrder))
+  const rows = buildPairingRows(
+    tournamentId, 1, buildRoundOneTables(selectedOrder), updatedTournament.tournament_datetime
+  )
   if (!rows.length) {
     throw createError({
       statusCode: 400,

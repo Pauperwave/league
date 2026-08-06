@@ -106,7 +106,10 @@ export default defineEventHandler(async (event) => {
 
   // Insert the next round's pairings from the confirmed order.
   if (!hasEnded && playerOrder) {
-    const rows = buildPairingRows(tournamentId, newRound, buildRoundOneTables(playerOrder))
+    const rows = buildPairingRows(
+      tournamentId, newRound, buildRoundOneTables(playerOrder),
+      updatedTournament.tournament_datetime
+    )
     if (!rows.length) {
       throw createError({
         statusCode: 400,
