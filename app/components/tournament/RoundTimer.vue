@@ -55,6 +55,11 @@ const { recordEntry } = useActionLog()
 // looking at the screen at the exact moment the timer hits zero.
 useEventListener(window, 'keydown', stopLoop)
 
+// The loop lives in a module-scope singleton (see useSoundEffects.ts), so it
+// otherwise keeps blaring across a page navigation that unmounts this
+// component without anyone pressing a key first.
+onUnmounted(stopLoop)
+
 // ---------------------------------------------------------------------------
 // State
 // ---------------------------------------------------------------------------
