@@ -45,8 +45,12 @@ const { t } = useI18n()
       </UButton>
     </div>
 
-    <div v-if="loading" class="flex items-center justify-center py-8">
-      <UIcon :name="ICONS.loading" class="animate-spin text-2xl text-primary" />
+    <!-- Only the initial fetch (no data yet) shows skeleton cards — background
+    refetches (e.g. after a bracket save invalidates the decks query) keep the
+    real grid mounted instead of flashing it away, which otherwise reads as a
+    full-page reload. -->
+    <div v-if="loading && decks.length === 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <CommanderDeckCardSkeleton v-for="n in 3" :key="n" />
     </div>
 
     <div v-else-if="decks.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

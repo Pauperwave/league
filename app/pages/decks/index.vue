@@ -156,9 +156,14 @@ const breadcrumbItems = useBreadcrumb(() => [
       </div>
     </PageHeaderRow>
 
-    <!-- Loading -->
-    <div v-if="decksLoading || commanderLoading" class="flex items-center justify-center py-12">
-      <UIcon :name="ICONS.loading" class="animate-spin text-3xl text-muted" />
+    <!-- Loading: only the initial fetch (no data yet) shows skeletons —
+    background refetches keep the real grid mounted instead of flashing it
+    away. -->
+    <div
+      v-if="(decksLoading || commanderLoading) && uniqueDecks.length === 0"
+      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+    >
+      <CommanderDeckCardSkeleton v-for="n in 8" :key="n" />
     </div>
 
     <!-- Empty state -->
