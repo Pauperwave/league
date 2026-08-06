@@ -51,6 +51,7 @@ const {
   leagueRematchCounts,
   leagueRematchCountsLoading,
   lastEndedTournamentParticipants,
+  victimCounts,
   loading,
   previewTables,
   viewedRound,
@@ -648,11 +649,15 @@ function handleUndrawTable(pairingId: number) {
               />
             </div>
 
-            <div v-else-if="tournamentStatus === 'ended'" class="space-y-2">
+            <div v-else-if="tournamentStatus === 'ended'" class="space-y-4">
               <EndedTournamentBadge />
               <StandingsCard
                 :standings="liveStandings"
                 :loading="loading"
+              />
+              <TournamentAwards
+                :standings="liveStandings"
+                :victim-counts="victimCounts"
               />
             </div>
           </div>

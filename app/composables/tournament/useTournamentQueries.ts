@@ -497,3 +497,46 @@ export function useLastEndedTournamentParticipantsQuery(
     },
   })
 }
+
+/** Query key for a tournament's per-player victim tally (round_kills) — feeds the "Vittima" award card. */
+export const TOURNAMENT_VICTIM_COUNTS_KEY = ['tournament-victim-counts']
+
+/**
+ * How many times each player was killed (round_kills.victim_id) across every
+ * pairing of this tournament — the counterpart to standings' already-tracked
+ * `kills` (kills *dealt*), which round_kills doesn't otherwise expose since
+ * standings only stores the dealt side. Feeds the ended-tournament "Vittima"
+ * award card (TournamentAwards.vue); everything else that card needs
+ * (kills dealt, brew/play points) already lives on StandingWithPlayer.
+ */
+export function useTournamentVictimCountsQuery(tournamentId: number) {
+  const supabase = useSupabaseClient()
+
+  return useQuery({
+    key: [...TOURNAMENT_VICTIM_COUNTS_KEY, tournamentId],
+    query: async (): Promise<Map<number, number>> => {
+      const { data: pairings, error: pairingsError } = await supabase
+        .from('pairings')
+        .select('pairing_id')
+        .eq('tournament_id', tournamentId)
+
+      if (pairingsError) throw pairingsError
+
+      const pairingIds = (pairings ?? []).map(p => p.pairing_id)
+      const counts = new Map<number, number>()
+      if (pairingIds.length === 0) return counts
+
+      const { data: kills, error: killsError } = await supabase
+        .from('round_kills')
+        .select('victim_id')
+        .in('pairing_id', pairingIds)
+
+      if (killsError) throw killsError
+
+      for (const kill of kills ?? []) {
+        counts.set(kill.victim_id, (counts.get(kill.victim_id) ?? 0) + 1)
+      }
+      return counts
+    },
+  })
+}

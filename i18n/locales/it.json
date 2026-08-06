@@ -935,6 +935,25 @@
       "fullscreenTooltip": "Schermo intero",
       "exitFullscreenTooltip": "Esci da schermo intero"
     },
+    "awards": {
+      "sectionTitle": "Premi Torneo",
+      "victim": {
+        "title": "La Vittima",
+        "stat": "Eliminato {count} volte"
+      },
+      "killer": {
+        "title": "Il Carnefice",
+        "stat": "{count} uccisioni"
+      },
+      "brewer": {
+        "title": "Master Brewer",
+        "stat": "{count} PT Brew"
+      },
+      "player": {
+        "title": "Il Player",
+        "stat": "{count} voti Play"
+      }
+    },
     "winnerChecklist": {
       "title": "Vincitori tavoli",
       "hint": "Spunta quando il booster è stato consegnato",
