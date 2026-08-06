@@ -70,8 +70,12 @@ const rows = computed(() =>
             <td class="text-center py-2 px-3">{{ match.table_number }}</td>
             <td class="py-2 px-3">
               <div class="flex items-center gap-1">
-                <span>{{ match.commander_1 ?? '—' }}</span>
-                <span v-if="match.commander_2" class="text-muted">+ {{ match.commander_2 }}</span>
+                <CommanderLinkTooltip v-if="match.commander_1" :name="match.commander_1" />
+                <span v-else>—</span>
+                <template v-if="match.commander_2">
+                  <span class="text-muted">+</span>
+                  <CommanderLinkTooltip :name="match.commander_2" />
+                </template>
               </div>
             </td>
             <td class="text-center py-2 px-3">{{ match.position }}</td>
