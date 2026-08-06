@@ -10,8 +10,8 @@ const { matchHistory } = defineProps<Props>()
 
 const { t } = useI18n()
 
-function formatMatchDate(pairingDatetime: string): string {
-  return new Date(pairingDatetime).toLocaleDateString('it-IT')
+function formatMatchDate(pairingDatetime: string | null): string {
+  return pairingDatetime ? new Date(pairingDatetime).toLocaleDateString('it-IT') : '—'
 }
 
 // A row gets a divider above it only when its date differs from the

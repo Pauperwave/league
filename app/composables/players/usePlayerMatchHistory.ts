@@ -15,7 +15,7 @@ export interface PlayerMatchHistory {
   brew_vote: number | null
   play_vote_1: number | null
   play_vote_2: number | null
-  pairing_datetime: string
+  pairing_datetime: string | null
 }
 
 interface RawMatchRow {
@@ -29,9 +29,13 @@ interface RawMatchRow {
   play_vote_2: number | null
   pairings: {
     pairing_round: number
-    pairing_datetime: string
+    pairing_datetime: string | null
     tournament_id: number
-    tournaments: { tournament_name: string; league_id: number } | null
+    tournaments: {
+      tournament_name: string
+      league_id: number
+      tournament_datetime: string | null
+    } | null
   } | null
 }
 
@@ -57,7 +61,8 @@ export async function fetchPlayerMatchHistory(
         tournament_id,
         tournaments:tournament_id (
           tournament_name,
-          league_id
+          league_id,
+          tournament_datetime
         )
       )
     `)
@@ -102,14 +107,18 @@ export async function fetchPlayerMatchHistory(
       brew_vote: row.brew_vote,
       play_vote_1: row.play_vote_1,
       play_vote_2: row.play_vote_2,
-      pairing_datetime: pairings.pairing_datetime,
+      // Older pairings predate this column; fall back to the tournament's own date.
+      pairing_datetime:
+        pairings.pairing_datetime ?? pairings.tournaments?.tournament_datetime ?? null,
     })
   }
 
-  // Sort by pairing datetime descending (newest first)
-  results.sort((a, b) =>
-    new Date(b.pairing_datetime).getTime() - new Date(a.pairing_datetime).getTime()
-  )
+  // Sort by pairing datetime descending (newest first); undated rows sort last.
+  results.sort((a, b) => {
+    const aTime = a.pairing_datetime ? new Date(a.pairing_datetime).getTime() : -Infinity
+    const bTime = b.pairing_datetime ? new Date(b.pairing_datetime).getTime() : -Infinity
+    return bTime - aTime
+  })
 
   return results
 }
