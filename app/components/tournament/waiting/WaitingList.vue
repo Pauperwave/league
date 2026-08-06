@@ -144,32 +144,6 @@ const tableData = computed(() => {
         />
       </div>
 
-      <div class="flex flex-wrap items-center gap-2">
-        <USelectMenu
-          v-model="selectedPlayerIds"
-          :items="addPlayersItems"
-          value-key="value"
-          multiple
-          :icon="ICONS.addPlayer"
-          :placeholder="t('player.searchModal.addPlayersPlaceholder')"
-          :search-input="{ placeholder: t('player.searchModal.searchInputPlaceholder') }"
-          class="w-full sm:w-120"
-        />
-        <UButton
-          color="primary"
-          :icon="ICONS.playerConfirmed"
-          :label="t('player.searchModal.addCount', { count: selectedPlayerIds.length })"
-          :disabled="!hasSelection"
-          @click="handleAddSelected"
-        />
-        <span v-if="players.length === 0" class="text-sm text-muted">
-          {{ t('player.searchModal.noPlayersRegistered') }}
-        </span>
-        <span v-else-if="allPlayersInQueue" class="text-sm text-muted">
-          {{ t('player.searchModal.allInQueue') }}
-        </span>
-      </div>
-
       <WaitingListTable
         :data="tableData"
         @update="handleUpdate"
@@ -185,6 +159,23 @@ const tableData = computed(() => {
         @batch-mark-paid="emit('batchMarkPaid', $event)"
       >
         <template #search-actions>
+          <USelectMenu
+            v-model="selectedPlayerIds"
+            :items="addPlayersItems"
+            value-key="value"
+            multiple
+            :icon="ICONS.addPlayer"
+            :placeholder="t('player.searchModal.addPlayersPlaceholder')"
+            :search-input="{ placeholder: t('player.searchModal.searchInputPlaceholder') }"
+            class="w-full sm:w-80"
+          />
+          <UButton
+            color="primary"
+            :icon="ICONS.playerConfirmed"
+            :label="t('player.searchModal.addCount', { count: selectedPlayerIds.length })"
+            :disabled="!hasSelection"
+            @click="handleAddSelected"
+          />
           <UButton
             color="neutral"
             variant="soft"
@@ -192,6 +183,12 @@ const tableData = computed(() => {
             :label="t('player.searchModal.createNew')"
             @click="handleCreateNew"
           />
+          <span v-if="players.length === 0" class="text-sm text-muted">
+            {{ t('player.searchModal.noPlayersRegistered') }}
+          </span>
+          <span v-else-if="allPlayersInQueue" class="text-sm text-muted">
+            {{ t('player.searchModal.allInQueue') }}
+          </span>
         </template>
       </WaitingListTable>
     </div>
