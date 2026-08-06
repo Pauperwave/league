@@ -391,6 +391,24 @@ function handleCancelRoundClick() {
   stepper.value?.prev()
 }
 
+// "Annulla round" and the ended-state "Elimina ultimo round" button share
+// the same confirm modal and the same server call (turnBackRound) — only
+// the copy differs, since deleting the last round of an ended tournament
+// reads differently than backing out of the round currently being played.
+const cancelRoundModalCopy = computed(() => tournamentStatus.value === 'ended'
+  ? {
+    title: t('tournament.cancelRound.titleEnded'),
+    description: t('tournament.cancelRound.descriptionEnded'),
+    question: t('tournament.cancelRound.questionEnded'),
+    warning: t('tournament.cancelRound.warningEnded'),
+  }
+  : {
+    title: t('tournament.cancelRound.title'),
+    description: t('tournament.cancelRound.description'),
+    question: t('tournament.cancelRound.question'),
+    warning: t('tournament.cancelRound.warning'),
+  })
+
 // Non-destructive counterpart to "Annulla round" for an ended tournament:
 // opens the last round's pairings for editing (score/kill/commander/votes)
 // without deleting or regenerating anything. currentRound is NOT the last
@@ -741,10 +759,10 @@ function handleUndrawTable(pairingId: number) {
 
     <ConfirmModal
       v-model:open="showCancelRoundConfirm"
-      :title="t('tournament.cancelRound.title')"
-      :description="t('tournament.cancelRound.description')"
-      :question="t('tournament.cancelRound.question')"
-      :warning="t('tournament.cancelRound.warning')"
+      :title="cancelRoundModalCopy.title"
+      :description="cancelRoundModalCopy.description"
+      :question="cancelRoundModalCopy.question"
+      :warning="cancelRoundModalCopy.warning"
       :confirm-label="t('tournament.cancelRound.confirmLabel')"
       :confirm-icon="ICONS.delete"
       :loading="loading"

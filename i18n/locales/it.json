@@ -560,7 +560,12 @@
       "description": "Tornare al round precedente",
       "question": "Sei sicuro di voler tornare al round precedente",
       "warning": "I dati del round corrente andranno persi.",
-      "confirmLabel": "Annulla round"
+      "confirmLabel": "Annulla round",
+      "tooltipEnded": "Elimina i risultati dell'ultimo round e torna a giocarlo",
+      "titleEnded": "Elimina ultimo round",
+      "descriptionEnded": "Eliminare i risultati dell'ultimo round",
+      "questionEnded": "Sei sicuro di voler eliminare i risultati dell'ultimo round",
+      "warningEnded": "I dati dell'ultimo round andranno persi e potrai reinserirli."
     },
     "correctLastRound": {
       "button": "Correggi risultati",

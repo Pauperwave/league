@@ -101,13 +101,17 @@ function handleAdvanceOrEnd() {
     />
   </div>
 
-  <!-- This block's cancel-round button and the correct-last-round button
-       below (v-else-if="tournamentStatus === 'ended'") share the
-       UTooltip+UButton outline shape — fallow flags them as a clone group,
-       but they're two different actions (different icon/color/tooltip/
-       handler) that only happen to render the same two Nuxt UI components.
-       Left as-is; a shared wrapper would just rename the duplication rather
-       than remove any real logic. -->
+  <!-- The cancel-round, advance/end, correct-last-round, and ended-state
+       cancel-round buttons across this block and the two below
+       (v-else-if="tournamentStatus === 'ended'") share the UTooltip+UButton
+       outline shape — fallow flags them as a clone group, but they're
+       distinct actions (different icon/color/tooltip/handler) that only
+       happen to render the same Nuxt UI components. The two cancel-round
+       buttons do call the same handler/emit (same turnBackRound action
+       under the hood, see TournamentLifecycle.confirmCancelRound), just
+       with different copy for the playing vs. ended context. Left as-is; a
+       shared wrapper would just rename the duplication rather than remove
+       any real logic. -->
   <div v-else-if="tournamentStatus === 'playing'" class="flex gap-2 justify-start">
     <UTooltip
       :content="{ side: 'top' }"
@@ -147,6 +151,17 @@ function handleAdvanceOrEnd() {
         @click="correctLastRound"
       >
         {{ t('tournament.correctLastRound.button') }}
+      </UButton>
+    </UTooltip>
+
+    <UTooltip :content="{ side: 'top' }" :text="t('tournament.cancelRound.tooltipEnded')">
+      <UButton
+        :leading-icon="ICONS.delete"
+        color="error"
+        variant="outline"
+        @click="cancelRound"
+      >
+        {{ t('tournament.cancelRound.confirmLabel') }}
       </UButton>
     </UTooltip>
   </div>
