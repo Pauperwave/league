@@ -21,6 +21,18 @@ const emit = defineEmits<{
 
 const { t } = useI18n()
 
+const addedCount = computed(() => players.filter(p => waitingPlayers.includes(p.player_id)).length)
+
+// Green/yellow/red gauge on the return-rate of last tappa's participants —
+// gives the organizer a glance at whether recruitment is going well without
+// having to read the actual table rows.
+const addedRatio = computed(() => (players.length > 0 ? addedCount.value / players.length : 0))
+const addedBadgeColor = computed(() => {
+  if (addedRatio.value >= 2 / 3) return 'success'
+  if (addedRatio.value >= 1 / 3) return 'warning'
+  return 'error'
+})
+
 const UButton = resolveComponent('UButton') as Component
 
 const columns = computed<TableColumn<Player>[]>(() => [
@@ -62,6 +74,14 @@ const columns = computed<TableColumn<Player>[]>(() => [
     <h2 class="font-semibold text-xl flex items-center gap-2">
       <UIcon :name="ICONS.players" size="lg" class="text-muted" />
       {{ t('tournament.waitingList.lastTournamentHeading', { name: tournamentName }) }}
+      <UBadge
+        :color="addedBadgeColor"
+        variant="subtle"
+        size="lg"
+        :ui="{ base: 'px-2.5 py-1.5 text-sm font-medium' }"
+      >
+        {{ addedCount }}/{{ players.length }}
+      </UBadge>
     </h2>
     <div class="w-full overflow-x-auto">
       <UTable
