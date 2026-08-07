@@ -6,6 +6,7 @@ import { UCheckbox, UFieldGroup, UButton } from '#components'
 import RowActionButtons from '~/components/ui/actions/RowActionButtons.vue'
 import PlayerNameTag from '~/components/player/PlayerNameTag.vue'
 import type { PaymentMethod } from '~/composables/tournament/useWaitingListFlags'
+import type { SemanticColor } from '~/utils/semanticColor'
 
 const { t } = useI18n()
 
@@ -182,33 +183,35 @@ function setPaymentMethod(playerId: number, method: PaymentMethod | null) {
 
 // --- Columns ---
 
+// Active-state color per method — 'free' has no dedicated semantic meaning
+// (see PAYMENT_METHOD_DISPLAY), so it stays 'neutral' even when selected.
+const PAYMENT_METHOD_ACTIVE_COLOR: Record<PaymentMethod, SemanticColor | 'neutral'> = {
+  pos: 'info',
+  cash: 'success',
+  free: 'neutral',
+}
+const PAYMENT_METHODS: PaymentMethod[] = ['pos', 'cash', 'free']
+
 function createPaymentMethodColumn(): TableColumn<WaitingPlayer> {
   return {
     id: 'paymentMethod',
     header: t('tournament.waitingListTable.paidColumn'),
     enableHiding: false,
-    meta: { class: { th: 'text-center w-40', td: 'text-center' } },
+    meta: { class: { th: 'text-center w-56', td: 'text-center' } },
     cell: ({ row }) => {
       const player = row.original
       const method = playerState[player.playerId]?.paymentMethod ?? null
-      return h(UFieldGroup, { size: 'xs' }, () => [
+      return h(UFieldGroup, { size: 'xs' }, () => PAYMENT_METHODS.map(m =>
         h(UButton, {
-          label: t('tournament.waitingListTable.posLabel'),
-          icon: ICONS.paymentPos,
-          color: method === 'pos' ? 'info' : 'neutral',
-          variant: method === 'pos' ? 'solid' : 'outline',
-          'aria-label': t('tournament.waitingListTable.posAriaLabel', { name: fullName(player) }),
-          onClick: () => togglePaymentMethod(player.playerId, 'pos'),
-        }),
-        h(UButton, {
-          label: t('tournament.waitingListTable.cashLabel'),
-          icon: ICONS.paymentCash,
-          color: method === 'cash' ? 'success' : 'neutral',
-          variant: method === 'cash' ? 'solid' : 'outline',
-          'aria-label': t('tournament.waitingListTable.cashAriaLabel', { name: fullName(player) }),
-          onClick: () => togglePaymentMethod(player.playerId, 'cash'),
-        }),
-      ])
+          key: m,
+          label: t(PAYMENT_METHOD_DISPLAY[m].labelKey),
+          icon: PAYMENT_METHOD_DISPLAY[m].icon,
+          color: method === m ? PAYMENT_METHOD_ACTIVE_COLOR[m] : 'neutral',
+          variant: method === m ? 'solid' : 'outline',
+          'aria-label': t(`tournament.waitingListTable.${m}AriaLabel`, { name: fullName(player) }),
+          onClick: () => togglePaymentMethod(player.playerId, m),
+        })
+      ))
     },
   }
 }

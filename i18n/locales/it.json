@@ -673,6 +673,7 @@
       "selectRowAriaLabel": "Seleziona {name}",
       "posAriaLabel": "POS per {name}",
       "cashAriaLabel": "Contanti per {name}",
+      "freeAriaLabel": "Omaggio per {name}",
       "posLabel": "POS",
       "cashLabel": "Contanti",
       "freeLabel": "Omaggio",
